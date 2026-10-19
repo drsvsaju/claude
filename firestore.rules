@@ -1,0 +1,247 @@
+rules_version = '2';
+
+// ============================================================================
+// Pomodorolist — Firestore security rules
+//
+// What other people can see lives OUTSIDE users/{uid}:
+//   usernames/{name}            { uid }               exact-username lookup only
+//   publicProfiles/{uid}        badge, level, flair, streak, hours, join date
+//   publicStats/{uid}           focus minutes per period (leaderboards)
+//   activity/{uid}              last 12 weeks + last 20 sessions (friends only)
+//   presence/{uid}              "focusing now" (friends only)
+//   friendships/{a_b}           a request or a friendship between two users
+//   inbox/{uid}/items/{id}      kudos and nudges (preset reactions, no text)
+//   challenges/{id}             weekly challenges between friends
+//
+// HONEST NOTE ON CHEATING: there is no server here (no Cloud Functions on the
+// free plan), so every number is calculated on the user's own device. These
+// rules block obvious cheating — impossible jumps, decreasing totals, more
+// minutes than real time allows, other people's documents — but a determined
+// user could still write believable fake numbers for themselves.
+// ============================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    // Usernames are the login: "<username>@pomodorolist.app". This ties every
+    // public username to the account that really owns it.
+    function myName() { return request.auth.token.email.split('@')[0]; }
+    function path(col, id) { return /databases/$(database)/documents/$(col)/$(id); }
+
+    // Accepted friendship between me and uid (document id = smaller uid + "_" + larger uid).
+    function friendDoc(a, b) { return path('friendships', a + '_' + b); }
+    function isFriend(uid) {
+      return (exists(friendDoc(me(), uid)) && get(friendDoc(me(), uid)).data.status == 'accepted')
+          || (exists(friendDoc(uid, me())) && get(friendDoc(uid, me())).data.status == 'accepted');
+    }
+    // owner has blocked me
+    function blockedBy(owner) { return exists(/databases/$(database)/documents/users/$(owner)/blocked/$(me())); }
+
+    // ---------------- Private data: owner only (unchanged) ----------------
+    match /users/{uid} {
+      allow read, write: if signedIn() && me() == uid;
+      match /{document=**} {
+        allow read, write: if signedIn() && me() == uid;   // includes months/ and blocked/
+      }
+    }
+
+    // ---------------- Username lookup ----------------
+    match /usernames/{name} {
+      allow get: if signedIn();
+      allow list: if false;                                // no browsing all usernames
+      allow create: if signedIn()
+        && name == myName()
+        && request.resource.data.keys().hasOnly(['uid'])
+        && request.resource.data.uid == me();
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.uid == me();
+    }
+
+    // ---------------- Public profile ----------------
+    match /publicProfiles/{uid} {
+      allow get: if signedIn() && (me() == uid || !blockedBy(uid));
+      allow list: if false;
+      allow create, update: if signedIn() && me() == uid && validProfile();
+      allow delete: if signedIn() && me() == uid;
+    }
+    function validProfile() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'streak', 'longest', 'hours', 'joined', 'updatedAt'])
+        && d.username == myName()
+        && d.level is int && d.level >= 1 && d.level <= 1000
+        && d.tier is string && d.tier.size() <= 20
+        && d.frame is string && d.frame.size() <= 30
+        && d.color is string && d.color.size() <= 30
+        && d.streak is int && d.streak >= 0 && d.longest is int && d.longest >= d.streak && d.longest <= 100000
+        && d.hours is number && d.hours >= 0 && d.hours <= 60000
+        && d.joined is int && d.joined <= request.time.toMillis()
+        && d.updatedAt == request.time;
+    }
+
+    // ---------------- Leaderboard stats ----------------
+    match /publicStats/{uid} {
+      allow get: if signedIn() && (me() == uid || ((resource.data.global == true || isFriend(uid)) && !blockedBy(uid)));
+      allow list: if signedIn() && resource.data.global == true;   // global leaderboard queries
+      allow create: if signedIn() && me() == uid && validStats() && createLimits();
+      allow update: if signedIn() && me() == uid && validStats() && updateLimits();
+      allow delete: if signedIn() && me() == uid;
+    }
+    function validStats() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'global',
+                               'dayKey', 'dayMin', 'weekKey', 'weekMin', 'weekKeySun', 'weekMinSun',
+                               'monthKey', 'monthMin', 'lifeMin', 'lastWeekKey', 'lastWeekMin', 'updatedAt'])
+        && d.username == myName()
+        && d.global is bool
+        && d.level is int && d.level >= 1 && d.level <= 1000
+        && d.tier is string && d.tier.size() <= 20 && d.frame is string && d.frame.size() <= 30 && d.color is string && d.color.size() <= 30
+        && d.dayKey is string && d.dayKey.size() == 10 && d.weekKey is string && d.weekKey.size() == 10
+        && d.weekKeySun is string && d.weekKeySun.size() == 10 && d.monthKey is string && d.monthKey.size() == 7
+        && d.lastWeekKey is string && d.lastWeekKey.size() == 10
+        && d.dayMin is int && d.dayMin >= 0 && d.dayMin <= 1440
+        && d.weekMin is int && d.weekMin >= 0 && d.weekMin <= 10080
+        && d.weekMinSun is int && d.weekMinSun >= 0 && d.weekMinSun <= 10080
+        && d.monthMin is int && d.monthMin >= 0 && d.monthMin <= 44640
+        && d.lastWeekMin is int && d.lastWeekMin >= 0 && d.lastWeekMin <= 10080
+        && d.lifeMin is int && d.lifeMin >= 0 && d.lifeMin <= 3600000
+        // today is inside this week and this month, and everything is inside the lifetime total
+        && d.dayMin <= d.weekMin && d.dayMin <= d.weekMinSun && d.dayMin <= d.monthMin
+        && d.weekMin <= d.lifeMin && d.weekMinSun <= d.lifeMin && d.monthMin <= d.lifeMin
+        && d.updatedAt == request.time;                          // server time: can't be in the future
+    }
+    function createLimits() { return true; }                  // first upload may include past history
+    // Minutes since this document was last written (server clock).
+    function elapsedMin() { return (request.time.toMillis() - resource.data.updatedAt.toMillis()) / 60000; }
+    // Within the same period a total can't go down, and can't grow by more than the real time
+    // that has passed since the last write plus one 4-hour session. A new period starts from 0.
+    function grows(keyField, minField) {
+      let n = request.resource.data;
+      let o = resource.data;
+      return (n[keyField] == o[keyField] && n[minField] >= o[minField] && n[minField] - o[minField] <= elapsedMin() + 240)
+          || (n[keyField] != o[keyField] && n[minField] <= elapsedMin() + 240);
+    }
+    function updateLimits() {
+      let n = request.resource.data;
+      let o = resource.data;
+      return grows('dayKey', 'dayMin') && grows('weekKey', 'weekMin') && grows('weekKeySun', 'weekMinSun') && grows('monthKey', 'monthMin')
+        && n.lifeMin >= o.lifeMin && n.lifeMin - o.lifeMin <= elapsedMin() + 240;
+    }
+
+    // ---------------- Friend-visible activity + "focusing now" ----------------
+    match /activity/{uid} {
+      allow get: if signedIn() && (me() == uid || (resource.data.visible == true && isFriend(uid) && !blockedBy(uid)));
+      allow list: if false;
+      allow create, update: if signedIn() && me() == uid && validActivity();
+      allow delete: if signedIn() && me() == uid;
+    }
+    function validActivity() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['visible', 'shareNames', 'days', 'goalDays', 'recent', 'streak', 'longest', 'updatedAt'])
+        && d.visible is bool && d.shareNames is bool
+        && d.days is map && d.days.size() <= 90
+        && d.goalDays is list && d.goalDays.size() <= 90
+        && d.recent is list && d.recent.size() <= 20
+        // newest session: at most 4 hours long, not in the future
+        && (d.recent.size() == 0 || (d.recent[0].min is int && d.recent[0].min <= 240 && d.recent[0].t <= request.time.toMillis()))
+        && d.streak is int && d.longest is int
+        && d.updatedAt == request.time;
+    }
+    match /presence/{uid} {
+      allow get: if signedIn() && (me() == uid || (resource.data.visible == true && isFriend(uid) && !blockedBy(uid)));
+      allow list: if false;
+      allow create, update: if signedIn() && me() == uid
+        && request.resource.data.keys().hasOnly(['visible', 'now', 'updatedAt'])
+        && request.resource.data.visible is bool
+        && (request.resource.data.now == null || (request.resource.data.now is map
+            && request.resource.data.now.keys().hasOnly(['name', 'phase', 'status', 'endAt', 'left'])
+            && request.resource.data.now.name is string && request.resource.data.now.name.size() <= 80))
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if signedIn() && me() == uid;
+    }
+
+    // ---------------- Friend requests / friendships ----------------
+    match /friendships/{pid} {
+      allow read: if signedIn() && me() in resource.data.users;   // only the two people involved
+      allow create: if signedIn() && validRequest(pid);            // only the sender creates
+      allow update: if signedIn() && acceptByRecipient();          // only the recipient accepts
+      allow delete: if signedIn() && me() in resource.data.users;  // decline, cancel or remove
+    }
+    function validRequest(pid) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['users', 'from', 'to', 'status', 'fromName', 'toName', 'createdAt'])
+        && d.from == me() && d.to != me() && d.status == 'pending'
+        && d.users.size() == 2 && d.users[0] < d.users[1] && d.users.hasAll([d.from, d.to])
+        && pid == d.users[0] + '_' + d.users[1]
+        && d.fromName == myName()
+        && get(path('usernames', d.toName)).data.uid == d.to
+        && d.createdAt == request.time
+        // blocked users can't send requests (in either direction)
+        && !exists(/databases/$(database)/documents/users/$(d.to)/blocked/$(me()))
+        && !exists(/databases/$(database)/documents/users/$(me())/blocked/$(d.to));
+    }
+    function acceptByRecipient() {
+      return resource.data.status == 'pending' && resource.data.to == me()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedAt'])
+        && request.resource.data.status == 'accepted'
+        && request.resource.data.acceptedAt == request.time;
+    }
+
+    // ---------------- Kudos and nudges (preset reactions only, no free text) ----------------
+    match /inbox/{uid}/items/{id} {
+      allow read, delete: if signedIn() && me() == uid;
+      // create only: a second kudos for the same session, or a second nudge on the same day,
+      // has the same document id and is refused.
+      allow create: if signedIn() && uid != me() && isFriend(uid) && !blockedBy(uid) && validInboxItem(id);
+    }
+    function validInboxItem(id) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['from', 'fromName', 'type', 'emoji', 'target', 'day', 'createdAt'])
+        && d.from == me() && d.fromName == myName() && d.createdAt == request.time
+        && ((d.type == 'kudos' && d.emoji in ['🔥', '👏', '💪', '⭐'] && d.target is string && d.target.size() <= 40
+              && id == 'k_' + me() + '_' + d.target)
+         || (d.type == 'nudge' && d.emoji == '👀' && d.day is string && d.day.size() == 10
+              && id == 'n_' + me() + '_' + d.day));
+    }
+
+    // ---------------- Weekly challenges ----------------
+    match /challenges/{cid} {
+      allow read: if signedIn() && (me() in resource.data.members || me() in resource.data.invited);
+      allow create: if signedIn() && validNewChallenge(cid);
+      allow update: if signedIn() && (joinChallenge() || updateMyProgress());
+      allow delete: if signedIn() && resource.data.creator == me() && resource.data.members.size() == 1;
+    }
+    function validNewChallenge(cid) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['preset', 'weekKey', 'creator', 'members', 'invited', 'names', 'progress', 'createdAt'])
+        && d.creator == me() && d.preset in ['h5', 'h10', 'g5', 's20']
+        && d.weekKey is string && d.weekKey.size() == 10
+        && cid == d.weekKey + '_' + d.preset + '_' + me()
+        && d.members == [me()]
+        && d.invited is list && d.invited.size() <= 100
+        && d.names.keys().hasOnly([me()]) && d.names[me()] == myName()
+        && d.progress.keys().hasOnly([me()]) && d.progress[me()] is int && d.progress[me()] >= 0 && d.progress[me()] <= 10080
+        && d.createdAt == request.time;
+    }
+    function joinChallenge() {
+      let n = request.resource.data;
+      let o = resource.data;
+      return me() in o.invited && !(me() in o.members)
+        && n.diff(o).affectedKeys().hasOnly(['members', 'names', 'progress'])
+        && n.members == o.members.concat([me()])
+        && n.names.diff(o.names).affectedKeys().hasOnly([me()]) && n.names[me()] == myName()
+        && n.progress.diff(o.progress).affectedKeys().hasOnly([me()]) && n.progress[me()] is int
+        && n.progress[me()] >= 0 && n.progress[me()] <= 10080;
+    }
+    function updateMyProgress() {
+      let n = request.resource.data;
+      let o = resource.data;
+      return me() in o.members
+        && n.diff(o).affectedKeys().hasOnly(['progress'])
+        && n.progress.diff(o.progress).affectedKeys().hasOnly([me()])
+        && n.progress[me()] is int && n.progress[me()] >= o.progress[me()] && n.progress[me()] <= 10080;
+    }
+
+    // Everything else is closed.
+  }
+}
