@@ -1,0 +1,2844 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OncoRegistry</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2226%22%20height%3D%2226%22%20rx%3D%227%22%20fill%3D%22%2317708a%22%2F%3E%3Cpath%20d%3D%22M10%2016h12M16%2010v12%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+<meta name="description" content="Research data collection for oncology: pseudonymised case record forms, team access, audit trail, survival dashboard and analysis-ready exports.">
+<style>
+/* ==========================================================================
+   THEME TOKENS
+   One accent colour (clinical teal). Light by default, dark via the system
+   setting. Chart series colours are a validated colour-blind-safe set.
+   ========================================================================== */
+:root {
+  --bg: #f5f6f5;
+  --surface: #ffffff;
+  --surface-2: #f0f2f1;
+  --text: #1c2221;
+  --muted: #64706d;
+  --line: #e1e5e3;
+  --accent: #17708a;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(23, 112, 138, .11);
+  --danger: #b3413a;
+  --danger-soft: rgba(179, 65, 58, .10);
+  --warn: #a8661b;
+  --warn-soft: rgba(200, 130, 40, .13);
+  --good: #2c7a3f;
+  --good-soft: rgba(44, 122, 63, .11);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --grid: #e7e9e8;
+  --radius: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111414; --surface: #191d1d; --surface-2: #202525; --text: #e6e9e8; --muted: #909a97;
+    --line: #2a302f; --accent: #4fb0c6; --accent-ink: #0d1415; --accent-soft: rgba(79, 176, 198, .15);
+    --danger: #e37b70; --danger-soft: rgba(227, 123, 112, .13); --warn: #e0a15a; --warn-soft: rgba(224, 161, 90, .14);
+    --good: #6cc184; --good-soft: rgba(108, 193, 132, .13);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --grid: #262c2b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111414; --surface: #191d1d; --surface-2: #202525; --text: #e6e9e8; --muted: #909a97;
+  --line: #2a302f; --accent: #4fb0c6; --accent-ink: #0d1415; --accent-soft: rgba(79, 176, 198, .15);
+  --danger: #e37b70; --danger-soft: rgba(227, 123, 112, .13); --warn: #e0a15a; --warn-soft: rgba(224, 161, 90, .14);
+  --good: #6cc184; --good-soft: rgba(108, 193, 132, .13);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --grid: #262c2b;
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--accent); }
+h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 13px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 0 0 12px; }
+h3 { font-size: 16px; margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.between { justify-content: space-between; }
+.grow { flex: 1; }
+.hidden { display: none !important; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; }
+
+/* Header */
+.top {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.brand { font-weight: 700; display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); white-space: nowrap; }
+.brand svg { flex: none; }
+.studyname { font-weight: 600; color: var(--muted); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tabs { display: flex; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; overflow-x: auto; max-width: 100%; }
+.tabs a { text-decoration: none; padding: 5px 13px; border-radius: 999px; color: var(--muted); white-space: nowrap; font-size: 14px; }
+.tabs a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.topright { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.sync i { width: 7px; height: 7px; border-radius: 50%; background: var(--good); display: inline-block; }
+.sync.syncing i { background: var(--muted); animation: pulse .8s ease-in-out infinite alternate; }
+.sync.offline i { background: var(--warn); }
+.sync.error i { background: var(--danger); }
+.sync.demo i { background: var(--warn); }
+@keyframes pulse { to { opacity: .25; } }
+.who { font-size: 13px; color: var(--muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 64px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.card + .card { margin-top: 14px; }
+.stack > * + * { margin-top: 14px; }
+.banner { border-radius: 12px; padding: 10px 14px; font-size: 14px; background: var(--warn-soft); border: 1px solid transparent; }
+.banner.info { background: var(--accent-soft); }
+.banner.danger { background: var(--danger-soft); }
+
+/* Buttons & inputs */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--surface); padding: 7px 14px; border-radius: 10px;
+  cursor: pointer; text-decoration: none; color: var(--text); white-space: nowrap; font-size: 14px;
+}
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn.danger { color: var(--danger); }
+.btn.danger.solid { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn.ghost { border-color: transparent; background: none; }
+.btn.small { padding: 4px 10px; font-size: 13px; border-radius: 8px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn:focus-visible, .tabs a:focus-visible, .seg button:focus-visible, .chips button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], input[type=search], select, textarea {
+  width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: 7px 10px; min-height: 38px;
+}
+textarea { min-height: 70px; resize: vertical; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+input:disabled, select:disabled, textarea:disabled { background: var(--surface-2); color: var(--text); opacity: 1; }
+label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px; }
+.check { display: flex; align-items: flex-start; gap: 8px; font-weight: 400; font-size: 14px; cursor: pointer; }
+.check input { margin-top: 3px; }
+
+/* Segmented choices and chips (tap-friendly on phones) */
+.seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.seg button, .chips button {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 11px; cursor: pointer; font-size: 14px; min-height: 36px;
+}
+.seg button[aria-pressed="true"], .chips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.seg button:disabled, .chips button:disabled { cursor: default; }
+.seg button:disabled:not([aria-pressed="true"]), .chips button:disabled:not([aria-pressed="true"]) { opacity: .55; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chips button { border-radius: 999px; padding: 4px 11px; min-height: 32px; font-size: 13px; }
+
+/* Pills */
+.pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.pill.draft { background: var(--warn-soft); color: var(--warn); }
+.pill.complete { background: var(--accent-soft); color: var(--accent); }
+.pill.verified { background: var(--good-soft); color: var(--good); }
+.pill.role { background: var(--accent-soft); color: var(--accent); text-transform: capitalize; }
+
+/* Auth */
+.auth { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+.auth .card { width: 100%; max-width: 420px; padding: 26px; }
+.auth h1 { font-size: 24px; display: flex; align-items: center; gap: 10px; }
+.auth form > * + * { margin-top: 12px; }
+.segtabs { display: flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 3px; }
+.segtabs button { flex: 1; border: 0; background: none; padding: 7px; border-radius: 8px; cursor: pointer; color: var(--muted); }
+.segtabs button.active { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.err { color: var(--danger); font-size: 14px; min-height: 1em; }
+.divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* Studies */
+.grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.study-card { display: block; text-decoration: none; color: var(--text); transition: border-color .15s; }
+.study-card:hover { border-color: var(--accent); }
+.study-card .code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; color: var(--muted); }
+
+/* Patients table */
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.toolbar input[type=search] { flex: 1 1 220px; width: auto; }
+.toolbar select { width: auto; flex: 0 1 170px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; font-size: 12px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+td.mono { white-space: nowrap; }
+tbody tr.link { cursor: pointer; }
+tbody tr.link:hover td { background: var(--surface-2); }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.compbar { display: inline-block; width: 60px; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; vertical-align: middle; margin-right: 6px; }
+.compbar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.empty { text-align: center; padding: 36px 12px; color: var(--muted); }
+
+/* Record editor */
+.rec-h { position: sticky; top: 57px; z-index: 15; background: var(--bg); padding: 10px 0 12px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.rec-h .row { gap: 8px 12px; }
+.rec-h .back { text-decoration: none; font-size: 14px; }
+.comp { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.comp .compbar { width: 90px; }
+.dirty { font-size: 13px; color: var(--warn); font-weight: 600; }
+.rec-body { display: grid; grid-template-columns: 210px 1fr; gap: 20px; align-items: start; }
+.secnav { position: sticky; top: 140px; display: flex; flex-direction: column; gap: 2px; }
+.secnav a { display: flex; justify-content: space-between; gap: 6px; text-decoration: none; color: var(--muted); padding: 6px 10px; border-radius: 8px; font-size: 14px; }
+.secnav a:hover { background: var(--surface); color: var(--text); }
+.secnav a b { font-size: 11px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 999px; padding: 0 7px; line-height: 18px; height: 18px; }
+.secnav a b.ok { color: var(--good); background: var(--good-soft); }
+.sec { scroll-margin-top: 150px; }
+.sec + .sec { margin-top: 14px; }
+.sec-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.sec-h .count { font-size: 12px; color: var(--muted); }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px 18px; }
+.fld.w-2 { grid-column: span 2; }
+.fld.w-full { grid-column: 1 / -1; }
+.fld.req > label::after { content: " *"; color: var(--danger); }
+.fld .hint { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.fld .msg { font-size: 12px; margin-top: 3px; }
+.fld.miss .msg { color: var(--warn); }
+.fld.err .msg { color: var(--danger); }
+.fld.warn .msg { color: var(--warn); }
+.fld.err input, .fld.err select { border-color: var(--danger); }
+.fld output, .calc { display: block; padding: 7px 10px; background: var(--surface-2); border-radius: 9px; min-height: 38px; font-variant-numeric: tabular-nums; }
+.item { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--bg); }
+.item + .item { margin-top: 10px; }
+.item-h { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.item-h .sum { color: var(--muted); font-size: 13px; flex: 1; min-width: 120px; }
+.items + .btn { margin-top: 12px; }
+.endpoints { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.endpoints div { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
+.endpoints b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+
+/* Dashboard */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.tile .v { font-size: 28px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.tile .l { font-size: 13px; color: var(--muted); }
+.dgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; margin-top: 14px; }
+.dgrid .card + .card { margin-top: 0; }
+.hbar { display: grid; grid-template-columns: minmax(90px, 40%) 1fr auto; gap: 6px 10px; align-items: center; font-size: 13px; }
+.hbar .lab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar .track { height: 14px; }
+.hbar .bar { height: 100%; background: var(--s1); border-radius: 0 4px 4px 0; min-width: 2px; }
+.hbar .val { color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.cols { display: flex; align-items: flex-end; gap: 2px; height: 140px; border-bottom: 1px solid var(--line); }
+.cols div { flex: 1; background: var(--s1); border-radius: 4px 4px 0 0; min-height: 1px; }
+.cols div:hover, .hbar .bar:hover { filter: brightness(1.12); }
+.colx { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 4px; }
+.kmctl { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.kmctl select { width: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; margin: 2px 0 6px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+svg.km { width: 100%; height: auto; display: block; overflow: visible; }
+svg.km text { fill: var(--muted); font-size: 11px; }
+svg.km .gridl { stroke: var(--grid); stroke-width: 1; }
+svg.km .axis { stroke: var(--line); }
+#tip {
+  position: fixed; z-index: 100; pointer-events: none; background: var(--surface); color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 9px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.14);
+  max-width: 260px; opacity: 0; transition: opacity .1s;
+}
+#tip.show { opacity: 1; }
+
+/* Settings */
+.form2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px 16px; }
+.form2 .full { grid-column: 1 / -1; }
+.cf-list .cf { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.cf-list .cf:last-child { border-bottom: 0; }
+
+/* Modal */
+.modal-back { position: fixed; inset: 0; background: rgba(10, 14, 14, .45); z-index: 50; display: grid; place-items: center; padding: 16px; }
+.modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 560px; max-height: calc(100vh - 32px); overflow: auto; padding: 22px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.modal.wide { max-width: 860px; }
+.modal h3 { font-size: 18px; margin-bottom: 12px; }
+.modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+.menu { position: absolute; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.14); padding: 5px; min-width: 200px; z-index: 30; }
+.menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.menu button:hover { background: var(--surface-2); }
+.menu button.danger { color: var(--danger); }
+.rel { position: relative; }
+.audit-e { border-bottom: 1px solid var(--line); padding: 10px 0; font-size: 14px; }
+.audit-e:last-child { border-bottom: 0; }
+.audit-e table { font-size: 12px; margin-top: 6px; }
+.audit-e td { padding: 3px 8px 3px 0; border: 0; vertical-align: top; word-break: break-word; }
+
+/* Toast */
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; opacity: 0; transition: .22s; z-index: 200; max-width: calc(100vw - 32px); pointer-events: none; }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Blank paper CRF */
+.paper .pf { break-inside: avoid; padding: 6px 0; border-bottom: 1px dotted var(--line); font-size: 13px; }
+.paper .pf b { display: inline-block; min-width: 240px; font-weight: 600; }
+.paper .box { display: inline-block; margin-right: 12px; white-space: nowrap; }
+.paper .line { display: inline-block; min-width: 220px; border-bottom: 1px solid var(--muted); height: 1.1em; vertical-align: bottom; }
+.paper .sec { break-inside: auto; }
+
+@media (max-width: 760px) {
+  .rec-body { grid-template-columns: 1fr; }
+  .secnav { position: sticky; top: 118px; z-index: 12; flex-direction: row; overflow-x: auto; background: var(--bg); padding: 6px 0; margin: -6px 0 0; }
+  .secnav a { white-space: nowrap; background: var(--surface); border: 1px solid var(--line); }
+  .rec-h { top: 0; position: relative; }
+  .fld.w-2 { grid-column: auto; }
+  .who { display: none; }
+  .studyname { max-width: 140px; }
+}
+@media print {
+  .top, .secnav, .noprint, #toast, .rec-h .btn, .item-h .btn, .items + .btn { display: none !important; }
+  body { background: #fff; color: #000; }
+  main { max-width: none; padding: 0; }
+  .card { border: 0; padding: 0; }
+  .rec-body { display: block; }
+  .rec-h { position: static; border: 0; }
+  .sec { break-inside: avoid-page; }
+  .fgrid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+<noscript><p style="padding:20px">OncoRegistry needs JavaScript to run.</p></noscript>
+
+<!-- ================================ BOOT ================================ -->
+<div id="bootView" class="auth"><p class="muted">Loading…</p></div>
+
+<!-- ================================ AUTH ================================ -->
+<div id="authView" class="auth hidden">
+  <div class="card">
+    <h1><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7" fill="var(--accent)"/><path d="M10 16h12M16 10v12" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>OncoRegistry</h1>
+    <p class="muted" style="margin:6px 0 18px">Research data collection for oncology studies</p>
+
+    <div id="authMain">
+      <div class="segtabs" id="authSeg" role="tablist">
+        <button type="button" data-mode="login" class="active">Log in</button>
+        <button type="button" data-mode="signup">Create account</button>
+      </div>
+      <form id="authForm" novalidate style="margin-top:14px">
+        <div id="nameWrap" class="hidden"><label for="authName">Full name</label><input id="authName" type="text" autocomplete="name" placeholder="Dr A. Kumar"></div>
+        <div><label for="authEmail">E-mail</label><input id="authEmail" type="email" autocomplete="email" required></div>
+        <div><label for="authPass">Password</label><input id="authPass" type="password" autocomplete="current-password" required></div>
+        <div id="confirmWrap" class="hidden"><label for="authPass2">Confirm password</label><input id="authPass2" type="password" autocomplete="new-password"></div>
+        <label class="check" id="keepWrap"><input type="checkbox" id="authKeep" checked> Keep me signed in on this device <span class="muted">(untick on shared computers)</span></label>
+        <div class="err" id="authError" role="alert"></div>
+        <button class="btn primary" id="authSubmit" type="submit" style="width:100%">Log in</button>
+        <div class="row between small"><a href="#" id="forgotLink">Forgot password?</a></div>
+      </form>
+      <div class="divider" style="margin:18px 0 12px">or</div>
+      <button class="btn" id="demoBtn" type="button" style="width:100%">Try the demo (synthetic patients, this device only)</button>
+      <div id="configWarn" class="banner hidden" style="margin-top:14px">
+        <b>Cloud sync isn’t set up yet.</b> Paste your <code>firebaseConfig</code> into the “FIREBASE CONFIG” section of <code>index.html</code> (see README). Until then only the demo works.
+      </div>
+    </div>
+
+    <div id="verifyBox" class="hidden">
+      <div class="banner info">We sent a verification link to <b id="verifyEmail"></b>. Open it, then come back and press <b>Continue</b>. (Check the spam folder too.)</div>
+      <div class="err" id="verifyErr" style="margin-top:10px"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="verifyDone" type="button">Continue</button>
+        <button class="btn" id="verifyResend" type="button">Resend link</button>
+        <button class="btn ghost" id="verifyLogout" type="button">Log out</button>
+      </div>
+    </div>
+
+    <p class="muted small" style="margin:18px 0 0">For research use under IEC approval. Enter <b>no names, phone numbers, addresses, Aadhaar or other direct identifiers</b> — every patient is known here only by a Study ID.</p>
+  </div>
+</div>
+
+<!-- ================================ APP ================================ -->
+<div id="appView" class="hidden">
+  <header class="top">
+    <a class="brand" href="#/"><svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="26" height="26" rx="7" fill="var(--accent)"/><path d="M10 16h12M16 10v12" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>OncoRegistry</a>
+    <span class="studyname" id="studyName"></span>
+    <nav class="tabs hidden" id="tabs" aria-label="Study sections">
+      <a data-v="patients">Patients</a>
+      <a data-v="dash">Dashboard</a>
+      <a data-v="export">Export</a>
+      <a data-v="settings">Study &amp; team</a>
+    </nav>
+    <div class="topright">
+      <span class="sync" id="syncStatus" title=""><i></i><b>Synced</b></span>
+      <span class="who" id="whoAmI"></span>
+      <button class="btn small" id="logoutBtn" type="button">Log out</button>
+    </div>
+  </header>
+  <main id="main"></main>
+</div>
+
+<div id="tip" role="tooltip"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<datalist id="dl-regimens"></datalist>
+<datalist id="dl-ctcae"></datalist>
+<datalist id="dl-histo"></datalist>
+
+<script>
+'use strict';
+
+/* ##########################################################################
+   ###                     FIREBASE CONFIG — EDIT HERE                    ###
+   ###                                                                    ###
+   ###  Replace the placeholder values below with the firebaseConfig     ###
+   ###  object from: Firebase console → Project settings → Your apps.    ###
+   ###  (These values are safe to publish; the Firestore security        ###
+   ###  rules in firestore.rules are what protect the data.)             ###
+   ###  Use a SEPARATE Firebase project from the Focus app.               ###
+   ########################################################################## */
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID",
+};
+/* ########################  END OF FIREBASE CONFIG  ######################## */
+
+// Firebase JS SDK version loaded from the official CDN (www.gstatic.com) as ES modules.
+const FIREBASE_VERSION = '10.12.2';
+// Developer testing only: open index.html?emulator=1 to use the local Firebase emulators.
+const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
+const DEMO_KEY = 'oncoregistry-demo-v1';
+
+/* ==========================================================================
+   SMALL UTILITIES
+   ========================================================================== */
+const $  = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const pad = (n, w = 2) => String(n).padStart(w, '0');
+const clone = o => JSON.parse(JSON.stringify(o ?? null));
+const isEmpty = v => v == null || v === '' || (Array.isArray(v) && !v.length);
+const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => dayKey(new Date());
+const days = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+const MONTH_DAYS = 30.4375;
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const fmtDate = s => { if (!s) return ''; const [y, m, d] = s.split('-'); return `${d} ${MONTHS[+m - 1]} ${y}`; };
+const fmtTs = t => t ? new Date(t).toLocaleString([], { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+const fmt1 = n => n == null || isNaN(n) ? '–' : (Math.round(n * 10) / 10).toFixed(1);
+const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+const ms = v => v == null ? 0 : typeof v === 'number' ? v : v.toMillis ? v.toMillis() : v.seconds ? v.seconds * 1000 : 0;
+const readJSON = (k, f) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : f; } catch (e) { return f; } };
+const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { console.warn(e); } };
+
+function toast(msg, t = 2800) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => el.classList.remove('show'), t);
+}
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function randomSalt() {
+  const a = new Uint8Array(16);
+  crypto.getRandomValues(a);
+  return [...a].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ==========================================================================
+   CODE LISTS
+   Stored values are short stable codes; exports can use codes or labels.
+   ========================================================================== */
+const YNU = [['Y', 'Yes'], ['N', 'No'], ['U', 'Unknown']];
+const NFC = [['N', 'Never'], ['F', 'Former'], ['C', 'Current']];
+const ECOG = [['0', '0'], ['1', '1'], ['2', '2'], ['3', '3'], ['4', '4']];
+const SEX = [['M', 'Male'], ['F', 'Female'], ['T', 'Transgender'], ['O', 'Other']];
+const STATES = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh',
+  'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab',
+  'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Andaman & Nicobar', 'Chandigarh', 'Dadra & Nagar Haveli and Daman & Diu', 'Delhi', 'Jammu & Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry',
+  'Outside India'];
+const PAYERS = [['PMJAY', 'PM-JAY (Ayushman Bharat)'], ['STATE', 'State scheme (e.g. CMCHIS)'], ['ESI', 'ESI'], ['GOVT', 'CGHS / ECHS / govt employee'],
+  ['PRIV', 'Private insurance'], ['OOP', 'Self-pay (out of pocket)'], ['MIX', 'Mixed'], ['FREE', 'Free / charity'], ['OTH', 'Other']];
+const EDU = [['0', 'No formal education'], ['1', 'Primary'], ['2', 'Middle school'], ['3', 'High school'], ['4', 'Higher secondary / diploma'],
+  ['5', 'Graduate'], ['6', 'Postgraduate / professional']];
+const SES = [['1', 'I – Upper'], ['2', 'II – Upper middle'], ['3', 'III – Lower middle'], ['4', 'IV – Upper lower'], ['5', 'V – Lower']];
+const MARITAL = [['S', 'Single'], ['M', 'Married'], ['W', 'Widowed'], ['D', 'Separated / divorced']];
+const COMORB = [['DM', 'Diabetes'], ['HTN', 'Hypertension'], ['CAD', 'Coronary artery disease'], ['CKD', 'Chronic kidney disease'],
+  ['LUNG', 'COPD / asthma'], ['CLD', 'Chronic liver disease'], ['HBV', 'Hepatitis B'], ['HCV', 'Hepatitis C'], ['HIV', 'HIV'],
+  ['TB', 'Tuberculosis (past/present)'], ['THY', 'Thyroid disorder'], ['PRIOR', 'Prior malignancy'], ['OTH', 'Other']];
+const PSITES = [
+  ['breast', 'Breast'], ['lung', 'Lung'], ['oral', 'Oral cavity'], ['oroph', 'Oropharynx'], ['hypoph', 'Hypopharynx'], ['larynx', 'Larynx'],
+  ['nasoph', 'Nasopharynx'], ['hn_oth', 'Other head & neck'], ['thyroid', 'Thyroid'], ['oeso', 'Oesophagus'], ['stomach', 'Stomach'],
+  ['colon', 'Colon'], ['rectum', 'Rectum'], ['anal', 'Anal canal'], ['pancreas', 'Pancreas'], ['liver', 'Liver (HCC)'],
+  ['gb', 'Gallbladder'], ['chol', 'Cholangiocarcinoma'], ['cervix', 'Cervix'], ['ovary', 'Ovary / fallopian tube'],
+  ['endomet', 'Endometrium / uterus'], ['vulva', 'Vulva / vagina'], ['prostate', 'Prostate'], ['bladder', 'Bladder / urothelial'],
+  ['kidney', 'Kidney'], ['testis', 'Testis / germ cell'], ['penis', 'Penis'], ['cns', 'Brain / CNS'], ['bone', 'Bone sarcoma'],
+  ['sts', 'Soft-tissue sarcoma'], ['melanoma', 'Melanoma'], ['skin', 'Skin, non-melanoma'], ['net', 'Neuroendocrine'],
+  ['cup', 'Unknown primary'], ['hl', 'Hodgkin lymphoma'], ['nhl', 'Non-Hodgkin lymphoma'], ['mm', 'Multiple myeloma'],
+  ['aml', 'AML'], ['all', 'ALL'], ['cml', 'CML'], ['cll', 'CLL'], ['mds', 'MDS / MPN'], ['oth', 'Other']];
+const STAGE_SYS = [['AJCC8', 'AJCC / UICC TNM 8th'], ['FIGO', 'FIGO'], ['LUG', 'Ann Arbor / Lugano'], ['ISS', 'ISS / R-ISS'],
+  ['RISK', 'Risk group (leukaemia)'], ['OTH', 'Other']];
+const STAGES = ['0', 'I', 'IA', 'IB', 'IC', 'II', 'IIA', 'IIB', 'IIC', 'III', 'IIIA', 'IIIB', 'IIIC', 'IV', 'IVA', 'IVB', 'IVC',
+  'Limited', 'Extensive', 'Not applicable', 'Unknown'];
+const MET_SITES = [['LIV', 'Liver'], ['LUN', 'Lung'], ['BON', 'Bone'], ['BRN', 'Brain'], ['PER', 'Peritoneum'], ['PLE', 'Pleura'],
+  ['DLN', 'Distant nodes'], ['ADR', 'Adrenal'], ['SKN', 'Skin / soft tissue'], ['BM', 'Bone marrow'], ['OTH', 'Other']];
+const BIOMARKERS = [['ER', 'ER'], ['PR', 'PR'], ['HER2', 'HER2 (IHC)'], ['HER2ISH', 'HER2 (ISH)'], ['KI67', 'Ki-67'], ['EGFR', 'EGFR'],
+  ['ALK', 'ALK'], ['ROS1', 'ROS1'], ['KRAS', 'KRAS'], ['NRAS', 'NRAS'], ['BRAF', 'BRAF'], ['MET', 'MET'], ['RET', 'RET'], ['NTRK', 'NTRK'],
+  ['PDL1TPS', 'PD-L1 (TPS)'], ['PDL1CPS', 'PD-L1 (CPS)'], ['MMR', 'MSI / MMR'], ['BRCA1', 'BRCA1'], ['BRCA2', 'BRCA2'], ['HRD', 'HRD'],
+  ['HPV', 'HPV / p16'], ['EBV', 'EBV'], ['CD20', 'CD20'], ['BCRABL', 'BCR-ABL'], ['FLT3', 'FLT3'], ['NPM1', 'NPM1'], ['CYTO', 'Cytogenetics'],
+  ['PSA', 'PSA'], ['CA125', 'CA-125'], ['CEA', 'CEA'], ['AFP', 'AFP'], ['CA199', 'CA 19-9'], ['TMB', 'TMB'], ['OTH', 'Other']];
+const METHODS = [['IHC', 'IHC'], ['FISH', 'FISH / ISH'], ['PCR', 'PCR'], ['NGS', 'NGS (tissue)'], ['CTDNA', 'NGS (liquid biopsy)'],
+  ['FLOW', 'Flow cytometry'], ['KARYO', 'Karyotype'], ['SERUM', 'Serum assay'], ['OTH', 'Other']];
+const RESULT = [['POS', 'Positive / detected'], ['NEG', 'Negative / not detected'], ['EQ', 'Equivocal / low'], ['NE', 'Not evaluable'], ['VAL', 'Value only']];
+const INTENT = [['CUR', 'Curative / definitive'], ['NEO', 'Neoadjuvant'], ['ADJ', 'Adjuvant'], ['PAL', 'Palliative'],
+  ['MAINT', 'Maintenance'], ['CONS', 'Consolidation']];
+const MODALITY = [['SURG', 'Surgery'], ['CT', 'Chemotherapy'], ['TT', 'Targeted therapy'], ['IO', 'Immunotherapy'], ['HT', 'Hormonal therapy'],
+  ['CIO', 'Chemo-immunotherapy'], ['CTT', 'Chemo + targeted'], ['RT', 'Radiotherapy'], ['CRT', 'Concurrent chemoradiation'],
+  ['HSCT', 'Stem-cell transplant'], ['BSC', 'Best supportive care only'], ['OTH', 'Other']];
+const SYSTEMIC = ['CT', 'TT', 'IO', 'HT', 'CIO', 'CTT', 'CRT'];
+const RT_TECH = [['2D', '2D / Cobalt'], ['3D', '3D-CRT'], ['IMRT', 'IMRT / VMAT'], ['SBRT', 'SBRT / SRS'], ['BRACHY', 'Brachytherapy'], ['OTH', 'Other']];
+const RESPONSE = [['CR', 'CR'], ['PR', 'PR'], ['SD', 'SD'], ['PD', 'PD'], ['NE', 'Not evaluable'], ['NA', 'Not assessed']];
+const RESP_CRIT = [['RECIST', 'RECIST 1.1'], ['IRECIST', 'iRECIST'], ['MRECIST', 'mRECIST'], ['LUG', 'Lugano'], ['IMWG', 'IMWG'],
+  ['PATH', 'Pathological'], ['CLIN', 'Clinical'], ['OTH', 'Other']];
+const STOP = [['DONE', 'Completed as planned'], ['ONG', 'Ongoing'], ['PD', 'Progression'], ['TOX', 'Toxicity'], ['FIN', 'Financial reasons'],
+  ['PT', 'Patient / family choice'], ['DEATH', 'Death'], ['LFU', 'Lost to follow-up'], ['OTH', 'Other']];
+const ATTR = [['UNREL', 'Unrelated'], ['UNLIK', 'Unlikely'], ['POSS', 'Possible'], ['PROB', 'Probable'], ['DEF', 'Definite']];
+const TOX_ACTION = [['NONE', 'None'], ['DELAY', 'Dose delayed'], ['RED', 'Dose reduced'], ['STOP', 'Drug discontinued']];
+const TOX_OUT = [['RES', 'Resolved'], ['SEQ', 'Resolved with sequelae'], ['ONG', 'Ongoing'], ['FATAL', 'Fatal']];
+const FU_STATUS = [['NED', 'Alive, no evidence of disease'], ['AWD', 'Alive with disease'], ['AUNK', 'Alive, status unknown']];
+const FU_DISEASE = [['CR', 'Complete response'], ['PR', 'Partial response'], ['SD', 'Stable disease'], ['PD', 'Progression'],
+  ['REC', 'Recurrence'], ['NA', 'Not assessed']];
+const VITAL = [['A', 'Alive'], ['D', 'Dead'], ['L', 'Lost to follow-up']];
+const COD = [['CA', 'Cancer'], ['TX', 'Treatment-related'], ['OTH', 'Other cause'], ['UNK', 'Unknown']];
+const ABANDON = [['FIN', 'Financial'], ['DIST', 'Distance / travel'], ['ALT', 'Alternative medicine'], ['FAM', 'Family decision'],
+  ['FEAR', 'Fear of side-effects'], ['OTH', 'Other']];
+
+const REGIMENS = ['AC → Paclitaxel', 'EC → Docetaxel', 'TC (Docetaxel-Cyclophosphamide)', 'TCH / TCHP', 'Paclitaxel weekly', 'Carboplatin-Paclitaxel',
+  'Cisplatin weekly (with RT)', 'Gemcitabine-Cisplatin', 'Gemcitabine-Carboplatin', 'FOLFOX', 'CAPOX', 'FOLFIRI', 'mFOLFIRINOX',
+  'Gemcitabine-nab-Paclitaxel', 'Capecitabine', 'Pemetrexed-Carboplatin', 'Pemetrexed maintenance', 'Docetaxel', 'DCF / TPF', 'FLOT',
+  'Etoposide-Cisplatin', 'Etoposide-Carboplatin', 'Tamoxifen', 'Letrozole', 'Anastrozole', 'Exemestane', 'Trastuzumab (biosimilar)',
+  'Gefitinib', 'Erlotinib', 'Afatinib', 'Osimertinib', 'Alectinib', 'Crizotinib', 'Imatinib', 'Dasatinib', 'Nilotinib', 'Sorafenib',
+  'Lenvatinib', 'Bevacizumab (biosimilar)', 'Rituximab (biosimilar)', 'R-CHOP', 'R-CVP', 'ABVD', 'BEACOPP', 'VRd', 'VCd', 'Lenalidomide maintenance',
+  'Thalidomide-Dexamethasone', 'Azacitidine', '7+3 (Cytarabine-Daunorubicin)', 'BFM-based ALL protocol', 'Pembrolizumab', 'Nivolumab',
+  'Atezolizumab', 'Durvalumab', 'Metronomic (Methotrexate-Celecoxib)', 'Abiraterone', 'Enzalutamide', 'ADT (LHRH agonist)', 'Temozolomide',
+  'Radical neck dissection', 'Modified radical mastectomy', 'Breast-conserving surgery', 'Whipple', 'Radical hysterectomy', 'Anterior resection'];
+const CTCAE = ['Anaemia', 'Neutrophil count decreased', 'Febrile neutropenia', 'Platelet count decreased', 'Nausea', 'Vomiting', 'Diarrhoea',
+  'Oral mucositis', 'Fatigue', 'Anorexia', 'Peripheral sensory neuropathy', 'Alopecia', 'Palmar-plantar erythrodysaesthesia', 'Rash acneiform',
+  'ALT increased', 'AST increased', 'Blood bilirubin increased', 'Creatinine increased', 'Hypothyroidism', 'Pneumonitis', 'Colitis',
+  'Infusion-related reaction', 'Hypertension', 'Proteinuria', 'Thromboembolic event', 'Radiation dermatitis', 'Dysphagia', 'Sepsis'];
+const HISTO = ['Adenocarcinoma', 'Squamous cell carcinoma', 'Invasive ductal carcinoma (NST)', 'Invasive lobular carcinoma', 'Small cell carcinoma',
+  'Neuroendocrine tumour', 'Diffuse large B-cell lymphoma', 'Follicular lymphoma', 'Hodgkin lymphoma, classical', 'Plasma cell myeloma',
+  'Hepatocellular carcinoma', 'Urothelial carcinoma', 'Clear cell renal cell carcinoma', 'High-grade serous carcinoma', 'Endometrioid carcinoma',
+  'Germ cell tumour', 'Glioblastoma', 'Osteosarcoma', 'Ewing sarcoma', 'Gastrointestinal stromal tumour', 'Melanoma', 'Papillary carcinoma'];
+
+/* ==========================================================================
+   CASE RECORD FORM (CRF) SCHEMA
+   Patient-level sections store into doc.d; repeating sections (biomarkers,
+   treatments, toxicities, follow-up) store arrays into doc.rep[key].
+   show(d, item) hides a field when it doesn't apply (its value is dropped on save).
+   ========================================================================== */
+const F = (id, label, type, o = {}) => ({ id, label, type, ...o });
+const isSys = it => SYSTEMIC.includes(it.mod);
+
+const SECTIONS = [
+  { id: 'reg', title: 'Registration & consent', fields: [
+    F('site', 'Centre / site', 'select', { opts: 'sites', req: true }),
+    F('reg_date', 'Date of registration', 'date', { req: true }),
+    F('enrol', 'Data collection', 'seg', { opts: [['P', 'Prospective'], ['R', 'Retrospective']], req: true }),
+    F('consent', 'Informed consent', 'seg', { opts: [['Y', 'Obtained'], ['W', 'Waived by IEC'], ['N', 'Not obtained']], req: true }),
+    F('consent_date', 'Date of consent', 'date', { show: d => d.consent === 'Y' }),
+    F('mrn', 'Hospital ID (MRN) — lookup key', 'mrn', { help: 'Stored only as a one-way code so the record can be found again. The number itself is never saved.' }),
+  ] },
+  { id: 'demo', title: 'Demographics & social', fields: [
+    F('initials', 'Initials', 'text', { max: 4, help: 'Optional. Never the full name.' }),
+    F('sex', 'Sex', 'seg', { opts: SEX, req: true }),
+    F('age', 'Age at diagnosis', 'number', { unit: 'years', min: 0, max: 110, req: true }),
+    F('marital', 'Marital status', 'select', { opts: MARITAL }),
+    F('state', 'State of residence', 'select', { opts: STATES }),
+    F('district', 'District', 'text'),
+    F('area', 'Area', 'seg', { opts: [['U', 'Urban'], ['S', 'Semi-urban'], ['R', 'Rural']] }),
+    F('edu', 'Education (patient)', 'select', { opts: EDU }),
+    F('occ', 'Occupation', 'text'),
+    F('ses', 'Socio-economic class (Modified Kuppuswamy)', 'select', { opts: SES }),
+    F('income', 'Monthly family income', 'number', { unit: '₹', min: 0, max: 10000000 }),
+    F('payer', 'Primary payer', 'select', { opts: PAYERS }),
+    F('distance', 'Distance from home to centre', 'number', { unit: 'km', min: 0, max: 5000 }),
+  ] },
+  { id: 'risk', title: 'Risk factors & comorbidity', optional: true, fields: [
+    F('smoke', 'Smoking', 'seg', { opts: NFC }),
+    F('packyrs', 'Pack-years', 'number', { min: 0, max: 300, show: d => d.smoke === 'F' || d.smoke === 'C' }),
+    F('smokeless', 'Smokeless tobacco (gutka, khaini…)', 'seg', { opts: NFC }),
+    F('betel', 'Betel quid / areca nut', 'seg', { opts: NFC }),
+    F('alcohol', 'Alcohol', 'seg', { opts: NFC }),
+    F('famhx', 'Family history of cancer', 'seg', { opts: YNU }),
+    F('famhx_det', 'Family history details', 'text', { show: d => d.famhx === 'Y', help: 'Relation and cancer, e.g. mother – breast' }),
+    F('comorb', 'Comorbidities', 'multi', { opts: COMORB, w: 'full' }),
+    F('cci', 'Charlson comorbidity index', 'number', { min: 0, max: 40 }),
+    F('height', 'Height', 'number', { unit: 'cm', min: 40, max: 230 }),
+    F('weight', 'Weight', 'number', { unit: 'kg', min: 5, max: 250 }),
+    F('bmi', 'BMI', 'calc', { unit: 'kg/m²', calc: d => d.height && d.weight ? Math.round(d.weight / (d.height / 100) ** 2 * 10) / 10 : null }),
+  ] },
+  { id: 'dx', title: 'Diagnosis', fields: [
+    F('onset', 'Date of symptom onset', 'date', { help: 'Approximate is fine (use the 15th if only the month is known)' }),
+    F('first_visit', 'First visit at this centre', 'date'),
+    F('dx_date', 'Date of diagnosis', 'date', { req: true, help: 'Date of first pathological confirmation (clinical date if no histology)' }),
+    F('dx_interval', 'Symptom → diagnosis interval', 'calc', { unit: 'days', calc: d => d.onset && d.dx_date ? days(d.onset, d.dx_date) : null }),
+    F('prior_tx', 'Treated elsewhere before referral', 'seg', { opts: YNU }),
+    F('psite', 'Primary site', 'select', { opts: PSITES, req: true }),
+    F('psite_oth', 'Primary site (other)', 'text', { show: d => d.psite === 'oth', req: true }),
+    F('subsite', 'Sub-site / details', 'text', { help: 'e.g. buccal mucosa, upper outer quadrant' }),
+    F('icd10', 'ICD-10 code', 'text', { max: 8, placeholder: 'C50.4' }),
+    F('histo', 'Histology', 'text', { list: 'histo', req: true }),
+    F('icdo', 'ICD-O-3 morphology', 'text', { max: 8, placeholder: '8500/3' }),
+    F('grade', 'Grade', 'seg', { opts: [['1', 'G1'], ['2', 'G2'], ['3', 'G3'], ['4', 'G4'], ['X', 'GX']] }),
+    F('lat', 'Laterality', 'seg', { opts: [['L', 'Left'], ['R', 'Right'], ['B', 'Bilateral'], ['NA', 'N/A']] }),
+    F('basis', 'Basis of diagnosis', 'select', { opts: [['H', 'Histology of primary'], ['HM', 'Histology of metastasis'], ['C', 'Cytology'],
+      ['F', 'Flow cytometry / haematology'], ['M', 'Tumour markers'], ['CL', 'Clinical / imaging only']] }),
+    F('ecog', 'ECOG PS at diagnosis', 'seg', { opts: ECOG, req: true }),
+  ] },
+  { id: 'stage', title: 'Staging', optional: true, fields: [
+    F('stage_sys', 'Staging system', 'select', { opts: STAGE_SYS }),
+    F('ct', 'cT', 'text', { max: 6, show: d => d.stage_sys === 'AJCC8' }),
+    F('cn', 'cN', 'text', { max: 6, show: d => d.stage_sys === 'AJCC8' }),
+    F('cm', 'cM', 'text', { max: 6, show: d => d.stage_sys === 'AJCC8' }),
+    F('pt', 'pT (if resected)', 'text', { max: 6, show: d => d.stage_sys === 'AJCC8' }),
+    F('pn', 'pN', 'text', { max: 6, show: d => d.stage_sys === 'AJCC8' }),
+    F('stage', 'Stage group', 'select', { opts: STAGES, req: true }),
+    F('risk_score', 'Prognostic index / risk group', 'text', { help: 'e.g. IPI 3, R-ISS II, ELN adverse, Sokal high' }),
+    F('mets_dx', 'Distant metastasis at diagnosis', 'seg', { opts: YNU }),
+    F('met_sites', 'Metastatic sites', 'multi', { opts: MET_SITES, w: 'full', show: d => d.mets_dx === 'Y' }),
+    F('met_setting', 'Metastatic setting', 'seg', { opts: [['DN', 'De novo'], ['REC', 'Recurrent']], show: d => d.mets_dx === 'Y' }),
+  ] },
+  { id: 'bio', title: 'Biomarkers & molecular', optional: true, repeat: 'bio', itemLabel: 'Biomarker', sortBy: 'date',
+    sum: it => [lab(BIOMARKERS, it.marker), lab(RESULT, it.result), it.value].filter(Boolean).join(' · '),
+    fields: [
+      F('marker', 'Marker', 'select', { opts: BIOMARKERS, req: true }),
+      F('marker_oth', 'Marker (other)', 'text', { show: (d, it) => it.marker === 'OTH' }),
+      F('method', 'Method', 'select', { opts: METHODS }),
+      F('result', 'Result', 'select', { opts: RESULT, req: true }),
+      F('value', 'Value / variant', 'text', { placeholder: 'e.g. 3+, 40%, exon 19 del, TPS 60%' }),
+      F('date', 'Report date', 'date'),
+    ] },
+  { id: 'tx', title: 'Treatment', optional: true, repeat: 'tx', itemLabel: 'Treatment', sortBy: 'start',
+    help: 'One entry per treatment (surgery, each line of systemic therapy, radiotherapy course).',
+    sum: it => [lab(INTENT, it.intent), it.line ? 'line ' + it.line : '', it.regimen || lab(MODALITY, it.mod), fmtDate(it.start)].filter(Boolean).join(' · '),
+    fields: [
+      F('intent', 'Intent', 'select', { opts: INTENT, req: true }),
+      F('line', 'Palliative line number', 'number', { min: 1, max: 15, show: (d, it) => it.intent === 'PAL' || it.intent === 'MAINT' }),
+      F('mod', 'Modality', 'select', { opts: MODALITY, req: true }),
+      F('regimen', 'Regimen / procedure', 'text', { list: 'regimens', w: 2 }),
+      F('start', 'Start date', 'date', { req: true }),
+      F('end', 'End date', 'date'),
+      F('cyc_plan', 'Cycles planned', 'number', { min: 0, max: 200, show: (d, it) => isSys(it) }),
+      F('cyc_given', 'Cycles received', 'number', { min: 0, max: 200, show: (d, it) => isSys(it) }),
+      F('dose_red', 'Dose reduction', 'seg', { opts: YNU, show: (d, it) => isSys(it) }),
+      F('delay', 'Delay > 7 days', 'seg', { opts: YNU, show: (d, it) => isSys(it) }),
+      F('rt_dose', 'RT dose', 'number', { unit: 'Gy', min: 0, max: 150, show: (d, it) => it.mod === 'RT' || it.mod === 'CRT' }),
+      F('rt_fx', 'Fractions', 'number', { min: 0, max: 60, show: (d, it) => it.mod === 'RT' || it.mod === 'CRT' }),
+      F('rt_tech', 'RT technique', 'select', { opts: RT_TECH, show: (d, it) => it.mod === 'RT' || it.mod === 'CRT' }),
+      F('margin', 'Resection margin', 'seg', { opts: [['R0', 'R0'], ['R1', 'R1'], ['R2', 'R2'], ['RX', 'RX']], show: (d, it) => it.mod === 'SURG' }),
+      F('ln_exam', 'Nodes examined', 'number', { min: 0, max: 200, show: (d, it) => it.mod === 'SURG' }),
+      F('ln_pos', 'Nodes positive', 'number', { min: 0, max: 200, show: (d, it) => it.mod === 'SURG' }),
+      F('funding', 'Funding for this treatment', 'select', { opts: PAYERS }),
+      F('resp', 'Best response', 'select', { opts: RESPONSE }),
+      F('resp_crit', 'Response criteria', 'select', { opts: RESP_CRIT, show: (d, it) => it.resp && it.resp !== 'NA' }),
+      F('resp_date', 'Date of response assessment', 'date', { show: (d, it) => it.resp && it.resp !== 'NA' }),
+      F('pd_date', 'Date of progression on/after this treatment', 'date'),
+      F('stop', 'Reason stopped', 'select', { opts: STOP }),
+      F('notes', 'Notes', 'textarea', { w: 'full' }),
+    ] },
+  { id: 'tox', title: 'Toxicity (CTCAE)', optional: true, repeat: 'tox', itemLabel: 'Adverse event', sortBy: 'date',
+    help: 'Record grade ≥ 3 events and any event that changed treatment (or as your protocol specifies).',
+    sum: it => [it.term, it.grade ? 'G' + it.grade : '', fmtDate(it.date)].filter(Boolean).join(' · '),
+    fields: [
+      F('term', 'CTCAE term', 'text', { list: 'ctcae', req: true, w: 2 }),
+      F('grade', 'Grade', 'seg', { opts: [['1', '1'], ['2', '2'], ['3', '3'], ['4', '4'], ['5', '5']], req: true }),
+      F('date', 'Onset date', 'date'),
+      F('regimen', 'Suspected treatment', 'text', { list: 'regimens' }),
+      F('attr', 'Attribution', 'select', { opts: ATTR }),
+      F('action', 'Action taken', 'select', { opts: TOX_ACTION }),
+      F('hosp', 'Hospitalised', 'seg', { opts: YNU }),
+      F('outcome', 'Outcome', 'select', { opts: TOX_OUT }),
+    ] },
+  { id: 'fu', title: 'Follow-up visits', optional: true, repeat: 'fu', itemLabel: 'Visit', sortBy: 'date',
+    sum: it => [fmtDate(it.date), lab(FU_STATUS, it.status), lab(FU_DISEASE, it.disease)].filter(Boolean).join(' · '),
+    fields: [
+      F('date', 'Visit date', 'date', { req: true }),
+      F('status', 'Status', 'select', { opts: FU_STATUS }),
+      F('disease', 'Disease status', 'select', { opts: FU_DISEASE }),
+      F('ecog', 'ECOG PS', 'seg', { opts: ECOG }),
+      F('notes', 'Notes', 'textarea', { w: 'full' }),
+    ] },
+  { id: 'out', title: 'Outcome', fields: [
+    F('recur', 'Progression / recurrence', 'seg', { opts: YNU }),
+    F('recur_date', 'Date of first progression / recurrence', 'date', { show: d => d.recur === 'Y', req: true }),
+    F('recur_site', 'Pattern', 'multi', { opts: [['L', 'Local'], ['R', 'Regional nodes'], ['D', 'Distant']], show: d => d.recur === 'Y' }),
+    F('vital', 'Vital status', 'seg', { opts: VITAL, req: true }),
+    F('last_contact', 'Date of last contact', 'date', { req: true, help: 'Date last known alive (or date of death). Follow-up visits are also used for survival.' }),
+    F('death_date', 'Date of death', 'date', { show: d => d.vital === 'D', req: true }),
+    F('cod', 'Cause of death', 'select', { opts: COD, show: d => d.vital === 'D' }),
+    F('abandon', 'Treatment abandoned / refused', 'seg', { opts: YNU }),
+    F('abandon_why', 'Reasons', 'multi', { opts: ABANDON, show: d => d.abandon === 'Y', w: 'full' }),
+    F('endpoints', 'Survival (calculated)', 'summary', { w: 'full' }),
+  ] },
+];
+const SEC_BY_ID = Object.fromEntries(SECTIONS.map(s => [s.id, s]));
+const CORE_FIELD_IDS = new Set(SECTIONS.flatMap(s => s.repeat ? [] : s.fields.map(f => f.id)));
+
+const normOpts = o => (o || []).map(x => Array.isArray(x) ? x : [x, x]);
+function lab(opts, v) { const o = normOpts(opts).find(x => x[0] === v); return o ? o[1] : (v || ''); }
+function optsFor(f) { return f.opts === 'sites' ? normOpts((APP.study && APP.study.sites) || []) : normOpts(f.opts); }
+
+/** Custom (study-specific) field definition → schema field. */
+function customToField(c) {
+  const t = c.type === 'yn' ? 'seg' : c.type;
+  return F(c.id, c.label, t, {
+    opts: c.type === 'yn' ? YNU : (c.opts || []).map(o => [o, o]),
+    req: !!c.req, help: c.help || '', unit: c.unit || '', custom: true,
+    min: c.min === '' || c.min == null ? undefined : +c.min, max: c.max === '' || c.max == null ? undefined : +c.max,
+  });
+}
+
+/** The sections this study uses, with its custom fields merged in. Cached per study object. */
+const secCache = new WeakMap();
+function activeSections(study) {
+  if (!study) return SECTIONS;
+  if (secCache.has(study)) return secCache.get(study);
+  const en = study.sections || {};
+  const custom = study.custom || [];
+  // A custom field lives in its chosen section if that section is shown; otherwise in its own section.
+  const placed = id => { const s = SEC_BY_ID[id]; return !!s && !s.repeat && !(s.optional && en[id] === false); };
+  const extra = custom.filter(c => !placed(c.section));
+  const out = [];
+  for (const s of SECTIONS) {
+    if (s.optional && en[s.id] === false) continue;
+    let fields = s.fields;
+    if (s.id === 'reg' && !study.mrnLookup) fields = fields.filter(f => f.type !== 'mrn');
+    if (!s.repeat) fields = fields.concat(custom.filter(c => c.section === s.id && placed(s.id)).map(customToField));
+    if (s.id === 'out' && extra.length) out.push({ id: 'custom', title: 'Study-specific fields', fields: extra.map(customToField) });
+    out.push({ ...s, fields });
+  }
+  secCache.set(study, out);
+  return out;
+}
+const visible = (f, d, it) => !f.show || !!f.show(d, it || d);
+
+/* ==========================================================================
+   VALIDATION, COMPLETENESS, SURVIVAL ENDPOINTS
+   ========================================================================== */
+function validate(doc, study) {
+  const d = doc.d || {}, rep = doc.rep || {};
+  const issues = [];
+  let reqTotal = 0, reqDone = 0;
+  const add = (key, level, msg, sec) => issues.push({ key, level, msg, sec });
+  const now = today();
+  const check = (f, v, key, sec, vis) => {
+    if (!vis || f.type === 'calc' || f.type === 'summary' || f.type === 'mrn') return;
+    if (f.req) { reqTotal++; if (isEmpty(v)) add(key, 'miss', 'Required', sec); else reqDone++; }
+    if (isEmpty(v)) return;
+    if (f.type === 'number') {
+      if (typeof v !== 'number' || isNaN(v)) add(key, 'err', 'Not a number', sec);
+      else if (f.min != null && v < f.min) add(key, 'err', `Must be ≥ ${f.min}`, sec);
+      else if (f.max != null && v > f.max) add(key, 'err', `Must be ≤ ${f.max}`, sec);
+    }
+    if (f.type === 'date' && v > now) add(key, 'err', 'Date is in the future', sec);
+  };
+  for (const sec of activeSections(study)) {
+    if (sec.repeat) (rep[sec.repeat] || []).forEach((it, i) => sec.fields.forEach(f => check(f, it[f.id], `${sec.repeat}.${i}.${f.id}`, sec.id, visible(f, d, it))));
+    else sec.fields.forEach(f => check(f, d[f.id], f.id, sec.id, visible(f, d)));
+  }
+  // Cross-field date logic
+  const dx = d.dx_date;
+  if (dx && d.onset && d.onset > dx) add('onset', 'warn', 'After the date of diagnosis', 'dx');
+  if (dx && d.first_visit && d.first_visit < (d.onset || '')) add('first_visit', 'warn', 'Before symptom onset', 'dx');
+  if (dx && d.death_date && d.death_date < dx) add('death_date', 'err', 'Before the date of diagnosis', 'out');
+  if (dx && d.last_contact && d.last_contact < dx) add('last_contact', 'err', 'Before the date of diagnosis', 'out');
+  if (dx && d.recur_date && d.recur_date < dx) add('recur_date', 'err', 'Before the date of diagnosis', 'out');
+  if (d.vital === 'D' && d.death_date && d.last_contact && d.last_contact > d.death_date) add('last_contact', 'err', 'After the date of death', 'out');
+  if (d.vital === 'D' && d.death_date && d.recur_date && d.recur_date > d.death_date) add('recur_date', 'err', 'After the date of death', 'out');
+  if (d.consent === 'N') add('consent', 'warn', 'Check that your IEC permits inclusion without consent', 'reg');
+  if (d.consent_date && d.reg_date && d.consent_date > d.reg_date) add('consent_date', 'warn', 'After the date of registration', 'reg');
+  (rep.tx || []).forEach((t, i) => {
+    if (t.start && t.end && t.end < t.start) add(`tx.${i}.end`, 'err', 'Before the start date', 'tx');
+    if (t.start && t.pd_date && t.pd_date < t.start) add(`tx.${i}.pd_date`, 'err', 'Before the start date', 'tx');
+    if (dx && t.start && days(t.start, dx) > 90) add(`tx.${i}.start`, 'warn', 'More than 90 days before diagnosis', 'tx');
+    if (d.vital === 'D' && d.death_date && t.start && t.start > d.death_date) add(`tx.${i}.start`, 'err', 'After the date of death', 'tx');
+    if (t.cyc_plan != null && t.cyc_given != null && t.cyc_given > t.cyc_plan + 4) add(`tx.${i}.cyc_given`, 'warn', 'Much more than planned', 'tx');
+  });
+  (rep.fu || []).forEach((v, i) => {
+    if (dx && v.date && v.date < dx) add(`fu.${i}.date`, 'warn', 'Before the date of diagnosis', 'fu');
+    if (d.vital === 'D' && d.death_date && v.date && v.date > d.death_date) add(`fu.${i}.date`, 'err', 'After the date of death', 'fu');
+  });
+  (rep.tx || []).forEach((t, i) => { if (t.mod === 'SURG' && t.ln_pos != null && t.ln_exam != null && t.ln_pos > t.ln_exam) add(`tx.${i}.ln_pos`, 'err', 'More than nodes examined', 'tx'); });
+  return { issues, comp: reqTotal ? Math.round(100 * reqDone / reqTotal) : 100, reqTotal, reqDone };
+}
+
+/** Last date the patient was known alive (or died), from every dated entry in the record. */
+function lastContact(doc) {
+  const d = doc.d || {}, rep = doc.rep || {};
+  // Registration date is excluded: a retrospective registration is not a patient contact.
+  const dates = [d.last_contact, d.death_date, d.recur_date, d.dx_date];
+  for (const t of rep.tx || []) dates.push(t.start, t.end, t.resp_date, t.pd_date);
+  for (const v of rep.fu || []) dates.push(v.date);
+  for (const x of rep.tox || []) dates.push(x.date);
+  const now = today();
+  return dates.filter(s => s && s <= now).sort().pop() || '';
+}
+
+/**
+ * Overall survival and progression-free survival from the date of diagnosis, in months.
+ * OS event = death; PFS event = first progression/recurrence (outcome or any treatment line) or death.
+ * Censored at the last contact date.
+ */
+function endpoints(doc) {
+  const d = doc.d || {};
+  if (!d.dx_date) return null;
+  const last = lastContact(doc);
+  const dead = d.vital === 'D';
+  const osEnd = dead ? (d.death_date || last) : last;
+  const prog = [d.recur === 'Y' ? d.recur_date : '', ...(doc.rep && doc.rep.tx || []).map(t => t.pd_date)].filter(Boolean).sort()[0] || '';
+  let pfsEnd, pfsEv;
+  if (prog) { pfsEnd = prog; pfsEv = 1; } else if (dead) { pfsEnd = osEnd; pfsEv = 1; } else { pfsEnd = last; pfsEv = 0; }
+  const m = end => end && end >= d.dx_date ? days(d.dx_date, end) / MONTH_DAYS : null;
+  return { last, os: m(osEnd), osEv: dead ? 1 : 0, pfs: m(pfsEnd), pfsEv, prog };
+}
+
+/* ==========================================================================
+   STORE — one interface, two backends:
+     Cloud: Firebase Auth + Firestore (offline cache, live updates)
+     Demo:  localStorage on this device only, seeded with synthetic patients
+   ========================================================================== */
+const FB = {};
+let fbLoadError = '';
+let pendingWrites = 0, syncError = false;
+const firebaseConfigured = () => !/PASTE_/.test(firebaseConfig.apiKey + firebaseConfig.projectId);
+
+async function loadFirebase() {
+  const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/`;
+  const [appM, authM, fsM] = await Promise.all([
+    import(base + 'firebase-app.js'),
+    import(base + 'firebase-auth.js'),
+    import(base + 'firebase-firestore.js'),
+  ]);
+  Object.assign(FB, appM, authM, fsM);
+  FB.app = FB.initializeApp(firebaseConfig);
+  FB.auth = FB.getAuth(FB.app);
+  if (USE_EMULATOR) FB.connectAuthEmulator(FB.auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  try {
+    // Offline persistence: records open and can be edited without a connection;
+    // edits are queued and uploaded automatically when back online.
+    FB.db = FB.initializeFirestore(FB.app, { localCache: FB.persistentLocalCache({ tabManager: FB.persistentMultipleTabManager() }) });
+  } catch (e) {
+    console.warn('Offline persistence unavailable, using memory cache', e);
+    FB.db = FB.getFirestore(FB.app);
+  }
+  if (USE_EMULATOR) FB.connectFirestoreEmulator(FB.db, '127.0.0.1', 8080);
+}
+
+/** Firestore Timestamps → milliseconds, so every object in the app is plain JSON. */
+function plain(snap) {
+  const o = snap.data({ serverTimestamps: 'estimate' });
+  for (const k of ['createdAt', 'updatedAt', 'verifiedAt', 'at']) if (o[k] != null) o[k] = ms(o[k]);
+  return { id: snap.id, ...o };
+}
+
+function trackWrite(promise, onFail) {
+  pendingWrites++;
+  renderSync();
+  return promise.then(r => { syncError = false; return r; }, err => { onSyncError(err); if (onFail) onFail(err); throw err; })
+    .finally(() => { pendingWrites--; renderSync(); });
+}
+function onSyncError(err) {
+  console.error('Sync error', err);
+  syncError = true;
+  renderSync();
+  if (err && err.code === 'permission-denied') toast('The server refused this change (no permission, or the record changed meanwhile).', 5000);
+  else toast('Sync problem: ' + (err && err.message ? err.message : err), 4500);
+}
+function renderSync() {
+  const el = $('#syncStatus');
+  if (!el || !USER) return;
+  let cls = '', txt = 'Synced', title = 'All changes saved to the cloud';
+  if (USER.demo) { cls = 'demo'; txt = 'Demo · this device'; title = 'Demo mode — synthetic data stored only in this browser'; }
+  else if (!navigator.onLine) { cls = 'offline'; txt = 'Offline'; title = 'Changes are kept on this device and sync when you are back online'; }
+  else if (syncError) { cls = 'error'; txt = 'Sync error'; title = 'A change could not be saved — see the message'; }
+  else if (pendingWrites > 0) { cls = 'syncing'; txt = 'Syncing'; title = 'Saving to the cloud…'; }
+  el.className = 'sync ' + cls;
+  el.querySelector('b').textContent = txt;
+  el.title = title;
+}
+window.addEventListener('online', () => { syncError = false; renderSync(); });
+window.addEventListener('offline', renderSync);
+
+const Cloud = {
+  sref: sid => FB.doc(FB.db, 'studies', sid),
+  pref: (sid, pid) => FB.doc(FB.db, 'studies', sid, 'patients', pid),
+  aref: sid => FB.doc(FB.collection(FB.db, 'studies', sid, 'audit')),
+  watchStudies(cb) {
+    const q = FB.query(FB.collection(FB.db, 'studies'), FB.where('memberUids', 'array-contains', USER.uid));
+    return FB.onSnapshot(q, qs => cb(qs.docs.map(plain)), onSyncError);
+  },
+  watchStudy(sid, cb) {
+    return FB.onSnapshot(this.sref(sid), s => cb(s.exists() ? plain(s) : null), err => { console.warn(err); cb(null); });
+  },
+  watchPatients(sid, cb) {
+    return FB.onSnapshot(FB.collection(FB.db, 'studies', sid, 'patients'), qs => cb(qs.docs.map(plain)), onSyncError);
+  },
+  watchMyInvites(cb) {
+    const q = FB.query(FB.collection(FB.db, 'invites'), FB.where('email', '==', USER.email));
+    return FB.onSnapshot(q, qs => cb(qs.docs.map(plain)), err => { console.warn(err); cb([]); });
+  },
+  watchStudyInvites(sid, cb) {
+    const q = FB.query(FB.collection(FB.db, 'invites'), FB.where('studyId', '==', sid));
+    return FB.onSnapshot(q, qs => cb(qs.docs.map(plain)), err => { console.warn(err); cb([]); });
+  },
+  createStudy(data) {
+    const ref = FB.doc(FB.collection(FB.db, 'studies'));
+    trackWrite(FB.setDoc(ref, { ...data, createdAt: FB.serverTimestamp(), updatedAt: FB.serverTimestamp() }));
+    return ref.id;
+  },
+  /** patch keys may be dotted paths; value null with del=true deletes the field. */
+  updateStudy(sid, patch, dels = [], removeUid) {
+    const p = { ...patch, updatedAt: FB.serverTimestamp() };
+    for (const k of dels) p[k] = FB.deleteField();
+    if (removeUid) p.memberUids = FB.arrayRemove(removeUid);
+    return trackWrite(FB.updateDoc(this.sref(sid), p));
+  },
+  /** Takes the next Study ID number in a transaction (needs a connection). */
+  async createPatient(sid, init, audit) {
+    if (!navigator.onLine) throw new Error('Registering a new patient needs an internet connection (to assign a unique Study ID). Editing works offline.');
+    return trackWrite(FB.runTransaction(FB.db, async tx => {
+      const s = await tx.get(this.sref(sid));
+      const seq = (s.data().counter || 0) + 1;
+      const pid = `${s.data().code}-${pad(seq, 4)}`;
+      tx.update(this.sref(sid), { counter: seq });
+      tx.set(this.pref(sid, pid), { ...init, sid: pid, seq, createdAt: FB.serverTimestamp(), updatedAt: FB.serverTimestamp() });
+      tx.set(this.aref(sid), { ...audit, pid, at: FB.serverTimestamp() });
+      return pid;
+    }));
+  },
+  /** Replaces the editable top-level fields; resolves when the server accepts (queued while offline). */
+  savePatient(sid, pid, fields, audit) {
+    const b = FB.writeBatch(FB.db);
+    const f = { ...fields, updatedAt: FB.serverTimestamp() };
+    if (f.verifiedAt === 'now') f.verifiedAt = FB.serverTimestamp();
+    b.update(this.pref(sid, pid), f);
+    b.set(this.aref(sid), { ...audit, pid, at: FB.serverTimestamp() });
+    return trackWrite(b.commit());
+  },
+  deletePatient(sid, pid, audit) {
+    const b = FB.writeBatch(FB.db);
+    b.delete(this.pref(sid, pid));
+    b.set(this.aref(sid), { ...audit, pid, at: FB.serverTimestamp() });
+    return trackWrite(b.commit());
+  },
+  async audit(sid, pid) {
+    const col = FB.collection(FB.db, 'studies', sid, 'audit');
+    const q = pid ? FB.query(col, FB.where('pid', '==', pid), FB.limit(500)) : FB.query(col, FB.orderBy('at', 'desc'), FB.limit(300));
+    const qs = await FB.getDocs(q);
+    return qs.docs.map(plain).sort((a, b) => b.at - a.at);
+  },
+  invite(sid, studyName, email, role) {
+    return trackWrite(FB.setDoc(FB.doc(FB.db, 'invites', `${sid}_${email}`), {
+      studyId: sid, studyName, email, role, invitedBy: USER.uid, invitedByName: USER.name, createdAt: FB.serverTimestamp() }));
+  },
+  deleteInvite(id) { return trackWrite(FB.deleteDoc(FB.doc(FB.db, 'invites', id))); },
+  async acceptInvite(inv) {
+    await trackWrite(FB.updateDoc(this.sref(inv.studyId), {
+      [`roles.${USER.uid}`]: inv.role,
+      [`people.${USER.uid}`]: { email: USER.email, name: USER.name },
+      memberUids: FB.arrayUnion(USER.uid),
+    }));
+    await this.deleteInvite(inv.id);
+  },
+  leaveStudy(sid) {
+    return trackWrite(FB.updateDoc(this.sref(sid), {
+      [`roles.${USER.uid}`]: FB.deleteField(), [`people.${USER.uid}`]: FB.deleteField(), memberUids: FB.arrayRemove(USER.uid) }));
+  },
+};
+
+/* Demo backend: same calls, data kept in localStorage. */
+const Demo = {
+  db: null,
+  subs: new Set(),
+  load() { this.db = readJSON(DEMO_KEY, null); if (!this.db) { this.db = seedDemo(); this.persist(); } },
+  persist() { writeLS(DEMO_KEY, this.db); },
+  changed() { this.persist(); queueMicrotask(() => this.subs.forEach(fn => fn())); },
+  sub(fn) { this.subs.add(fn); fn(); return () => this.subs.delete(fn); },
+  watchStudies(cb) { return this.sub(() => cb(Object.values(this.db.studies).map(clone))); },
+  watchStudy(sid, cb) { return this.sub(() => cb(this.db.studies[sid] ? clone(this.db.studies[sid]) : null)); },
+  watchPatients(sid, cb) { return this.sub(() => cb(Object.values(this.db.patients[sid] || {}).map(clone))); },
+  watchMyInvites(cb) { cb([]); return () => {}; },
+  watchStudyInvites(sid, cb) { return this.sub(() => cb(Object.values(this.db.invites || {}).filter(i => i.studyId === sid).map(clone))); },
+  createStudy(data) {
+    const id = 'demo-' + uid();
+    this.db.studies[id] = { ...clone(data), id, createdAt: Date.now(), updatedAt: Date.now() };
+    this.db.patients[id] = {};
+    this.changed();
+    return id;
+  },
+  async updateStudy(sid, patch, dels = [], removeUid) {
+    const s = this.db.studies[sid];
+    for (const [k, v] of Object.entries(patch)) setPath(s, k, clone(v));
+    for (const k of dels) delPath(s, k);
+    if (removeUid) s.memberUids = s.memberUids.filter(u => u !== removeUid);
+    s.updatedAt = Date.now();
+    this.changed();
+  },
+  async createPatient(sid, init, audit) {
+    const s = this.db.studies[sid];
+    const seq = ++s.counter;
+    const pid = `${s.code}-${pad(seq, 4)}`;
+    this.db.patients[sid][pid] = { ...clone(init), id: pid, sid: pid, seq, createdAt: Date.now(), updatedAt: Date.now() };
+    this.addAudit(sid, { ...audit, pid });
+    this.changed();
+    return pid;
+  },
+  async savePatient(sid, pid, fields, audit) {
+    const p = this.db.patients[sid][pid];
+    if (!p || p.rev + 1 !== fields.rev) { const e = new Error('Record changed meanwhile'); e.code = 'permission-denied'; throw e; }
+    Object.assign(p, clone(fields), { updatedAt: Date.now() });
+    if (fields.verifiedAt === 'now') p.verifiedAt = Date.now();
+    this.addAudit(sid, { ...audit, pid });
+    this.changed();
+  },
+  async deletePatient(sid, pid, audit) {
+    delete this.db.patients[sid][pid];
+    this.addAudit(sid, { ...audit, pid });
+    this.changed();
+  },
+  addAudit(sid, a) { (this.db.audit[sid] ||= []).push({ ...clone(a), id: uid(), at: Date.now() }); },
+  async audit(sid, pid) { return (this.db.audit[sid] || []).filter(a => !pid || a.pid === pid).slice().sort((a, b) => b.at - a.at).slice(0, pid ? 500 : 300); },
+  async invite(sid, studyName, email, role) {
+    (this.db.invites ||= {})[`${sid}_${email}`] = { id: `${sid}_${email}`, studyId: sid, studyName, email, role, invitedBy: USER.uid, invitedByName: USER.name, createdAt: Date.now() };
+    this.changed();
+  },
+  async deleteInvite(id) { delete this.db.invites[id]; this.changed(); },
+  async acceptInvite() {},
+  async leaveStudy() { toast('Not available in the demo'); },
+};
+function setPath(o, path, v) { const k = path.split('.'); let t = o; while (k.length > 1) { const p = k.shift(); t = t[p] ||= {}; } t[k[0]] = v; }
+function delPath(o, path) { const k = path.split('.'); let t = o; while (k.length > 1) { t = t[k.shift()]; if (!t) return; } delete t[k[0]]; }
+
+let Store = Cloud;
+
+/* ==========================================================================
+   APP STATE + ROUTER
+   Routes:  #/                       my studies
+            #/s/{sid}/patients       patient list
+            #/s/{sid}/p/{pid}        patient record
+            #/s/{sid}/dash | export | settings | crf
+   ========================================================================== */
+let USER = null;   // { uid, email, name, demo? }
+const APP = {
+  studies: [], studiesLoaded: false, invites: [],
+  sid: null, study: null, studyLoaded: false, role: '',
+  patients: new Map(), patientsLoaded: false,
+  view: 'studies', pid: null,
+  unsubStudy: [], unsubGlobal: [],
+  filters: { q: '', site: '', status: '', psite: '' }, showRows: 200, sort: { k: 'seq', dir: -1 },
+  km: { ep: 'os', by: 'none' },
+  exportOpts: { values: 'labels', which: 'all' },
+  studyInvites: [],
+};
+let EDIT = null;   // { pid, doc, orig, baseRev, dirty, conflict }
+
+const canEdit = () => APP.role === 'admin' || APP.role === 'editor';
+const isAdmin = () => APP.role === 'admin';
+
+function parseHash() {
+  const p = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  if (p[0] === 's' && p[1]) {
+    if (p[2] === 'p' && p[3]) return { sid: p[1], view: 'record', pid: p[3] };
+    return { sid: p[1], view: ['patients', 'dash', 'export', 'settings', 'crf'].includes(p[2]) ? p[2] : 'patients', pid: null };
+  }
+  return { sid: null, view: 'studies', pid: null };
+}
+const go = path => { location.hash = '#/' + path; };
+let lastHash = location.hash, skipRoute = false;
+window.addEventListener('hashchange', () => {
+  if (skipRoute) { skipRoute = false; return; }
+  const r = parseHash();
+  if (EDIT && EDIT.dirty && !(r.view === 'record' && r.pid === EDIT.pid)) {
+    if (!confirm(`You have unsaved changes in ${EDIT.pid}. Leave without saving?`)) { skipRoute = true; location.hash = lastHash; return; }
+  }
+  lastHash = location.hash;
+  applyRoute(r);
+});
+window.addEventListener('beforeunload', e => { if (EDIT && EDIT.dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+function applyRoute(r) {
+  if (r.sid !== APP.sid) openStudy(r.sid);
+  if (r.view !== 'record' || (EDIT && EDIT.pid !== r.pid)) EDIT = null;
+  APP.view = r.view;
+  APP.pid = r.pid;
+  window.scrollTo(0, 0);
+  render();
+}
+
+function openStudy(sid) {
+  APP.unsubStudy.forEach(u => u());
+  APP.unsubStudy = [];
+  Object.assign(APP, { sid, study: null, studyLoaded: false, role: '', patients: new Map(), patientsLoaded: false, studyInvites: [], showRows: 200 });
+  APP.filters = { q: '', site: '', status: '', psite: '' };
+  if (!sid) return;
+  APP.unsubStudy.push(Store.watchStudy(sid, s => {
+    const first = !APP.studyLoaded;
+    APP.study = s;
+    APP.studyLoaded = true;
+    APP.role = s && s.roles ? (s.roles[USER.uid] || '') : '';
+    if (s && first) {
+      APP.unsubStudy.push(Store.watchPatients(sid, onPatients));
+      if (APP.role === 'admin') APP.unsubStudy.push(Store.watchStudyInvites(sid, list => { APP.studyInvites = list; if (APP.view === 'settings') renderSettings(); }));
+    }
+    if (APP.view === 'record' && EDIT) { renderHeaderBits(); if (!EDIT.dirty) renderRecord(true); }
+    else if (APP.view === 'settings' && $('#main').contains(document.activeElement) && document.activeElement.matches('input,textarea,select')) renderHeaderBits();
+    else render();
+  }));
+}
+
+function onPatients(list) {
+  APP.patients = new Map(list.map(p => [p.id, p]));
+  APP.patientsLoaded = true;
+  if (APP.view === 'record') {
+    const p = APP.patients.get(APP.pid);
+    if (!EDIT) return renderRecord();
+    if (!p) { if (!EDIT.dirty) renderRecord(); return; }
+    if (p.rev > EDIT.baseRev) {
+      if (!EDIT.dirty) { startEdit(p); renderRecord(true); toast(`${p.sid} was updated by ${p.updatedByName || 'a colleague'}`); }
+      else { EDIT.conflict = p; renderConflict(); }
+    }
+  } else if (APP.view === 'patients') renderPatients(true);
+  else if (APP.view === 'dash') renderDash();
+}
+
+/* ==========================================================================
+   RENDER — shell
+   ========================================================================== */
+function render() {
+  renderHeaderBits();
+  const v = APP.view;
+  if (v === 'studies') return renderStudies();
+  if (!APP.studyLoaded) { $('#main').innerHTML = `<p class="muted">Loading study…</p>`; return; }
+  if (!APP.study || !APP.role) {
+    $('#main').innerHTML = `<div class="card empty"><p>This study doesn’t exist or you are not a member of it.</p><a class="btn" href="#/">← My studies</a></div>`;
+    return;
+  }
+  if (v === 'patients') renderPatients();
+  else if (v === 'record') renderRecord();
+  else if (v === 'dash') renderDash();
+  else if (v === 'export') renderExport();
+  else if (v === 'settings') renderSettings();
+  else if (v === 'crf') renderCRF();
+}
+
+function renderHeaderBits() {
+  const inStudy = !!(APP.sid && APP.study && APP.role);
+  $('#tabs').classList.toggle('hidden', !inStudy);
+  $('#studyName').textContent = inStudy ? '/ ' + APP.study.name : '';
+  $('#studyName').title = inStudy ? APP.study.name : '';
+  if (inStudy) $$('#tabs a').forEach(a => {
+    a.href = `#/s/${encodeURIComponent(APP.sid)}/${a.dataset.v}`;
+    a.classList.toggle('active', a.dataset.v === APP.view || (a.dataset.v === 'patients' && APP.view === 'record') || (a.dataset.v === 'export' && APP.view === 'crf'));
+  });
+  $('#whoAmI').textContent = USER ? (USER.name || USER.email) + (APP.role ? ` · ${APP.role}` : '') : '';
+  $('#logoutBtn').textContent = USER && USER.demo ? 'Exit demo' : 'Log out';
+  renderSync();
+}
+
+/* Modal + small dialogs */
+function modal(html, { wide = false, onClose } = {}) {
+  const back = document.createElement('div');
+  back.className = 'modal-back';
+  back.innerHTML = `<div class="modal ${wide ? 'wide' : ''}" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(back);
+  const close = () => { back.remove(); document.removeEventListener('keydown', onKey); if (onClose) onClose(); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onKey);
+  back.addEventListener('mousedown', e => { if (e.target === back) close(); });
+  $$('[data-close]', back).forEach(b => b.addEventListener('click', close));
+  const first = $('input:not([type=hidden]),select,textarea', back);
+  if (first) setTimeout(() => first.focus(), 30);
+  return { el: back.firstElementChild, close };
+}
+function confirmBox(title, body, okLabel = 'OK', danger = false, typed = '') {
+  return new Promise(res => {
+    const m = modal(`<h3>${esc(title)}</h3><div>${body}</div>
+      ${typed ? `<label style="margin-top:12px" for="cbTyped">Type <b>${esc(typed)}</b> to confirm</label><input id="cbTyped" type="text" autocomplete="off">` : ''}
+      <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn ${danger ? 'danger solid' : 'primary'}" id="cbOk">${esc(okLabel)}</button></div>`,
+      { onClose: () => res(false) });
+    const ok = $('#cbOk', m.el);
+    if (typed) { ok.disabled = true; $('#cbTyped', m.el).addEventListener('input', e => { ok.disabled = e.target.value.trim() !== typed; }); }
+    ok.addEventListener('click', () => { res(true); m.close(); });
+  });
+}
+function promptBox(title, label, okLabel = 'OK') {
+  return new Promise(res => {
+    let val = null;
+    const m = modal(`<h3>${esc(title)}</h3><label for="pbIn">${esc(label)}</label><textarea id="pbIn"></textarea>
+      <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="pbOk">${esc(okLabel)}</button></div>`,
+      { onClose: () => res(val) });
+    $('#pbOk', m.el).addEventListener('click', () => { const v = $('#pbIn', m.el).value.trim(); if (!v) return; val = v; m.close(); });
+  });
+}
+
+/* Tooltip for charts: any element with data-tip */
+document.addEventListener('mouseover', e => {
+  const t = e.target.closest('[data-tip]');
+  const tip = $('#tip');
+  if (!t) { tip.classList.remove('show'); return; }
+  tip.innerHTML = t.dataset.tip;
+  tip.classList.add('show');
+});
+document.addEventListener('mousemove', e => {
+  const tip = $('#tip');
+  if (!tip.classList.contains('show')) return;
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(window.innerWidth - w - 8, e.clientX + 14) + 'px';
+  tip.style.top = Math.max(8, e.clientY - h - 12) + 'px';
+});
+
+/* ==========================================================================
+   STUDIES (home)
+   ========================================================================== */
+function renderStudies() {
+  const inv = APP.invites.map(i => `
+    <div class="banner info row between" style="margin-bottom:10px">
+      <span>You are invited to <b>${esc(i.studyName)}</b> as <b>${esc(i.role)}</b> by ${esc(i.invitedByName || 'the PI')}.</span>
+      <span class="row"><button class="btn small primary" data-accept="${esc(i.id)}">Accept</button><button class="btn small" data-decline="${esc(i.id)}">Decline</button></span>
+    </div>`).join('');
+  const cards = APP.studies.slice().sort((a, b) => a.name.localeCompare(b.name)).map(s => `
+    <a class="card study-card" href="#/s/${encodeURIComponent(s.id)}/patients">
+      <div class="row between"><span class="code">${esc(s.code)}</span><span class="pill role">${esc((s.roles || {})[USER.uid] || '')}</span></div>
+      <h3 style="margin:6px 0 4px">${esc(s.name)}</h3>
+      <div class="muted small">${esc(s.pi ? 'PI: ' + s.pi : '')}${s.iec ? ' · IEC ' + esc(s.iec) : ''}</div>
+      <div class="small" style="margin-top:8px">${s.counter || 0} registered${s.target ? ` of ${s.target} planned` : ''} · ${Object.keys(s.roles || {}).length} team member${Object.keys(s.roles || {}).length === 1 ? '' : 's'}</div>
+    </a>`).join('');
+  $('#main').innerHTML = `
+    ${USER.demo ? `<div class="banner" style="margin-bottom:14px"><b>Demo mode.</b> Synthetic patients, stored only in this browser. Do not enter real patient data here. <a href="#" id="resetDemo">Reset demo data</a></div>` : ''}
+    ${inv}
+    <div class="row between" style="margin-bottom:14px"><h1>My studies</h1><button class="btn primary" id="newStudy">+ New study</button></div>
+    ${!APP.studiesLoaded ? '<p class="muted">Loading…</p>' : cards ? `<div class="grid-cards">${cards}</div>` : `
+      <div class="card empty">
+        <p><b>No studies yet.</b></p>
+        <p>Create a study if you are the principal investigator. If a colleague is running the study, ask them to invite <b>${esc(USER.email)}</b> — the invitation will appear here.</p>
+      </div>`}`;
+  $('#newStudy').onclick = newStudyDialog;
+  $$('[data-accept]').forEach(b => b.onclick = async () => {
+    const i = APP.invites.find(x => x.id === b.dataset.accept);
+    b.disabled = true;
+    try { await Store.acceptInvite(i); toast('Joined ' + i.studyName); go('s/' + encodeURIComponent(i.studyId) + '/patients'); }
+    catch (e) { b.disabled = false; }
+  });
+  $$('[data-decline]').forEach(b => b.onclick = async () => {
+    if (await confirmBox('Decline invitation?', 'You can be invited again later.', 'Decline')) Store.deleteInvite(b.dataset.decline);
+  });
+  const rd = $('#resetDemo');
+  if (rd) rd.onclick = async e => {
+    e.preventDefault();
+    if (await confirmBox('Reset demo data?', 'All demo studies and patients on this device are replaced with fresh synthetic data.', 'Reset')) {
+      localStorage.removeItem(DEMO_KEY);
+      Demo.load();
+      Demo.changed();
+      toast('Demo data reset');
+    }
+  };
+}
+
+function newStudyDialog() {
+  const m = modal(`<h3>New study</h3>
+    <form id="nsForm" class="form2">
+      <div class="full"><label for="nsName">Study title</label><input id="nsName" type="text" required maxlength="200" placeholder="Real-world outcomes of metastatic breast cancer"></div>
+      <div><label for="nsCode">Study ID prefix</label><input id="nsCode" type="text" required maxlength="8" placeholder="MBC" style="text-transform:uppercase">
+        <div class="hint muted small">2–8 letters/digits. Patients become MBC-0001, MBC-0002… Can’t be changed later.</div></div>
+      <div><label for="nsPI">Principal investigator</label><input id="nsPI" type="text" value="${esc(USER.name || '')}"></div>
+      <div><label for="nsIEC">IEC approval reference</label><input id="nsIEC" type="text"></div>
+      <div><label for="nsTarget">Planned sample size</label><input id="nsTarget" type="number" min="0"></div>
+      <div class="full"><label for="nsSites">Centres / sites (one per line)</label><textarea id="nsSites" placeholder="Main centre">Main centre</textarea></div>
+      <div class="err full" id="nsErr"></div>
+    </form>
+    <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="nsOk">Create study</button></div>`);
+  $('#nsOk', m.el).onclick = () => {
+    const name = $('#nsName', m.el).value.trim();
+    const code = $('#nsCode', m.el).value.trim().toUpperCase();
+    const sites = $('#nsSites', m.el).value.split('\n').map(s => s.trim()).filter(Boolean);
+    if (!name) return ($('#nsErr', m.el).textContent = 'Please enter a study title.');
+    if (!/^[A-Z0-9]{2,8}$/.test(code)) return ($('#nsErr', m.el).textContent = 'Prefix must be 2–8 letters or digits (no spaces).');
+    const sid = Store.createStudy({
+      name, code, desc: '', pi: $('#nsPI', m.el).value.trim(), iec: $('#nsIEC', m.el).value.trim(), iecDate: '',
+      sites: sites.length ? sites : ['Main centre'], target: +$('#nsTarget', m.el).value || 0,
+      mrnLookup: false, mrnSalt: randomSalt(), sections: {}, custom: [],
+      roles: { [USER.uid]: 'admin' }, memberUids: [USER.uid], people: { [USER.uid]: { email: USER.email, name: USER.name } },
+      ownerUid: USER.uid, counter: 0,
+    });
+    m.close();
+    go(`s/${encodeURIComponent(sid)}/settings`);
+    toast('Study created — review the form sections and invite your team');
+  };
+}
+
+/* ==========================================================================
+   PATIENT LIST
+   ========================================================================== */
+const statusOf = p => p.locked ? 'verified' : p.status || 'draft';
+const STATUS_LABEL = { draft: 'Draft', complete: 'Complete', verified: 'Verified' };
+const psiteLabel = d => d.psite === 'oth' ? (d.psite_oth || 'Other') : lab(PSITES, d.psite);
+
+function filteredPatients() {
+  const f = APP.filters;
+  const q = f.q.trim().toLowerCase();
+  let list = [...APP.patients.values()];
+  if (f.site) list = list.filter(p => p.d && p.d.site === f.site);
+  if (f.status) list = list.filter(p => statusOf(p) === f.status);
+  if (f.psite) list = list.filter(p => p.d && p.d.psite === f.psite);
+  if (q) list = list.filter(p => {
+    const d = p.d || {};
+    return [p.sid, d.initials, d.histo, psiteLabel(d), d.subsite, d.district, ...(p.rep && p.rep.tx || []).map(t => t.regimen)]
+      .some(x => x && String(x).toLowerCase().includes(q));
+  });
+  const { k, dir } = APP.sort;
+  const val = p => k === 'seq' ? p.seq : k === 'updated' ? p.updatedAt : k === 'comp' ? (p.comp || 0) : k === 'dx' ? (p.d && p.d.dx_date || '') : 0;
+  list.sort((a, b) => (val(a) > val(b) ? 1 : val(a) < val(b) ? -1 : 0) * dir);
+  return list;
+}
+
+function renderPatients(dataOnly) {
+  const f = APP.filters;
+  const st = APP.study;
+  if (!dataOnly || !$('#ptable')) {
+    $('#main').innerHTML = `
+      <div class="row between" style="margin-bottom:14px">
+        <h1>Patients</h1>
+        ${canEdit() ? `<button class="btn primary" id="newPatient">+ Register patient</button>` : ''}
+      </div>
+      <div class="toolbar">
+        <input type="search" id="pSearch" placeholder="Search Study ID, initials, histology, regimen…${st.mrnLookup ? ' (Enter = hospital ID)' : ''}" value="${esc(f.q)}" aria-label="Search patients">
+        <select id="fSite" aria-label="Filter by site"><option value="">All sites</option>${(st.sites || []).map(s => `<option ${f.site === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>
+        <select id="fStatus" aria-label="Filter by status"><option value="">Any status</option>${Object.entries(STATUS_LABEL).map(([k, v]) => `<option value="${k}" ${f.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
+        <select id="fPsite" aria-label="Filter by primary site"><option value="">All primary sites</option>${PSITES.map(([k, v]) => `<option value="${k}" ${f.psite === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
+      </div>
+      <div class="card" style="padding:6px 8px"><div class="tablewrap" id="ptable"></div></div>`;
+    $('#pSearch').addEventListener('input', e => { f.q = e.target.value; APP.showRows = 200; renderPatientRows(); });
+    $('#pSearch').addEventListener('keydown', e => { if (e.key === 'Enter' && st.mrnLookup) mrnSearch(e.target.value); });
+    $('#fSite').onchange = e => { f.site = e.target.value; renderPatientRows(); };
+    $('#fStatus').onchange = e => { f.status = e.target.value; renderPatientRows(); };
+    $('#fPsite').onchange = e => { f.psite = e.target.value; renderPatientRows(); };
+    const np = $('#newPatient');
+    if (np) np.onclick = registerDialog;
+  }
+  renderPatientRows();
+}
+
+function renderPatientRows() {
+  const el = $('#ptable');
+  if (!el) return;
+  if (!APP.patientsLoaded) { el.innerHTML = `<p class="empty">Loading…</p>`; return; }
+  const list = filteredPatients();
+  if (!APP.patients.size) { el.innerHTML = `<div class="empty"><p><b>No patients registered yet.</b></p>${canEdit() ? '<p>Press “Register patient” to allot the first Study ID.</p>' : ''}</div>`; return; }
+  if (!list.length) { el.innerHTML = `<p class="empty">No patients match these filters.</p>`; return; }
+  const arrow = k => APP.sort.k === k ? (APP.sort.dir > 0 ? ' ↑' : ' ↓') : '';
+  const rows = list.slice(0, APP.showRows).map(p => {
+    const d = p.d || {}, s = statusOf(p);
+    return `<tr class="link" data-pid="${esc(p.id)}" tabindex="0">
+      <td class="mono"><b>${esc(p.sid)}</b></td>
+      <td>${esc(d.site || '')}</td>
+      <td>${esc(lab(SEX, d.sex).charAt(0))}${d.age != null ? ' / ' + d.age : ''}</td>
+      <td>${esc(psiteLabel(d))}</td>
+      <td>${esc(d.stage || '')}</td>
+      <td>${esc(fmtDate(d.dx_date))}</td>
+      <td><span class="pill ${s}">${STATUS_LABEL[s]}</span></td>
+      <td class="num"><span class="compbar"><i style="width:${p.comp || 0}%"></i></span>${p.comp || 0}%</td>
+      <td class="muted small">${esc(fmtTs(p.updatedAt))}<br>${esc(p.updatedByName || '')}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th><a href="#" data-sort="seq">Study ID${arrow('seq')}</a></th><th>Site</th><th>Sex / age</th><th>Primary site</th><th>Stage</th>
+      <th><a href="#" data-sort="dx">Diagnosis${arrow('dx')}</a></th><th>Status</th>
+      <th class="num"><a href="#" data-sort="comp">Complete${arrow('comp')}</a></th><th><a href="#" data-sort="updated">Last updated${arrow('updated')}</a></th>
+    </tr></thead><tbody>${rows}</tbody></table>
+    <p class="muted small" style="margin:10px">${list.length} of ${APP.patients.size} patients${list.length > APP.showRows ? ` · showing ${APP.showRows} <a href="#" id="moreRows">show more</a>` : ''}</p>`;
+  $$('tr[data-pid]', el).forEach(tr => {
+    const open = () => go(`s/${encodeURIComponent(APP.sid)}/p/${encodeURIComponent(tr.dataset.pid)}`);
+    tr.onclick = open;
+    tr.onkeydown = e => { if (e.key === 'Enter') open(); };
+  });
+  $$('[data-sort]', el).forEach(a => a.onclick = e => {
+    e.preventDefault();
+    const k = a.dataset.sort;
+    APP.sort = { k, dir: APP.sort.k === k ? -APP.sort.dir : -1 };
+    renderPatientRows();
+  });
+  const more = $('#moreRows');
+  if (more) more.onclick = e => { e.preventDefault(); APP.showRows += 500; renderPatientRows(); };
+}
+
+const hashMRN = mrn => sha256(APP.study.mrnSalt + ':' + mrn.trim().toUpperCase().replace(/[\s-]+/g, ''));
+async function mrnSearch(q) {
+  if (!q.trim()) return;
+  const h = await hashMRN(q);
+  const p = [...APP.patients.values()].find(x => x.mrnHash === h);
+  if (p) go(`s/${encodeURIComponent(APP.sid)}/p/${encodeURIComponent(p.id)}`);
+  else toast('No patient with that hospital ID in this study');
+}
+
+function registerDialog() {
+  const st = APP.study;
+  const m = modal(`<h3>Register a new patient</h3>
+    <p class="muted small" style="margin-top:-6px">The next Study ID (${esc(st.code)}-${pad((st.counter || 0) + 1, 4)} or later) is allotted when you press Register.</p>
+    <div class="form2">
+      <div><label for="rgSite">Centre / site</label><select id="rgSite">${(st.sites || []).map(s => `<option>${esc(s)}</option>`).join('')}</select></div>
+      <div><label for="rgDate">Date of registration</label><input id="rgDate" type="date" value="${today()}" max="${today()}"></div>
+      <div><label>Data collection</label><div class="seg" id="rgEnrol"><button type="button" data-v="P" aria-pressed="true">Prospective</button><button type="button" data-v="R" aria-pressed="false">Retrospective</button></div></div>
+      <div><label>Informed consent</label><div class="seg" id="rgConsent"><button type="button" data-v="Y" aria-pressed="false">Obtained</button><button type="button" data-v="W" aria-pressed="false">Waived by IEC</button><button type="button" data-v="N" aria-pressed="false">Not obtained</button></div></div>
+      ${st.mrnLookup ? `<div class="full"><label for="rgMrn">Hospital ID (MRN)</label><input id="rgMrn" type="text" autocomplete="off"><div class="muted small">Saved only as a one-way code, used to find the record and to prevent duplicate registration.</div></div>` : ''}
+      <div class="err full" id="rgErr"></div>
+    </div>
+    <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="rgOk">Register</button></div>`);
+  for (const g of ['#rgEnrol', '#rgConsent']) $(g, m.el).addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $$('button', $(g, m.el)).forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  });
+  const ok = $('#rgOk', m.el);
+  ok.onclick = async () => {
+    const sel = g => { const b = $(g + ' [aria-pressed=true]', m.el); return b ? b.dataset.v : ''; };
+    const d = { site: $('#rgSite', m.el).value, reg_date: $('#rgDate', m.el).value, enrol: sel('#rgEnrol'), consent: sel('#rgConsent') };
+    if (!d.consent) return ($('#rgErr', m.el).textContent = 'Please record the consent status.');
+    if (d.consent === 'Y') d.consent_date = d.reg_date;
+    let mrnHash = '';
+    const mrn = st.mrnLookup ? $('#rgMrn', m.el).value.trim() : '';
+    if (mrn) {
+      mrnHash = await hashMRN(mrn);
+      const dup = [...APP.patients.values()].find(p => p.mrnHash === mrnHash);
+      if (dup && !(await confirmBox('Possible duplicate', `This hospital ID is already registered as <b>${esc(dup.sid)}</b>. Register another record anyway?`, 'Register anyway'))) return;
+    }
+    ok.disabled = true;
+    ok.textContent = 'Registering…';
+    try {
+      const pid = await Store.createPatient(APP.sid, {
+        status: 'draft', locked: false, d, rep: {}, comp: 0, rev: 1, mrnHash,
+        createdBy: USER.uid, createdByName: USER.name, updatedBy: USER.uid, updatedByName: USER.name,
+        verifiedBy: '', verifiedByName: '', verifiedAt: null,
+      }, { action: 'create', by: USER.uid, byName: USER.name, changes: [], note: '' });
+      m.close();
+      toast(`Registered ${pid}`);
+      go(`s/${encodeURIComponent(APP.sid)}/p/${encodeURIComponent(pid)}`);
+    } catch (e) {
+      ok.disabled = false;
+      ok.textContent = 'Register';
+      $('#rgErr', m.el).textContent = e.message || String(e);
+    }
+  };
+}
+
+/* ==========================================================================
+   PATIENT RECORD (the case record form)
+   ========================================================================== */
+function startEdit(p) {
+  const doc = { d: clone(p.d || {}), rep: clone(p.rep || {}), status: p.status || 'draft', locked: !!p.locked };
+  for (const s of SECTIONS) if (s.repeat) doc.rep[s.repeat] = (doc.rep[s.repeat] || []).map(it => ({ _id: it._id || uid(), ...it }));
+  EDIT = { pid: p.id, doc, orig: clone(doc), baseRev: p.rev || 1, dirty: false, conflict: null, mrn: '' };
+}
+const readOnly = () => !canEdit() || !EDIT || EDIT.doc.locked;
+
+function renderRecord(keepScroll) {
+  const p = APP.patients.get(APP.pid);
+  if (!APP.patientsLoaded) { $('#main').innerHTML = `<p class="muted">Loading…</p>`; return; }
+  if (!p) {
+    $('#main').innerHTML = `<div class="card empty"><p>Patient <b>${esc(APP.pid)}</b> was not found (it may have been deleted).</p><a class="btn" href="#/s/${encodeURIComponent(APP.sid)}/patients">← Patients</a></div>`;
+    EDIT = null;
+    return;
+  }
+  if (!EDIT || EDIT.pid !== p.id) startEdit(p);
+  const y = window.scrollY;
+  const secs = activeSections(APP.study);
+  const ro = readOnly();
+  $('#main').innerHTML = `
+    <div class="rec-h">
+      <div class="row">
+        <a class="back noprint" href="#/s/${encodeURIComponent(APP.sid)}/patients">← Patients</a>
+        <h1 class="mono">${esc(p.sid)}</h1>
+        <span id="recStatus"></span>
+        <span class="comp" id="recComp"></span>
+        <span class="dirty hidden" id="recDirty">● Unsaved changes</span>
+        <span class="grow"></span>
+        ${canEdit() && !EDIT.doc.locked ? `<button class="btn primary" id="saveBtn" title="Ctrl+S">Save</button>` : ''}
+        ${canEdit() && !EDIT.doc.locked ? `<button class="btn" id="statusBtn"></button>` : ''}
+        <span class="rel"><button class="btn" id="moreBtn" aria-haspopup="true">More ▾</button></span>
+      </div>
+      <div class="muted small" style="margin-top:4px">Created ${esc(fmtTs(p.createdAt))} by ${esc(p.createdByName || '')} · last saved ${esc(fmtTs(p.updatedAt))} by ${esc(p.updatedByName || '')}${p.locked ? ` · verified by ${esc(p.verifiedByName || '')} ${esc(fmtTs(p.verifiedAt))}` : ''}</div>
+      <div id="conflictBar"></div>
+    </div>
+    ${EDIT.doc.locked ? `<div class="banner info noprint" style="margin-bottom:14px">This record is <b>verified and locked</b>.${isAdmin() ? ' Unlock it from “More” to make corrections (the reason is kept in the audit trail).' : ' Ask the study admin to unlock it if a correction is needed.'}</div>` : ''}
+    ${APP.role === 'viewer' ? `<div class="banner info noprint" style="margin-bottom:14px">You have <b>read-only</b> access to this study.</div>` : ''}
+    <div class="rec-body">
+      <nav class="secnav" id="secnav">${secs.map(s => `<a href="#" data-goto="${s.id}">${esc(s.title)}<b data-navc="${s.id}"></b></a>`).join('')}</nav>
+      <form id="recForm" autocomplete="off" onsubmit="return false">${secs.map(s => sectionHTML(s, EDIT.doc, ro)).join('')}</form>
+    </div>`;
+  bindRecord();
+  refreshDynamic();
+  renderConflict();
+  if (keepScroll) window.scrollTo(0, y);
+}
+
+function sectionHTML(sec, doc, ro) {
+  if (sec.repeat) {
+    const items = doc.rep[sec.repeat] || [];
+    return `<section class="card sec" id="sec-${sec.id}">
+      <div class="sec-h"><h3>${esc(sec.title)}</h3><span class="count">${items.length} recorded</span></div>
+      ${sec.help ? `<p class="muted small" style="margin:-8px 0 12px">${esc(sec.help)}</p>` : ''}
+      <div class="items">${items.map((it, i) => itemHTML(sec, it, i, doc, ro)).join('') || `<p class="muted small">None recorded.</p>`}</div>
+      ${ro ? '' : `<button type="button" class="btn" data-add="${sec.repeat}">+ Add ${esc(sec.itemLabel.toLowerCase())}</button>`}
+    </section>`;
+  }
+  return `<section class="card sec" id="sec-${sec.id}">
+    <div class="sec-h"><h3>${esc(sec.title)}</h3></div>
+    <div class="fgrid">${sec.fields.map(f => fieldHTML(f, doc.d[f.id], f.id, ro)).join('')}</div>
+  </section>`;
+}
+function itemHTML(sec, it, i, doc, ro) {
+  return `<div class="item" data-rep="${sec.repeat}" data-i="${i}">
+    <div class="item-h"><b>${esc(sec.itemLabel)} ${i + 1}</b><span class="sum" data-sum="${sec.repeat}.${i}">${esc(sec.sum(it))}</span>
+      ${ro ? '' : `<button type="button" class="btn small danger" data-del="${sec.repeat}.${i}">Remove</button>`}</div>
+    <div class="fgrid">${sec.fields.map(f => fieldHTML(f, it[f.id], `${sec.repeat}.${i}.${f.id}`, ro)).join('')}</div>
+  </div>`;
+}
+
+function fieldHTML(f, v, key, ro) {
+  const id = 'in-' + key;
+  const cls = ['fld', f.w ? 'w-' + f.w : '', f.req ? 'req' : ''].join(' ');
+  const dis = ro ? 'disabled' : '';
+  let c = '';
+  switch (f.type) {
+    case 'text':
+      c = `<input id="${id}" type="text" data-k="${key}" value="${esc(v)}" ${f.max ? `maxlength="${f.max}"` : ''} ${f.list ? `list="dl-${f.list}"` : ''} ${f.placeholder ? `placeholder="${esc(f.placeholder)}"` : ''} ${dis}>`;
+      break;
+    case 'textarea':
+      c = `<textarea id="${id}" data-k="${key}" ${dis}>${esc(v)}</textarea>`;
+      break;
+    case 'number':
+      c = `<input id="${id}" type="number" inputmode="decimal" step="any" data-k="${key}" value="${v ?? ''}" ${f.min != null ? `min="${f.min}"` : ''} ${f.max != null ? `max="${f.max}"` : ''} ${dis}>`;
+      break;
+    case 'date':
+      c = `<input id="${id}" type="date" data-k="${key}" value="${esc(v)}" max="${today()}" ${dis}>`;
+      break;
+    case 'select':
+      c = `<select id="${id}" data-k="${key}" ${dis}><option value="">—</option>${optsFor(f).map(([k, l]) => `<option value="${esc(k)}" ${v === k ? 'selected' : ''}>${esc(l)}</option>`).join('')}
+        ${v && !optsFor(f).some(o => o[0] === v) ? `<option value="${esc(v)}" selected>${esc(v)}</option>` : ''}</select>`;
+      break;
+    case 'seg':
+      c = `<div class="seg" role="group" aria-label="${esc(f.label)}">${optsFor(f).map(([k, l]) => `<button type="button" data-k="${key}" data-v="${esc(k)}" aria-pressed="${v === k}" ${dis}>${esc(l)}</button>`).join('')}</div>`;
+      break;
+    case 'multi': {
+      const arr = Array.isArray(v) ? v : [];
+      c = `<div class="chips" role="group" aria-label="${esc(f.label)}">${optsFor(f).map(([k, l]) => `<button type="button" data-k="${key}" data-v="${esc(k)}" data-multi="1" aria-pressed="${arr.includes(k)}" ${dis}>${esc(l)}</button>`).join('')}</div>`;
+      break;
+    }
+    case 'calc':
+      c = `<output data-calc="${key}"></output>`;
+      break;
+    case 'summary':
+      c = `<div class="endpoints" data-summary></div>`;
+      break;
+    case 'mrn': {
+      const has = APP.patients.get(EDIT.pid) && APP.patients.get(EDIT.pid).mrnHash;
+      c = ro ? `<div class="calc">${has ? 'Lookup key stored ✓' : 'Not recorded'}</div>`
+        : `<input id="${id}" type="text" data-mrn="1" autocomplete="off" placeholder="${has ? 'Lookup key stored ✓ — type to replace' : 'Enter hospital ID'}">`;
+      break;
+    }
+  }
+  return `<div class="${cls}" data-key="${key}">
+    <label for="${id}">${esc(f.label)}${f.unit ? ` <span class="muted">(${esc(f.unit)})</span>` : ''}</label>
+    ${c}${f.help ? `<div class="hint">${esc(f.help)}</div>` : ''}<div class="msg"></div></div>`;
+}
+
+/** Locate the schema field + storage for a data key ("age" or "tx.0.regimen"). */
+function fieldFor(key) {
+  const parts = key.split('.');
+  const secs = activeSections(APP.study);
+  if (parts.length === 3) {
+    const sec = secs.find(s => s.repeat === parts[0]);
+    return { f: sec && sec.fields.find(f => f.id === parts[2]), rep: parts[0], i: +parts[1], id: parts[2], sec };
+  }
+  for (const s of secs) if (!s.repeat) { const f = s.fields.find(x => x.id === key); if (f) return { f, id: key, sec: s }; }
+  return {};
+}
+function getVal(key) {
+  const r = fieldFor(key);
+  return r.rep ? (EDIT.doc.rep[r.rep][r.i] || {})[r.id] : EDIT.doc.d[r.id];
+}
+function setVal(key, v) {
+  const r = fieldFor(key);
+  if (!r.f) return;
+  const tgt = r.rep ? EDIT.doc.rep[r.rep][r.i] : EDIT.doc.d;
+  if (isEmpty(v)) delete tgt[r.id]; else tgt[r.id] = v;
+  markDirty();
+  if (r.rep) { const s = $(`[data-sum="${r.rep}.${r.i}"]`); if (s) s.textContent = r.sec.sum(tgt); }
+  refreshDynamic();
+}
+function markDirty() {
+  EDIT.dirty = true;
+  const el = $('#recDirty');
+  if (el) el.classList.remove('hidden');
+}
+
+function bindRecord() {
+  const form = $('#recForm');
+  const onInput = e => {
+    const el = e.target;
+    if (el.dataset.mrn) { EDIT.mrn = el.value; markDirty(); return; }
+    const key = el.dataset.k;
+    if (!key) return;
+    const { f } = fieldFor(key);
+    if (!f) return;
+    let v = el.value;
+    if (f.type === 'number') v = v === '' ? null : Number(v);
+    else if (f.type === 'text' || f.type === 'textarea') v = v.replace(/^\s+/, '');
+    setVal(key, v);
+  };
+  form.addEventListener('input', onInput);
+  form.addEventListener('change', onInput);
+  form.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.disabled) return;
+    if (b.dataset.v != null && b.dataset.k) {
+      const key = b.dataset.k;
+      if (b.dataset.multi) {
+        const cur = Array.isArray(getVal(key)) ? getVal(key).slice() : [];
+        const i = cur.indexOf(b.dataset.v);
+        if (i >= 0) cur.splice(i, 1); else cur.push(b.dataset.v);
+        b.setAttribute('aria-pressed', i < 0);
+        setVal(key, cur);
+      } else {
+        const on = getVal(key) === b.dataset.v;
+        $$(`button[data-k="${CSS.escape(key)}"]`, b.parentElement).forEach(x => x.setAttribute('aria-pressed', !on && x === b));
+        setVal(key, on ? null : b.dataset.v);   // tap again to clear
+      }
+    } else if (b.dataset.add) {
+      const rep = b.dataset.add;
+      (EDIT.doc.rep[rep] ||= []).push({ _id: uid() });
+      markDirty();
+      rerenderSection(rep, true);
+    } else if (b.dataset.del) {
+      const [rep, i] = b.dataset.del.split('.');
+      const sec = SECTIONS.find(s => s.repeat === rep);
+      confirmBox(`Remove ${sec.itemLabel.toLowerCase()} ${+i + 1}?`, 'It is removed when you save.', 'Remove', true).then(ok => {
+        if (!ok) return;
+        EDIT.doc.rep[rep].splice(+i, 1);
+        markDirty();
+        rerenderSection(rep);
+      });
+    }
+  });
+  $('#secnav').addEventListener('click', e => {
+    const a = e.target.closest('[data-goto]');
+    if (!a) return;
+    e.preventDefault();
+    $('#sec-' + a.dataset.goto).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  const sb = $('#saveBtn');
+  if (sb) sb.onclick = () => saveRecord();
+  const st = $('#statusBtn');
+  if (st) st.onclick = () => EDIT.doc.status === 'complete' ? saveRecord({ status: 'draft' }) : markComplete();
+  $('#moreBtn').onclick = e => { e.stopPropagation(); recordMenu(); };
+  renderHeaderStatus();
+}
+
+function rerenderSection(rep, focusLast) {
+  const sec = activeSections(APP.study).find(s => s.repeat === rep);
+  const el = $('#sec-' + sec.id);
+  el.outerHTML = sectionHTML(sec, EDIT.doc, readOnly());
+  refreshDynamic();
+  if (focusLast) {
+    const items = $$(`#sec-${sec.id} .item`);
+    const last = items[items.length - 1];
+    if (last) { last.scrollIntoView({ behavior: 'smooth', block: 'center' }); const inp = $('input,select', last); if (inp) setTimeout(() => inp.focus({ preventScroll: true }), 250); }
+  }
+}
+
+/** Show/hide conditional fields, update calculated values, messages, completeness. */
+function refreshDynamic() {
+  if (!EDIT) return;
+  const d = EDIT.doc.d;
+  for (const w of $$('#recForm .fld')) {
+    const r = fieldFor(w.dataset.key);
+    if (!r.f) continue;
+    const it = r.rep ? EDIT.doc.rep[r.rep][r.i] : null;
+    w.classList.toggle('hidden', !visible(r.f, d, it));
+    w.classList.remove('miss', 'err', 'warn');
+    $('.msg', w).textContent = '';
+    if (r.f.type === 'calc') { const v = r.f.calc(d); $('output', w).textContent = v == null ? '–' : v; }
+  }
+  const sum = $('[data-summary]');
+  if (sum) {
+    const ep = endpoints(EDIT.doc);
+    sum.innerHTML = !ep ? `<span class="muted small">Enter the date of diagnosis and outcome to calculate.</span>` : `
+      <div><span class="muted small">Overall survival</span><b>${fmt1(ep.os)} mo</b><span class="small muted">${ep.osEv ? 'Died' : 'Censored (alive / lost)'}</span></div>
+      <div><span class="muted small">Progression-free survival</span><b>${fmt1(ep.pfs)} mo</b><span class="small muted">${ep.pfsEv ? (ep.prog ? 'Progressed ' + fmtDate(ep.prog) : 'Died without progression') : 'Censored'}</span></div>
+      <div><span class="muted small">Last contact used</span><b style="font-size:15px">${esc(fmtDate(ep.last)) || '–'}</b><span class="small muted">latest date in the record</span></div>`;
+  }
+  const v = validate(EDIT.doc, APP.study);
+  const perSec = {};
+  for (const is of v.issues) {
+    const w = $(`#recForm .fld[data-key="${CSS.escape(is.key)}"]`);
+    if (w && !w.classList.contains('hidden')) {
+      if (!w.classList.contains('err')) { w.classList.remove('miss', 'warn'); w.classList.add(is.level); $('.msg', w).textContent = is.msg; }
+    }
+    if (is.level !== 'warn') perSec[is.sec] = (perSec[is.sec] || 0) + 1;
+  }
+  for (const b of $$('[data-navc]')) {
+    const n = perSec[b.dataset.navc] || 0;
+    b.textContent = n ? n : '✓';
+    b.className = n ? '' : 'ok';
+    b.title = n ? `${n} required or invalid` : 'Complete';
+  }
+  EDIT.valid = v;
+  renderHeaderStatus();
+}
+
+function renderHeaderStatus() {
+  if (!EDIT) return;
+  const s = EDIT.doc.locked ? 'verified' : EDIT.doc.status;
+  const st = $('#recStatus');
+  if (st) st.innerHTML = `<span class="pill ${s}">${STATUS_LABEL[s]}${EDIT.doc.locked ? ' 🔒' : ''}</span>`;
+  const c = EDIT.valid ? EDIT.valid.comp : 0;
+  const cm = $('#recComp');
+  if (cm) cm.innerHTML = `<span class="compbar"><i style="width:${c}%"></i></span>${c}% of required fields`;
+  const sb = $('#statusBtn');
+  if (sb) sb.textContent = EDIT.doc.status === 'complete' ? 'Reopen as draft' : 'Mark complete';
+  const dirty = $('#recDirty');
+  if (dirty) dirty.classList.toggle('hidden', !EDIT.dirty);
+}
+
+function renderConflict() {
+  const el = $('#conflictBar');
+  if (!el || !EDIT) return;
+  const c = EDIT.conflict;
+  el.innerHTML = !c ? '' : `<div class="banner danger" style="margin-top:8px">
+    <b>${esc(c.updatedByName || 'A colleague')}</b> saved a newer version of this record at ${esc(fmtTs(c.updatedAt))} while you were editing.
+    Saving now would be refused. <button class="btn small" id="cfReload">Discard mine &amp; load theirs</button>
+    <button class="btn small" id="cfCopy">Copy my changes to clipboard</button></div>`;
+  if (!c) return;
+  $('#cfReload').onclick = () => { startEdit(c); renderRecord(true); };
+  $('#cfCopy').onclick = () => {
+    const ch = diffDocs(EDIT.orig, EDIT.doc).map(x => `${x.k}: ${x.from} → ${x.to}`).join('\n');
+    navigator.clipboard.writeText(ch).then(() => toast('Your changes are on the clipboard — reload, then re-enter them'), () => toast('Could not copy'));
+  };
+}
+
+/** Field-level differences between two record versions, for the audit trail. */
+function diffDocs(a, b) {
+  const out = [];
+  const s = v => v == null ? '' : Array.isArray(v) ? v.join(';') : String(v);
+  const cut = v => v.length > 200 ? v.slice(0, 197) + '…' : v;
+  const push = (k, x, y) => { if (s(x) !== s(y)) out.push({ k, from: cut(s(x)), to: cut(s(y)) }); };
+  for (const k of new Set([...Object.keys(a.d || {}), ...Object.keys(b.d || {})])) push(k, a.d[k], b.d[k]);
+  for (const sec of SECTIONS.filter(x => x.repeat)) {
+    const A = (a.rep || {})[sec.repeat] || [], B = (b.rep || {})[sec.repeat] || [];
+    const byId = new Map(A.map(x => [x._id, x]));
+    B.forEach((it, i) => {
+      const old = byId.get(it._id);
+      if (!old) { out.push({ k: `${sec.repeat}[${i + 1}]`, from: '', to: cut('added: ' + sec.sum(it)) }); return; }
+      byId.delete(it._id);
+      for (const k of new Set([...Object.keys(old), ...Object.keys(it)])) if (k !== '_id') push(`${sec.repeat}[${i + 1}].${k}`, old[k], it[k]);
+    });
+    for (const old of byId.values()) out.push({ k: `${sec.repeat}`, from: cut('removed: ' + sec.sum(old)), to: '' });
+  }
+  return out.slice(0, 300);
+}
+
+/** Drop values of hidden (not applicable) fields and empty repeat rows; sort repeat rows by date. */
+function cleanDoc(doc) {
+  const d = doc.d;
+  for (const sec of activeSections(APP.study)) {
+    if (sec.repeat) {
+      let items = (doc.rep[sec.repeat] || []);
+      for (const it of items) for (const f of sec.fields) if (!visible(f, d, it)) delete it[f.id];
+      items = items.filter(it => Object.keys(it).some(k => k !== '_id' && !isEmpty(it[k])));
+      if (sec.sortBy && items.every(it => it[sec.sortBy])) items.sort((x, y) => x[sec.sortBy] < y[sec.sortBy] ? -1 : x[sec.sortBy] > y[sec.sortBy] ? 1 : 0);
+      doc.rep[sec.repeat] = items;
+    } else for (const f of sec.fields) if (!visible(f, d) || f.type === 'calc' || f.type === 'summary' || f.type === 'mrn') delete d[f.id];
+  }
+  // Calculated values are stored too, so exports and other tools see them.
+  if (d.height && d.weight) d.bmi = Math.round(d.weight / (d.height / 100) ** 2 * 10) / 10;
+  if (d.onset && d.dx_date) d.dx_interval = days(d.onset, d.dx_date);
+  return doc;
+}
+
+async function saveRecord(opt = {}) {
+  if (!EDIT || !canEdit()) return;
+  if (EDIT.conflict) { toast('Resolve the conflict first (see the red banner)'); return; }
+  const p = APP.patients.get(EDIT.pid);
+  const doc = cleanDoc(clone(EDIT.doc));
+  if (opt.status) doc.status = opt.status;
+  if (opt.locked != null) doc.locked = opt.locked;
+  const v = validate(doc, APP.study);
+  const changes = diffDocs(EDIT.orig, doc);
+  let mrnHash = p.mrnHash || '';
+  if (EDIT.mrn.trim()) {
+    mrnHash = await hashMRN(EDIT.mrn);
+    const dup = [...APP.patients.values()].find(x => x.mrnHash === mrnHash && x.id !== EDIT.pid);
+    if (dup && !(await confirmBox('Possible duplicate', `This hospital ID is already registered as <b>${esc(dup.sid)}</b>. Save it here too?`, 'Save anyway'))) return;
+    changes.push({ k: 'mrn_lookup_key', from: p.mrnHash ? 'set' : '', to: 'updated' });
+  }
+  const action = opt.action || (opt.status === 'complete' ? 'complete' : opt.status === 'draft' ? 'reopen' : 'update');
+  if (!changes.length && action === 'update') { EDIT.dirty = false; renderHeaderStatus(); toast('No changes to save'); return; }
+  const rev = EDIT.baseRev + 1;
+  const fields = { d: doc.d, rep: doc.rep, status: doc.status, locked: doc.locked, comp: v.comp, rev, mrnHash,
+    updatedBy: USER.uid, updatedByName: USER.name };
+  if (opt.locked === true) Object.assign(fields, { verifiedBy: USER.uid, verifiedByName: USER.name, verifiedAt: 'now' });
+  if (opt.locked === false) Object.assign(fields, { verifiedBy: '', verifiedByName: '', verifiedAt: null });
+  const audit = { action, by: USER.uid, byName: USER.name, changes, note: opt.note || '' };
+  // Optimistic: the record is saved locally at once (and synced in the background when online).
+  EDIT.baseRev = rev;
+  EDIT.doc = doc;
+  EDIT.orig = clone(doc);
+  EDIT.dirty = false;
+  EDIT.mrn = '';
+  const pid = EDIT.pid;
+  Store.savePatient(APP.sid, pid, fields, audit).catch(err => {
+    if (err && err.code === 'permission-denied') {
+      toast(`${pid}: save refused — the record was changed by someone else or you lack permission. Reopen it and re-enter your change.`, 7000);
+      if (EDIT && EDIT.pid === pid) { const cur = APP.patients.get(pid); if (cur) { startEdit(cur); renderRecord(true); } }
+    }
+  });
+  toast(navigator.onLine || USER.demo ? `${pid} saved` : `${pid} saved on this device — it will sync when you are online`);
+  if (opt.locked != null || opt.status) renderRecord(true); else { $$('input[data-mrn]').forEach(i => { i.value = ''; }); renderHeaderStatus(); refreshDynamic(); }
+}
+
+function markComplete() {
+  const v = validate(cleanDoc(clone(EDIT.doc)), APP.study);
+  const blocking = v.issues.filter(i => i.level !== 'warn');
+  const warns = v.issues.filter(i => i.level === 'warn');
+  if (!blocking.length && !warns.length) return saveRecord({ status: 'complete' });
+  const list = arr => arr.map(i => {
+    const r = fieldFor(i.key);
+    const where = r.rep ? `${r.sec.itemLabel} ${r.i + 1}: ` : '';
+    return `<li><a href="#" data-jump="${esc(i.key)}">${esc(where + (r.f ? r.f.label : i.key))}</a> — ${esc(i.msg)}</li>`;
+  }).join('');
+  const m = modal(`<h3>${blocking.length ? 'Not ready to mark complete' : 'Please check'}</h3>
+    ${blocking.length ? `<p>${blocking.length} required or invalid field${blocking.length > 1 ? 's' : ''}:</p><ul>${list(blocking)}</ul>` : ''}
+    ${warns.length ? `<p>${warns.length} warning${warns.length > 1 ? 's' : ''} (allowed, but please check):</p><ul>${list(warns)}</ul>` : ''}
+    <div class="actions"><button class="btn" data-close>Back to the form</button>
+    ${blocking.length ? '' : `<button class="btn primary" id="mcOk">Mark complete anyway</button>`}</div>`);
+  $$('[data-jump]', m.el).forEach(a => a.onclick = e => {
+    e.preventDefault();
+    m.close();
+    const w = $(`#recForm .fld[data-key="${CSS.escape(a.dataset.jump)}"]`);
+    if (w) { w.scrollIntoView({ behavior: 'smooth', block: 'center' }); const i = $('input,select,textarea,button', w); if (i) setTimeout(() => i.focus({ preventScroll: true }), 300); }
+  });
+  const ok = $('#mcOk', m.el);
+  if (ok) ok.onclick = () => { m.close(); saveRecord({ status: 'complete' }); };
+}
+
+function recordMenu() {
+  const host = $('#moreBtn').parentElement;
+  const old = $('.menu', host);
+  if (old) { old.remove(); return; }
+  const p = APP.patients.get(EDIT.pid);
+  const items = [['history', 'Change history'], ['print', 'Print / save as PDF']];
+  if (isAdmin()) {
+    if (EDIT.doc.locked) items.push(['unlock', 'Unlock for correction…']);
+    else items.push(['lock', 'Verify & lock']);
+    items.push(['delete', 'Delete patient…', 'danger']);
+  }
+  const menu = document.createElement('div');
+  menu.className = 'menu';
+  menu.innerHTML = items.map(([k, l, c]) => `<button type="button" data-m="${k}" class="${c || ''}">${l}</button>`).join('');
+  host.appendChild(menu);
+  const close = () => { menu.remove(); document.removeEventListener('click', close); };
+  setTimeout(() => document.addEventListener('click', close), 0);
+  menu.onclick = async e => {
+    const k = e.target.dataset.m;
+    if (!k) return;
+    close();
+    if (k === 'history') showHistory(EDIT.pid);
+    if (k === 'print') window.print();
+    if (k === 'lock') {
+      if (EDIT.dirty) return toast('Save your changes first');
+      if (EDIT.doc.status !== 'complete') return toast('Mark the record complete before verifying');
+      if (await confirmBox(`Verify & lock ${p.sid}?`, 'Confirm that you have checked this record against the source documents. Nobody can edit it until an admin unlocks it.', 'Verify & lock'))
+        saveRecord({ locked: true, action: 'lock' });
+    }
+    if (k === 'unlock') {
+      const why = await promptBox(`Unlock ${p.sid}`, 'Reason for unlocking (kept in the audit trail)', 'Unlock');
+      if (why) saveRecord({ locked: false, action: 'unlock', note: why });
+    }
+    if (k === 'delete') {
+      if (await confirmBox(`Delete ${p.sid}?`, 'The record is removed permanently. The audit trail keeps a note that it was deleted, but not its data. Its Study ID is never reused.', 'Delete', true, p.sid)) {
+        EDIT = null;
+        Store.deletePatient(APP.sid, p.id, { action: 'delete', by: USER.uid, byName: USER.name, changes: [], note: '' });
+        go(`s/${encodeURIComponent(APP.sid)}/patients`);
+        toast(`${p.sid} deleted`);
+      }
+    }
+  };
+}
+
+const ACTION_LABEL = { create: 'Registered', update: 'Edited', complete: 'Marked complete', reopen: 'Reopened as draft', lock: 'Verified & locked', unlock: 'Unlocked', delete: 'Deleted' };
+function auditHTML(list, showPid) {
+  if (!list.length) return `<p class="muted">No history yet.</p>`;
+  return list.map(a => `<div class="audit-e">
+    <div><b>${esc(ACTION_LABEL[a.action] || a.action)}</b>${showPid ? ` <span class="mono">${esc(a.pid)}</span>` : ''} · ${esc(a.byName || '')} · <span class="muted">${esc(fmtTs(a.at))}</span></div>
+    ${a.note ? `<div class="small">Reason: ${esc(a.note)}</div>` : ''}
+    ${a.changes && a.changes.length ? `<table>${a.changes.slice(0, showPid ? 6 : 300).map(c => `<tr><td class="mono">${esc(c.k)}</td><td class="muted">${esc(c.from) || '∅'}</td><td>→ ${esc(c.to) || '∅'}</td></tr>`).join('')}
+      ${showPid && a.changes.length > 6 ? `<tr><td colspan="3" class="muted">…and ${a.changes.length - 6} more</td></tr>` : ''}</table>` : ''}
+  </div>`).join('');
+}
+async function showHistory(pid) {
+  const m = modal(`<h3>Change history · <span class="mono">${esc(pid)}</span></h3><div id="histBody"><p class="muted">Loading…</p></div>
+    <div class="actions"><button class="btn" data-close>Close</button></div>`, { wide: true });
+  try { $('#histBody', m.el).innerHTML = auditHTML(await Store.audit(APP.sid, pid)); }
+  catch (e) { $('#histBody', m.el).innerHTML = `<p class="err">Could not load history: ${esc(e.message)}</p>`; }
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && APP.view === 'record' && EDIT) { e.preventDefault(); if (canEdit() && !EDIT.doc.locked) saveRecord(); }
+});
+
+/* ==========================================================================
+   STATISTICS: Kaplan–Meier, log-rank
+   ========================================================================== */
+function kmFit(rows) {
+  rows = rows.slice().sort((a, b) => a.t - b.t);
+  let n = rows.length, S = 1, v = 0, i = 0, events = 0;
+  const steps = [{ t: 0, S: 1, lo: 1, hi: 1 }], cens = [];
+  while (i < rows.length) {
+    const t = rows[i].t;
+    let d = 0, c = 0;
+    while (i < rows.length && rows[i].t === t) { rows[i].e ? d++ : c++; i++; }
+    if (d) {
+      S *= 1 - d / n;
+      if (n > d) v += d / (n * (n - d));
+      // log(-log) confidence interval (as in R survfit, conf.type = "log-log")
+      let lo = S, hi = S;
+      if (S > 0 && S < 1) { const se = Math.sqrt(v) / Math.abs(Math.log(S)); lo = S ** Math.exp(1.96 * se); hi = S ** Math.exp(-1.96 * se); }
+      steps.push({ t, S, lo, hi });
+      events += d;
+    }
+    if (c) cens.push({ t, S });
+    n -= d + c;
+  }
+  const first = pred => { const s = steps.find(pred); return s ? s.t : null; };
+  return { steps, cens, n: rows.length, events, tmax: rows.length ? rows[rows.length - 1].t : 0, rows,
+    median: first(s => s.S <= 0.5), medLo: first(s => s.lo <= 0.5), medHi: first(s => s.hi <= 0.5) };
+}
+const kmAt = (fit, t) => { let s = fit.steps[0]; for (const x of fit.steps) { if (x.t <= t) s = x; else break; } return t > fit.tmax ? null : s; };
+
+function logRank(groups) {
+  const k = groups.length;
+  if (k < 2) return null;
+  const all = groups.flatMap((g, gi) => g.map(r => ({ t: r.t, e: r.e, g: gi }))).sort((a, b) => a.t - b.t);
+  const nAt = groups.map(g => g.length), O = Array(k).fill(0), E = Array(k).fill(0);
+  const V = Array.from({ length: k }, () => Array(k).fill(0));
+  let i = 0;
+  while (i < all.length) {
+    const t = all[i].t, dg = Array(k).fill(0), cg = Array(k).fill(0);
+    while (i < all.length && all[i].t === t) { all[i].e ? dg[all[i].g]++ : cg[all[i].g]++; i++; }
+    const D = dg.reduce((a, b) => a + b, 0), N = nAt.reduce((a, b) => a + b, 0);
+    if (D > 0) {
+      for (let g = 0; g < k; g++) {
+        E[g] += D * nAt[g] / N;
+        O[g] += dg[g];
+        if (N > 1) for (let h = 0; h < k; h++) V[g][h] += D * (N - D) * nAt[g] * ((g === h ? N : 0) - nAt[h]) / (N * N * (N - 1));
+      }
+    }
+    for (let g = 0; g < k; g++) nAt[g] -= dg[g] + cg[g];
+  }
+  const z = O.slice(0, k - 1).map((o, g) => o - E[g]);
+  const Vr = V.slice(0, k - 1).map(r => r.slice(0, k - 1));
+  const x = solve(Vr, z);
+  if (!x) return null;
+  const chi = z.reduce((a, zi, g) => a + zi * x[g], 0);
+  return { chi, df: k - 1, p: 1 - gammaP((k - 1) / 2, chi / 2), O, E };
+}
+function solve(A, b) {
+  const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+  for (let c = 0; c < n; c++) {
+    let p = c;
+    for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    if (Math.abs(M[p][c]) < 1e-12) return null;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c] / M[c][c]; for (let j = c; j <= n; j++) M[r][j] -= f * M[c][j]; }
+  }
+  return M.map((r, i) => r[n] / r[i]);
+}
+function lnGamma(x) {
+  const g = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
+  let y = x, t = x + 5.5, s = 1.000000000190015;
+  t -= (x + 0.5) * Math.log(t);
+  for (const c of g) s += c / ++y;
+  return -t + Math.log(2.5066282746310005 * s / x);
+}
+/** Regularised lower incomplete gamma P(a, x) — gives the chi-square CDF. */
+function gammaP(a, x) {
+  if (x <= 0) return 0;
+  if (x < a + 1) {
+    let sum = 1 / a, del = sum, ap = a;
+    for (let n = 0; n < 500; n++) { ap++; del *= x / ap; sum += del; if (Math.abs(del) < Math.abs(sum) * 1e-14) break; }
+    return sum * Math.exp(-x + a * Math.log(x) - lnGamma(a));
+  }
+  let b = x + 1 - a, c = 1e300, d = 1 / b, h = d;
+  for (let i = 1; i < 500; i++) {
+    const an = -i * (i - a); b += 2;
+    d = an * d + b; if (Math.abs(d) < 1e-300) d = 1e-300;
+    c = b + an / c; if (Math.abs(c) < 1e-300) c = 1e-300;
+    d = 1 / d; const del = d * c; h *= del;
+    if (Math.abs(del - 1) < 1e-14) break;
+  }
+  return 1 - Math.exp(-x + a * Math.log(x) - lnGamma(a)) * h;
+}
+const fmtP = p => p == null ? '–' : p < 0.001 ? '< 0.001' : p.toFixed(3);
+
+/* ==========================================================================
+   DASHBOARD
+   ========================================================================== */
+const stageGroup = s => { if (!s) return 'Unknown'; const m = /^(IV|III|II|I|0)/.exec(s); return m ? m[1] : (s === 'Not applicable' ? 'N/A' : s === 'Unknown' ? 'Unknown' : s); };
+const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)'];
+
+function countBy(list, fn) {
+  const m = new Map();
+  for (const p of list) { const k = fn(p); if (k == null || k === '') continue; m.set(k, (m.get(k) || 0) + 1); }
+  return m;
+}
+function hbarHTML(map, total, { order, top = 10, labeler = x => x } = {}) {
+  let rows = [...map.entries()];
+  if (order) rows.sort((a, b) => order.indexOf(a[0]) - order.indexOf(b[0])); else rows.sort((a, b) => b[1] - a[1]);
+  if (rows.length > top) { const rest = rows.slice(top - 1).reduce((a, r) => a + r[1], 0); rows = rows.slice(0, top - 1).concat([['Other', rest]]); }
+  if (!rows.length) return `<p class="muted small">No data yet.</p>`;
+  const max = Math.max(...rows.map(r => r[1]));
+  return `<div class="hbar">${rows.map(([k, n]) => {
+    const l = labeler(k);
+    const tip = `<b>${esc(l)}</b><br>${n} patient${n === 1 ? '' : 's'} (${pct(n, total)}%)`;
+    return `<div class="lab" title="${esc(l)}">${esc(l)}</div><div class="track"><div class="bar" style="width:${100 * n / max}%" data-tip="${esc(tip)}"></div></div><div class="val">${n} · ${pct(n, total)}%</div>`;
+  }).join('')}</div>`;
+}
+
+function renderDash() {
+  if (!APP.patientsLoaded) { $('#main').innerHTML = `<p class="muted">Loading…</p>`; return; }
+  const list = [...APP.patients.values()];
+  const N = list.length, st = APP.study;
+  const comp = list.filter(p => statusOf(p) !== 'draft').length;
+  const ver = list.filter(p => p.locked).length;
+  const deaths = list.filter(p => p.d && p.d.vital === 'D').length;
+  const d30 = dayKey(new Date(Date.now() - 30 * 864e5));
+  const recent = list.filter(p => p.d && p.d.reg_date >= d30).length;
+  const avgComp = N ? Math.round(list.reduce((a, p) => a + (p.comp || 0), 0) / N) : 0;
+
+  // Enrolment by month (last 24 months)
+  const months = [];
+  const now = new Date();
+  for (let i = 23; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth() - i, 1); months.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}`); }
+  const byMonth = countBy(list, p => p.d && p.d.reg_date ? p.d.reg_date.slice(0, 7) : null);
+  const maxM = Math.max(1, ...months.map(m => byMonth.get(m) || 0));
+  const mLabel = m => `${MONTHS[+m.slice(5) - 1]} ${m.slice(0, 4)}`;
+
+  // Data quality: required fields most often missing
+  const missCount = new Map(), recMiss = [];
+  for (const p of list) {
+    const v = validate(p, st);
+    const miss = v.issues.filter(i => i.level !== 'warn');
+    if (miss.length) recMiss.push([p, miss.length]);
+    for (const i of miss) { const r = fieldFor(i.key); const l = r.f ? (r.sec && r.sec.repeat ? `${r.sec.itemLabel}: ${r.f.label}` : r.f.label) : i.key; missCount.set(l, (missCount.get(l) || 0) + 1); }
+  }
+  recMiss.sort((a, b) => b[1] - a[1]);
+  const lvl = APP.study.sections || {};
+
+  $('#main').innerHTML = `
+    <div class="row between" style="margin-bottom:14px"><h1>Dashboard</h1><span class="muted small">Exploratory summaries — run formal analyses on the exported data.</span></div>
+    <div class="tiles">
+      <div class="tile"><div class="v">${N}</div><div class="l">registered${st.target ? ` · ${pct(N, st.target)}% of ${st.target}` : ''}</div></div>
+      <div class="tile"><div class="v">${recent}</div><div class="l">registered in the last 30 days</div></div>
+      <div class="tile"><div class="v">${comp}</div><div class="l">complete (${pct(comp, N)}%)</div></div>
+      <div class="tile"><div class="v">${ver}</div><div class="l">verified &amp; locked</div></div>
+      <div class="tile"><div class="v">${avgComp}%</div><div class="l">mean completeness</div></div>
+      <div class="tile"><div class="v">${deaths}</div><div class="l">deaths recorded</div></div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>Registrations per month</h2>
+      <div class="cols">${months.map(m => { const n = byMonth.get(m) || 0; return `<div style="height:${100 * n / maxM}%" data-tip="<b>${mLabel(m)}</b><br>${n} registered"></div>`; }).join('')}</div>
+      <div class="colx"><span>${mLabel(months[0])}</span><span>${mLabel(months[12])}</span><span>${mLabel(months[23])}</span></div>
+    </div>
+    <div class="card" style="margin-top:14px" id="kmCard"></div>
+    <div class="dgrid">
+      <div class="card"><h2>Primary site</h2>${hbarHTML(countBy(list, p => p.d && (p.d.psite === 'oth' ? 'oth' : p.d.psite)), N, { labeler: k => k === 'Other' ? 'Other' : lab(PSITES, k) })}</div>
+      ${lvl.stage === false ? '' : `<div class="card"><h2>Stage group</h2>${hbarHTML(countBy(list, p => p.d && stageGroup(p.d.stage)), N, { order: ['0', 'I', 'II', 'III', 'IV', 'Limited', 'Extensive', 'N/A', 'Unknown'] })}</div>`}
+      <div class="card"><h2>Sex</h2>${hbarHTML(countBy(list, p => p.d && p.d.sex), N, { labeler: k => lab(SEX, k) })}</div>
+      <div class="card"><h2>Age at diagnosis</h2>${hbarHTML(countBy(list, p => p.d && p.d.age != null ? (p.d.age < 30 ? '<30' : p.d.age >= 70 ? '70+' : `${Math.floor(p.d.age / 10) * 10}–${Math.floor(p.d.age / 10) * 10 + 9}`) : null), N, { order: ['<30', '30–39', '40–49', '50–59', '60–69', '70+'] })}</div>
+      <div class="card"><h2>Primary payer</h2>${hbarHTML(countBy(list, p => p.d && p.d.payer), N, { labeler: k => k === 'Other' ? 'Other' : lab(PAYERS, k) })}</div>
+      <div class="card"><h2>Site / centre</h2>${hbarHTML(countBy(list, p => p.d && p.d.site), N)}</div>
+      <div class="card"><h2>Required fields most often missing</h2>${hbarHTML(missCount, N, { top: 8 })}</div>
+      <div class="card"><h2>Records needing attention</h2>${recMiss.length ? `<table><tbody>${recMiss.slice(0, 8).map(([p, n]) =>
+        `<tr class="link" data-pid="${esc(p.id)}"><td class="mono">${esc(p.sid)}</td><td>${n} missing / invalid</td><td class="muted small">${esc(p.updatedByName || '')}</td></tr>`).join('')}</tbody></table>
+        ${recMiss.length > 8 ? `<p class="muted small">…and ${recMiss.length - 8} more</p>` : ''}` : `<p class="muted small">All records have their required fields. 🎉</p>`}</div>
+    </div>`;
+  $$('tr[data-pid]').forEach(tr => tr.onclick = () => go(`s/${encodeURIComponent(APP.sid)}/p/${encodeURIComponent(tr.dataset.pid)}`));
+  renderKM();
+}
+
+/** Group key for stratified survival; categorical variables keep the 3 largest groups + Other. */
+function kmGroups(list, by) {
+  const key = {
+    none: () => 'All patients',
+    stage: p => { const g = stageGroup(p.d.stage); return ['I', 'II', 'III', 'IV'].includes(g) ? 'Stage ' + g : null; },
+    sex: p => p.d.sex === 'M' || p.d.sex === 'F' ? lab(SEX, p.d.sex) : null,
+    mets: p => p.d.mets_dx === 'Y' ? 'Metastatic at diagnosis' : p.d.mets_dx === 'N' ? 'Non-metastatic' : null,
+    ecog: p => p.d.ecog == null ? null : +p.d.ecog <= 1 ? 'ECOG 0–1' : 'ECOG 2–4',
+    psite: p => p.d.psite ? psiteLabel(p.d) : null,
+    payer: p => p.d.payer ? lab(PAYERS, p.d.payer) : null,
+    site: p => p.d.site || null,
+    area: p => p.d.area ? lab([['U', 'Urban'], ['S', 'Semi-urban'], ['R', 'Rural']], p.d.area) : null,
+  }[by];
+  const m = new Map();
+  for (const p of list) { const k = key(p); if (k) (m.get(k) || m.set(k, []).get(k)).push(p); }
+  let groups = [...m.entries()];
+  if (['stage', 'sex', 'mets', 'ecog'].includes(by)) groups.sort((a, b) => a[0].localeCompare(b[0]));
+  else {
+    groups.sort((a, b) => b[1].length - a[1].length);
+    if (groups.length > 4) groups = groups.slice(0, 3).concat([['Other', groups.slice(3).flatMap(g => g[1])]]);
+  }
+  return groups;
+}
+
+function renderKM() {
+  const card = $('#kmCard');
+  if (!card) return;
+  const { ep, by } = APP.km;
+  const all = [...APP.patients.values()].filter(p => p.d);
+  const groups = kmGroups(all, by).map(([name, ps]) => {
+    const rows = [];
+    for (const p of ps) { const e = endpoints(p); if (e && e[ep] != null) rows.push({ t: e[ep], e: e[ep + 'Ev'] }); }
+    return { name, fit: kmFit(rows), rows };
+  }).filter(g => g.rows.length);
+  const opt = (v, l, cur) => `<option value="${v}" ${cur === v ? 'selected' : ''}>${l}</option>`;
+  const ctl = `<div class="kmctl">
+    <select id="kmEp" aria-label="Endpoint">${opt('os', 'Overall survival', ep)}${opt('pfs', 'Progression-free survival', ep)}</select>
+    <select id="kmBy" aria-label="Compare by">${opt('none', 'All patients', by)}${opt('stage', 'by stage group', by)}${opt('mets', 'by metastatic at diagnosis', by)}
+      ${opt('ecog', 'by ECOG PS', by)}${opt('sex', 'by sex', by)}${opt('psite', 'by primary site (top 3)', by)}${opt('payer', 'by payer (top 3)', by)}${opt('area', 'by area', by)}${opt('site', 'by centre', by)}</select></div>`;
+  const total = groups.reduce((a, g) => a + g.rows.length, 0);
+  if (!total) {
+    card.innerHTML = `<h2>Kaplan–Meier</h2>${ctl}<p class="muted small">Needs records with a date of diagnosis and an outcome (vital status / last contact).</p>`;
+  } else {
+    const lr = logRank(groups.map(g => g.rows));
+    const yrs = [12, 24, 60];
+    const table = `<div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Group</th><th class="num">N</th><th class="num">Events</th><th class="num">Median (95% CI), months</th>${yrs.map(y => `<th class="num">${y / 12}-yr (95% CI)</th>`).join('')}</tr></thead><tbody>
+      ${groups.map((g, gi) => `<tr><td>${groups.length > 1 ? `<i style="display:inline-block;width:12px;height:3px;border-radius:2px;background:${SERIES[gi]};vertical-align:middle;margin-right:6px"></i>` : ''}${esc(g.name)}</td>
+        <td class="num">${g.fit.n}</td><td class="num">${g.fit.events}</td>
+        <td class="num">${g.fit.median == null ? 'Not reached' : fmt1(g.fit.median)} (${g.fit.medLo == null ? 'NR' : fmt1(g.fit.medLo)}–${g.fit.medHi == null ? 'NR' : fmt1(g.fit.medHi)})</td>
+        ${yrs.map(y => { const s = kmAt(g.fit, y); return `<td class="num">${s ? `${Math.round(s.S * 100)}% (${Math.round(s.lo * 100)}–${Math.round(s.hi * 100)})` : '–'}</td>`; }).join('')}</tr>`).join('')}
+      </tbody></table></div>
+      <p class="muted small" style="margin:8px 0 0">${lr ? `Log-rank χ² = ${lr.chi.toFixed(2)}, df = ${lr.df}, p = ${fmtP(lr.p)}. ` : ''}Time from diagnosis; censored at last contact. ${ep === 'pfs' ? 'PFS event = first progression/recurrence or death.' : 'Event = death from any cause.'} Survival estimates use the log-log 95% CI.</p>`;
+    card.innerHTML = `<h2>Kaplan–Meier · ${ep === 'os' ? 'overall survival' : 'progression-free survival'}</h2>${ctl}
+      ${groups.length > 1 ? `<div class="legend">${groups.map((g, gi) => `<span><i style="background:${SERIES[gi]}"></i>${esc(g.name)} (n=${g.fit.n})</span>`).join('')}</div>` : ''}
+      <div id="kmPlot"></div>${table}`;
+    $('#kmPlot').innerHTML = kmSVG(groups);
+    bindKMHover(groups);
+  }
+  $('#kmEp').onchange = e => { APP.km.ep = e.target.value; renderKM(); };
+  $('#kmBy').onchange = e => { APP.km.by = e.target.value; renderKM(); };
+}
+
+const KM = { W: 680, H: 250, L: 44, R: 12, T: 10 };
+function kmScale(groups) {
+  const tmax = Math.max(1, ...groups.map(g => g.fit.tmax));
+  const step = tmax <= 12 ? 3 : tmax <= 36 ? 6 : tmax <= 84 ? 12 : 24;
+  const xmax = Math.ceil(tmax / step) * step;
+  const pw = KM.W - KM.L - KM.R;
+  return { xmax, step, x: t => KM.L + pw * t / xmax, y: s => KM.T + KM.H * (1 - s), inv: px => (px - KM.L) / pw * xmax };
+}
+function kmSVG(groups) {
+  const sc = kmScale(groups);
+  const ticks = [];
+  for (let t = 0; t <= sc.xmax; t += sc.step) ticks.push(t);
+  const riskH = 18 * groups.length + 30;
+  const totalH = KM.T + KM.H + 26 + riskH;
+  let s = `<svg class="km" viewBox="0 0 ${KM.W} ${totalH}" role="img" aria-label="Kaplan–Meier curves">`;
+  for (const v of [0, .25, .5, .75, 1]) s += `<line class="gridl" x1="${KM.L}" x2="${KM.W - KM.R}" y1="${sc.y(v)}" y2="${sc.y(v)}"/><text x="${KM.L - 6}" y="${sc.y(v) + 4}" text-anchor="end">${v * 100}%</text>`;
+  s += `<line class="axis" x1="${KM.L}" x2="${KM.W - KM.R}" y1="${sc.y(0)}" y2="${sc.y(0)}"/>`;
+  for (const t of ticks) s += `<text x="${sc.x(t)}" y="${sc.y(0) + 16}" text-anchor="middle">${t}</text>`;
+  s += `<text x="${(KM.L + KM.W - KM.R) / 2}" y="${sc.y(0) + 30}" text-anchor="middle">Months from diagnosis</text>`;
+  groups.forEach((g, gi) => {
+    const col = SERIES[gi];
+    const st = g.fit.steps;
+    const end = g.fit.tmax;
+    if (groups.length === 1) {
+      // Confidence band for a single curve
+      let up = `M${sc.x(0)},${sc.y(1)}`, dn = '';
+      st.forEach((p, i) => { const nx = i + 1 < st.length ? st[i + 1].t : end; up += `H${sc.x(p.t)}V${sc.y(p.hi)}H${sc.x(nx)}`; });
+      for (let i = st.length - 1; i >= 0; i--) { const nx = i + 1 < st.length ? st[i + 1].t : end; dn += `H${sc.x(nx)}V${sc.y(st[i].lo)}H${sc.x(st[i].t)}`; }
+      s += `<path d="${up}V${sc.y(st[st.length - 1].lo)}${dn}Z" fill="${col}" opacity=".13"/>`;
+    }
+    let d = `M${sc.x(0)},${sc.y(1)}`;
+    for (const p of st) d += `H${sc.x(p.t)}V${sc.y(p.S)}`;
+    d += `H${sc.x(end)}`;
+    s += `<path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
+    for (const c of g.fit.cens) s += `<line x1="${sc.x(c.t)}" x2="${sc.x(c.t)}" y1="${sc.y(c.S) - 4}" y2="${sc.y(c.S) + 4}" stroke="${col}" stroke-width="1.5"/>`;
+  });
+  // Number at risk
+  const ry = sc.y(0) + 48;
+  s += `<text x="0" y="${ry}" style="font-weight:600">Number at risk</text>`;
+  groups.forEach((g, gi) => {
+    const y = ry + 18 * (gi + 1);
+    if (groups.length > 1) s += `<rect x="0" y="${y - 8}" width="10" height="3" rx="1.5" fill="${SERIES[gi]}"/>`;
+    for (const t of ticks) s += `<text x="${sc.x(t)}" y="${y}" text-anchor="middle">${g.rows.filter(r => r.t >= t).length}</text>`;
+  });
+  s += `<line id="kmCross" x1="0" x2="0" y1="${KM.T}" y2="${sc.y(0)}" stroke="var(--muted)" stroke-dasharray="3 3" visibility="hidden"/>`;
+  s += `<rect id="kmHit" x="${KM.L}" y="${KM.T}" width="${KM.W - KM.L - KM.R}" height="${KM.H}" fill="transparent"/>`;
+  return s + `</svg>`;
+}
+function bindKMHover(groups) {
+  const svg = $('#kmPlot svg'), hit = $('#kmHit'), cross = $('#kmCross'), tip = $('#tip');
+  const sc = kmScale(groups);
+  hit.addEventListener('mousemove', e => {
+    const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const t = Math.max(0, Math.min(sc.xmax, sc.inv(loc.x)));
+    cross.setAttribute('x1', sc.x(t)); cross.setAttribute('x2', sc.x(t)); cross.setAttribute('visibility', 'visible');
+    tip.innerHTML = `<b>${fmt1(t)} months</b><br>` + groups.map((g, gi) => {
+      const s = kmAt(g.fit, t);
+      return `<span style="color:${SERIES[gi]}">●</span> ${esc(g.name)}: ${s ? Math.round(s.S * 100) + '%' : '–'} · at risk ${g.rows.filter(r => r.t >= t).length}`;
+    }).join('<br>');
+    tip.classList.add('show');
+    tip.style.left = Math.min(window.innerWidth - tip.offsetWidth - 8, e.clientX + 14) + 'px';
+    tip.style.top = Math.max(8, e.clientY - tip.offsetHeight - 12) + 'px';
+  });
+  hit.addEventListener('mouseleave', () => { cross.setAttribute('visibility', 'hidden'); tip.classList.remove('show'); });
+}
+
+/* ==========================================================================
+   EXPORT — analysis-ready CSV (one row per patient + long tables),
+   data dictionary, JSON backup, printable blank CRF
+   ========================================================================== */
+const csvCell = v => { const s = v == null ? '' : String(v); return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+function downloadCSV(name, header, rows) {
+  const text = '﻿' + [header, ...rows].map(r => r.map(csvCell).join(',')).join('\r\n');   // BOM: Excel opens UTF-8 correctly
+  download(name, text, 'text/csv;charset=utf-8');
+}
+function download(name, text, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+function exportList() {
+  const w = APP.exportOpts.which;
+  return [...APP.patients.values()].filter(p => w === 'all' || (w === 'complete' && statusOf(p) !== 'draft') || (w === 'verified' && p.locked))
+    .sort((a, b) => a.seq - b.seq);
+}
+const fileBase = () => `${APP.study.code}_${today()}`;
+function exportValue(f, v) {
+  if (isEmpty(v)) return '';
+  if (APP.exportOpts.values === 'labels' && (f.type === 'select' || f.type === 'seg')) return lab(optsFor(f), v);
+  return v;
+}
+function patientLevelFields() {
+  return activeSections(APP.study).filter(s => !s.repeat).flatMap(s => s.fields.filter(f => f.type !== 'mrn' && f.type !== 'summary').map(f => ({ ...f, sec: s })));
+}
+function exportPatients() {
+  const fields = patientLevelFields();
+  const header = ['study_id', 'status', 'verified'];
+  for (const f of fields) {
+    if (f.type === 'multi') for (const [k] of optsFor(f)) header.push(`${f.id}_${k.toLowerCase()}`);
+    else header.push(f.id);
+  }
+  header.push('last_contact_derived', 'os_months', 'os_event', 'pfs_months', 'pfs_event', 'n_treatments', 'n_palliative_lines',
+    'first_systemic_regimen', 'first_systemic_start', 'max_tox_grade', 'n_tox_grade3plus', 'completeness_pct', 'created_at', 'updated_at');
+  const rows = exportList().map(p => {
+    const d = p.d || {}, rep = p.rep || {};
+    const r = [p.sid, p.status || 'draft', p.locked ? 1 : 0];
+    for (const f of fields) {
+      if (f.type === 'multi') for (const [k] of optsFor(f)) r.push(Array.isArray(d[f.id]) ? (d[f.id].includes(k) ? 1 : 0) : '');
+      else if (f.type === 'calc') r.push(f.calc(d) ?? '');
+      else r.push(exportValue(f, d[f.id]));
+    }
+    const e = endpoints(p) || {};
+    const tx = rep.tx || [], tox = rep.tox || [];
+    const sys = tx.filter(isSys).sort((a, b) => (a.start || '') < (b.start || '') ? -1 : 1)[0];
+    const grades = tox.map(t => +t.grade).filter(Boolean);
+    r.push(e.last || '', e.os != null ? fmt2(e.os) : '', e.os != null ? e.osEv : '', e.pfs != null ? fmt2(e.pfs) : '', e.pfs != null ? e.pfsEv : '',
+      tx.length, new Set(tx.filter(t => t.intent === 'PAL' && t.line).map(t => t.line)).size,
+      sys ? sys.regimen || lab(MODALITY, sys.mod) : '', sys ? sys.start || '' : '',
+      grades.length ? Math.max(...grades) : '', grades.filter(g => g >= 3).length, p.comp || 0,
+      p.createdAt ? new Date(p.createdAt).toISOString() : '', p.updatedAt ? new Date(p.updatedAt).toISOString() : '');
+    return r;
+  });
+  downloadCSV(`${fileBase()}_patients.csv`, header, rows);
+}
+const fmt2 = n => Math.round(n * 100) / 100;
+function exportRepeat(rep) {
+  const sec = SECTIONS.find(s => s.repeat === rep);
+  const fields = sec.fields;
+  const header = ['study_id', `${rep}_no`];
+  for (const f of fields) {
+    if (f.type === 'multi') for (const [k] of optsFor(f)) header.push(`${f.id}_${k.toLowerCase()}`);
+    else header.push(f.id);
+  }
+  const rows = [];
+  for (const p of exportList()) ((p.rep || {})[rep] || []).forEach((it, i) => {
+    const r = [p.sid, i + 1];
+    for (const f of fields) r.push(exportValue(f, it[f.id]));
+    rows.push(r);
+  });
+  downloadCSV(`${fileBase()}_${rep === 'tx' ? 'treatments' : rep === 'bio' ? 'biomarkers' : rep === 'tox' ? 'toxicity' : 'followup'}.csv`, header, rows);
+}
+function exportDictionary() {
+  const header = ['file', 'variable', 'label', 'section', 'type', 'unit', 'required', 'values', 'notes'];
+  const rows = [['patients', 'study_id', 'Study ID', '', 'text', '', 'yes', '', 'Pseudonymous identifier'],
+    ['patients', 'status', 'Record status', '', 'text', '', '', 'draft | complete', ''],
+    ['patients', 'verified', 'Verified & locked by admin', '', 'binary', '', '', '0 | 1', '']];
+  const valStr = f => f.type === 'multi' ? '0 = no | 1 = yes' : (f.type === 'select' || f.type === 'seg') ? optsFor(f).map(([k, l]) => k === l ? k : `${k} = ${l}`).join(' | ') : '';
+  for (const f of patientLevelFields()) {
+    if (f.type === 'multi') for (const [k, l] of optsFor(f)) rows.push(['patients', `${f.id}_${k.toLowerCase()}`, `${f.label}: ${l}`, f.sec.title, 'binary', '', '', '0 | 1', '']);
+    else rows.push(['patients', f.id, f.label, f.sec.title, f.type === 'seg' ? 'select' : f.type, f.unit || '', f.req ? 'yes' : '', valStr(f), (f.help || '') + (f.custom ? ' [study-specific]' : '')]);
+  }
+  const derived = [['last_contact_derived', 'Last contact (latest date in record)', 'date'], ['os_months', 'Overall survival from diagnosis (months)', 'number'],
+    ['os_event', 'OS event (1 = died)', 'binary'], ['pfs_months', 'Progression-free survival from diagnosis (months)', 'number'],
+    ['pfs_event', 'PFS event (1 = progression/recurrence or death)', 'binary'], ['n_treatments', 'Number of treatment entries', 'number'],
+    ['n_palliative_lines', 'Number of distinct palliative lines', 'number'], ['first_systemic_regimen', 'First systemic regimen', 'text'],
+    ['first_systemic_start', 'Start of first systemic therapy', 'date'], ['max_tox_grade', 'Highest CTCAE grade recorded', 'number'],
+    ['n_tox_grade3plus', 'Number of grade ≥ 3 events', 'number'], ['completeness_pct', '% of required fields filled', 'number']];
+  for (const [v, l, t] of derived) rows.push(['patients', v, l, 'Derived', t, '', '', '', 'Calculated at export (month = 30.44 days)']);
+  for (const sec of activeSections(APP.study).filter(s => s.repeat)) for (const f of sec.fields)
+    rows.push([sec.repeat === 'tx' ? 'treatments' : sec.repeat === 'bio' ? 'biomarkers' : sec.repeat === 'tox' ? 'toxicity' : 'followup', f.id, f.label, sec.title, f.type === 'seg' ? 'select' : f.type, f.unit || '', f.req ? 'yes' : '', valStr(f), f.help || '']);
+  downloadCSV(`${APP.study.code}_data_dictionary.csv`, header, rows);
+}
+function exportJSON() {
+  const st = clone(APP.study);
+  delete st.mrnSalt;   // never put the lookup-key salt into a file
+  const data = { app: 'OncoRegistry', exportedAt: new Date().toISOString(), exportedBy: USER.email, study: st, patients: exportList().map(p => { const x = clone(p); delete x.mrnHash; return x; }) };
+  download(`${fileBase()}_backup.json`, JSON.stringify(data, null, 1), 'application/json');
+}
+
+function renderExport() {
+  const o = APP.exportOpts;
+  const n = exportList().length;
+  const reps = activeSections(APP.study).filter(s => s.repeat);
+  $('#main').innerHTML = `
+    <h1 style="margin-bottom:14px">Export</h1>
+    <div class="card">
+      <h2>Options</h2>
+      <div class="form2">
+        <div><label for="exWhich">Records</label><select id="exWhich">
+          <option value="all" ${o.which === 'all' ? 'selected' : ''}>All records</option>
+          <option value="complete" ${o.which === 'complete' ? 'selected' : ''}>Complete + verified only</option>
+          <option value="verified" ${o.which === 'verified' ? 'selected' : ''}>Verified &amp; locked only</option></select></div>
+        <div><label for="exValues">Coded answers as</label><select id="exValues">
+          <option value="labels" ${o.values === 'labels' ? 'selected' : ''}>Labels (Female, Stage IIIB…) — for Excel / SPSS</option>
+          <option value="codes" ${o.values === 'codes' ? 'selected' : ''}>Codes (F, IIIB…) — for STATA / R, with dictionary</option></select></div>
+      </div>
+      <p class="muted small" style="margin-bottom:0">${n} patient${n === 1 ? '' : 's'} will be exported. Multi-choice questions become one 0/1 column per option. Dates are ISO (YYYY-MM-DD). Files open directly in Excel, SPSS, STATA (<code>import delimited</code>) and R (<code>read.csv</code>).</p>
+    </div>
+    <div class="card">
+      <h2>Files</h2>
+      <div class="row">
+        <button class="btn primary" id="exPat">Patients (one row each, with OS / PFS)</button>
+        ${reps.map(s => `<button class="btn" data-exrep="${s.repeat}">${esc(s.title)}</button>`).join('')}
+        <button class="btn" id="exDict">Data dictionary</button>
+        <button class="btn" id="exJson">Full backup (JSON)</button>
+      </div>
+      <p class="muted small" style="margin-bottom:0">Long tables (treatments, biomarkers, toxicity, follow-up) link to patients by <code>study_id</code>. Hospital ID lookup keys are never exported.</p>
+    </div>
+    <div class="card">
+      <h2>Paper case record form</h2>
+      <p class="small" style="margin-top:0">For clinics without a computer at the bedside: print the blank CRF, fill it during the visit and enter it later.</p>
+      <a class="btn" href="#/s/${encodeURIComponent(APP.sid)}/crf">Open printable blank CRF</a>
+    </div>
+    <div class="banner" style="margin-top:14px">Exported files contain pseudonymised research data. Store them on encrypted, access-controlled devices as your IEC protocol and the DPDP Act 2023 require; don’t share them by e-mail or messaging apps.</div>`;
+  $('#exWhich').onchange = e => { o.which = e.target.value; renderExport(); };
+  $('#exValues').onchange = e => { o.values = e.target.value; };
+  $('#exPat').onclick = exportPatients;
+  $$('[data-exrep]').forEach(b => b.onclick = () => exportRepeat(b.dataset.exrep));
+  $('#exDict').onclick = exportDictionary;
+  $('#exJson').onclick = exportJSON;
+}
+
+function renderCRF() {
+  const st = APP.study;
+  const box = l => `<span class="box">☐ ${esc(l)}</span>`;
+  const fld = f => {
+    let c;
+    if (f.type === 'select' || f.type === 'seg' || f.type === 'multi') c = optsFor(f).length > 14 ? '<span class="line"></span>' : optsFor(f).map(([, l]) => box(l)).join('');
+    else if (f.type === 'date') c = '__ __ / __ __ / __ __ __ __';
+    else if (f.type === 'calc' || f.type === 'summary') return '';
+    else c = '<span class="line"></span>' + (f.unit ? ' ' + esc(f.unit) : '');
+    return `<div class="pf"><b>${esc(f.label)}${f.req ? ' *' : ''}</b> ${c}</div>`;
+  };
+  const secs = activeSections(st).map(s => s.repeat
+    ? `<section class="sec" style="margin-top:16px"><h3>${esc(s.title)}</h3>${[1, 2].map(i => `<div class="item" style="margin-top:8px"><b>${esc(s.itemLabel)} ${i}</b>${s.fields.map(fld).join('')}</div>`).join('')}<p class="muted small">Use extra sheets for more entries.</p></section>`
+    : `<section class="sec" style="margin-top:16px"><h3>${esc(s.title)}</h3>${s.fields.filter(f => f.type !== 'mrn').map(fld).join('')}</section>`).join('');
+  $('#main').innerHTML = `
+    <div class="row between noprint" style="margin-bottom:14px"><a href="#/s/${encodeURIComponent(APP.sid)}/export">← Export</a><button class="btn primary" onclick="window.print()">Print</button></div>
+    <div class="card paper">
+      <div class="row between"><h1>${esc(st.name)}</h1><span class="mono">Study ID: ${esc(st.code)}-__ __ __ __</span></div>
+      <p class="small muted">${st.pi ? 'PI: ' + esc(st.pi) + ' · ' : ''}${st.iec ? 'IEC ' + esc(st.iec) + ' · ' : ''}Case record form · * = required. Do not write the patient’s name on this form.</p>
+      ${secs}
+      <p class="small" style="margin-top:20px">Data collected by: ______________________ Date: __ __ / __ __ / __ __ __ __ &nbsp; Entered by: ______________________</p>
+    </div>`;
+}
+
+/* ==========================================================================
+   STUDY SETTINGS & TEAM
+   ========================================================================== */
+const OPTIONAL_SECTIONS = SECTIONS.filter(s => s.optional);
+function renderSettings() {
+  const st = APP.study, adm = isAdmin(), dis = adm ? '' : 'disabled';
+  const people = Object.entries(st.roles || {}).map(([u, r]) => ({ uid: u, role: r, ...(st.people || {})[u] }));
+  const custom = st.custom || [];
+  const secOpts = SECTIONS.filter(s => !s.repeat && s.id !== 'out').map(s => [s.id, s.title]).concat([['out', 'Outcome'], ['custom', 'Study-specific (own section)']]);
+  $('#main').innerHTML = `
+    <h1 style="margin-bottom:14px">Study &amp; team</h1>
+    <div class="card">
+      <h2>Study details</h2>
+      <div class="form2">
+        <div class="full"><label for="stName">Title</label><input id="stName" type="text" value="${esc(st.name)}" ${dis}></div>
+        <div><label>Study ID prefix</label><div class="calc mono">${esc(st.code)} <span class="muted small">(fixed)</span></div></div>
+        <div><label for="stPI">Principal investigator</label><input id="stPI" type="text" value="${esc(st.pi)}" ${dis}></div>
+        <div><label for="stIEC">IEC approval reference</label><input id="stIEC" type="text" value="${esc(st.iec)}" ${dis}></div>
+        <div><label for="stIECd">IEC approval date</label><input id="stIECd" type="date" value="${esc(st.iecDate)}" ${dis}></div>
+        <div><label for="stTarget">Planned sample size</label><input id="stTarget" type="number" min="0" value="${st.target || ''}" ${dis}></div>
+        <div class="full"><label for="stDesc">Description / eligibility (shown to the team)</label><textarea id="stDesc" ${dis}>${esc(st.desc)}</textarea></div>
+        <div class="full"><label for="stSites">Centres / sites (one per line)</label><textarea id="stSites" ${dis}>${esc((st.sites || []).join('\n'))}</textarea></div>
+      </div>
+      ${adm ? `<div class="row" style="margin-top:12px"><button class="btn primary" id="stSave">Save details</button></div>` : ''}
+    </div>
+
+    <div class="card">
+      <h2>Form sections</h2>
+      <p class="small" style="margin-top:0">Registration, demographics, diagnosis and outcome are always collected. Switch off what your protocol doesn’t need — existing data is kept, just hidden.</p>
+      <div class="row">${OPTIONAL_SECTIONS.map(s => `<label class="check" style="margin-right:12px"><input type="checkbox" data-secen="${s.id}" ${(st.sections || {})[s.id] === false ? '' : 'checked'} ${dis}> ${esc(s.title)}</label>`).join('')}</div>
+      <label class="check" style="margin-top:12px"><input type="checkbox" id="stMrn" ${st.mrnLookup ? 'checked' : ''} ${dis}>
+        <span><b>Hospital ID lookup key.</b> Lets the team find a patient by MRN and warns about duplicate registration. The MRN is stored only as a salted one-way hash, never as the number itself. Keep your own identity-linking log as the IEC requires.</span></label>
+    </div>
+
+    <div class="card">
+      <h2>Study-specific fields</h2>
+      <p class="small" style="margin-top:0">Add the variables your protocol needs beyond the core oncology dataset (e.g. tumour-specific scores, lab values, quality-of-life items).</p>
+      <div class="cf-list">${custom.length ? custom.map((c, i) => `<div class="cf"><b>${esc(c.label)}</b> <code>${esc(c.id)}</code>
+        <span class="pill">${esc(c.type)}</span><span class="muted small">${esc((secOpts.find(s => s[0] === c.section) || ['', ''])[1])}${c.req ? ' · required' : ''}</span>
+        <span class="grow"></span>${adm ? `<button class="btn small" data-cfup="${i}" ${i ? '' : 'disabled'} aria-label="Move up">↑</button><button class="btn small" data-cfedit="${i}">Edit</button><button class="btn small danger" data-cfdel="${i}">Delete</button>` : ''}</div>`).join('')
+        : `<p class="muted small">None yet.</p>`}</div>
+      ${adm ? `<button class="btn" id="cfAdd" style="margin-top:10px">+ Add field</button>` : ''}
+    </div>
+
+    <div class="card">
+      <h2>Team</h2>
+      <div class="tablewrap"><table><thead><tr><th>Name</th><th>E-mail</th><th>Role</th><th></th></tr></thead><tbody>
+        ${people.map(p => `<tr><td>${esc(p.name || '')}${p.uid === USER.uid ? ' <span class="muted">(you)</span>' : ''}</td><td>${esc(p.email || '')}</td>
+          <td>${adm && p.uid !== USER.uid ? `<select data-role="${esc(p.uid)}" style="width:auto">${['admin', 'editor', 'viewer'].map(r => `<option ${p.role === r ? 'selected' : ''}>${r}</option>`).join('')}</select>` : `<span class="pill role">${esc(p.role)}</span>`}</td>
+          <td>${adm && p.uid !== USER.uid ? `<button class="btn small danger" data-rm="${esc(p.uid)}">Remove</button>` : p.uid === USER.uid && !USER.demo ? `<button class="btn small" id="leaveBtn">Leave study</button>` : ''}</td></tr>`).join('')}
+        ${APP.studyInvites.map(i => `<tr><td class="muted">Invited</td><td>${esc(i.email)}</td><td><span class="pill">${esc(i.role)}</span></td><td>${adm ? `<button class="btn small" data-revoke="${esc(i.id)}">Revoke</button>` : ''}</td></tr>`).join('')}
+      </tbody></table></div>
+      ${adm ? `<form id="invForm" class="row" style="margin-top:12px">
+        <input id="invEmail" type="email" placeholder="colleague@hospital.org" style="flex:1 1 220px;width:auto" aria-label="E-mail to invite">
+        <select id="invRole" style="width:auto" aria-label="Role"><option value="editor">editor — enters data</option><option value="viewer">viewer — read & export</option><option value="admin">admin — co-investigator</option></select>
+        <button class="btn primary" type="submit">Invite</button></form>
+        <p class="muted small">Ask them to open this app and create an account with that e-mail address; the invitation appears after they verify it. Link: <code>${esc(location.origin + location.pathname)}</code></p>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="row between"><h2 style="margin:0">Audit trail</h2><button class="btn small" id="auditLoad">Show recent activity</button></div>
+      <div id="auditBody" style="margin-top:10px"></div>
+    </div>`;
+
+  if (adm) {
+    $('#stSave').onclick = () => {
+      const sites = $('#stSites').value.split('\n').map(s => s.trim()).filter(Boolean);
+      const name = $('#stName').value.trim();
+      if (!name) return toast('The title can’t be empty');
+      Store.updateStudy(APP.sid, { name, pi: $('#stPI').value.trim(), iec: $('#stIEC').value.trim(), iecDate: $('#stIECd').value,
+        target: +$('#stTarget').value || 0, desc: $('#stDesc').value.trim(), sites: sites.length ? sites : ['Main centre'] });
+      toast('Study details saved');
+    };
+    $$('[data-secen]').forEach(c => c.onchange = () => Store.updateStudy(APP.sid, { [`sections.${c.dataset.secen}`]: c.checked }));
+    $('#stMrn').onchange = e => Store.updateStudy(APP.sid, { mrnLookup: e.target.checked });
+    $('#cfAdd').onclick = () => customFieldDialog(-1);
+    $$('[data-cfedit]').forEach(b => b.onclick = () => customFieldDialog(+b.dataset.cfedit));
+    $$('[data-cfup]').forEach(b => b.onclick = () => {
+      const arr = clone(custom), i = +b.dataset.cfup;
+      [arr[i - 1], arr[i]] = [arr[i], arr[i - 1]];
+      Store.updateStudy(APP.sid, { custom: arr });
+    });
+    $$('[data-cfdel]').forEach(b => b.onclick = async () => {
+      const c = custom[+b.dataset.cfdel];
+      if (await confirmBox(`Delete “${c.label}”?`, 'The field disappears from the form and exports. Values already entered stay inside the records (and come back if you re-create a field with the same variable name).', 'Delete', true))
+        Store.updateStudy(APP.sid, { custom: custom.filter((_, j) => j !== +b.dataset.cfdel) });
+    });
+    $$('[data-role]').forEach(s => s.onchange = () => {
+      const roles = { ...st.roles, [s.dataset.role]: s.value };
+      if (!Object.values(roles).includes('admin')) { toast('A study needs at least one admin'); s.value = st.roles[s.dataset.role]; return; }
+      Store.updateStudy(APP.sid, { [`roles.${s.dataset.role}`]: s.value });
+      toast('Role updated');
+    });
+    $$('[data-rm]').forEach(b => b.onclick = async () => {
+      const u = b.dataset.rm, p = (st.people || {})[u] || {};
+      if (await confirmBox(`Remove ${p.name || p.email || 'member'}?`, 'They lose access to this study immediately. Their past entries and audit trail remain.', 'Remove', true))
+        Store.updateStudy(APP.sid, {}, [`roles.${u}`, `people.${u}`], u);
+    });
+    $$('[data-revoke]').forEach(b => b.onclick = () => Store.deleteInvite(b.dataset.revoke));
+    $('#invForm').onsubmit = e => {
+      e.preventDefault();
+      const email = $('#invEmail').value.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('Enter a valid e-mail address');
+      if (people.some(p => (p.email || '').toLowerCase() === email)) return toast('Already a member');
+      Store.invite(APP.sid, st.name, email, $('#invRole').value);
+      $('#invEmail').value = '';
+      toast('Invitation created for ' + email);
+    };
+  }
+  const lv = $('#leaveBtn');
+  if (lv) lv.onclick = async () => {
+    if (st.roles[USER.uid] === 'admin' && Object.values(st.roles).filter(r => r === 'admin').length === 1) return toast('Make someone else admin before leaving');
+    if (await confirmBox('Leave this study?', 'You lose access until someone invites you again.', 'Leave', true)) { await Store.leaveStudy(APP.sid); go(''); }
+  };
+  $('#auditLoad').onclick = async () => {
+    $('#auditBody').innerHTML = '<p class="muted">Loading…</p>';
+    try { $('#auditBody').innerHTML = auditHTML(await Store.audit(APP.sid), true); }
+    catch (e) { $('#auditBody').innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+  };
+}
+
+function customFieldDialog(idx) {
+  const st = APP.study, custom = st.custom || [];
+  const c = idx >= 0 ? custom[idx] : { label: '', id: '', type: 'text', opts: [], section: 'custom', req: false, help: '', unit: '', min: '', max: '' };
+  const secOpts = SECTIONS.filter(s => !s.repeat).map(s => [s.id, s.title]).concat([['custom', 'Study-specific (own section)']]);
+  const types = [['text', 'Short text'], ['textarea', 'Long text'], ['number', 'Number'], ['date', 'Date'], ['select', 'Single choice (list)'],
+    ['seg', 'Single choice (buttons)'], ['multi', 'Multiple choice'], ['yn', 'Yes / No / Unknown']];
+  const m = modal(`<h3>${idx >= 0 ? 'Edit field' : 'Add a study-specific field'}</h3>
+    <div class="form2">
+      <div class="full"><label for="cfLabel">Question / label</label><input id="cfLabel" type="text" value="${esc(c.label)}" placeholder="Baseline haemoglobin"></div>
+      <div><label for="cfId">Variable name (for export)</label><input id="cfId" type="text" class="mono" value="${esc(c.id)}" ${idx >= 0 ? 'disabled' : ''} placeholder="x_baseline_hb">
+        <div class="muted small">${idx >= 0 ? 'Fixed once created.' : 'Lower-case letters, digits, _ ; starts with x_.'}</div></div>
+      <div><label for="cfType">Answer type</label><select id="cfType">${types.map(([k, l]) => `<option value="${k}" ${c.type === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="full" id="cfOptsWrap"><label for="cfOpts">Choices (one per line)</label><textarea id="cfOpts">${esc((c.opts || []).join('\n'))}</textarea></div>
+      <div id="cfNumWrap" class="full form2" style="padding:0">
+        <div><label for="cfUnit">Unit</label><input id="cfUnit" type="text" value="${esc(c.unit)}" placeholder="g/dL"></div>
+        <div><label for="cfMin">Minimum</label><input id="cfMin" type="number" step="any" value="${esc(c.min)}"></div>
+        <div><label for="cfMax">Maximum</label><input id="cfMax" type="number" step="any" value="${esc(c.max)}"></div>
+      </div>
+      <div><label for="cfSec">Show in section</label><select id="cfSec">${secOpts.map(([k, l]) => `<option value="${k}" ${c.section === k ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+      <div><label>&nbsp;</label><label class="check"><input type="checkbox" id="cfReq" ${c.req ? 'checked' : ''}> Required</label></div>
+      <div class="full"><label for="cfHelp">Help text (optional)</label><input id="cfHelp" type="text" value="${esc(c.help)}"></div>
+      <div class="err full" id="cfErr"></div>
+    </div>
+    <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="cfOk">${idx >= 0 ? 'Save' : 'Add field'}</button></div>`);
+  const sync = () => {
+    const t = $('#cfType', m.el).value;
+    $('#cfOptsWrap', m.el).classList.toggle('hidden', !['select', 'seg', 'multi'].includes(t));
+    $('#cfNumWrap', m.el).classList.toggle('hidden', t !== 'number');
+  };
+  sync();
+  $('#cfType', m.el).onchange = sync;
+  if (idx < 0) $('#cfLabel', m.el).addEventListener('input', e => {
+    const idEl = $('#cfId', m.el);
+    if (idEl.dataset.touched) return;
+    idEl.value = 'x_' + e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 28);
+  });
+  $('#cfId', m.el).addEventListener('input', e => { e.target.dataset.touched = '1'; });
+  $('#cfOk', m.el).onclick = () => {
+    const err = t => { $('#cfErr', m.el).textContent = t; };
+    const f = {
+      label: $('#cfLabel', m.el).value.trim(), id: idx >= 0 ? c.id : $('#cfId', m.el).value.trim(), type: $('#cfType', m.el).value,
+      opts: $('#cfOpts', m.el).value.split('\n').map(s => s.trim()).filter(Boolean), section: $('#cfSec', m.el).value,
+      req: $('#cfReq', m.el).checked, help: $('#cfHelp', m.el).value.trim(), unit: $('#cfUnit', m.el).value.trim(),
+      min: $('#cfMin', m.el).value, max: $('#cfMax', m.el).value,
+    };
+    if (!f.label) return err('Please enter a label.');
+    if (!/^x_[a-z0-9_]{1,30}$/.test(f.id)) return err('Variable name: start with x_, then lower-case letters, digits or _ (max 32).');
+    if (idx < 0 && (custom.some(x => x.id === f.id) || CORE_FIELD_IDS.has(f.id))) return err('That variable name is already used.');
+    if (['select', 'seg', 'multi'].includes(f.type) && f.opts.length < 2) return err('Add at least two choices.');
+    if (!['select', 'seg', 'multi'].includes(f.type)) f.opts = [];
+    if (f.type !== 'number') { f.unit = ''; f.min = ''; f.max = ''; }
+    const arr = clone(custom);
+    if (idx >= 0) arr[idx] = f; else arr.push(f);
+    Store.updateStudy(APP.sid, { custom: arr });
+    m.close();
+    toast(idx >= 0 ? 'Field updated' : 'Field added');
+  };
+}
+
+/* ==========================================================================
+   DEMO DATA — synthetic patients so the dashboard and exports can be tried
+   ========================================================================== */
+function seedDemo() {
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
+  const pick = arr => arr[Math.floor(rnd() * arr.length)];
+  const wpick = pairs => { const t = pairs.reduce((a, p) => a + p[1], 0); let r = rnd() * t; for (const [v, w] of pairs) { r -= w; if (r <= 0) return v; } return pairs[0][0]; };
+  const addD = (s, n) => { const d = new Date(Date.parse(s) + n * 864e5); return d.toISOString().slice(0, 10); };
+  const expo = mean => -Math.log(1 - rnd()) * mean;
+  const sid = 'demo-study';
+  const study = {
+    id: sid, name: 'Real-world outcomes registry (DEMO)', code: 'DEMO', desc: 'Synthetic data for trying the app. Not real patients.',
+    pi: 'Demo PI', iec: 'IEC/2026/DEMO', iecDate: '2026-01-10', sites: ['Main centre', 'Satellite clinic'], target: 300,
+    mrnLookup: true, mrnSalt: randomSalt(), sections: {}, custom: [{ id: 'x_baseline_hb', label: 'Baseline haemoglobin', type: 'number', opts: [], section: 'dx', req: false, help: '', unit: 'g/dL', min: '3', max: '20' }],
+    roles: { demo: 'admin' }, memberUids: ['demo'], people: { demo: { email: 'demo@example.org', name: 'Demo user' } }, ownerUid: 'demo', counter: 0,
+    createdAt: Date.now(), updatedAt: Date.now(),
+  };
+  const patients = {};
+  const end = today();
+  const sites = [['breast', 26], ['oral', 16], ['cervix', 12], ['lung', 10], ['gb', 6], ['stomach', 5], ['colon', 5], ['ovary', 5], ['nhl', 6], ['mm', 4], ['oeso', 5]];
+  const regimen = { breast: 'AC → Paclitaxel', oral: 'Cisplatin weekly (with RT)', cervix: 'Cisplatin weekly (with RT)', lung: 'Pemetrexed-Carboplatin',
+    gb: 'Gemcitabine-Cisplatin', stomach: 'CAPOX', colon: 'FOLFOX', ovary: 'Carboplatin-Paclitaxel', nhl: 'R-CHOP', mm: 'VRd', oeso: 'Carboplatin-Paclitaxel' };
+  const histo = { breast: 'Invasive ductal carcinoma (NST)', oral: 'Squamous cell carcinoma', cervix: 'Squamous cell carcinoma', lung: 'Adenocarcinoma',
+    gb: 'Adenocarcinoma', stomach: 'Adenocarcinoma', colon: 'Adenocarcinoma', ovary: 'High-grade serous carcinoma', nhl: 'Diffuse large B-cell lymphoma',
+    mm: 'Plasma cell myeloma', oeso: 'Squamous cell carcinoma' };
+  for (let i = 1; i <= 120; i++) {
+    const ps = wpick(sites);
+    const sex = ps === 'breast' || ps === 'cervix' || ps === 'ovary' ? 'F' : rnd() < .6 ? 'M' : 'F';
+    const dx = addD('2022-01-01', Math.floor(rnd() * 1500));
+    if (dx > end) continue;
+    const sg = ps === 'mm' ? 'Not applicable' : wpick([['I', 12], ['II', 25], ['III', 33], ['IV', 30]]);
+    const stage = sg === 'Not applicable' ? sg : sg === 'I' ? pick(['I', 'IA', 'IB']) : sg === 'II' ? pick(['IIA', 'IIB']) : sg === 'III' ? pick(['IIIA', 'IIIB', 'IIIC']) : pick(['IV', 'IVA', 'IVB']);
+    const ecog = String(wpick([[0, 20], [1, 45], [2, 25], [3, 10]]));
+    const hazardMean = { I: 140, II: 80, III: 38, IV: 14, 'Not applicable': 40 }[sg] * (ecog >= 2 ? .6 : 1) * (ps === 'gb' || ps === 'lung' || ps === 'oeso' ? .55 : ps === 'breast' ? 1.6 : 1);
+    const tDeath = expo(hazardMean) * MONTH_DAYS;
+    const fuMax = days(dx, end);
+    const lost = rnd() < .12;
+    const fuEnd = Math.min(fuMax, lost ? fuMax * rnd() : fuMax - rnd() * 60);
+    const died = tDeath < fuEnd;
+    const tEnd = Math.max(5, Math.round(died ? tDeath : fuEnd));
+    const progT = Math.round(Math.min(tEnd, expo(hazardMean * .55) * MONTH_DAYS));
+    const progressed = progT < tEnd - 5 || (died && rnd() < .8);
+    const regDate = addD(dx, Math.floor(rnd() * 20));
+    const d = {
+      site: rnd() < .75 ? 'Main centre' : 'Satellite clinic', reg_date: regDate > end ? end : regDate, enrol: rnd() < .6 ? 'P' : 'R', consent: 'Y',
+      sex, age: Math.round(Math.max(22, Math.min(85, 52 + (rnd() - .5) * 34))), state: rnd() < .85 ? 'Tamil Nadu' : pick(['Kerala', 'Andhra Pradesh', 'Karnataka']),
+      area: wpick([['U', 35], ['S', 25], ['R', 40]]), edu: String(Math.floor(rnd() * 7)), ses: String(wpick([[2, 10], [3, 30], [4, 40], [5, 20]])),
+      payer: wpick([['PMJAY', 30], ['STATE', 30], ['OOP', 25], ['PRIV', 8], ['ESI', 7]]), distance: Math.round(expo(60)),
+      smoke: sex === 'M' ? wpick([['N', 5], ['F', 3], ['C', 2]]) : 'N', smokeless: ps === 'oral' ? 'C' : wpick([['N', 8], ['C', 2]]), alcohol: sex === 'M' ? pick(['N', 'F', 'C']) : 'N',
+      comorb: [rnd() < .25 ? 'DM' : '', rnd() < .3 ? 'HTN' : ''].filter(Boolean), height: Math.round(sex === 'M' ? 165 + rnd() * 12 : 152 + rnd() * 10), weight: Math.round(45 + rnd() * 30),
+      onset: addD(dx, -Math.round(30 + expo(70))), first_visit: addD(dx, -Math.round(rnd() * 15)), dx_date: dx, psite: ps, histo: histo[ps],
+      grade: pick(['1', '2', '3']), basis: 'H', ecog, stage_sys: ps === 'nhl' ? 'LUG' : ps === 'mm' ? 'ISS' : ps === 'cervix' ? 'FIGO' : 'AJCC8', stage,
+      mets_dx: sg === 'IV' ? 'Y' : 'N', x_baseline_hb: Math.round((9 + rnd() * 5) * 10) / 10,
+      vital: died ? 'D' : lost ? 'L' : 'A', last_contact: addD(dx, tEnd),
+    };
+    if (d.mets_dx === 'Y') { d.met_sites = [pick(['LIV', 'LUN', 'BON']), rnd() < .4 ? 'DLN' : ''].filter(Boolean); d.met_setting = 'DN'; }
+    if (died) { d.death_date = addD(dx, tEnd); d.cod = rnd() < .85 ? 'CA' : 'OTH'; }
+    if (progressed && progT < tEnd) { d.recur = 'Y'; d.recur_date = addD(dx, Math.max(30, progT)); d.recur_site = ['D']; } else d.recur = 'N';
+    if (d.recur_date && d.recur_date > d.last_contact) d.recur_date = d.last_contact;
+    d.consent_date = d.reg_date;
+    d.abandon = rnd() < .1 ? 'Y' : 'N';
+    if (d.abandon === 'Y') d.abandon_why = [pick(['FIN', 'DIST', 'ALT'])];
+    const start = addD(dx, 10 + Math.floor(rnd() * 25));
+    const tx = [{ _id: uid(), intent: sg === 'IV' ? 'PAL' : pick(['CUR', 'NEO', 'ADJ']), mod: ps === 'oral' || ps === 'cervix' ? 'CRT' : 'CT', regimen: regimen[ps], start,
+      end: addD(start, 90 + Math.floor(rnd() * 60)), cyc_plan: 6, cyc_given: rnd() < .8 ? 6 : 3 + Math.floor(rnd() * 3), funding: d.payer,
+      resp: pick(['CR', 'PR', 'PR', 'SD', 'PD']), resp_crit: 'RECIST', resp_date: addD(start, 100), stop: rnd() < .8 ? 'DONE' : pick(['TOX', 'FIN', 'PD']) }];
+    if (sg === 'IV') tx[0].line = 1;
+    if (tx[0].mod === 'CRT') Object.assign(tx[0], { rt_dose: 66, rt_fx: 33, rt_tech: pick(['3D', 'IMRT']) });
+    if (progressed && d.recur_date) tx[0].pd_date = d.recur_date;
+    for (const t of tx) for (const k of ['end', 'resp_date', 'pd_date']) if (t[k] && t[k] > d.last_contact) delete t[k];
+    const tox = rnd() < .35 ? [{ _id: uid(), term: pick(['Febrile neutropenia', 'Neutrophil count decreased', 'Diarrhoea', 'Oral mucositis', 'Anaemia']), grade: pick(['3', '3', '4']),
+      date: addD(start, 20), regimen: regimen[ps], attr: 'PROB', action: pick(['DELAY', 'RED']), hosp: pick(['Y', 'N']), outcome: 'RES' }] : [];
+    const fu = [];
+    for (let t = 90; t < tEnd; t += 90 + Math.floor(rnd() * 60)) fu.push({ _id: uid(), date: addD(dx, t), status: progressed && d.recur_date && addD(dx, t) >= d.recur_date ? 'AWD' : 'NED', ecog });
+    const bio = ps === 'breast' ? [{ _id: uid(), marker: 'ER', method: 'IHC', result: rnd() < .6 ? 'POS' : 'NEG', date: dx }, { _id: uid(), marker: 'HER2', method: 'IHC', result: rnd() < .25 ? 'POS' : 'NEG', value: pick(['0', '1+', '3+']), date: dx }]
+      : ps === 'lung' ? [{ _id: uid(), marker: 'EGFR', method: 'PCR', result: rnd() < .3 ? 'POS' : 'NEG', date: dx }] : [];
+    const seq = ++study.counter;
+    const pidv = `DEMO-${pad(seq, 4)}`;
+    const p = { id: pidv, sid: pidv, seq, status: 'draft', locked: false, d, rep: { tx, tox, fu, bio }, rev: 1, mrnHash: '',
+      createdBy: 'demo', createdByName: 'Demo user', updatedBy: 'demo', updatedByName: rnd() < .5 ? 'Demo user' : 'Research nurse (demo)',
+      createdAt: Date.parse(d.reg_date), updatedAt: Date.parse(d.last_contact), verifiedBy: '', verifiedByName: '', verifiedAt: null };
+    p.comp = validate(p, study).comp;
+    const r = rnd();
+    if (p.comp === 100 && r < .7) p.status = 'complete';
+    if (p.status === 'complete' && r < .35) Object.assign(p, { locked: true, verifiedBy: 'demo', verifiedByName: 'Demo user', verifiedAt: p.updatedAt });
+    if (r > .9) { delete p.d.ecog; delete p.d.histo; p.comp = validate(p, study).comp; p.status = 'draft'; p.locked = false; }
+    patients[pidv] = p;
+  }
+  return { studies: { [sid]: study }, patients: { [sid]: patients }, audit: { [sid]: [] }, invites: {} };
+}
+
+/* ==========================================================================
+   AUTH, SESSION, BOOT
+   ========================================================================== */
+function showView(id) { for (const v of ['bootView', 'authView', 'appView']) $('#' + v).classList.toggle('hidden', v !== id); }
+
+let authMode = 'login';
+function showAuth() {
+  showView('authView');
+  $('#authMain').classList.remove('hidden');
+  $('#verifyBox').classList.add('hidden');
+  setAuthMode(authMode);
+  $('#configWarn').classList.toggle('hidden', firebaseConfigured());
+  if (fbLoadError) authErr(fbLoadError);
+}
+function setAuthMode(mode) {
+  authMode = mode;
+  $$('#authSeg button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  $('#confirmWrap').classList.toggle('hidden', mode !== 'signup');
+  $('#nameWrap').classList.toggle('hidden', mode !== 'signup');
+  $('#authSubmit').textContent = mode === 'signup' ? 'Create account' : 'Log in';
+  $('#authPass').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
+  authErr('');
+}
+function authErr(msg) { $('#authError').textContent = msg; }
+function friendlyAuthError(err) {
+  const code = (err && err.code) || '';
+  const map = {
+    'auth/email-already-in-use': 'An account with this e-mail already exists — choose “Log in”.',
+    'auth/invalid-credential': 'Wrong e-mail or password.',
+    'auth/invalid-login-credentials': 'Wrong e-mail or password.',
+    'auth/wrong-password': 'Wrong password.',
+    'auth/user-not-found': 'No account with that e-mail. Choose “Create account”.',
+    'auth/invalid-email': 'That e-mail address doesn’t look right.',
+    'auth/weak-password': 'Use at least 8 characters for the password.',
+    'auth/missing-password': 'Please enter your password.',
+    'auth/network-request-failed': 'No internet connection. Check it and try again.',
+    'auth/too-many-requests': 'Too many attempts. Please wait a few minutes and try again.',
+    'auth/user-disabled': 'This account has been disabled.',
+    'auth/operation-not-allowed': 'E-mail sign-in is not enabled. In Firebase, turn on Authentication → Email/Password.',
+    'auth/unauthorized-domain': 'This website is not authorised. Add it in Firebase → Authentication → Settings → Authorized domains.',
+    'auth/invalid-api-key': 'The Firebase config in index.html looks wrong — please paste it again.',
+    'auth/api-key-not-valid.-please-pass-a-valid-api-key.': 'The Firebase config in index.html looks wrong — please paste it again.',
+  };
+  return map[code] || 'Something went wrong' + (code ? ` (${code.replace('auth/', '')})` : '') + '. Please try again.';
+}
+
+async function onAuthSubmit(e) {
+  e.preventDefault();
+  const email = $('#authEmail').value.trim().toLowerCase();
+  const pass = $('#authPass').value;
+  const name = $('#authName').value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return authErr('Please enter a valid e-mail address.');
+  if (authMode === 'signup') {
+    if (name.length < 2) return authErr('Please enter your full name (shown to your team).');
+    if (pass.length < 8) return authErr('Use at least 8 characters for the password.');
+    if (pass !== $('#authPass2').value) return authErr('Passwords don’t match.');
+  } else if (!pass) return authErr('Please enter your password.');
+  if (!firebaseConfigured()) return authErr('Cloud sync isn’t set up yet — see the note below. You can try the demo.');
+  if (!FB.auth) return authErr(fbLoadError || 'Still loading — try again in a moment.');
+  const btn = $('#authSubmit');
+  btn.disabled = true;
+  btn.textContent = authMode === 'signup' ? 'Creating account…' : 'Logging in…';
+  authErr('');
+  try {
+    await FB.setPersistence(FB.auth, $('#authKeep').checked ? FB.browserLocalPersistence : FB.browserSessionPersistence);
+    if (authMode === 'signup') {
+      const cred = await FB.createUserWithEmailAndPassword(FB.auth, email, pass);
+      await FB.updateProfile(cred.user, { displayName: name });
+      await FB.sendEmailVerification(cred.user).catch(console.warn);
+      onUser(FB.auth.currentUser);
+    } else await FB.signInWithEmailAndPassword(FB.auth, email, pass);
+    $('#authPass').value = $('#authPass2').value = '';
+  } catch (err) {
+    console.warn(err);
+    authErr(friendlyAuthError(err));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = authMode === 'signup' ? 'Create account' : 'Log in';
+  }
+}
+
+async function forgotPassword(e) {
+  e.preventDefault();
+  const email = $('#authEmail').value.trim();
+  if (!email) return authErr('Type your e-mail address above first.');
+  if (!FB.auth) return authErr('Cloud sync isn’t set up yet.');
+  try { await FB.sendPasswordResetEmail(FB.auth, email); authErr(''); toast('If an account exists, a reset link has been sent to ' + email, 5000); }
+  catch (err) { authErr(friendlyAuthError(err)); }
+}
+
+function showVerify(user) {
+  showView('authView');
+  $('#authMain').classList.add('hidden');
+  $('#verifyBox').classList.remove('hidden');
+  $('#verifyEmail').textContent = user.email;
+  $('#verifyErr').textContent = '';
+}
+
+/** Called for every Firebase auth state. Unverified e-mail → verification screen (the rules require it). */
+function onUser(user) {
+  if (!user) {
+    if (USER && !USER.demo) location.reload();   // signed out elsewhere
+    else if (!USER) showAuth();
+    return;
+  }
+  if (!user.emailVerified) { showVerify(user); return; }
+  startSession({ uid: user.uid, email: (user.email || '').toLowerCase(), name: user.displayName || user.email });
+}
+
+function startSession(user) {
+  if (USER && USER.uid === user.uid) return;
+  USER = user;
+  Store = user.demo ? Demo : Cloud;
+  if (user.demo) Demo.load();
+  showView('appView');
+  APP.unsubGlobal.push(Store.watchStudies(list => { APP.studies = list; APP.studiesLoaded = true; if (APP.view === 'studies') renderStudies(); }));
+  APP.unsubGlobal.push(Store.watchMyInvites(list => { APP.invites = list; if (APP.view === 'studies') renderStudies(); }));
+  lastHash = location.hash;
+  applyRoute(parseHash());
+}
+
+async function logout() {
+  if (EDIT && EDIT.dirty && !confirm('You have unsaved changes. Log out anyway?')) return;
+  if (EDIT) EDIT.dirty = false;
+  if (USER && USER.demo) {
+    sessionStorage.removeItem('oncoregistry-demo-on');
+    location.hash = '';
+    location.reload();
+    return;
+  }
+  APP.unsubStudy.forEach(u => u());
+  APP.unsubGlobal.forEach(u => u());
+  try {
+    await FB.signOut(FB.auth);
+    // Remove the offline copy of study data from this browser (important on shared computers).
+    await FB.terminate(FB.db);
+    await FB.clearIndexedDbPersistence(FB.db);
+  } catch (e) { console.warn(e); }
+  location.hash = '';
+  location.reload();
+}
+
+function startDemo() {
+  sessionStorage.setItem('oncoregistry-demo-on', '1');
+  startSession({ uid: 'demo', email: 'demo@example.org', name: 'Demo user', demo: true });
+}
+
+async function boot() {
+  $('#dl-regimens').innerHTML = REGIMENS.map(r => `<option value="${esc(r)}">`).join('');
+  $('#dl-ctcae').innerHTML = CTCAE.map(r => `<option value="${esc(r)}">`).join('');
+  $('#dl-histo').innerHTML = HISTO.map(r => `<option value="${esc(r)}">`).join('');
+  $('#authForm').addEventListener('submit', onAuthSubmit);
+  $$('#authSeg button').forEach(b => b.addEventListener('click', () => setAuthMode(b.dataset.mode)));
+  $('#forgotLink').addEventListener('click', forgotPassword);
+  $('#demoBtn').addEventListener('click', startDemo);
+  $('#logoutBtn').addEventListener('click', logout);
+  $('#verifyDone').addEventListener('click', async () => {
+    const u = FB.auth.currentUser;
+    if (!u) return showAuth();
+    await u.reload();
+    if (!FB.auth.currentUser.emailVerified) { $('#verifyErr').textContent = 'Not verified yet — open the link in the e-mail first.'; return; }
+    await FB.auth.currentUser.getIdToken(true);   // refresh the token so the security rules see the verified e-mail
+    onUser(FB.auth.currentUser);
+  });
+  $('#verifyResend').addEventListener('click', async () => {
+    try { await FB.sendEmailVerification(FB.auth.currentUser); toast('Verification e-mail sent'); }
+    catch (err) { $('#verifyErr').textContent = friendlyAuthError(err); }
+  });
+  $('#verifyLogout').addEventListener('click', async () => { await FB.signOut(FB.auth); showAuth(); });
+
+  if (sessionStorage.getItem('oncoregistry-demo-on') === '1') return startDemo();
+  if (!firebaseConfigured()) return showAuth();
+  try {
+    await loadFirebase();
+  } catch (err) {
+    console.warn('Firebase failed to load', err);
+    fbLoadError = navigator.onLine ? 'Could not start the sync service (' + (err.code || err.message || 'unknown error') + ').' : 'You are offline. Connect to the internet to log in.';
+    return showAuth();
+  }
+  FB.onAuthStateChanged(FB.auth, onUser);
+}
+boot();
+</script>
+</body>
+</html>
