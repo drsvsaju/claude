@@ -804,13 +804,13 @@ body.focus-dim :is(.top, #tab-timer .grid-2 > .stack:nth-child(2), #tab-timer .s
   transition: background-color .45s var(--ease), color .45s var(--ease), border-color .45s var(--ease), fill .45s, stroke .45s !important;
 }
 
-@media (min-width: 641px) and (max-width: 780px) { .brand span { display: none; } }
+@media (min-width: 641px) and (max-width: 780px) { .brand span:not(.brand-deco) { display: none; } }
 @media (max-width: 640px) {
   .sync b { display: none; }
   .lvchip .uname { display: none; }
   .lvchip { margin-left: 0; padding-right: 8px; }
 }
-@media (max-width: 359px) { .brand span { display: none; } }
+@media (max-width: 359px) { .brand span:not(.brand-deco) { display: none; } }
 /* prefers-reduced-motion is handled by the Animations setting (data-motion on <html>). */
 
 /* ==========================================================================
@@ -1424,10 +1424,12 @@ h1 { font-size: var(--fs-xl); font-weight: 650; letter-spacing: -.01em; }
 .hdr-count { position: absolute; top: -4px; right: -5px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff; font: 700 10.5px/17px system-ui, sans-serif; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
 :root[data-motion="full"] .hdr-count:not(.hidden) { animation: dotPop .4s var(--spring) both; }
 @media (max-width: 640px) { .hdr-right { gap: 6px; } .hdr-right #cmdBtn { display: inline-grid; } }
-@media (max-width: 380px) { .brand span { display: none; } }
+@media (max-width: 380px) { .brand span:not(.brand-deco) { display: none; } }
+/* Phones up to 440px: with the bag, coins and level chip in the header there's no room for the name too (the logo dot stays). */
+@media (max-width: 440px) { :root:not([data-minimal]) #appView .brand span:not(.brand-deco) { display: none; } }
 @media (max-width: 480px) { .lvchip .lvn { display: none; } .coinpill { padding-left: 7px; padding-right: 9px; } }
 /* Tablets: keep the header on one line next to the tab bar */
-@media (min-width: 641px) and (max-width: 1000px) { .brand span, .lvchip .lvn { display: none; } .hdr-right { gap: 6px; } }
+@media (min-width: 641px) and (max-width: 1000px) { .brand span:not(.brand-deco), .lvchip .lvn { display: none; } .hdr-right { gap: 6px; } }
 @media (min-width: 641px) and (max-width: 760px) { #coinPill { display: none !important; } .top { gap: 8px; } }
 
 /* ---------- Side sheets (inbox) and the command palette ---------- */
@@ -8514,6 +8516,12 @@ function renderBossView(host) {
         <span class="sbar"><i style="transform:scaleX(${st.rawDmg ? (m.min / Math.max(st.rawDmg, 1)).toFixed(3) : 0})"></i></span></li>`).join('')}</ul>
       <p class="lbl" style="margin:10px 0 0">Everyone’s focus minutes this week (Mon–Sun) hit the boss together. Friends’ numbers update every few minutes.</p></div>` : '';
   const nb = bossOfWeek(addDays(st.mon, 7)), nbDays = Math.max(1, Math.ceil((addDays(st.mon, 7) - Date.now()) / 864e5));
+  const sqb = view === 'solo' ? bossBattle('squad') : null;
+  const squadTeaser = !sqb ? '' : `<div class="card squad-teaser"><div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Squad battle</h2>${sqb.done ? '<span class="lbl ok">✓ Won this week</span>' : ''}</div>
+      ${!canSquad ? '<p class="muted" style="margin:0;font-size:14px">Log in and add friends to fight bosses together.</p>'
+        : !friendsN ? '<p class="muted" style="margin:0 0 10px;font-size:14px">Add friends to build a squad of up to 5.</p><button class="btn small" data-gofriends>Add friends</button>'
+        : !sqb.formed ? '<p class="muted" style="margin:0 0 10px;font-size:14px">Team up with up to 5 friends against this boss: a bigger boss and a bigger reward. Your Solo battle keeps going.</p><button class="btn small primary" id="squadEdit">Pick your squad</button>'
+        : `<p class="muted" style="margin:0 0 10px;font-size:14px">${sqb.members.length} fighters · ${fmtNum(sqb.done ? sqb.hp : Math.min(sqb.rawDmg, sqb.hp))} / ${fmtNum(sqb.hp)} HP done</p><div class="btn-row" style="align-items:center"><button class="btn small" data-bmode="squad">Open the squad battle</button>${sqb.done ? '' : '<button class="linkbtn" id="squadEdit">Edit squad</button>'}</div>`}</div>`;
   const pendCard = pendOther.length ? `<div class="card claim-card"><h2>Rewards to claim</h2><ul class="claim-list">${pendOther.map(p => `<li><span class="cl-art">${bossSVG(p.boss.id)}</span><span><b>${esc(p.boss.name)}</b><span class="lbl">${p.mode === 'squad' ? 'Squad' : 'Solo'} victory</span></span><button class="btn primary small" data-bclaim="${p.boss.id}|${p.mode}">Claim</button></li>`).join('')}</ul></div>` : '';
   host.innerHTML = `
     <div class="quest-grid">
@@ -8540,7 +8548,7 @@ function renderBossView(host) {
       </div>
       <div class="stack">
         ${pendCard}
-        ${squadCard}
+        ${squadCard}${squadTeaser}
         <div class="card"><h2>Rewards for ${esc(b.short)}</h2>
           ${rewardCell(BOSS_REWARDS.solo(b.id), 'Solo victory', 'Its own app theme + a special aura in its colours', rewardsClaimed(b.id, 'solo'))}
           ${rewardCell(BOSS_REWARDS.squad(b.id), 'Squad victory', 'Its name colour + a shimmering squad aura', rewardsClaimed(b.id, 'squad'))}
@@ -8668,11 +8676,11 @@ const profAura = p => (p && !p.denied && SPECIAL_AURAS[p.aura] ? p.aura : '');
 function auraCard() {
   const s = myStreak(), cur = auraFor(s), next = AURAS.find(a => s < a.min), sp = SPECIAL_AURAS[myAura()];
   const owned = Object.keys(SPECIAL_AURAS).filter(isOwned).length;
-  return `<div class="card"><div class="row between"><h2 style="margin:0">Aura</h2>${owned ? '<button class="linkbtn" data-gotab="bag" data-bagcat="aura">Choose in your bag</button>' : ''}</div>
-    <p style="margin:8px 0 0;font-size:14px">${sp ? `You’re showing your special <b>${esc(sp.name)}</b> — it replaces your streak aura, and friends see it too.` : cur ? `Your <b>${cur.name}</b> aura glows from your ${s}-day streak.` : 'Keep a 3-day streak to light up your first aura.'}
+  return `<div class="card"><h2>Aura</h2>
+    <p style="margin:0;font-size:14px">${sp ? `You’re showing your special <b>${esc(sp.name)}</b> — it replaces your streak aura, and friends see it too.` : cur ? `Your <b>${cur.name}</b> aura glows from your ${s}-day streak.` : 'Keep a 3-day streak to light up your first aura.'}
       ${sp ? '' : next ? `<span class="muted">Next aura at <b>${next.min} days</b> (${next.min - s} to go).</span>` : '<span class="muted">The rarest aura — legendary consistency.</span>'}</p>
     <div class="aura-tiers">${AURAS.map(a => `<div class="at${!sp && cur && cur.id === a.id ? ' cur' : ''}${s < a.min ? ' locked' : ''}"><span class="dot aura aura-${a.id}"></span>${a.name}<br>${a.min}+ days</div>`).join('')}</div>
-    <p class="lbl" style="margin:10px 0 0">Bosses and monthly questlines give special auras${owned ? ` — you own ${owned}` : ''}.</p></div>`;
+    <p class="lbl" style="margin:10px 0 0">Bosses and monthly questlines give special auras${owned ? ` — you own ${owned}. <button class="linkbtn" data-gotab="bag" data-bagcat="aura">Choose one in your bag</button>` : '.'}</p></div>`;
 }
 
 /* ==========================================================================
