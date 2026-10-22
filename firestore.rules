@@ -67,9 +67,9 @@ service cloud.firestore {
     }
     function validProfile() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'streak', 'longest', 'hours', 'joined', 'updatedAt'])
+      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'streak', 'longest', 'hours', 'joined', 'updatedAt'])
         && d.username == myName()
-        && validAvatar(d)
+        && validAvatar(d) && validAura(d)
         && d.level is int && d.level >= 1 && d.level <= 1000
         && d.tier is string && d.tier.size() <= 20
         && d.frame is string && d.frame.size() <= 30
@@ -84,6 +84,10 @@ service cloud.firestore {
     function validAvatar(d) {
       return !('avatar' in d) || (d.avatar is string && d.avatar.size() <= 30);
     }
+    // Chosen special aura (optional, v1.12+): a short id such as "au_b_dragon_sq". Missing = the streak aura.
+    function validAura(d) {
+      return !('aura' in d) || (d.aura is string && d.aura.size() <= 30);
+    }
 
     // ---------------- Leaderboard stats ----------------
     match /publicStats/{uid} {
@@ -95,11 +99,11 @@ service cloud.firestore {
     }
     function validStats() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'global',
+      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'global',
                                'dayKey', 'dayMin', 'weekKey', 'weekMin', 'weekKeySun', 'weekMinSun',
                                'monthKey', 'monthMin', 'lifeMin', 'lastWeekKey', 'lastWeekMin', 'updatedAt'])
         && d.username == myName()
-        && validAvatar(d)
+        && validAvatar(d) && validAura(d)
         && d.global is bool
         && d.level is int && d.level >= 1 && d.level <= 1000
         && d.tier is string && d.tier.size() <= 20 && d.frame is string && d.frame.size() <= 30 && d.color is string && d.color.size() <= 30
