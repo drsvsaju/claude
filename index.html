@@ -1073,7 +1073,7 @@ body.focus-dim :is(.top, #tab-timer .grid-2 > .stack:nth-child(2), #tab-timer .s
 .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; }
 .trophy { text-align: center; padding: 10px 6px 8px; border-radius: 14px; background: linear-gradient(180deg, transparent 60%, var(--accent-soft)); border: 1px solid var(--line); }
 .trophy svg { width: 54px; height: 54px; }
-.trophy .tn { font-size: 11.5px; font-weight: 600; line-height: 1.25; margin-top: 2px; }
+.trophy .tn { font-size: 11.5px; font-weight: 600; line-height: 1.25; margin-top: 2px; overflow-wrap: anywhere; hyphens: auto; }
 .trophy .tw { font-size: 10.5px; color: var(--muted); }
 .trophy .tm { font-size: 10px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
 .aura-tiers { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
@@ -1987,7 +1987,8 @@ body.sp-handoff #mascot { opacity: 0; }
    Animations setting (full / reduced / off).
    ========================================================================== */
 .q-switch { display: flex; justify-content: center; margin: 0 0 16px; }
-.q-switch .seg button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; }
+.q-switch .seg button { display: inline-flex; align-items: center; gap: 6px; }
+@media (pointer: coarse) { .catrow button { min-width: 44px; flex: none; } }
 .sdot { width: 7px; height: 7px; border-radius: 50%; background: var(--danger); display: inline-block; box-shadow: 0 0 0 2px var(--surface); }
 .arena-card { overflow: hidden; }
 .arena-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -2098,7 +2099,7 @@ body.sp-handoff #mascot { opacity: 0; }
 .hall-card:not(.won) .hc-art svg { filter: brightness(0) opacity(.22); }
 :root[data-theme="dark"] .hall-card:not(.won) .hc-art svg { filter: brightness(0) invert(1) opacity(.18); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hall-card:not(.won) .hc-art svg { filter: brightness(0) invert(1) opacity(.18); } }
-.hc-n { font-size: 12.5px; font-weight: 650; line-height: 1.25; margin-top: 2px; }
+.hc-n { font-size: 12.5px; font-weight: 650; line-height: 1.25; margin-top: 2px; overflow-wrap: anywhere; hyphens: auto; }
 .hc-s { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 .hc-s .stars { color: #d9a514; letter-spacing: 1px; font-size: 12.5px; }
 .hc-m { display: flex; gap: 4px; justify-content: center; margin-top: 4px; }
@@ -2220,7 +2221,7 @@ body.sp-handoff #mascot { opacity: 0; }
 /* Bag */
 .bag-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .bag-title { margin: 0; font-size: 24px; }
-#bagSearch { width: min(280px, 100%); padding: 9px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; min-height: 40px; }
+#bagSearch { width: min(280px, 100%); padding: 9px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; min-height: 44px; }
 .bag-grid { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 16px; align-items: start; }
 .bag-look { position: sticky; top: 76px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 .look-badge { padding: 10px; }
@@ -3651,6 +3652,7 @@ function defaultState() {
     tomb: {},       // 'reminders:<id>' -> when it was deleted (see SYNC MERGE)
     remFired: {},   // '<reminderId>@<day>@<time>' -> when it rang (on any device)
     onboarded: false,  // finished or skipped the tutorial (synced, so it shows once per account)
+    wipedAt: 0,     // when "Erase all data" was last used (other devices then drop their copy instead of merging it back)
     revisions: [],  // spaced-revision topics (see SPACED REVISION)
     exams: [],      // { id, name, date, added }
     parked: [],     // distraction parking lot, last 50
@@ -3689,6 +3691,7 @@ function hydrate(obj) {
   for (const k of ['tomb', 'remFired']) if (!out[k] || typeof out[k] !== 'object' || Array.isArray(out[k])) out[k] = {};
   if (!out.names || typeof out.names !== 'object' || Array.isArray(out.names)) out.names = {};
   out.game = normalizeGame(obj.game);
+  out.wipedAt = +obj.wipedAt || 0;
   return out;
 }
 
@@ -3730,6 +3733,10 @@ let monthDocIds = [];
 let pendingWrites = 0;
 let syncError = false;
 let pushTimer;
+// Leaving the page (or the app going to the background): upload a change that is still waiting, right away.
+const flushProfile = () => { if (pushTimer) { clearTimeout(pushTimer); pushTimer = 0; pushProfile(); } };
+addEventListener('pagehide', flushProfile);
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushProfile(); });
 let localEditPending = false; // edited here but not uploaded yet: don't let a cloud snapshot overwrite it
 
 const firebaseConfigured = () => !/PASTE_/.test(firebaseConfig.apiKey + firebaseConfig.projectId);
@@ -3746,6 +3753,8 @@ async function loadFirebase() {
     import(base + 'firebase-firestore.js'),
   ]);
   Object.assign(FB, appM, authM, fsM);
+  // Retried transactions (two devices claiming the same reward) and reconnects are normal: keep them out of the console.
+  if (fsM.setLogLevel) fsM.setLogLevel('error');
   FB.app = FB.initializeApp(firebaseConfig);
   FB.auth = FB.getAuth(FB.app);
   if (USE_EMULATOR) FB.connectAuthEmulator(FB.auth, 'http://127.0.0.1:9099', { disableWarnings: true });
@@ -3781,6 +3790,7 @@ function profileFromState() {
     notes: recentNotes(),
     energy: recentEnergy(),
     onboarded: !!S.onboarded,
+    wipedAt: +S.wipedAt || 0,
     tomb: pruneMap(S.tomb, 120 * DAY_MS),
     remFired: pruneMap(S.remFired, 3 * DAY_MS),
     revisions: S.revisions,
@@ -3806,7 +3816,7 @@ function scheduleProfilePush() {
   if (!USER || USER.guest) return;
   localEditPending = true;
   clearTimeout(pushTimer);
-  pushTimer = setTimeout(pushProfile, 700);
+  pushTimer = setTimeout(() => { pushTimer = 0; pushProfile(); }, 700);
   schedulePublish();  // public profile / leaderboard numbers (deduplicated, debounced)
 }
 
@@ -3871,22 +3881,44 @@ function renderSync() {
 window.addEventListener('online', () => { syncError = false; renderSync(); });
 window.addEventListener('offline', renderSync);
 
+/**
+ * The cloud's game record merged with ours. Purchases, claims, trophies, rewards, used freezes and parked-thought
+ * marks are only ever added, so keys only this device has (e.g. saved just before the page closed, before the
+ * upload) are kept and uploaded; equipped items follow the cloud. Returns { game, ahead }.
+ */
+function mergeGame(local, remote) {
+  const out = normalizeGame(remote), loc = normalizeGame(local);
+  let ahead = false;
+  const uni = (a, b) => { for (const [k, v] of Object.entries(b)) if (!(k in a)) { a[k] = v; ahead = true; } };
+  for (const k of ['purchases', 'trophies', 'grants', 'freezesUsed', 'plog']) uni(out[k], loc[k]);
+  for (const k of Object.keys(out.claims)) uni(out.claims[k], loc.claims[k]);
+  for (const [k, v] of Object.entries(loc.equipped)) if (!(k in out.equipped)) { out.equipped[k] = v; ahead = true; }
+  if (loc.seenAt > out.seenAt) { out.seenAt = loc.seenAt; ahead = true; }
+  return { game: out, ahead };
+}
+
 /** Apply the cloud profile to local state. */
 function applyProfile(d) {
   const def = defaultState();
   S.settings = { ...def.settings, ...(d.settings || {}) };
+  if ((+d.wipedAt || 0) > (+S.wipedAt || 0)) {   // erased on another device: take the cloud copy as it is, merge nothing back
+    for (const f of SYNC_LISTS) S[f] = f === 'presets' ? defaultState().presets : [];
+    S.tomb = {}; S.game = normalizeGame(null); S.wipedAt = +d.wipedAt;
+    snapLists();
+  }
   const ahead = mergeSyncFrom(d);   // reminders, revisions, exams, parked, presets, templates: item by item
   S.activePresetId = S.presets.some(p => p.id === d.activePresetId) ? d.activePresetId : S.activePresetId;
   S.names = {};
   for (const n of d.names || []) if (n && n.name) S.names[n.name] = { color: n.color || hashColor(n.name), tag: n.tag || '' };
   S.recent = Array.isArray(d.recent) ? d.recent : [];
   S.pinned = Array.isArray(d.pinned) ? d.pinned : [];
-  S.game = normalizeGame(d.game);
+  const mg = mergeGame(S.game, d.game);   // add-only maps: what this device saved last is never dropped
+  S.game = mg.game;
   S.onboarded = !!(d.onboarded || S.onboarded);
   for (const k of ['abandoned', 'squad']) if (Array.isArray(d[k])) S[k] = d[k].filter(x => x && typeof x === 'object');
   S.timer.round = Math.min(S.timer.round, activePreset().rounds);
   lastProfileJSON = JSON.stringify(profileFromState());
-  if (ahead) { lastProfileJSON = ''; scheduleProfilePush(); }   // the cloud is missing some of ours: upload the merged copy
+  if (ahead || mg.ahead) { lastProfileJSON = ''; scheduleProfilePush(); }   // the cloud is missing some of ours: upload the merged copy
   saveLocal();
   applyCosmetics();
   syncNameInputs();
@@ -8346,9 +8378,9 @@ function pendingBossRewards() {
 function grantItems(ids, src, at) { for (const id of ids) if (ITEM_BY_ID[id] && !S.game.grants[id]) S.game.grants[id] = { src, at }; G = null; }
 /**
  * Claim a one-time reward in the cloud first — a transaction on users/{uid} — so two devices can't
- * both claim it. kind: 'brew' (boss rewards) | 'quests' (questline). Returns the claim time, or 0 if it
- * was already claimed. Offline or on "this device only" the claim is local; the claim keys are unique,
- * so syncing later can never turn one claim into two.
+ * both claim it. kind: 'brew' (boss rewards) | 'quests' (questline). Returns the claim time, 0 if it was
+ * already claimed, or -1 if the server couldn't be asked (try again). Offline or on "this device only"
+ * the claim is local; the claim keys are unique, so syncing later can never turn one claim into two.
  */
 async function claimOnce(kind, key, at = Date.now()) {
   if (S.game.claims[kind][key]) return 0;
@@ -8364,15 +8396,17 @@ async function claimOnce(kind, key, at = Date.now()) {
       }),
       new Promise(res => setTimeout(() => res('timeout'), 6000)),
     ]);
-    return r === 'timeout' ? at : r;
-  } catch (e) { return at; }
+    return r === 'timeout' ? -1 : r;
+  } catch (e) { return navigator.onLine ? -1 : at; }
 }
+const claimLater = () => toast('Couldn’t reach the server — try again in a moment', 3200);
 let bossClaiming = false;
 async function claimBossRewards(id, mode) {
   if (bossClaiming || !rewardsReady() || !BOSS_BY_ID[id] || rewardsClaimed(id, mode)) return;
   bossClaiming = true;
   const at = await claimOnce('brew', id + '|' + mode);
   bossClaiming = false;
+  if (at < 0) { claimLater(); return; }
   if (!at) { toast('Already claimed on your other device — it’s in your bag', 3200); return; }
   if (rewardsClaimed(id, mode)) return;
   S.game.claims.brew[id + '|' + mode] = at;
@@ -11175,7 +11209,7 @@ function startPreview() {
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
 const PV_BLOCK = ['#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
-  '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-bmode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
+  '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]',
@@ -11346,6 +11380,7 @@ async function claimQuest(evId, qid) {
   if (now >= evEnd(ev) || now < evStart(ev)) { questClaiming = false; toast(`${ev.name} has ended — its rewards are in Past events`, 3600); renderQuests(); return; }
   const at = await claimOnce('quests', key, now);
   questClaiming = false;
+  if (at < 0) { claimLater(); return; }
   if (!at) { toast('Already claimed on your other device — it’s in your bag', 3200); return; }
   if (S.game.claims.quests[key]) return;
   S.game.claims.quests[key] = at;
@@ -12336,6 +12371,7 @@ $('#wipeBtn').addEventListener('click', () => {
   const where = USER.guest ? 'on this device' : 'in your account on ALL devices';
   if (!confirm(`Erase ALL sessions, presets and settings ${where}? This cannot be undone.`)) return;
   S = defaultState();
+  S.wipedAt = Date.now();
   if (socialReady()) {
     // Public totals can only grow (security rules), so remove them and let them be re-created from zero.
     for (const col of ['publicStats', 'activity', 'publicProfiles', 'presence']) { delete lastPub[col]; trackWrite(FB.deleteDoc(FB.doc(FB.db, col, USER.uid))); }
