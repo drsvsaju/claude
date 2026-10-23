@@ -10406,6 +10406,8 @@ function cmdList(q) {
   if (wp.length) add('🎁', `Open ${wp[0].kind === 'year' ? wp[0].label : wp[0].short} Wrapped`, 'Stats', () => { showTab('stats'); openWrapped(0); }, 'wrapped story recap');
   if (loginOn() && !loginToday().claimed) add('🎁', 'Claim daily reward', 'Rewards', () => { showTab('profile'); openLoginDlg(); }, 'login daily');
   add('📅', 'Manage exams', 'Timer', openExams, 'exam countdown');
+  add('🪪', 'Share my player card', 'Profile', () => { showTab('profile'); openShareDlg(); }, 'card share image link stats profile png');
+  add('🪪', 'Customise my player card', 'Profile', () => { showTab('profile'); openCardDlg(); }, 'card style banner featured privacy');
   if (S.settings.gamification) {
     add('🎒', 'Open your bag', 'Rewards', () => showTab('bag'), 'inventory items equip loadout');
     add('⚔️', 'Weekly boss', 'Quests', () => { S.ui.questView = 'boss'; showTab('quests'); }, 'boss battle squad solo trophy hall');
@@ -12837,7 +12839,7 @@ function landStamp(s) {
   el.innerHTML = `<i class="ink" aria-hidden="true"></i>${stampSVG(sessionStamp(s), 64)}`;
   host.appendChild(el);
   const m = motion();
-  if (m !== 'off') requestAnimationFrame(() => el.classList.add('go'));
+  if (m !== 'off') { void el.offsetWidth; el.classList.add('go'); }   // start from the first frame (no wait for an animation frame)
   setTimeout(() => { playStampSound(); if (m === 'full') haptic(18); }, m === 'full' ? 330 : 0);
 }
 /** A soft stamp: a low thump and a papery tap (master Sound + interface sounds). */
