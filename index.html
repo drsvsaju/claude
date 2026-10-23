@@ -2499,6 +2499,7 @@ body.first-load #todayBar { opacity: 0; }
 
 /* ==========================================================================
    v1.13.1 — boss tiers, tiered reward looks, boss profile pictures
+   v1.14 — clans (study groups: roles, levels, shop, planned + live sessions, quest, raid, leaderboard), to-do list
    ========================================================================== */
 .btier { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 650; color: var(--muted); white-space: nowrap; }
 .btier .bt-s { color: #d9a514; letter-spacing: .5px; }
@@ -2760,6 +2761,25 @@ body.first-load #todayBar { opacity: 0; }
 .clan-prof .desc { font-size: 13px; color: var(--muted); }
 .clan-prof-ic svg { width: 36px; height: 36px; color: var(--accent); }
 .bag-item.locked .pv > * { filter: grayscale(.85); opacity: .55; }
+.lv-r { width: 44px; height: 44px; }
+.cm-more summary { width: 44px; height: 44px; }
+.cm-menu { top: 44px; }
+.lv-sum .ib-x { width: 44px; height: 44px; display: grid; place-items: center; top: 4px; right: 4px; }
+.crem .rem-main { flex: 1; min-width: 0; }
+.crem .rs { white-space: normal; overflow-wrap: anywhere; }
+.crem .rem-acts { flex: none; display: flex; align-items: center; gap: 4px; }
+.clan-none h2, .lv-sum h2 { text-transform: none; letter-spacing: 0; color: var(--text); font-size: 20px; }
+.lv-pomeo { position: static; align-self: flex-end; order: 99; opacity: .95; }
+.clan-title { padding-top: 36px; }
+.clan-lv { margin-bottom: 4px; }
+#csTabs { display: flex; flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; }
+#csTabs::-webkit-scrollbar { display: none; }
+#csTabs button { padding: 6px 11px; white-space: nowrap; flex: none; }
+.clan-dlg .row > div { display: grid; align-content: start; }
+#csGrid { grid-template-columns: repeat(auto-fill, minmax(min(118px, 100%), 1fr)); overflow-x: hidden; }
+#csGrid .item { min-width: 0; }
+#csGrid .item .nm { overflow-wrap: anywhere; }
+#csGrid .act .btn { min-width: 0; }
 </style>
 </head>
 <body>
@@ -3471,7 +3491,7 @@ body.first-load #todayBar { opacity: 0; }
 <dialog id="clanShopDlg" class="clan-dlg cshop-dlg" aria-labelledby="csTitle">
   <div class="row between" style="gap:8px;flex-wrap:wrap"><h2 id="csTitle" style="margin:0">Clan shop</h2><span class="lbl" id="csPts"></span></div>
   <p class="lbl" style="margin:6px 0 10px">Clan Points come from clan focus, levels, weekly quests and raids — never money. Everything here is cosmetic.</p>
-  <div class="seg" id="csTabs" style="margin-bottom:12px;flex-wrap:wrap"><button data-cst="emblem">Emblems</button><button data-cst="banner">Banners</button><button data-cst="theme">Colours</button><button data-cst="frame">Frames</button></div>
+  <div class="seg" id="csTabs" style="margin-bottom:12px"><button data-cst="emblem">Emblems</button><button data-cst="banner">Banners</button><button data-cst="theme">Colours</button><button data-cst="frame">Frames</button></div>
   <p class="lbl" id="csNote" style="margin:0 0 8px"></p>
   <div class="shopgrid" id="csGrid"></div>
   <div class="btn-row" style="justify-content:flex-end;margin-top:12px"><button class="btn" id="csClose" type="button">Close</button></div>
@@ -7223,6 +7243,7 @@ function showLevelUp(from, to) {
      friendships/{a_b}        request or friendship (a = smaller uid)
      inbox/{uid}/items/{id}   kudos and nudges — preset reactions only, no text
      challenges/{id}          weekly challenge with each member's progress
+     clans/… clanNames/… clanCodes/… clanOf/…   clans (see CLANS below)
    Reads are kept low for the free plan: leaderboards and friends' data are
    cached for a few minutes, and a friend's history loads only when opened.
    ========================================================================== */
@@ -10649,9 +10670,10 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
    command palette, offline banner, pull to refresh, tab swipes, haptics.
    Everything here is stored on this device (localStorage); no new cloud data.
    ========================================================================== */
-const APP_VERSION = '1.13.1';
+const APP_VERSION = '1.14';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
+  { v: '1.14', t: 'Clans and a to-do list', d: 'Clans are your study group: create one or join with a link or code (approval or open), Leader / Officer / Member roles, clan levels 1–30 from the focus you do after joining, Clan Points for a cosmetic clan shop (emblems, banners, colours, frames), clan cosmetics in your bag (clan tag, name colours, auras, a shield frame), a weekly clan quest, a monthly raid boss, planned group sessions with RSVPs and reminders, live sessions on one shared timer with a study table and preset reactions (no chat), a clan leaderboard, an activity feed, an MVP and a trophy case. Plus a to-do list inside Reminders: due dates, priorities, tags, notes, a checklist that becomes subtasks, drag to reorder and swipe on phones.' },
   { v: '1.13.1', t: 'No more interruptions during focus, boss difficulty tiers, boss profile pictures, new intro', d: 'Nothing pops up over a focus block any more (daily rewards, level-ups, achievements, tips and Pomeo’s news wait and come one at a time when it ends; a due reminder is a slim banner). Each boss now has its own HP from 300 (Easy) to 600 (Legendary), with Squad HP growing by 60% per extra member, and harder bosses give rarer, fancier rewards — including a chibi profile picture for every boss (golden for Squad wins). Plus a short intro the first time you visit.' },
   { v: '1.13', t: 'Player cards, a living sky and completion stamps', d: 'A player card at the top of your Profile with a stats board (focus hours, streaks, a mini week chart and 12-week heatmap, top subjects, best focus time, bosses and garden), up to 3 featured slots, banners and card styles — save it as an image or share a read-only link, with a switch for every stat. An optional time-of-day background (sunrise, day, sunset, stars at night, plus a Rain mood), and a stamp that lands on every finished session, collectable in the Shop and from bosses and events.' },
   { v: '1.12', t: 'Boss arena, your bag and Pomeo’s questlines', d: 'Ten weekly bosses in a new arena (Solo and Squad are separate battles you can switch between freely, each with its own rewards, plus a Trophy Hall), a bag with everything you own, loadouts and special auras friends can see, and monthly Pomeo questlines starting with Pomeo’s Halloween — with optional festive touches.' },
@@ -10671,7 +10693,7 @@ const CHANGELOG = [
   { v: '1.1', t: 'Accounts & sync', d: 'Log in and keep your sessions in sync on every device, even offline.' },
   { v: '1.0', t: 'Focus timer', d: 'Pomodoro timer with named sessions, presets, streaks and stats.' },
 ];
-const NEWS = ['🤫 No more interruptions during focus: rewards and tips wait until the block ends', '⚔️ Boss difficulty tiers: 300–600 HP, rarer rewards for harder bosses', '🖼️ Boss profile pictures for every victory (golden for Squad wins)', '✨ A new intro for first-time visitors', '🪪 Your player card: stats board, banners, styles and featured wins — share it as an image or a link (Profile)', '🌅 A time-of-day sky behind the app, with an optional Rain mood (Settings → Appearance)', '✅ Completion stamps land on every finished session — collect more in the Shop, from bosses and events', '🔒 Choose exactly what your card shows; notes, reminders and email are never shared'];
+const NEWS = ['🛡️ Clans: your study group — create one or join with a link or code', '🔴 Study live on one shared timer, at a study table with your clan (reactions, no chat)', '📅 Plan group sessions: RSVP, a reminder 5–30 min before, add to your calendar', '⭐ Clan levels, Clan Points and a cosmetic clan shop; clan tags, colours and auras in your bag', '🏆 A weekly clan quest, a monthly raid boss, a clan leaderboard and a trophy case', '☑️ A to-do list in Reminders: due dates, priorities, tags and a checklist that becomes subtasks', '🔒 Members-only clan data, approval by default, and leave / remove / disband any time'];
 
 /* ---------- Haptics ---------- */
 const HAPTIC_KEY = 'pomodorolist-haptics';
@@ -14496,7 +14518,9 @@ function clanSaveLocal() {
   const { busy, started, card, rankBusy, ...keep } = CLAN;
   writeLS(clanKey(), keep);
 }
-function clanReset() { Object.assign(CLAN, { id: '', doc: null, me: null, info: null, members: null, sessions: null, feed: null, lives: [], requests: [], at: {}, rank: null }); G = null; }
+function clanReset() {
+  if (typeof liveWatch !== 'undefined' && liveWatch) { liveWatch(); liveWatch = null; }
+  Object.assign(CLAN, { id: '', doc: null, me: null, info: null, members: null, sessions: null, feed: null, lives: [], requests: [], at: {}, rank: null }); G = null; }
 /** Clan names: 3–24 letters, digits, spaces and . _ ' - ; the same word filter as usernames. */
 function clanNameProblem(name) {
   const n = String(name || '').trim();
@@ -14541,7 +14565,9 @@ async function clanRefresh(withDetails = false) {
     const id = of.exists() ? of.data().clan : '';
     if (!id) {
       if (CLAN.id && CLAN.doc) inboxAdd({ type: 'clan', key: 'clanleft:' + CLAN.id + ':' + Date.now().toString().slice(0, -5), title: `You’re no longer in ${CLAN.doc.name}`, go: { tab: 'clan' } });
+      const was = !!CLAN.id;
       clanReset();
+      if (was) { writeLS(clanQKey(), []); applyCosmetics(); schedulePublish(); }   // removed or disbanded while away: clan cosmetics and the tag go
       await clanCheckMyRequest();
     } else {
       const [doc, me, info] = await Promise.all([FB.getDoc(cDoc(id)), FB.getDoc(cDoc(id, 'members', USER.uid)), FB.getDoc(cDoc(id, 'private', 'info')).catch(() => null)]);
@@ -14549,6 +14575,7 @@ async function clanRefresh(withDetails = false) {
         if (!isPreview()) await FB.deleteDoc(FB.doc(FB.db, 'clanOf', USER.uid)).catch(() => {});
         if (CLAN.doc) inboxAdd({ type: 'clan', key: 'clangone:' + id, title: `${CLAN.doc.name} was disbanded`, go: { tab: 'clan' } });
         clanReset();
+        applyCosmetics(); schedulePublish();
       } else {
         const joinedNow = CLAN.id !== id;
         if (joinedNow && CLAN.myReq && CLAN.myReq.clan === id) inboxAdd({ type: 'clan', key: 'clanok:' + id, title: `You’re in! Welcome to ${doc.data().name} [${doc.data().tag}]`, go: { tab: 'clan' } });
@@ -14556,7 +14583,7 @@ async function clanRefresh(withDetails = false) {
         CLAN.id = id; CLAN.doc = snapData(doc); CLAN.me = snapData(me); CLAN.info = snapData(info);
         CLAN.myReq = null;
         G = null;
-        if (joinedNow && !isPreview()) clanFeed('join', 0, { once: 'join:' + id + ':' + CLAN.me.joinedAt });
+        if (joinedNow && !isPreview()) { clanFeed('join', 0, { once: 'join:' + id + ':' + CLAN.me.joinedAt }); if (CLAN.started) watchClanLive(); applyCosmetics(); schedulePublish(); }
       }
     }
     CLAN.at.base = Date.now();
@@ -14575,14 +14602,14 @@ async function clanLoadDetails(force = false) {
     const id = CLAN.id;
     const [mem, ses, feed, live, req] = await Promise.all([
       FB.getDocs(cCol(id, 'members')), FB.getDocs(cCol(id, 'sessions')),
-      FB.getDocs(FB.query(cCol(id, 'feed'), FB.orderBy('at', 'desc'), FB.limit(25))),
+      S.ui.tab === 'clan' || !CLAN.feed ? FB.getDocs(FB.query(cCol(id, 'feed'), FB.orderBy('at', 'desc'), FB.limit(20))) : Promise.resolve(null),   // the feed only matters on the clan screen
       FB.getDocs(FB.query(cCol(id, 'live'), FB.where('open', '==', true))),
       isClanOfficer() ? FB.getDocs(cCol(id, 'requests')) : Promise.resolve(null)]);
     if (id !== CLAN.id) return;
     const before = CLAN.sessions;
     CLAN.members = mem.docs.map(snapData);
     CLAN.sessions = ses.docs.map(snapData);
-    CLAN.feed = feed.docs.map(snapData);
+    if (feed) CLAN.feed = feed.docs.map(snapData);
     CLAN.lives = live.docs.map(snapData);
     const reqs = req ? req.docs.map(snapData) : [];
     for (const r of reqs) {
@@ -15005,6 +15032,8 @@ const LIVE = { cid: '', lid: '', doc: null, people: {}, unsubs: [], off: 0, join
 let liveWatch = null;   // listener for "a live session is open in my clan" (cheap: only fires when a live session changes)
 const liveSrvNow = () => Date.now() + LIVE.off;
 const tsMs = v => (v && typeof v.toMillis === 'function' ? v.toMillis() : typeof v === 'number' ? v : 0);
+/** Snapshot handlers never throw into Firestore (a bad document must not stop the listener). */
+const safeSnap = fn => (...a) => { try { fn(...a); } catch (e) { console.warn('clan snapshot', e); } };
 function livePlain(snap) {
   if (!snap || !snap.exists()) return null;
   let d;
@@ -15035,14 +15064,14 @@ function watchClanLive() {
   if (liveWatch) { liveWatch(); liveWatch = null; }
   if (!inClan() || isPreview() || !cloudReady()) return;
   const cid = CLAN.id;
-  liveWatch = FB.onSnapshot(FB.query(cCol(cid, 'live'), FB.where('open', '==', true)), qs => {
+  liveWatch = FB.onSnapshot(FB.query(cCol(cid, 'live'), FB.where('open', '==', true)), safeSnap(qs => {
     if (cid !== CLAN.id) return;
     const before = new Set((CLAN.lives || []).map(l => l.id));
     CLAN.lives = qs.docs.map(livePlain);
     for (const l of CLAN.lives) if (!before.has(l.id) && l.host !== USER.uid && Date.now() - (l.createdAt || 0) < 10 * 60000)
       toast(`🛡️ @${l.hostName} started a live session: ${l.title}`, 4200, false, { type: 'clan', key: 'clive:' + l.id, go: { tab: 'clan' } });
     renderClanBits();
-  }, e => console.warn('clan live', e && e.code));
+  }), e => console.warn('clan live', e && e.code));
 }
 async function clockOffset() {
   const t0 = Date.now(), srv = await serverNow();
@@ -15052,7 +15081,7 @@ async function clockOffset() {
 async function liveStart({ title, pattern, sid = '' }) {
   if (!inClan()) return;
   if (inLive()) { toast('You’re already in a live session'); return; }
-  if (S.timer.status !== 'idle') { toast('Finish or reset your current timer first'); return; }
+  if (S.timer.status !== 'idle') { toast('Finish or reset your current timer first', 2600, false, { now: true }); return; }
   await clockOffset();
   const day = dayKey(new Date());
   const lid = sid ? `${sid}_${day.replace(/-/g, '')}` : FB.doc(cCol(CLAN.id, 'live')).id;
@@ -15071,12 +15100,13 @@ async function liveStart({ title, pattern, sid = '' }) {
 async function liveJoin(lid, fresh = false) {
   if (!inClan()) return;
   if (inLive() && LIVE.lid !== lid) { toast('Leave your current live session first'); return; }
-  if (!inLive() && S.timer.status !== 'idle') { toast('Finish or reset your current timer first'); return; }
+  const resuming = S.timer.live && S.timer.live.lid === lid;
+  if (!inLive() && !resuming && S.timer.status !== 'idle') { toast('Finish or reset your current timer first', 2600, false, { now: true }); return; }
   if (!fresh) await clockOffset();
   const snap = await FB.getDoc(cDoc(CLAN.id, 'live', lid));
   const d = livePlain(snap);
   if (!d || !d.open) { toast('That live session has ended'); return; }
-  Object.assign(LIVE, { cid: CLAN.id, lid, doc: d, people: {}, joinAt: LIVE.lid === lid && LIVE.joinAt ? LIVE.joinAt : Date.now(), idx: null, shiftSeen: d.shift || 0, summary: null, closing: false, myMin: LIVE.lid === lid ? LIVE.myMin : 0, reacts: [] });
+  Object.assign(LIVE, { cid: CLAN.id, lid, doc: d, people: {}, joinAt: resuming ? +S.timer.live.joinAt || Date.now() : LIVE.lid === lid && LIVE.joinAt ? LIVE.joinAt : Date.now(), idx: null, shiftSeen: d.shift || 0, summary: null, closing: false, myMin: LIVE.lid === lid ? LIVE.myMin : 0, reacts: [] });
   S.timer.live = { cid: CLAN.id, lid, title: d.title, joinAt: LIVE.joinAt };
   saveLocal();
   liveListen();
@@ -15090,24 +15120,24 @@ async function liveJoin(lid, fresh = false) {
 function liveListen() {
   liveUnlisten();
   const base = ['clans', LIVE.cid, 'live', LIVE.lid];
-  LIVE.unsubs.push(FB.onSnapshot(FB.doc(FB.db, ...base), s => {
+  LIVE.unsubs.push(FB.onSnapshot(FB.doc(FB.db, ...base), safeSnap(s => {
     const d = livePlain(s);
     if (!d) { liveEnded('gone'); return; }
     LIVE.doc = d;
     liveSync();
     renderLive();
-  }, e => console.warn('live', e && e.code)));
-  LIVE.unsubs.push(FB.onSnapshot(FB.collection(FB.db, ...base, 'people'), qs => {
+  }), e => console.warn('live', e && e.code)));
+  LIVE.unsubs.push(FB.onSnapshot(FB.collection(FB.db, ...base, 'people'), safeSnap(qs => {
     LIVE.people = Object.fromEntries(qs.docs.map(x => [x.id, livePlain(x)]));
     liveMaybeCount();
     renderLive();
-  }, e => console.warn('live people', e && e.code)));
+  }), e => console.warn('live people', e && e.code)));
   let first = true;
-  LIVE.unsubs.push(FB.onSnapshot(FB.query(FB.collection(FB.db, ...base, 'reactions'), FB.orderBy('at', 'desc'), FB.limit(8)), qs => {
+  LIVE.unsubs.push(FB.onSnapshot(FB.query(FB.collection(FB.db, ...base, 'reactions'), FB.orderBy('at', 'desc'), FB.limit(8)), safeSnap(qs => {
     const fresh = first ? [] : qs.docChanges().filter(c => c.type === 'added').map(c => livePlain(c.doc));
     first = false;
-    for (const r of fresh) if (r && !SOC.blocked[r.from] && r.from !== USER.uid) showReaction(r.from, r.emoji);
-  }, e => console.warn('live reactions', e && e.code)));
+    for (const r of fresh) if (r && SOC.blocked[r.from] === undefined && r.from !== USER.uid) showReaction(r.from, r.emoji);
+  }), e => console.warn('live reactions', e && e.code)));
 }
 function liveUnlisten() { LIVE.unsubs.forEach(u => { try { u(); } catch (e) { /* gone */ } }); LIVE.unsubs = []; }
 
@@ -15149,7 +15179,9 @@ function liveSync() {
   const now = Date.now();
   if (LIVE.idx !== null && LIVE.idx !== st.i) {
     // the phase changed: completed on time, or the host skipped it
-    const skipped = (d.shift || 0) !== LIVE.shiftSeen;
+    // skipped only if the host's skip arrived before the block's end was reached (a late update or a sleeping device still completes it)
+    const natural = st.el - ((d.shift || 0) - LIVE.shiftSeen);
+    const skipped = (d.shift || 0) !== LIVE.shiftSeen && natural < (LIVE.phaseTo || 0);
     if (t.status !== 'idle') {
       if (!skipped) t.endAt = Math.min(t.endAt, now);
       LIVE.syncing = true;
@@ -15165,6 +15197,7 @@ function liveSync() {
     t.planned = Math.max(1000, end - from);
     if (st.phase === 'focus') { t.focusStartedAt = from; t.name = currentName(); }
     LIVE.idx = st.i;
+    LIVE.phaseTo = st.to;
     liveBeat(true);
   }
   t.remaining = st.left;
@@ -15202,7 +15235,7 @@ async function liveLeave() {
   LIVE.summary = null;
   liveTeardown();
   renderAll();
-  toast('You left the live session');
+  toast('You left the live session', 2200, false, { now: true });
 }
 /** Close the session once (the host's "End", or anyone when its time is up), with a feed event. */
 async function liveClose() {
@@ -15284,10 +15317,10 @@ function liveButton(which) {
   const d = LIVE.doc, st = d && liveState(d);
   if (!d) return true;
   if (which === 'main') {
-    if (!liveMine()) { toast(st && st.paused ? 'The host will resume the session' : 'The host controls the shared timer — you can leave any time'); return true; }
+    if (!liveMine()) { toast(st && st.paused ? 'The host will resume the session' : 'The host controls the shared timer — you can leave any time', 2600, false, { now: true, log: false }); return true; }
     liveControl(st.paused ? 'resume' : 'pause');
   } else if (which === 'skip') {
-    if (!liveMine()) { toast('Only the host can skip in a live session'); return true; }
+    if (!liveMine()) { toast('Only the host can skip in a live session', 2600, false, { now: true, log: false }); return true; }
     liveControl('skip');
   } else if (which === 'reset') {
     confirmDlg({ title: 'Leave the live session?', body: 'Your focus so far counts if you’ve done at least 80% of this block.', ok: 'Leave', danger: true }).then(ok => ok && liveLeave());
@@ -15966,7 +15999,7 @@ function demoClanDocs(ts, wk) {
   docs[`clans/${cid}/sessions/demo_s2`] = { title: 'Mock test', start: sat.getTime() + 9.5 * 3600e3, pattern: { focus: 90, short: 15, rounds: 2 }, repeat: 'none', days: [], tag: 'Full syllabus', max: 10, creator: 'demo', creatorName: 'demo_scholar', cancelled: false,
     rsvp: { demo: 'going', demo_f5: 'going' }, createdAt: ts(now - 2 * 864e5), updatedAt: ts(now) };
   docs[`clans/${cid}/live/demo_live`] = { title: 'Group study', host: 'demo_f1', hostName: 'James', pattern: { focus: 25, short: 5, rounds: 4 }, startAt: ts(now - 12 * 60000), pausedAt: 0, pauseTotal: 0, shift: 0, open: true, counted: true, sid: '', createdAt: ts(now - 12 * 60000), endedAt: 0, updatedAt: ts(now) };
-  [['live', 'James', 3, 50], ['focus', 'Princess_cupcake', 50, 140], ['level', 'lenvixty', 9, 600], ['focus', 'James', 25, 1500], ['raid', 'demo_scholar', 0, 2 * 864e5], ['join', 'siverieg', 0, 4 * 864e5]]
+  [['live', 'James', 3, 50], ['focus', 'Princess_cupcake', 50, 140], ['level', 'lenvixty', 9, 600], ['focus', 'James', 25, 1500], ['raid', 'demo_scholar', 0, 2 * 1440], ['join', 'siverieg', 0, 4 * 1440]]
     .forEach(([type, who, n, ago], i) => { docs[`clans/${cid}/feed/demo_e${i}`] = { type, who, n, at: ts(now - ago * 60000) }; });
   return docs;
 }

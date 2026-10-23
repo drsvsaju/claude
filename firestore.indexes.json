@@ -13,7 +13,11 @@
     { "collectionGroup": "challenges", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "members", "arrayConfig": "CONTAINS" }, { "fieldPath": "weekKey", "order": "ASCENDING" } ] },
     { "collectionGroup": "challenges", "queryScope": "COLLECTION", "fields": [
-      { "fieldPath": "invited", "arrayConfig": "CONTAINS" }, { "fieldPath": "weekKey", "order": "ASCENDING" } ] }
+      { "fieldPath": "invited", "arrayConfig": "CONTAINS" }, { "fieldPath": "weekKey", "order": "ASCENDING" } ] },
+    { "collectionGroup": "clans", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "weekKey", "order": "ASCENDING" }, { "fieldPath": "weekMin", "order": "DESCENDING" } ] },
+    { "collectionGroup": "clans", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "weekKey", "order": "ASCENDING" }, { "fieldPath": "weekMin", "order": "ASCENDING" } ] }
   ],
   "fieldOverrides": []
 }
