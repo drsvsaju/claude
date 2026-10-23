@@ -12,7 +12,7 @@ rules_version = '2';
 //   friendships/{a_b}           a request or a friendship between two users
 //   inbox/{uid}/items/{id}      kudos and nudges (preset reactions, no text)
 //   challenges/{id}             weekly challenges between friends
-//   clans/… clanNames/… clanCodes/… clanOf/…   clans, the study-group system (v1.14, see CLANS below)
+//   clans/… clanNames/… clanCodes/… clanOf/…   clans, the study-group system (v1.14, see CLANS below; session modes v1.14.2)
 //
 // HONEST NOTE ON CHEATING: there is no server here (no Cloud Functions on the
 // free plan), so every number is calculated on the user's own device. These
@@ -407,7 +407,7 @@ service cloud.firestore {
               && (!(me() in request.resource.data.rsvp) || request.resource.data.rsvp[me()] in ['going', 'maybe', 'no'])
               && request.resource.data.updatedAt == request.time)
             // edit or cancel: its creator, the leader or an officer
-            || ((resource.data.creator == me() || isOfficer(cid)) && changed(['title', 'start', 'pattern', 'repeat', 'days', 'tag', 'max', 'cancelled', 'updatedAt'])
+            || ((resource.data.creator == me() || isOfficer(cid)) && changed(['title', 'start', 'pattern', 'repeat', 'days', 'tag', 'max', 'cancelled', 'mode', 'updatedAt'])
               && validStudySession(request.resource.data))
           );
         allow delete: if isMember(cid) && (resource.data.creator == me() || isOfficer(cid));
@@ -431,9 +431,12 @@ service cloud.firestore {
         match /people/{uid} {
           allow read: if isMember(cid);
           allow create, update: if isMember(cid) && uid == me()
-            && request.resource.data.keys().hasOnly(['name', 'avatar', 'color', 'aura', 'state', 'sname', 'min', 'beat', 'joinedAt'])
+            && request.resource.data.keys().hasOnly(['name', 'avatar', 'color', 'aura', 'state', 'sname', 'min', 'beat', 'joinedAt', 'endAt', 'left'])
             && request.resource.data.name == myName()
-            && request.resource.data.state in ['focus', 'break', 'away', 'left']
+            && request.resource.data.state in ['focus', 'break', 'paused', 'idle', 'away', 'left']
+            // Focus together (v1.14.2): my own countdown — when my phase ends (server ms), or what's left while paused
+            && (!('endAt' in request.resource.data) || (request.resource.data.endAt is int && request.resource.data.endAt >= 0))
+            && (!('left' in request.resource.data) || (request.resource.data.left is int && request.resource.data.left >= 0 && request.resource.data.left <= 86400000))
             && request.resource.data.sname is string && request.resource.data.sname.size() <= 80
             && request.resource.data.avatar is string && request.resource.data.avatar.size() <= 30
             && request.resource.data.color is string && request.resource.data.color.size() <= 30
@@ -579,7 +582,8 @@ service cloud.firestore {
         && (request.resource.data.role != 'leader' || getAfter(infoPath(cid)).data.leader == uid);
     }
     function validStudySession(d) {
-      return d.keys().hasOnly(['title', 'start', 'pattern', 'repeat', 'days', 'tag', 'max', 'creator', 'creatorName', 'cancelled', 'rsvp', 'createdAt', 'updatedAt'])
+      return d.keys().hasOnly(['title', 'start', 'pattern', 'repeat', 'days', 'tag', 'max', 'creator', 'creatorName', 'cancelled', 'rsvp', 'mode', 'createdAt', 'updatedAt'])
+        && (!('mode' in d) || d.mode in ['together', 'synced'])          // v1.14.2; no mode = Synced
         && d.title is string && d.title.size() >= 2 && d.title.size() <= 40 && cleanText(d.title)
         && d.start is int && d.pattern is map && d.pattern.keys().hasOnly(['focus', 'short', 'rounds'])
         && d.pattern.focus is int && d.pattern.focus >= 5 && d.pattern.focus <= 120
@@ -592,7 +596,8 @@ service cloud.firestore {
         && d.creatorName is string && d.creatorName.size() <= 20 && d.updatedAt == request.time;
     }
     function validLive(d) {
-      return d.keys().hasOnly(['title', 'host', 'hostName', 'pattern', 'startAt', 'pausedAt', 'pauseTotal', 'shift', 'open', 'counted', 'sid', 'createdAt', 'endedAt', 'updatedAt'])
+      return d.keys().hasOnly(['title', 'host', 'hostName', 'pattern', 'startAt', 'pausedAt', 'pauseTotal', 'shift', 'open', 'counted', 'sid', 'mode', 'createdAt', 'endedAt', 'updatedAt'])
+        && (!('mode' in d) || d.mode in ['together', 'synced'])          // v1.14.2; no mode = Synced
         && d.title is string && d.title.size() >= 2 && d.title.size() <= 40 && cleanText(d.title)
         && d.pattern is map && d.pattern.focus is int && d.pattern.focus >= 5 && d.pattern.focus <= 120
         && d.pattern.short is int && d.pattern.short >= 1 && d.pattern.short <= 30 && d.pattern.rounds is int && d.pattern.rounds >= 1 && d.pattern.rounds <= 8
