@@ -2566,6 +2566,38 @@ body.first-load #todayBar { opacity: 0; }
 .intro.calm .in-w, .intro.calm .in-pomeo, .intro.calm .in-cur { animation: none !important; }
 .intro.calm .in-cur { display: none; }
 .intro-on #authView .auth-brand, .intro-on #lpPomeo { visibility: hidden; }
+
+/* ==========================================================================
+   TO-DO (Reminders → To-do)
+   ========================================================================== */
+.rem-seg { margin: 0 0 14px; }
+.rem-seg .cnt { font-size: 11px; font-weight: 700; background: var(--heat0); color: var(--muted); border-radius: 999px; padding: 1px 6px; margin-left: 2px; }
+.rem-seg .cnt.due { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); }
+.todo-add { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.todo-add input { flex: 1 1 180px; min-width: 0; }
+.todo-filters { margin: 0 0 8px; }
+.todo-filters .cnt { font-size: 11px; opacity: .75; }
+.todo .grip { border: 0; background: none; color: var(--muted); cursor: grab; font-size: 14px; letter-spacing: -2px; padding: 6px 2px; touch-action: none; min-width: 22px; }
+.todo.lifting { z-index: 5; box-shadow: 0 12px 24px -12px rgba(0, 0, 0, .35); }
+.todo.lifting .rem-fg { transition: none; }
+.todo .rem-main { cursor: pointer; }
+.td-pri { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 1px; background: var(--muted); opacity: .55; }
+.todo.pri-high .td-pri { background: #e0614a; opacity: 1; }
+.todo.pri-med .td-pri { background: #e2a33b; opacity: .9; }
+.todo.pri-low .td-pri { background: #6aa6c9; }
+.td-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 1px; }
+.td-due.today { color: var(--accent); font-weight: 600; }
+.td-due.over { color: var(--warn); font-weight: 600; }
+.td-tag { color: var(--tc, var(--muted)); font-weight: 600; }
+.todo.overdue .rem-fg { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--warn) 70%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--warn) 7%, var(--surface)), var(--surface) 40%); }
+.todo.leaving .rem-fg { opacity: .45; transition: opacity .4s; }
+.todo.done .rt { text-decoration: line-through; color: var(--muted); }
+.todo-dlg .pri-seg button { min-width: 80px; }
+.todo-dlg textarea { width: 100%; min-height: 70px; resize: vertical; font: inherit; }
+.todo-dlg label.lbl { display: block; margin: 10px 0 4px; }
+.today-todo button { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font: inherit; text-align: left; }
+.today-todo .over { color: var(--warn); }
+@media (hover: none) { .hide-touch { display: none; } }
 </style>
 </head>
 <body>
@@ -2919,7 +2951,9 @@ body.first-load #todayBar { opacity: 0; }
       <button class="btn primary small" id="remAdd">+ Add reminder</button>
     </div>
     <div id="remPerm"></div>
+    <div class="seg rem-seg" id="remSeg" role="group" aria-label="Show"></div>
     <div id="remBody"></div>
+    <div id="todoBody" class="hidden"></div>
     <p class="rem-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
       <span>Web reminders only fire while Pomodorolist is open — a background tab is fine, a closed tab or a locked phone is not. Use the calendar button on a reminder to add it to your phone’s calendar, which can remind you even when the app is closed.</span></p>
   </section>
@@ -3239,6 +3273,19 @@ body.first-load #todayBar { opacity: 0; }
 </div>
 
 <!-- Reminder editor -->
+<dialog id="todoDlg" class="todo-dlg" aria-labelledby="todoDlgTitle">
+  <h2 id="todoDlgTitle" style="margin:0 0 10px">New task</h2>
+  <label class="lbl" for="tdTitle">Task</label><input type="text" id="tdTitle" maxlength="120" autocomplete="off" placeholder="e.g. Finish chapter 5 problems">
+  <div class="row" style="gap:12px;flex-wrap:wrap">
+    <div style="flex:1 1 140px"><label class="lbl" for="tdDue">Due date (optional)</label><input type="date" id="tdDue"></div>
+    <div style="flex:1 1 140px"><label class="lbl" for="tdTag">Subject / tag (optional)</label><input type="text" id="tdTag" list="tdTagList" maxlength="30" autocomplete="off" placeholder="e.g. Physics"><datalist id="tdTagList"></datalist></div>
+  </div>
+  <label class="lbl">Priority</label><div class="seg pri-seg" id="tdPri" role="group" aria-label="Priority"><button type="button" data-pri="low">Low</button><button type="button" data-pri="med">Medium</button><button type="button" data-pri="high">High</button></div>
+  <label class="lbl" for="tdCheck">Checklist (optional, one step per line — becomes subtasks with “Focus on this”)</label><textarea id="tdCheck" rows="3" placeholder="Read notes&#10;Solve 10 problems"></textarea>
+  <label class="lbl" for="tdNotes">Notes (optional)</label><textarea id="tdNotes" rows="2" maxlength="1000"></textarea>
+  <p style="color:var(--danger);font-size:13px;min-height:18px;margin:6px 0 0" id="tdErr"></p>
+  <div class="btn-row" style="justify-content:space-between"><button class="btn danger small" id="tdDelete" type="button">Delete</button><span class="btn-row"><button class="btn" id="tdCancel" type="button">Cancel</button><button class="btn primary" id="tdSave" type="button">Save</button></span></div>
+</dialog>
 <dialog id="remDlg">
   <form id="remForm" novalidate>
     <div class="row between" style="margin-bottom:12px"><h2 style="margin:0" id="remDlgTitle">New reminder</h2></div>
@@ -3983,6 +4030,7 @@ function defaultState() {
     parked: [],     // distraction parking lot, last 50
     abandoned: [],  // focus blocks stopped before 80% (wilted plants), last 300
     squad: [],      // boss squad: [{ uid, name }], up to 5 friends
+    todos: [],      // to-do list (see TO-DO LIST)
     loadouts: [],   // saved looks from the bag { id, name, look: { theme, aura, color, … } }
     cardPrefs: {},  // player card: banner, featured, what it shows — { key: { v, u } } (see PLAYER CARD)
     game: normalizeGame(null),  // purchases, equipped items, claimed rewards, used streak freezes
@@ -4008,7 +4056,7 @@ function hydrate(obj) {
   const out = { ...def, ...obj };
   for (const k of ['settings', 'timer', 'ui']) out[k] = { ...def[k], ...(obj[k] || {}) };
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
-  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts']) if (!Array.isArray(out[k])) out[k] = [];
+  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
@@ -4127,6 +4175,7 @@ function profileFromState() {
     squad: S.squad.slice(0, 5),
     subTemplates: S.subTemplates.slice(0, 20),
     loadouts: S.loadouts.slice(0, 8),
+    todos: S.todos.slice(0, TODO_MAX),
     cardPrefs: S.cardPrefs,
     // Stored for reference only; the app always recalculates streaks from the session log.
     streak: { current: cur, longest, goalMin: S.settings.goalMin, today: dayKey(new Date()) },
@@ -4562,6 +4611,7 @@ function mergeData(obj) {
   }
   for (const [name, v] of Object.entries(src.names)) if (!S.names[name] && v) S.names[name] = { color: v.color || hashColor(name), tag: v.tag || '' };
   for (const p of src.pinned) if (p && !isPinned(p.name, p.presetId)) S.pinned.push({ name: p.name, presetId: p.presetId });
+  for (const t of src.todos) if (t && t.id && t.title && !S.todos.some(x => x.id === t.id)) S.todos.push({ id: String(t.id), title: String(t.title).slice(0, 120), due: DAY_RE.test(t.due || '') ? t.due : '', pri: TODO_PRI[t.pri] ? t.pri : 'med', tag: String(t.tag || '').slice(0, 30), notes: String(t.notes || '').slice(0, 1000), check: Array.isArray(t.check) ? t.check.slice(0, 20).map(x => ({ t: String(x.t || '').slice(0, 80), d: !!x.d })) : [], done: +t.done || 0, order: +t.order || 0, created: +t.created || Date.now() });
   const seen = new Set();
   S.recent = [...S.recent, ...src.recent].filter(r => r && r.name).sort((a, b) => (b.ts || 0) - (a.ts || 0))
     .filter(r => { const k = r.name + '|' + r.presetId; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
@@ -8190,6 +8240,8 @@ function remLists() {
 function renderReminders() {
   const body = $('#remBody');
   if (!body || !USER) return;
+  renderRemSeg();
+  if (remView() === 'todo') { clearOldTodos(); renderTodos(); return; }
   const perm = 'Notification' in window ? Notification.permission : 'unsupported';
   const askPerm = S.reminders.length && perm === 'default' && localStorage.getItem(REM_PERM_KEY) !== '1';
   $('#remPerm').innerHTML = askPerm ? `<div class="card perm-card">${BELL_SVG.replace('<svg', '<svg width="22" height="22"')}
@@ -8339,6 +8391,8 @@ $('#calClose').addEventListener('click', () => $('#calDlg').close());
 /* ---------- List interactions: buttons and swipe (phones) ---------- */
 $('#tab-reminders').addEventListener('click', e => {
   const t = e.target;
+  if (onTodoClick(e)) return;
+  if (t.closest('#remAdd') && remView() === 'todo') { openTodoForm(); return; }
   if (t.closest('[data-remadd], #remAdd')) { openRemForm(); return; }
   if (t.closest('#permAllow')) {
     writeLS(REM_PERM_KEY, '1');
@@ -8407,6 +8461,7 @@ $('#tab-reminders').addEventListener('click', e => {
     if (!on) return;
     li.dataset.swiped = '1';
     setTimeout(() => { delete li.dataset.swiped; }, 50);
+    if (li.dataset.tid) { const td = todoById(li.dataset.tid); if (td && dx > 90) toggleTodo(td, li.querySelector('[data-tdone]')); else if (td && dx < -90) deleteTodo(td); return; }
     const r = remById(li.dataset.rid);
     if (!r) return;
     if (dx > 90) { markRemDone(r, li.dataset.day, !remDone(r, li.dataset.day)); saveReminders(); }
@@ -8520,9 +8575,16 @@ function renderTodayExtra() {
   const left = Math.max(0, S.settings.goalMin - (e.total || 0));
   const nx = nextReminderToday();
   el.innerHTML = `<div><b>${n}</b> session${n === 1 ? '' : 's'} today · ${left ? `<b>${fmtMin(left)}</b> to your goal` : 'goal met ✓'}</div>` +
-    (nx ? `<div>Next reminder: <button data-goremind>${esc(nx.r.title)} · ${fmtHM(nx.at)}</button></div>` : `<div><button data-goremind>+ Plan a study block</button></div>`);
+    (nx ? `<div>Next reminder: <button data-goremind>${esc(nx.r.title)} · ${fmtHM(nx.at)}</button></div>` : `<div><button data-goremind>+ Plan a study block</button></div>`) + todayTodoLine();
 }
-$('#todayExtra').addEventListener('click', e => { if (e.target.closest('[data-goremind]')) showTab('reminders'); });
+/** Tasks due today (and overdue) in the Today card. */
+function todayTodoLine() {
+  const due = S.todos.filter(t => !t.done && t.due && t.due <= dayKey(new Date()));
+  if (!due.length) return '';
+  const over = due.filter(todoOverdue).length;
+  return `<div class="today-todo">To-do: <button data-gotodo>${due.length === 1 ? esc(due[0].title) : `${due.length} tasks due`}${over ? ` <span class="over">· ${over} overdue</span>` : ''}</button></div>`;
+}
+$('#todayExtra').addEventListener('click', e => { if (e.target.closest('[data-gotodo]')) { S.ui.remView = 'todo'; S.ui.todoFilter = 'today'; showTab('reminders'); return; } if (e.target.closest('[data-goremind]')) { S.ui.remView = 'rem'; showTab('reminders'); } });
 
 /* Session note: after a focus block, an optional one-line note shown in the Stats → Day list. */
 let noteFor = null;
@@ -10537,7 +10599,8 @@ function cmdList(q) {
   for (const p of S.presets) add('⏱️', `Start ${p.name}`, `${p.focus} min focus`, () => cmdStartPreset(p), `start ${p.focus} min minutes`);
   const m = /(\d{1,3})\s*(m|min|mins|minute|minutes)?\b/.exec(q || '');
   if (m && +m[1] >= 1 && +m[1] <= 240 && /start|focus|min|^\d/.test(q) && !S.presets.some(p => p.focus === +m[1])) add('⏱️', `Start a ${+m[1]}-minute focus`, 'New preset', () => cmdStartMinutes(+m[1]), `start ${m[1]} min`);
-  add('➕', 'Add reminder', 'Reminders', () => { showTab('reminders'); openRemForm(); }, 'new reminder');
+  add('➕', 'Add reminder', 'Reminders', () => { S.ui.remView = 'rem'; showTab('reminders'); openRemForm(); }, 'new reminder');
+  add('☑️', 'Add a task', 'To-do', () => { S.ui.remView = 'todo'; showTab('reminders'); openTodoForm(); }, 'todo to-do task new');
   add('☑️', 'Add subtask', 'Timer', focusSubAdd, 'new subtask checklist');
   if (focusActive()) add('🅿️', 'Park a thought', 'Timer', () => { showTab('timer'); openPark(); });
   add('🌓', 'Toggle dark mode', 'Appearance', cmdToggleDark, 'theme dark light night');
@@ -11569,6 +11632,10 @@ function demoDocs() {
     parked: [{ id: 'demo_p1', text: 'Ask James for the organic chemistry notes', at: Date.now() - 5400e3, done: false }],
     squad: DEMO_FRIENDS.map(f => ({ uid: f.uid, name: f.name })),   // a full squad of 5, so the (smaller) v1.13.1 boss stays mid-battle
     subTemplates: [], energy,
+    todos: [['Finish HC Verma ch. 7 problems', 0, 'high', 'Physics', [['Q1–10', true], ['Q11–20', false], ['Check answers', false]]], ['Revise organic named reactions', 1, 'med', 'Chemistry', []],
+      ['Integration practice set', -1, 'high', 'Maths', []], ['Make biology flashcards', 3, 'low', 'Biology', []], ['Mock test review', null, 'med', 'JEE', []]]
+      .map(([title, inDays, pri, tag, check], i) => ({ id: 'demo_t' + i, title, due: inDays === null ? '' : dayKey(addDays(now, inDays)), pri, tag, notes: '', check: check.map(([t, d]) => ({ t, d })), done: 0, order: i, created: Date.now() - (5 - i) * 864e5, u: Date.now() - 864e5 }))
+      .concat([{ id: 'demo_t9', title: 'Buy a new notebook', due: '', pri: 'low', tag: '', notes: '', check: [], done: Date.now() - 2 * 864e5, order: 9, created: Date.now() - 6 * 864e5, u: Date.now() - 2 * 864e5 }]),
   };
   // My minutes this week decide the friends' weekly numbers, so the boss is always mid-battle.
   const mon = weekStartOf(now, 1), myWeek = sessions.filter(s => s.start >= +mon).reduce((a, s) => a + s.duration / 6e4, 0);
@@ -11656,9 +11723,9 @@ const PV_BLOCK = ['#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equi
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]',
-  '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain'].join(',');
+  '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain'].join(',');
 const PV_WHY = [['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
-  ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card']];
+  ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
   $('#pvWhy').textContent = `This is a demo account, so nothing can be changed. Create your own free account to ${why}.`;
@@ -12306,7 +12373,7 @@ function paintRipe(p) {
    which Firestore merges key by key on write — two devices never overwrite each other.
    Nothing here needs new security rules: it all lives in users/{uid}.
    ========================================================================== */
-const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts'];
+const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos'];
 const syncSnap = {};   // field -> Map(id -> the item as last saved or merged)
 const itemJSON = x => { const { u, ...rest } = x; return JSON.stringify(rest); };
 function snapLists() {
@@ -13719,6 +13786,274 @@ function endIntro(quick = false) {
 }
 $('#intro').addEventListener('pointerdown', e => { e.preventDefault(); endIntro(true); });
 document.addEventListener('keydown', e => { if (INTRO && !INTRO.done) { e.preventDefault(); e.stopPropagation(); endIntro(true); } }, true);
+
+/* ==========================================================================
+   TO-DO LIST — the second view of the Reminders tab. S.todos (synced item by
+   item like reminders, with tombstones): { id, title, due 'YYYY-MM-DD'|'',
+   pri 'low'|'med'|'high', tag, notes, check [{ t, d }], done (time)|0, order,
+   created }. Done tasks stay in "Done" for 7 days, then clear themselves.
+   ========================================================================== */
+const TODO_PRI = { high: { n: 'High', r: 0 }, med: { n: 'Medium', r: 1 }, low: { n: 'Low', r: 2 } };
+const TODO_KEEP_DONE = 7 * DAY_MS;
+const TODO_MAX = 300;
+const todoFilter = () => (['today', 'upcoming', 'all', 'done'].includes(S.ui.todoFilter) ? S.ui.todoFilter : 'all');
+const todoById = id => S.todos.find(t => t.id === id);
+const todayKey = () => dayKey(new Date());
+const todoOverdue = t => !t.done && t.due && t.due < todayKey();
+const todoDueToday = t => !t.done && t.due === todayKey();
+function todoSorted() {
+  return S.todos.slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || (a.created || 0) - (b.created || 0));
+}
+function todoVisible(f = todoFilter()) {
+  const tk = todayKey(), list = todoSorted();
+  if (f === 'done') return list.filter(t => t.done).sort((a, b) => b.done - a.done);
+  if (f === 'today') return list.filter(t => !t.done && t.due && t.due <= tk);
+  if (f === 'upcoming') return list.filter(t => !t.done && t.due && t.due > tk).sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : 0));
+  return list.filter(t => !t.done);
+}
+function todoDueText(t) {
+  if (!t.due) return '';
+  const tk = todayKey();
+  if (t.due === tk) return 'Today';
+  if (t.due === dayKey(addDays(new Date(), 1))) return 'Tomorrow';
+  const d = parseDay(t.due), txt = d.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+  return t.due < tk ? `Overdue · ${txt}` : txt;
+}
+/** Done tasks older than 7 days clear themselves (with Undo, once). */
+function clearOldTodos() {
+  if (!USER || isPreview()) return;
+  const cut = Date.now() - TODO_KEEP_DONE, old = S.todos.filter(t => t.done && t.done < cut);
+  if (!old.length) return;
+  S.todos = S.todos.filter(t => !old.includes(t));
+  save();
+  toastUndo(`${old.length} finished task${old.length === 1 ? '' : 's'} older than a week cleared`, () => { S.todos.push(...old); save(); renderTodos(); });
+}
+function todoRow(t) {
+  const pri = TODO_PRI[t.pri] || TODO_PRI.med, chk = (t.check || []).length, chkDone = (t.check || []).filter(x => x.d).length;
+  const meta = [todoDueText(t) && `<span class="td-due${todoOverdue(t) ? ' over' : todoDueToday(t) ? ' today' : ''}">${esc(todoDueText(t))}</span>`,
+    t.tag && `<span class="td-tag" style="--tc:${esc(colorFor(t.tag))}">${esc(t.tag)}</span>`,
+    chk && `<span>☑ ${chkDone}/${chk}</span>`, t.notes && '<span title="Has notes">📝</span>',
+    t.done && `<span>Done ${new Date(t.done).toLocaleDateString([], { day: 'numeric', month: 'short' })}</span>`].filter(Boolean).join('');
+  return `<li class="rem todo pri-${esc(t.pri || 'med')}${t.done ? ' done' : ''}${todoOverdue(t) ? ' overdue' : ''}" data-tid="${esc(t.id)}">
+    <div class="rem-bg"><span class="l">✓ Done</span><span class="r">Delete</span></div>
+    <div class="rem-fg">
+      ${t.done ? '' : `<button class="grip td-grip" data-tgrip aria-label="Move “${esc(t.title)}” (arrow keys)" title="Drag to reorder">⋮⋮</button>`}
+      <button class="rem-check" data-tdone aria-label="${t.done ? 'Mark as not done' : 'Mark as done'}" aria-pressed="${!!t.done}">${TICK_SVG}</button>
+      <div class="rem-main" data-tedit><div class="rt"><i class="td-pri" title="${pri.n} priority" aria-label="${pri.n} priority"></i>${esc(t.title)}</div>${meta ? `<div class="rs td-meta">${meta}</div>` : ''}</div>
+      <div class="rem-acts">
+        ${t.done ? '' : `<button class="iconbtn" data-tfocus title="Focus on this" aria-label="Focus on “${esc(t.title)}”">${PLAY_SVG}</button>`}
+        <button class="iconbtn hide-sm" data-tedit title="Edit" aria-label="Edit">${EDIT_SVG}</button>
+        <button class="iconbtn hide-sm" data-tdel title="Delete" aria-label="Delete">${TRASH_SVG}</button>
+      </div>
+    </div></li>`;
+}
+function todoSection() {
+  const f = todoFilter(), list = todoVisible(f);
+  const n = { today: todoVisible('today').length, upcoming: todoVisible('upcoming').length, all: todoVisible('all').length, done: todoVisible('done').length };
+  const empty = { today: 'Nothing due today 🎉', upcoming: 'No tasks with a later due date.', all: 'No tasks yet — add your first one above.', done: 'Finished tasks show here for a week.' }[f];
+  return `<div class="card todo-card">
+    <form class="todo-add" id="todoAdd" autocomplete="off"><input type="text" id="todoQuick" maxlength="120" placeholder="Add a task… (Enter)" aria-label="New task">
+      <button class="btn primary small" type="submit">Add</button><button class="btn small" type="button" id="todoMore" title="Due date, priority, notes…">More…</button></form>
+    <div class="catrow todo-filters" role="tablist" aria-label="Show">${[['today', 'Today'], ['upcoming', 'Upcoming'], ['all', 'All'], ['done', 'Done']].map(([id, label]) => `<button role="tab" data-tfilter="${id}" class="${f === id ? 'active' : ''}" aria-selected="${f === id}">${label}${n[id] ? ` <span class="cnt">${n[id]}</span>` : ''}</button>`).join('')}</div>
+    ${list.length ? `<ul class="rem-list todo-list" id="todoList">${list.map(todoRow).join('')}</ul>` : `<div class="empty">${empty}</div>`}
+    ${f === 'done' && list.length ? '<p class="lbl" style="margin:8px 0 0">Finished tasks clear themselves after 7 days.</p>' : f !== 'done' && list.length > 1 ? '<p class="lbl hide-touch" style="margin:8px 0 0">Drag ⋮⋮ to reorder · swipe on a phone: right = done, left = delete</p>' : ''}
+  </div>`;
+}
+function renderTodos() {
+  const el = $('#todoBody');
+  if (!el || !USER) return;
+  const keep = document.activeElement && document.activeElement.id === 'todoQuick' ? $('#todoQuick').value : null;
+  el.innerHTML = todoSection();
+  if (keep !== null) { $('#todoQuick').value = keep; $('#todoQuick').focus(); }
+  updateFades($('.todo-filters'));
+}
+function remView() { return S.ui.remView === 'todo' ? 'todo' : 'rem'; }
+function renderRemSeg() {
+  const v = remView(), open = S.todos.filter(t => !t.done).length, due = S.todos.filter(t => !t.done && t.due && t.due <= todayKey()).length;
+  $('#remSeg').innerHTML = `<button data-rview="rem" class="${v === 'rem' ? 'active' : ''}" aria-pressed="${v === 'rem'}">Reminders</button><button data-rview="todo" class="${v === 'todo' ? 'active' : ''}" aria-pressed="${v === 'todo'}">To-do${open ? ` <span class="cnt${due ? ' due' : ''}">${open}</span>` : ''}</button>`;
+  $('#remAdd').textContent = v === 'todo' ? '+ Add task' : '+ Add reminder';
+  $('#remBody').classList.toggle('hidden', v !== 'rem');
+  $('#remPerm').classList.toggle('hidden', v !== 'rem');
+  $('#todoBody').classList.toggle('hidden', v !== 'todo');
+  $('.rem-note').classList.toggle('hidden', v !== 'rem');
+}
+function addTodo(fields) {
+  const title = String(fields.title || '').trim().slice(0, 120);
+  if (!title) return null;
+  if (S.todos.length >= TODO_MAX) { toast(`That’s ${TODO_MAX} tasks — clear some finished ones first`); return null; }
+  const minOrder = Math.min(0, ...S.todos.map(t => t.order ?? 0));
+  const t = { id: 't' + uid(), title, due: DAY_RE.test(fields.due || '') ? fields.due : '', pri: TODO_PRI[fields.pri] ? fields.pri : 'med', tag: String(fields.tag || '').trim().slice(0, 30),
+    notes: String(fields.notes || '').slice(0, 1000), check: (fields.check || []).filter(x => x && x.t).slice(0, 20), done: 0, order: minOrder - 1, created: Date.now() };
+  S.todos.push(t);
+  save();
+  return t;
+}
+function setTodoDone(t, on) {
+  t.done = on ? Date.now() : 0;
+  save();
+}
+function deleteTodo(t) {
+  const i = S.todos.indexOf(t);
+  if (i < 0) return;
+  S.todos.splice(i, 1);
+  save();
+  renderTodoBits();
+  toastUndo(`“${t.title}” deleted`, () => { S.todos.splice(i, 0, t); save(); renderTodoBits(); });
+}
+function renderTodoBits() { if (S.ui.tab === 'reminders') { renderRemSeg(); if (remView() === 'todo') renderTodos(); } renderTodayExtra(); }
+function toggleTodo(t, btn) {
+  const on = !t.done;
+  uiClaim(); uiSound(on ? 'tick' : 'off');
+  if (on && btn) { miniBurst(btn); haptic(8); }
+  setTodoDone(t, on);
+  if (on) {
+    const li = btn && btn.closest('li');
+    if (li && motion() !== 'off') { li.classList.add('done', 'leaving'); setTimeout(renderTodoBits, motion() === 'full' ? 520 : 200); }
+    else renderTodoBits();
+    toastUndo(`“${t.title}” done ✓`, () => { setTodoDone(t, false); renderTodoBits(); }, 4000);
+  } else renderTodoBits();
+}
+/** "Focus on this": the task becomes the session name (and its checklist the subtasks), then the timer starts. */
+function focusOnTodo(t) {
+  showTab('timer');
+  const tm = S.timer;
+  $('#nameInput').value = t.title.slice(0, 80);
+  onNameChange();
+  if (tm.status !== 'idle') { toast('Finish or reset the current session first — the task’s name is ready below', 3600); return; }
+  const items = (t.check || []).filter(x => !x.d).map(x => x.t);
+  if (items.length && !subs().some(x => !x.d)) {
+    S.timer.subtasks = items.slice(0, SUB_MAX).map(x => ({ id: 'k' + uid(), t: x.slice(0, 80), d: false, at: 0 }));
+    subChanged();
+    toast(`Its checklist is now ${Math.min(items.length, SUB_MAX)} subtask${items.length === 1 ? '' : 's'}`, 2600, true);
+  }
+  tm.phase = 'focus';
+  startTimer();
+}
+/* ---------- Add / edit dialog ---------- */
+let todoEditing = null;
+function openTodoForm(t, title = '') {
+  todoEditing = t ? t.id : null;
+  const v = t || { title, due: '', pri: 'med', tag: '', notes: '', check: [] };
+  $('#todoDlgTitle').textContent = t ? 'Edit task' : 'New task';
+  $('#tdTitle').value = v.title;
+  $('#tdDue').value = v.due || '';
+  $$('#tdPri [data-pri]').forEach(b => { b.classList.toggle('active', b.dataset.pri === (v.pri || 'med')); b.setAttribute('aria-pressed', b.dataset.pri === (v.pri || 'med')); });
+  $('#tdTag').value = v.tag || '';
+  $('#tdTagList').innerHTML = [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.todos.map(x => x.tag)].filter(Boolean))].slice(0, 30).map(n => `<option value="${esc(n)}">`).join('');
+  $('#tdNotes').value = v.notes || '';
+  $('#tdCheck').value = (v.check || []).map(x => (x.d ? '[x] ' : '') + x.t).join('\n');
+  $('#tdErr').textContent = '';
+  $('#tdDelete').classList.toggle('hidden', !t);
+  $('#todoDlg').showModal();
+  setTimeout(() => $('#tdTitle').focus(), 50);
+}
+function saveTodoForm() {
+  const title = $('#tdTitle').value.trim();
+  if (!title) { $('#tdErr').textContent = 'Give the task a name'; return; }
+  const pri = ($('#tdPri .active') || {}).dataset?.pri || 'med';
+  const check = $('#tdCheck').value.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 20).map(l => ({ t: l.replace(/^\[x\]\s*/i, '').slice(0, 80), d: /^\[x\]/i.test(l) }));
+  const fields = { title, due: $('#tdDue').value, pri, tag: $('#tdTag').value, notes: $('#tdNotes').value, check };
+  const t = todoEditing && todoById(todoEditing);
+  if (t) { Object.assign(t, { ...fields, title: title.slice(0, 120), due: DAY_RE.test(fields.due) ? fields.due : '', tag: fields.tag.trim().slice(0, 30), notes: fields.notes.slice(0, 1000) }); save(); }
+  else addTodo(fields);
+  $('#todoDlg').close();
+  uiSound('on');
+  renderTodoBits();
+}
+/* ---------- Drag to reorder (by the grip) and swipe (phones) ---------- */
+function moveTodo(id, dir) {
+  const list = todoVisible(), i = list.findIndex(t => t.id === id), j = i + dir;
+  if (i < 0 || j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  reorderTodos(list.map(t => t.id));
+}
+function reorderTodos(ids) {
+  // the visible tasks take the order slots they already had, in their new sequence
+  const slots = ids.map(id => todoById(id)).filter(Boolean).map(t => t.order ?? 0).sort((a, b) => a - b);
+  ids.forEach((id, k) => { const t = todoById(id); if (t) t.order = slots[k]; });
+  if (new Set(slots).size < slots.length) ids.forEach((id, k) => { const t = todoById(id); if (t) t.order = (slots[0] || 0) + k; });
+  save();
+  renderTodoBits();
+}
+/** Clicks inside the To-do view (called from the Reminders tab's click handler). Returns true when handled. */
+function onTodoClick(e) {
+  const t = e.target;
+  if (!t.closest('#todoBody')) return false;
+  const f = t.closest('[data-tfilter]');
+  if (f) { S.ui.todoFilter = f.dataset.tfilter; saveLocal(); uiSound('tap'); renderTodos(); return true; }
+  if (t.closest('#todoMore')) { openTodoForm(null, $('#todoQuick').value.trim()); $('#todoQuick').value = ''; return true; }
+  const li = t.closest('li[data-tid]');
+  if (!li || li.dataset.swiped) return true;
+  const td = todoById(li.dataset.tid);
+  if (!td) return true;
+  if (t.closest('[data-tdone]')) toggleTodo(td, t.closest('[data-tdone]'));
+  else if (t.closest('[data-tfocus]')) focusOnTodo(td);
+  else if (t.closest('[data-tdel]')) deleteTodo(td);
+  else if (t.closest('[data-tgrip]')) return true;
+  else if (t.closest('[data-tedit]')) openTodoForm(td);
+  return true;
+}
+$('#remSeg').addEventListener('click', e => {
+  const b = e.target.closest('[data-rview]');
+  if (!b || b.dataset.rview === remView()) return;
+  S.ui.remView = b.dataset.rview; saveLocal(); uiSound('tap');
+  renderReminders();
+  animateIn($(b.dataset.rview === 'todo' ? '#todoBody' : '#remBody'));
+});
+$('#todoBody').addEventListener('submit', e => {
+  if (e.target.id !== 'todoAdd') return;
+  e.preventDefault();
+  const inp = $('#todoQuick'), t = addTodo({ title: inp.value, due: todoFilter() === 'today' ? todayKey() : '' });
+  if (!t) return;
+  inp.value = '';
+  uiSound('on');
+  if (todoFilter() === 'done' || todoFilter() === 'upcoming') S.ui.todoFilter = 'all';
+  renderTodoBits();
+  $('#todoQuick').focus();
+});
+$('#todoBody').addEventListener('keydown', e => {
+  const g = e.target.closest('[data-tgrip]');
+  if (g && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) { e.preventDefault(); const id = g.closest('li').dataset.tid; moveTodo(id, e.key === 'ArrowUp' ? -1 : 1); const ng = $(`#todoList li[data-tid="${id}"] [data-tgrip]`); if (ng) ng.focus(); }
+});
+(() => {
+  let dr = null;
+  const host = $('#todoBody');
+  host.addEventListener('pointerdown', e => {
+    const g = e.target.closest('[data-tgrip]');
+    if (!g) return;
+    e.preventDefault();
+    const li = g.closest('li');
+    li.setPointerCapture(e.pointerId);
+    dr = { li, y: e.clientY, moved: false };
+    li.classList.add('lifting');
+  });
+  host.addEventListener('pointermove', e => {
+    if (!dr) return;
+    let dy = e.clientY - dr.y;
+    const sib = dy > 0 ? dr.li.nextElementSibling : dr.li.previousElementSibling;
+    if (sib && Math.abs(dy) > sib.getBoundingClientRect().height / 2) {
+      if (dy > 0) sib.after(dr.li); else sib.before(dr.li);
+      dr.y += (dy > 0 ? 1 : -1) * sib.getBoundingClientRect().height;
+      dy = e.clientY - dr.y;
+      dr.moved = true;
+    }
+    dr.li.style.transform = `translateY(${dy}px)`;
+  });
+  const end = () => {
+    if (!dr) return;
+    const { li, moved } = dr;
+    dr = null;
+    li.classList.remove('lifting'); li.style.transform = '';
+    if (moved) { uiSound('tap'); reorderTodos($$('#todoList li').map(x => x.dataset.tid)); }
+  };
+  host.addEventListener('pointerup', end);
+  host.addEventListener('pointercancel', end);
+})();
+$('#tdPri').addEventListener('click', e => { const b = e.target.closest('[data-pri]'); if (!b) return; $$('#tdPri [data-pri]').forEach(x => { x.classList.toggle('active', x === b); x.setAttribute('aria-pressed', x === b); }); });
+$('#tdSave').addEventListener('click', saveTodoForm);
+$('#tdCancel').addEventListener('click', () => $('#todoDlg').close());
+$('#tdDelete').addEventListener('click', () => { const t = todoEditing && todoById(todoEditing); $('#todoDlg').close(); if (t) deleteTodo(t); });
+$('#todoDlg').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'tdTitle') { e.preventDefault(); saveTodoForm(); } });
 
 async function boot() {
   captureInvite();
