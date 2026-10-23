@@ -15026,7 +15026,7 @@ async function clanSchedule(f, editId = '') {
     const d = new Date(f.start);
     clanFeed('sched', d.getHours() * 60 + d.getMinutes());
   }
-  } catch (e) { if (e && e.code === 'permission-denied' && data.mode === 'together' && !editId) throw new Error('Choosing a session mode needs the Firestore rules from Pomodorolist 1.14.2 — ask whoever set up the app to publish them'); throw e; }
+  } catch (e) { if (e && e.code === 'permission-denied' && data.mode === 'together' && !editId && clanCanSchedule()) throw new Error('Choosing a session mode needs the Firestore rules from Pomodorolist 1.14.2 — ask whoever set up the app to publish them'); throw e; }
   await clanLoadDetails(true);
 }
 async function clanCancelSession(sid) {
