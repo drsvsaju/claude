@@ -11567,7 +11567,7 @@ function demoDocs() {
     revisions: [{ id: 'demo_v1', topic: 'Chemistry', presetId: 'p-classic', time: '18:00', step: 1, next: dayKey(now), created: Date.now() - 3 * 864e5, log: [], done: {}, snooze: {} }],
     exams: [{ id: 'demo_x1', name: 'JEE Main', date: dayKey(addDays(now, 74)), added: Date.now() - 40 * 864e5 }],
     parked: [{ id: 'demo_p1', text: 'Ask James for the organic chemistry notes', at: Date.now() - 5400e3, done: false }],
-    squad: DEMO_FRIENDS.slice(0, 2).map(f => ({ uid: f.uid, name: f.name })),
+    squad: DEMO_FRIENDS.map(f => ({ uid: f.uid, name: f.name })),   // a full squad of 5, so the (smaller) v1.13.1 boss stays mid-battle
     subTemplates: [], energy,
   };
   // My minutes this week decide the friends' weekly numbers, so the boss is always mid-battle.
@@ -11575,9 +11575,9 @@ function demoDocs() {
   const docs = { 'users/demo': profile };
   for (const [m, list] of Object.entries(byMonth)) docs[`users/demo/months/${m}`] = { month: m, sessions: list };
   const wk = dayKey(mon), wkSun = dayKey(weekStartOf(now, 0));
-  // Squad boss HP is 2.6 × (5 × the 120-minute goal) = 1,560: the squad (me + the first two friends) sits at about 62%.
-  const squadLeft = Math.max(60, Math.round(squadHPFor(BOSS_HP[bossOfWeek(now).id], 3) * .62 - myWeek));
-  const weekOf = [Math.round(squadLeft * .55), Math.round(squadLeft * .45), Math.round(myWeek * .6 + 30), Math.round(myWeek + 95), Math.round(myWeek * .85 + 20)];
+  // The squad (me + all five friends) sits at about 62% of this boss’s Squad HP.
+  const squadLeft = Math.max(60, Math.round(squadHPFor(BOSS_HP[bossOfWeek(now).id], 6) * .62 - myWeek));
+  const weekOf = [.3, .25, .17, .16, .12].map(f => Math.round(squadLeft * f));
   DEMO_FRIENDS.forEach((f, i) => {
     const weekMin = Math.max(30, weekOf[i]), dayMin = Math.round(Math.min(weekMin, 35 + i * 20));
     const pub = { username: f.name, level: f.level, tier: f.tier, frame: ITEM_BY_ID[f.frame] ? f.frame : 'frame_none', color: ITEM_BY_ID[f.color] ? f.color : 'col_default', avatar: f.avatar };
