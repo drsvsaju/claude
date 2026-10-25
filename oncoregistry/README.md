@@ -2,7 +2,7 @@
 
 A one-file web app for collecting oncology research data. It runs like a lightweight REDCap built for Indian real-world-data studies. It is hosted the same way as the Focus app: one `index.html` on GitHub Pages, with Firebase for login and the database.
 
-**Try it without any setup:** open the page and press **Try the demo**. That loads 120 synthetic patients, kept only in your browser.
+**Try it without any setup:** open the page and press **Try the demo**. That loads 120 synthetic patients, a small team and several weeks of activity, kept only in your browser.
 
 ## What it does
 
@@ -15,6 +15,11 @@ A one-file web app for collecting oncology research data. It runs like a lightwe
 | **Audit trail** | Every registration, edit, lock, unlock (with reason) and deletion is stored with who, when and the old → new value of each field. Nobody can change or delete it, not even admins. |
 | **Survival** | OS and PFS from diagnosis are calculated for each patient. The dashboard shows Kaplan–Meier curves (overall or by stage, ECOG, sex, metastatic status, site, payer or centre) with median and 95% CI, 1/2/5-year survival, number at risk and the log-rank p-value. |
 | **Export** | Analysis-ready CSV files: one row per patient with derived `os_months`, `os_event`, `pfs_months`, `pfs_event` and toxicity summaries. Separate long tables for treatments, biomarkers, toxicity and follow-up (linked by `study_id`), a data dictionary and a JSON backup. Coded answers can be exported as labels (for Excel/SPSS) or codes (for STATA/R). |
+| **Today (home)** | Each study opens on a Focus-style home page. It shows a daily-goal ring (records you worked on today), your current and longest streak, and a quick **Register patient** button. Type a patient's number (e.g. `12` → `GBC-0012`) or hospital ID to open their record. It also shows chips for recently opened patients (you can pin them), a **Due for follow-up** list (no contact for 90+ days, adjustable), your unfinished drafts and the study's recruitment progress. |
+| **Profile** | Levels, tier badges and achievements in the Focus app's style. For example: first patient, 100 registered, 25 records completed, 100 follow-up visits, a 30-day streak. There is also your own activity chart by day, week, month or year, with the daily-goal line. |
+| **Team** | A leaderboard for this week, this month or all time, plus the members and invitations page. Points favour complete data: registering a patient 10, marking a record complete 15, a follow-up visit 5, a treatment 3, an edit 3 (counted once per record per day), verifying 5. Everything is worked out from the audit trail, so nothing extra is stored. |
+| **Preferences** | Theme (system, light or dark), accent colour, daily goal, working days (days off never break a streak), the week's first day, the follow-up interval, and a switch to turn progression off for a plain registry. Preferences are saved on each device. |
+| **Shortcuts** | `/` opens a patient or searches, `N` registers a patient, `Ctrl+S` saves the open record. |
 | **Paper CRF** | A printable blank form for clinics without a computer at the bedside. |
 | **Works offline** | Records open and can be edited without internet and sync later. Only *registering* a new patient needs a connection, because that is when the unique Study ID is assigned. |
 | **Conflicting edits** | If two people edit the same record, the second save is refused (enforced by the server) instead of silently overwriting the first person's work. |
