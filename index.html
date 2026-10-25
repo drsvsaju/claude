@@ -1497,6 +1497,7 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .cd-card.flipped .cd-front { transform: rotateY(180deg); }
 .cd-card.flipped .cd-back { transform: rotateY(360deg); }
 :root[data-motion="off"] .cd-card .cd-front, :root[data-motion="off"] .cd-card .cd-back { transition: none; }
+:root[data-motion="reduced"] .cd-card .cd-front, :root[data-motion="reduced"] .cd-card .cd-back { transition-duration: .2s; }
 .cd-k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .cd-t { font-size: 18px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
 .cd-hint { margin-top: auto; }
@@ -2956,7 +2957,7 @@ body.first-load #todayBar { opacity: 0; }
 .td-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 1px; }
 .td-due.today { color: var(--accent); font-weight: 600; }
 .td-due.over { color: var(--warn); font-weight: 600; }
-.td-tag { color: var(--tc, var(--muted)); font-weight: 600; }
+.td-tag { color: var(--tc, var(--muted)); font-weight: 600; overflow-wrap: anywhere; }   /* a long unbroken tag or deck subject wraps instead of pushing the row wide */
 .todo.overdue .rem-fg { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--warn) 70%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--warn) 7%, var(--surface)), var(--surface) 40%); }
 .todo.leaving .rem-fg { opacity: .45; transition: opacity .4s; }
 .todo.done .rt { text-decoration: line-through; color: var(--muted); }
@@ -4234,7 +4235,7 @@ body.first-load #todayBar { opacity: 0; }
 <div class="net-banner" id="netBanner" role="status" aria-live="polite"><i></i><span></span></div>
 <div class="ptr" id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></div>
 
-<!-- Keyboard shortcuts -->
+<!-- Garden + room dialogs -->
 <dialog id="gdDlg" class="gd-dlg" aria-labelledby="gdTitle"><div id="gdDlgBody"></div></dialog>
 <dialog id="rmShareDlg" class="rm-share-dlg" aria-labelledby="rmShTitle">
   <h2 id="rmShTitle">Share Pomeo’s room</h2>
@@ -4456,7 +4457,8 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    54. QUESTLINE — a Pomeo event each month or season (EVENTS). Progress is worked
    55. BAG — everything you own, in one place (the bag button next to the inbox).
    56. FOCUS ATMOSPHERE + RIPENING RING
-   57. SYNC MERGE — lists of items (reminders, revision plans, exams, parked thoughts,
+   57. SYNC MERGE — lists of items (reminders, revisions, exams, parked, presets, templates,
+       loadouts, to-dos, plants, gbuys, roomSets, decks, cards, plan) merged by id + tombstones.
    58. EVENTS
    59. TICK LOOP + MIDNIGHT HANDLING
    60. INIT
@@ -5110,7 +5112,7 @@ function profileFromState() {
     loadouts: S.loadouts.slice(0, 8),
     todos: S.todos.slice(0, TODO_MAX),
     plants: gardenPlantsForProfile(),
-    gbuys: S.gbuys.slice(-600),
+    gbuys: S.gbuys.slice(-1500),
     cardPrefs: S.cardPrefs,
     roomPrefs: S.roomPrefs,
     roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
@@ -5601,6 +5603,16 @@ function mergeData(obj) {
       if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() });
       else if (f === 'plants') S[f][i] = mergePlant((+x.u || 0) > (+S[f][i].u || 0) ? x : S[f][i], (+x.u || 0) > (+S[f][i].u || 0) ? S[f][i] : x);
       else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x;
+    }
+  }
+  // A backup from before 1.15 has no garden lists: the plants its sessions grew are credited the way the migration
+  // credits them (the richer summary wins, same id), so restoring an old backup on a fresh install is as fair as
+  // upgrading in place. Once the migration has credited more, nothing changes.
+  if (!Array.isArray(obj.plants) && add.length) {
+    const cur = gardenMig();
+    if (cur) {
+      const fresh = migSummary(gardenStats(gardenItems(0, cur.at)), cur.at);   // up to the migration: later sessions water real plants
+      if (fresh.grown + fresh.xp > (+cur.grown || 0) + (+cur.xp || 0)) { Object.assign(cur, fresh); GD = null; }
     }
   }
   save();
@@ -7664,7 +7676,6 @@ function applyRingStyle() {
   ring.classList.remove(...new Set(Object.values(RING_CLASSES).join(' ').split(' ')));   // some styles use two classes
   const cls = RING_CLASSES[equippedId('ring')];
   if (cls) ring.classList.add(...cls.split(' '));
-  ring.dataset.trail = equippedId('trail');
   lastDots = -1;
 }
 
@@ -9048,7 +9059,7 @@ function renderPomeo() {
 const PB = { q: [], cur: null, timer: 0, lastEvent: 0 };
 /**
  * kind: 'tap' (always), 'event' (depends on "Pomeo talks"), 'care' (gentle; skipped when Quiet),
- *       'nudge' (water/stretch: its own setting; falls back to a toast).
+ *       'nudge' (water/stretch and the break-time flashcard offer: their own settings; falls back to a toast).
  */
 function pomeoSay(text, { kind = 'event', ms = 5200, actions = null, closable = false, onClose = null } = {}) {
   // During focus Pomeo keeps quiet: chatter is skipped, things worth saying wait for the end of the block.
@@ -9604,7 +9615,7 @@ $('#tab-reminders').addEventListener('click', e => {
   let sw = null;
   const host = $('#tab-reminders');
   host.addEventListener('pointerdown', e => {
-    const li = e.target.closest('.rem');
+    const li = e.target.closest('#remBody .rem, #todoBody .rem');
     if (!li || e.pointerType === 'mouse' || e.target.closest('button')) return;
     sw = { li, x: e.clientX, y: e.clientY, dx: 0, on: false };
   });
@@ -10768,23 +10779,26 @@ const plotsForLevel = lv => GPLOTS_AT[Math.min(lv, GPLOTS_AT.length) - 1];
 const gardenMig = () => S.plants.find(p => p && p.id === 'mig1' && p.sum) || null;
 const gardenMigAt = () => { const m = gardenMig(); return m ? +m.at || 0 : Infinity; };
 function computeGarden() {
-  const list = (S.plants || []).filter(p => p && typeof p === 'object' && p.id), sum = list.find(p => p.sum) || null;
+  const list = (S.plants || []).filter(p => p && typeof p === 'object' && p.id), sums = list.filter(p => p.sum);
+  const sum = sums.find(p => !p.fold) || null, fold = sums.find(p => p.fold) || null;   // the migration record and the folded history
   const plants = list.filter(p => !p.sum && p.sp), growing = plants.filter(p => !p.h), harvested = plants.filter(p => p.h).sort((a, b) => a.h - b.h);
-  let xp = sum ? +sum.xp || 0 : 0;
+  let xp = 0;
+  for (const x of sums) xp += +x.xp || 0;
   for (const p of plants) xp += waterOf(p);
   for (const p of harvested) xp += harvestXP(p);
   const level = gardenLevelOf(xp), next = GXP_LEVELS[level], into = xp - GXP_LEVELS[level - 1];
-  // produce: replay every purchase in time order against what had been harvested by then
-  const earnedAt = t => (sum && sum.at <= t ? +sum.y || 0 : 0) + harvested.filter(p => p.h <= t).reduce((a, p) => a + (+p.y || 0), 0);
+  // produce: replay every purchase in time order against what had been harvested by then (a settled purchase — older
+  // than the folded history — keeps the verdict it had)
+  const earnedAt = t => sums.reduce((a, x) => a + (x.at <= t ? (+x.y || 0) - (+x.spent || 0) : 0), 0) + harvested.filter(p => p.h <= t).reduce((a, p) => a + (+p.y || 0), 0);
   const buys = (S.gbuys || []).filter(b => b && b.id && b.item).slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
+  const used = new Set(plants.map(p => p.seed));   // a seed a plant grew from is settled whatever the clocks said
   let spent = 0;
   const valid = [], invalid = [];
   for (const b of buys) {
     const price = Math.max(0, Math.round(+b.price || 0));
-    if (earnedAt(+b.at || 0) - spent >= price) { spent += price; valid.push(b); } else invalid.push(b.id);
+    if (b.ok || used.has(b.id) || earnedAt(+b.at || 0) - spent >= price) { spent += price; valid.push(b); } else invalid.push(b.id);
   }
   const produce = Math.max(0, earnedAt(Infinity) - spent);
-  const used = new Set(plants.map(p => p.seed));
   const seeds = {};   // species -> [unplanted seed buys]
   for (const b of valid) if (b.item.startsWith('seed_') && !used.has(b.id) && GSP_BY_ID[b.item.slice(5)]) (seeds[b.item.slice(5)] ||= []).push(b);
   const decor = valid.filter(b => GDECOR_BY_ID[b.item]).map(b => ({ buy: b, it: GDECOR_BY_ID[b.item] }));
@@ -10792,10 +10806,52 @@ function computeGarden() {
   for (const d of decor) if (d.buy.slot && !placed[d.buy.slot]) placed[d.buy.slot] = d;
   const discovered = new Set(plants.map(p => p.sp));
   if (sum && sum.grown) discovered.add('tomato');
+  for (const id of Object.keys((fold && fold.sp) || {})) if (GSP_BY_ID[id]) discovered.add(id);
   const plots = plotsForLevel(level), byPlot = {};
-  for (const p of growing) if (p.plot >= 0 && p.plot < 16 && !byPlot[p.plot]) byPlot[p.plot] = p;
-  return { sum, plants, growing, harvested, xp, level, next, into, need: next ? next - GXP_LEVELS[level - 1] : 0, produce, spent, valid, invalid, seeds, decor, placed, discovered, plots, byPlot,
-    ready: growing.filter(plantReady), grownTotal: (sum ? +sum.grown || 0 : 0) + harvested.length };
+  // Two devices planting into the same plot before they synced: the later planting shows in the first free plot
+  // (derived from stored data, so every device draws the same garden; nothing is lost).
+  for (const p of growing.slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1))) {
+    let i = p.plot >= 0 && p.plot < 16 && !byPlot[p.plot] ? p.plot : -1;
+    if (i < 0) for (let k = 0; k < 16; k++) if (!byPlot[k]) { i = k; break; }
+    if (i >= 0) byPlot[i] = p;
+  }
+  // harvests since 1.15 (stored + folded), the species among them and the mutation counts
+  const harvestsN = harvested.length + (fold ? +fold.grown || 0 : 0);
+  const harvSpecies = new Set([...harvested.map(p => p.sp), ...Object.keys((fold && fold.sp) || {})]);
+  const muts = {}; for (const m of Object.keys(GMUT)) muts[m] = harvested.filter(p => p.m === m).length + (fold ? +fold[m] || 0 : 0) + (m === 'golden' && sum ? +sum.golden || 0 : 0);
+  return { sum, fold, plants, growing, harvested, harvestsN, harvSpecies, muts, xp, level, next, into, need: next ? next - GXP_LEVELS[level - 1] : 0, produce, spent, valid, invalid, seeds, decor, placed, discovered, plots, byPlot,
+    ready: growing.filter(plantReady), grownTotal: sums.reduce((a, x) => a + (+x.grown || 0), 0) + harvested.length };
+}
+const GFOLD_AT = 500, GFOLD_KEEP = 300;
+/** Garden history stays small: once more than 500 harvests are stored, the oldest are folded into one running total
+ *  ('fold1': counts, produce, XP, per-species stats and the seeds those plants used) and the newest 300 stay as they
+ *  are. Every purchase older than the fold is settled (ok) with the verdict it had, so the produce replay — and the
+ *  balance — do not change; a refunded old purchase is dropped. Deterministic (oldest first), additive and monotonic,
+ *  so two devices folding the same history converge on the same record (the richer copy wins in mergePlant). */
+function gardenFold() {
+  const g = garden(), hv = g.harvested;   // oldest first
+  if (hv.length <= GFOLD_AT) return false;
+  const old = hv.slice(0, hv.length - GFOLD_KEEP), cutoff = +old[old.length - 1].h;
+  let f = S.plants.find(p => p && p.id === 'fold1');
+  if (!f) { f = { id: 'fold1', v: 1, sum: 1, fold: 1, at: 0, grown: 0, golden: 0, rainbow: 0, crystal: 0, y: 0, xp: 0, spent: 0, sp: {} }; S.plants.push(f); }
+  const gone = new Set(old.map(p => p.id)), seeds = new Set(old.map(p => p.seed).filter(Boolean)), validIds = new Set(g.valid.map(b => b.id));
+  const rank = ['', 'golden', 'rainbow', 'crystal'];
+  for (const p of old) {
+    f.grown = (+f.grown || 0) + 1; if (GMUT[p.m]) f[p.m] = (+f[p.m] || 0) + 1; f.y = (+f.y || 0) + (+p.y || 0); f.xp = (+f.xp || 0) + harvestXP(p) + waterOf(p);   // its water minutes and harvest bonus
+    const st = (f.sp[p.sp] ||= { n: 0, y: 0, best: '' }); st.n++; st.y += +p.y || 0; if (rank.indexOf(p.m || '') > rank.indexOf(st.best || '')) st.best = p.m;
+  }
+  f.at = Math.max(+f.at || 0, cutoff);
+  S.plants = S.plants.filter(p => !(p && gone.has(p.id)));
+  const keep = [];
+  for (const b of S.gbuys) {
+    if (!b || !b.id) continue;
+    if (seeds.has(b.id)) { f.spent = (+f.spent || 0) + Math.max(0, Math.round(+b.price || 0)); continue; }   // a seed a folded plant used
+    if ((+b.at || 0) <= cutoff) { if (!validIds.has(b.id)) continue; b.ok = 1; }   // settled with its verdict; a refunded one goes
+    keep.push(b);
+  }
+  S.gbuys = keep;
+  GD = null;
+  return true;
 }
 /** The next garden level's unlocks, as text. */
 function gardenNextUnlock(g) {
@@ -10835,9 +10891,9 @@ function gardenVisitors() {
   const out = [];
   const bf = sessions >= 10 ? 3 : sessions >= 5 ? 2 : sessions >= 1 ? 1 : 0;
   for (let i = 0; i < bf; i++) out.push({ kind: 'butterfly', n: i });
-  if (blooms >= 2) out.push({ kind: 'bee', n: 0 });
+  if (blooms >= 2 || Object.values(g.placed).some(d => d.it.id === 'dc_beehive')) out.push({ kind: 'bee', n: 0 });
   if (blooms >= 5) out.push({ kind: 'bee', n: 1 });
-  if (streak >= 3 || g.placed.s1 && g.placed.s1.it.id === 'dc_birdhouse') out.push({ kind: 'bird', n: 0 });
+  if (streak >= 3 || Object.values(g.placed).some(d => d.it.id === 'dc_birdhouse')) out.push({ kind: 'bird', n: 0 });
   if (streak >= 7 || Object.values(g.placed).some(d => d.it.id === 'dc_pond')) out.push({ kind: 'frog', n: 0 });
   if (streak >= 14 && sessions >= 7) out.push({ kind: 'cat', n: 0 });
   return out;
@@ -10846,18 +10902,22 @@ function gardenVisitors() {
 /* ---------- Migration from the session-derived garden (runs once per account, on any device, idempotent) ---------- */
 function gardenMigrate() {
   if (!USER || isPreview() || !rewardsReady() || gardenMig()) return false;
-  const at = Date.now(), st = gardenStats(gardenItems(0, at));
-  const y = st.grown ? Math.min(80, 4 + st.ripe + st.golden * 3 + Math.floor(st.grown / 5)) : 0;   // a little starting produce
-  const xp = Math.min(1400, st.grown * 6 + st.golden * 15);   // at most garden level 5 (12 plots) from the past
-  S.plants.push({ id: 'mig1', v: 1, sum: 1, at, grown: st.grown, golden: st.golden, ripe: st.ripe, wilted: st.wilted, y, xp });
+  const at = Date.now();
+  S.plants.push(migSummary(gardenStats(gardenItems(0, at)), at));
   for (const [id, sp] of [['st1', 'tomato'], ['st2', 'tomato'], ['st3', 'sunflower']]) if (!S.gbuys.some(b => b && b.id === id)) S.gbuys.push({ id, v: 1, item: 'seed_' + sp, price: 0, at, slot: '' });
   GD = null;
   save();
   return true;
 }
-/** What goes in the profile document: every growing plant, the migration summary and the latest 400 harvests. */
+/** The one-time migration record for the plants the old garden grew from past sessions: a little starting produce
+ *  and at most garden level 5 (12 plots) of XP. Same id everywhere, so it is created once and never duplicated. */
+function migSummary(st, at) {
+  return { id: 'mig1', v: 1, sum: 1, at, grown: st.grown, golden: st.golden, ripe: st.ripe, wilted: st.wilted,
+    y: st.grown ? Math.min(80, 4 + st.ripe + st.golden * 3 + Math.floor(st.grown / 5)) : 0, xp: Math.min(1400, st.grown * 6 + st.golden * 15) };
+}
+/** What goes in the profile document: every growing plant, the summaries (migration, folded history) and the stored harvests. */
 function gardenPlantsForProfile() {
-  const list = (S.plants || []).filter(p => p && p.id), keep = list.filter(p => p.sum || !p.h), hv = list.filter(p => !p.sum && p.h).sort((a, b) => b.h - a.h).slice(0, 400);
+  const list = (S.plants || []).filter(p => p && p.id), keep = list.filter(p => p.sum || !p.h), hv = list.filter(p => !p.sum && p.h).sort((a, b) => b.h - a.h).slice(0, 600);   // folding keeps this under 500
   return [...keep, ...hv];
 }
 /** Two copies of the same plant (one per device): the newer wins, water maps are joined, a harvest is final. */
@@ -10936,6 +10996,7 @@ function gardenHarvest(id) {
   p.fc = 0;
   delete p.w;
   GD = null;
+  gardenFold();
   save();
   updateGardenDot();
   return p;
@@ -11045,7 +11106,7 @@ const VISITOR_ART = {
   cat: '<svg viewBox="0 0 30 30" aria-hidden="true"><path d="M8 28q-2-12 7-16 9 4 7 16Z" fill="#8a8a8a"/><circle cx="15" cy="10" r="6" fill="#8a8a8a"/><path d="M10 7 9 1l4 4ZM20 7l1-6-4 4Z" fill="#8a8a8a"/><circle cx="12.6" cy="9.5" r="1" fill="#f6d44a"/><circle cx="17.4" cy="9.5" r="1" fill="#f6d44a"/><path d="M14 12.5h2" stroke="#e07a6f" stroke-width="1.2"/><path class="tail" d="M22 26q6-2 4-8" stroke="#8a8a8a" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>',
 };
 const VISITOR_NAME = { butterfly: 'Butterfly', bee: 'Bee', bird: 'Bird', frog: 'Frog', cat: 'Cat' };
-const VISITOR_WHY = { butterfly: 'Visits when you finish focus blocks this week', bee: 'Comes for flowering plants', bird: 'Stays for a 3-day streak (or a birdhouse)', frog: 'Hops in on a 7-day streak (or a pond)', cat: 'Naps here after two weeks of focus' };
+const VISITOR_WHY = { butterfly: 'Visits when you finish focus blocks this week', bee: 'Comes for flowering plants (or a beehive)', bird: 'Stays for a 3-day streak (or a birdhouse)', frog: 'Hops in on a 7-day streak (or a pond)', cat: 'Naps here after two weeks of focus' };
 const VISITOR_SAY = { butterfly: 'flutters around you ✨', bee: 'buzzes happily 🐝', bird: 'chirps a little tune 🎵', frog: 'ribbits and hops 🐸', cat: 'purrs and stretches 🐾' };
 
 /* ---------- Rendering ---------- */
@@ -11104,7 +11165,6 @@ function gardenInfoHTML(g) {
   const tip = wilted ? 'Your plants are thirsty — finish a focus block and they perk up again.'
     : !g.growing.length ? (Object.keys(g.seeds).length ? 'Tap an empty plot to plant a seed.' : 'Get a seed from the Seeds shop — Tomato and Sunflower are free.')
     : g.ready.length ? `${g.ready.length === 1 ? speciesOf(g.ready[0]).name + ' is' : g.ready.length + ' plants are'} ready — tap to harvest.`
-    : g.growing.every(plantReady) ? 'Every plot is ripe: harvest to make room, or the next block’s water has nowhere to go.'
     : `Every finished focus block waters your plants${g.growing.length > 1 ? ' — evenly, or tap one to water it first' : ''}.`;
   return `<div class="card gd-info"><div class="gd-tipline">${esc(tip)}</div>
     <div class="garden-stats"><span><b>${g.growing.length}</b> growing</span><span><b>${g.ready.length}</b> ready</span><span><b data-count="g-harv" data-val="${g.grownTotal}">${fmtNum(g.grownTotal)}</b> harvested</span><span><b>${g.plots}</b> plots</span>${vis.length ? `<span><b>${vis.length}</b> visitor${vis.length === 1 ? '' : 's'}</span>` : ''}</div>
@@ -11135,19 +11195,18 @@ function decorShopHTML(g) {
 }
 function decorPreview(it) {
   if (DECOR_ART[it.id]) return DECOR_ART[it.id];
-  if (it.kind === 'border') return `<span class="dcpv ${it.id}"></span>`;
   return `<span class="dcpv ${it.id}"></span>`;
 }
 /** Garden achievements: badges in the almanac only (no coins — the coin economy is unchanged). */
 const GARDEN_ACH = [
-  { id: 'g_first', name: 'First harvest', desc: 'Harvest one plant', ok: g => g.harvested.length >= 1 },
-  { id: 'g_ten', name: 'Green thumb', desc: 'Harvest 10 plants', ok: g => g.harvested.length >= 10 },
-  { id: 'g_fifty', name: 'Market gardener', desc: 'Harvest 50 plants', ok: g => g.harvested.length >= 50 },
+  { id: 'g_first', name: 'First harvest', desc: 'Harvest one plant', ok: g => g.harvestsN >= 1 },
+  { id: 'g_ten', name: 'Green thumb', desc: 'Harvest 10 plants', ok: g => g.harvestsN >= 10 },
+  { id: 'g_fifty', name: 'Market gardener', desc: 'Harvest 50 plants', ok: g => g.harvestsN >= 50 },
   { id: 'g_common', name: 'Kitchen garden', desc: 'Grow every common species', ok: g => GSPECIES.filter(s => s.rarity === 'common').every(s => g.discovered.has(s.id)) },
-  { id: 'g_rare', name: 'Rare bloom', desc: 'Harvest a rare plant', ok: g => g.harvested.some(p => speciesOf(p).rarity === 'rare') },
-  { id: 'g_legend', name: 'Legend of the beds', desc: 'Harvest a legendary plant', ok: g => g.harvested.some(p => speciesOf(p).rarity === 'legendary') },
-  { id: 'g_mut', name: 'Something special', desc: 'Harvest a mutated plant', ok: g => g.harvested.some(p => p.m) },
-  { id: 'g_crystal', name: 'Crystal clear', desc: 'Harvest a Crystal plant', ok: g => g.harvested.some(p => p.m === 'crystal') },
+  { id: 'g_rare', name: 'Rare bloom', desc: 'Harvest a rare plant', ok: g => [...g.harvSpecies].some(id => GSP_BY_ID[id] && GSP_BY_ID[id].rarity === 'rare') },
+  { id: 'g_legend', name: 'Legend of the beds', desc: 'Harvest a legendary plant', ok: g => [...g.harvSpecies].some(id => GSP_BY_ID[id] && GSP_BY_ID[id].rarity === 'legendary') },
+  { id: 'g_mut', name: 'Something special', desc: 'Harvest a mutated plant', ok: g => g.muts.golden + g.muts.rainbow + g.muts.crystal > 0 },
+  { id: 'g_crystal', name: 'Crystal clear', desc: 'Harvest a Crystal plant', ok: g => g.muts.crystal > 0 },
   { id: 'g_lv5', name: 'Growing up', desc: 'Reach garden level 5', ok: g => g.level >= 5 },
   { id: 'g_plots', name: 'Full acre', desc: 'Unlock all 16 plots', ok: g => g.plots >= 16 },
   { id: 'g_decor', name: 'Decorator', desc: 'Place 5 decor items', ok: g => Object.keys(g.placed).length >= 5 },
@@ -11155,11 +11214,12 @@ const GARDEN_ACH = [
 function almanacHTML(g) {
   const stats = {};
   for (const p of g.harvested) { const s = (stats[p.sp] ||= { n: 0, y: 0, best: '' }); s.n++; s.y += +p.y || 0; if (p.m && (!s.best || ['golden', 'rainbow', 'crystal'].indexOf(p.m) > ['golden', 'rainbow', 'crystal'].indexOf(s.best))) s.best = p.m; }
+  for (const [id, f] of Object.entries((g.fold && g.fold.sp) || {})) { if (!GSP_BY_ID[id]) continue; const s = (stats[id] ||= { n: 0, y: 0, best: '' }); s.n += +f.n || 0; s.y += +f.y || 0; if (f.best && (!s.best || ['golden', 'rainbow', 'crystal'].indexOf(f.best) > ['golden', 'rainbow', 'crystal'].indexOf(s.best))) s.best = f.best; }
   if (g.sum && g.sum.grown) { const s = (stats.tomato ||= { n: 0, y: 0, best: '' }); s.n += g.sum.grown; s.legacy = g.sum.grown; if (g.sum.golden && !s.best) s.best = 'golden'; s.lgold = g.sum.golden; }
   const planted = {};
   for (const p of g.plants) planted[p.sp] = (planted[p.sp] || 0) + 1;
   const pct = Math.round(g.discovered.size / GSPECIES.length * 100);
-  const muts = ['golden', 'rainbow', 'crystal'].map(m => { const n = g.harvested.filter(p => p.m === m).length + (m === 'golden' && g.sum ? +g.sum.golden || 0 : 0); return `<span class="gd-mut m-${m}${n ? '' : ' none'}">${GMUT[m].name}${n ? ` ×${n}` : ''}</span>`; }).join('');
+  const muts = ['golden', 'rainbow', 'crystal'].map(m => { const n = g.muts[m]; return `<span class="gd-mut m-${m}${n ? '' : ' none'}">${GMUT[m].name}${n ? ` ×${n}` : ''}</span>`; }).join('');
   const cards = GSPECIES.map(sp => {
     const got = g.discovered.has(sp.id), st = stats[sp.id];
     return `<div class="item gd-item r-${sp.rarity}${got ? '' : ' silhouette'}"><div class="pv">${plantArt(sp, 4, st && st.best ? st.best : '')}</div>
@@ -11296,6 +11356,7 @@ const GD_POMEO_LINES = ['Every focus block is a watering can 💧', 'I love it h
     if (plot) {
       if (plot.classList.contains('locked')) { toast(`Plot ${+plot.dataset.plot + 1} unlocks at garden level ${GPLOTS_AT.findIndex(n => n > +plot.dataset.plot) + 1}`); return; }
       const p = plot.dataset.pid && garden().growing.find(x => x.id === plot.dataset.pid);
+      if (plot.dataset.pid && !p) return;   // just harvested: the scene re-renders in a moment
       if (p && plantReady(p)) { const h = gardenHarvest(p.id); if (h) harvestMoment(h, plot); return; }
       if (p) openPlantDlg(p.id); else openPlotDlg(+plot.dataset.plot);
     }
@@ -11359,7 +11420,7 @@ function roomRemove(slot) {
 function saveRoomSet(name) {
   if (isPreview()) return false;
   if (S.roomSets.length >= MAX_ROOM_SETS) { toast(`Up to ${MAX_ROOM_SETS} saved rooms — delete one first`); return false; }
-  S.roomSets.push({ id: 'rs' + uid(), v: 1, name: (name || `Room ${S.roomSets.length + 1}`).trim().slice(0, 24), slots: roomLayout() });
+  S.roomSets.push({ id: 'rs' + uid(), v: 1, name: (String(name || '').trim() || `Room ${S.roomSets.length + 1}`).slice(0, 24), slots: roomLayout() });
   save();
   toast('Room saved', 1600, true);
   return true;
@@ -11555,7 +11616,9 @@ async function saveRoomImage(share = false) {
    On a break Pomeo offers "Quick 5 cards?" when cards are due (never while a
    focus block runs; a setting turns it off).
    ========================================================================== */
-const CARD_MAX = 2000, DECK_MAX = 60;
+const CARD_MAX = 2000, DECK_MAX = 60, CARD_BYTES = 320000;   // cards share the profile document (1 MiB limit): 2,000 cards or ~320 KB of text, whichever first
+const cardsBytes = () => JSON.stringify(S.cards || []).length;
+const CARD_FULL = 'Your cards fill the sync space — shorten or delete some first';
 const cardsOn = () => !!USER;
 const deckById = id => S.decks.find(d => d.id === id);
 const cardDue = (c, tk = todayKey()) => !c.due || c.due <= tk;
@@ -11594,6 +11657,7 @@ function addCard(deck, f, b) {
   f = String(f || '').trim().slice(0, 300); b = String(b || '').trim().slice(0, 600);
   if (!deckById(deck) || !f) return null;
   if (S.cards.length >= CARD_MAX) { toast(`Up to ${CARD_MAX} cards`); return null; }
+  if (cardsBytes() + f.length + b.length + 120 > CARD_BYTES) { toast(CARD_FULL, 3200); return null; }
   const c = { id: 'cd' + uid(), v: 1, deck, f, b, due: '', ivl: 0, ease: 2.5, reps: 0, lapses: 0, at: Date.now() };
   S.cards.push(c);
   return c;
@@ -11604,7 +11668,9 @@ function bulkAddCards(deck, text) {
   for (const line of String(text || '').split('\n')) {
     const m = line.split(/\s\|\s|\t|\s—\s|\s::\s/);
     const f = (m[0] || '').trim(), b = m.slice(1).join(' | ').trim();
-    if (f && addCard(deck, f, b)) n++;
+    if (!f) continue;
+    if (!addCard(deck, f, b)) break;   // the limit toast shows once
+    n++;
   }
   if (n) save();
   return n;
@@ -11612,7 +11678,10 @@ function bulkAddCards(deck, text) {
 function editCard(id, f, b) {
   const c = S.cards.find(x => x.id === id);
   if (!c) return false;
-  c.f = String(f || '').trim().slice(0, 300) || c.f; c.b = String(b || '').trim().slice(0, 600);
+  f = String(f || '').trim().slice(0, 300) || c.f; b = String(b || '').trim().slice(0, 600);
+  const grow = f.length + b.length - c.f.length - (c.b || '').length;   // an edit that does not grow the card is always allowed
+  if (grow > 0 && cardsBytes() + grow > CARD_BYTES) { toast(CARD_FULL, 3200); return false; }
+  c.f = f; c.b = b;
   save();
   return true;
 }
@@ -11643,7 +11712,8 @@ function gradeCard(c, g, now = new Date()) {
 /* ---------- Review session (a dialog) ---------- */
 const RV = { q: [], i: 0, done: 0, again: 0, deck: '', flipped: false, open: false, start: 0 };
 function startReview(deckId = '', limit = 0) {
-  if (!cardsOn() || focusActive()) return false;
+  if (!cardsOn()) return false;
+  if (focusActive()) { toast('Cards wait for the break — finish this focus block first', 2400); return false; }
   let q = dueCards(deckId);
   if (!q.length && deckId) q = deckCards(deckId).slice();   // nothing due: run through the deck anyway
   if (!q.length) { toast('No cards due — nice!', 2000, true); return false; }
@@ -11680,7 +11750,7 @@ function gradePreview(c, g) {
 function reviewGrade(g) {
   const c = RV.q[RV.i];
   if (!c || !RV.flipped) return;
-  if (!isPreview()) { gradeCard(c, g); save(); }
+  if (!isPreview()) { gradeCard(c, g); saveLocal(); RV.dirty = true; }   // the profile is uploaded once, when the review ends
   RV.done++;
   if (g === 'again') { RV.again++; RV.q.push(c); }
   RV.i++; RV.flipped = false;
@@ -11688,7 +11758,7 @@ function reviewGrade(g) {
   renderReview();
   if (!RV.q[RV.i]) { uiSound('harvest', { always: true }); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
 }
-function closeReview() { RV.open = false; const d = $('#fcDlg'); if (d.open) d.close(); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
+function closeReview() { RV.open = false; if (RV.dirty) { RV.dirty = false; save(); } const d = $('#fcDlg'); if (d.open) d.close(); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
 
 /* ---------- Break offer: "Quick 5 cards?" ---------- */
 let lastCardOffer = 0;
@@ -11832,7 +11902,11 @@ function openNewDeck() {
    ========================================================================== */
 const PLAN_MAX = 20;
 const planKey = s => String(s || '').trim().toLowerCase();
-const planOf = () => (S.plan || []).filter(p => p && p.id && p.name && +p.hrs > 0);
+const planOf = () => {
+  const rows = (S.plan || []).filter(p => p && p.id && p.name && +p.hrs > 0), first = {};   // the same subject from two devices: the earlier row wins
+  for (const p of rows) { const k = planKey(p.name); if (!first[k] || (+p.at || 0) < (+first[k].at || 0)) first[k] = p; }
+  return rows.filter(p => first[planKey(p.name)] === p);
+};
 /** Minutes per subject key inside [from, to) from the session log. */
 function planMinutes(from, to, keys) {
   const out = Object.fromEntries(keys.map(k => [k, 0]));
@@ -11848,6 +11922,8 @@ function planMinutes(from, to, keys) {
 function planWeek(now = new Date()) {
   const ws = S.settings.weekStart, from = weekStartOf(now, ws), to = addDays(from, 7), prevFrom = addDays(from, -7);
   const rows = planOf().map(p => ({ ...p, key: planKey(p.name) }));
+  const daysLeft0 = Math.max(1, Math.ceil((to - now) / DAY_MS));
+  if (!rows.length) return { from, to, elapsed: 0, daysLeft: daysLeft0, rows, total: 0, doneTotal: 0, list: [] };
   const keys = rows.map(r => r.key);
   const cur = planMinutes(from.getTime(), to.getTime(), keys), prev = planMinutes(prevFrom.getTime(), from.getTime(), keys);
   const elapsed = Math.min(1, Math.max(0, (now - from) / (7 * DAY_MS)));
@@ -12719,9 +12795,10 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
    command palette, offline banner, pull to refresh, tab swipes, haptics.
    Everything here is stored on this device (localStorage); no new cloud data.
    ========================================================================== */
-const APP_VERSION = '1.14.3';
+const APP_VERSION = '1.15';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
+  { v: '1.15', t: 'A real garden, Pomeo’s room, flashcards, a weekly plan and new looks', d: 'The garden is now its own tab: plant seeds in up to 16 plots, every completed focus block waters them (the plant you choose gets the most), harvest ripe plants for produce, spend it on seeds and decor, discover 18 species with golden, rainbow and crystal mutations, visitors, weather, seasons and an almanac — the plants your past sessions grew are credited as a head start. Pomeo has a room you furnish from the coin shop (walls, floors, rugs, desks, lamps, shelves, plants, posters, windows, pets), with saved rooms and a share picture; questline finals and boss wins add room rewards from now on. Break-time flashcards: decks and cards in Reminders, a flip-and-grade review with spaced repetition, and Pomeo offers a few due cards during breaks (never during focus). A weekly subject plan in Stats: hours per subject, progress from your session names and tags, on-track / behind hints and carry-over. Plus 8 themes (Lavender, Mint, Coffee, Slate, Peach, Candy, Monsoon, Aurora), 10 stamps, 6 ring trails, 22 room items, 5 garden species and 6 decor pieces. Everything syncs across devices, works as a guest and is in your backup.' },
   { v: '1.14.3', t: 'Stronger raids, cleaner menu', d: 'Monthly clan raid bosses are much stronger from November: every month has its own boss, tier and HP (about 5,000–10,000 depending on the boss and clan size), with everyone’s hits, a rally bonus for 5+ contributors and rarer rewards in harder months. The navigation never cuts labels off any more: a sidebar on wide screens, a ☰ menu on tablets and a bottom bar with More on phones. Copy buttons work everywhere (with a Share button on phones), your profile card can fold its stats away, and the welcome page shows what’s inside before asking you to sign up.' },
   { v: '1.14.2', t: 'Focus together', d: 'Clan sessions now start as Focus together by default: everyone runs their own timer and preset at one study table, sees each other’s countdowns and states, and stepping away or leaving only affects you. The shared Synced timer with host controls is still there when you want it, and planned sessions show which mode they use.' },
   { v: '1.14.1', t: 'Cosmetics fixes', d: 'Squad boss auras now look different from Solo ones everywhere (a double ring with a shimmer), and every special aura has a crisp ring so it shows at small sizes and with animations off. Your picture, frame, aura, name colour and clan tag now look the same on every screen: friends, friend profiles, all leaderboards, the Inbox, boss squads and battle logs, challenges, event boards, your clan and live study tables, and shared cards. Changing your look on one device now wins on your others, your clan tag shows by default, and shared card links keep it.' },
@@ -12745,7 +12822,7 @@ const CHANGELOG = [
   { v: '1.1', t: 'Accounts & sync', d: 'Log in and keep your sessions in sync on every device, even offline.' },
   { v: '1.0', t: 'Focus timer', d: 'Pomodoro timer with named sessions, presets, streaks and stats.' },
 ];
-const NEWS = ['⚔️ Much stronger monthly clan raid bosses from November: a new boss every month, with everyone’s hits and a rally bonus', '🧭 A cleaner menu: a sidebar on wide screens, ☰ on tablets, More on phones — no more cut-off tabs', '📋 Copy buttons that always work, plus Share on phones; fold the stats on your profile card', '🪑 Focus together: clan sessions where everyone runs their own timer at one table (the Synced timer is still an option)', '✨ Cosmetics fixes: Squad auras look different from Solo ones, and your look is the same on every screen', '🛡️ Clans: your study group — create one or join with a link or code', '🔴 Study live on one shared timer, at a study table with your clan (reactions, no chat)', '📅 Plan group sessions: RSVP, a reminder 5–30 min before, add to your calendar', '⭐ Clan levels, Clan Points and a cosmetic clan shop; clan tags, colours and auras in your bag', '🏆 A weekly clan quest, a monthly raid boss, a clan leaderboard and a trophy case', '☑️ A to-do list in Reminders: due dates, priorities, tags and a checklist that becomes subtasks', '🔒 Members-only clan data, approval by default, and leave / remove / disband any time'];
+const NEWS = ['🌱 A real garden: plant seeds in up to 16 plots, water them with focus blocks, harvest produce, mutations, visitors, weather and an almanac', '🛋️ Pomeo’s room: furnish it from the coin shop, save rooms, share a picture; questline and boss rewards now include room items', '🃏 Break-time flashcards with spaced repetition — Pomeo offers a few due cards in your breaks, never during focus', '📊 A weekly subject plan in Stats: hours per subject, progress from your session names and tags, carry-over', '🎨 8 themes, 10 stamps, 6 ring trails, 22 room items, 5 garden species and 6 decor pieces', '⚔️ Much stronger monthly clan raid bosses from November: a new boss every month, with everyone’s hits and a rally bonus', '🧭 A cleaner menu: a sidebar on wide screens, ☰ on tablets, More on phones — no more cut-off tabs', '📋 Copy buttons that always work, plus Share on phones; fold the stats on your profile card', '🪑 Focus together: clan sessions where everyone runs their own timer at one table (the Synced timer is still an option)', '✨ Cosmetics fixes: Squad auras look different from Solo ones, and your look is the same on every screen', '🛡️ Clans: your study group — create one or join with a link or code', '🔴 Study live on one shared timer, at a study table with your clan (reactions, no chat)', '📅 Plan group sessions: RSVP, a reminder 5–30 min before, add to your calendar', '⭐ Clan levels, Clan Points and a cosmetic clan shop; clan tags, colours and auras in your bag', '🏆 A weekly clan quest, a monthly raid boss, a clan leaderboard and a trophy case', '☑️ A to-do list in Reminders: due dates, priorities, tags and a checklist that becomes subtasks', '🔒 Members-only clan data, approval by default, and leave / remove / disband any time'];
 
 /* ---------- Haptics ---------- */
 const HAPTIC_KEY = 'pomodorolist-haptics';
@@ -14306,7 +14383,7 @@ const QUEST_KINDS = {
   nightDays:   { icon: '🦉', t: n => `Focus after 9 PM on ${n} days`, d: 'Different evenings' },
   earlyDays:   { icon: '🌅', t: n => `Focus before 8 AM on ${n} days`, d: 'Different mornings' },
   parked:      { icon: '🅿️', t: n => `Park ${n} distracting thoughts`, d: 'Use 🅿️ on the Timer during a focus block' },
-  plants:      { icon: '🌱', t: n => `Harvest ${n} plants`, d: 'Garden harvests (plants grow from your focus minutes)' },
+  plants:      { icon: '🌱', t: (n, legacy) => legacy ? `Grow ${n} ripe plants` : `Harvest ${n} plants`, d: 'Garden harvests (plants grow from your focus minutes)' },
   bossDays:    { icon: '⚔️', t: n => `Hit the weekly boss on ${n} days`, d: 'Every focus session deals boss damage' },
   streak:      { icon: '🔥', t: n => `Keep a ${n}-day streak`, d: 'Your daily goal, days in a row during the event' },
   goalDays:    { icon: '🎯', t: n => `Reach your daily goal on ${n} days`, d: '' },
@@ -14322,9 +14399,12 @@ const QUEST_KINDS = {
 /** Everything a questline can count, between the event's first and last day. */
 function eventMetrics(ev) {
   const from = evStart(ev), to = evEnd(ev), goal = S.settings.goalMin, idx = game().idx, migAt = gardenMigAt();
+  // A questline that began before this account's 1.15 garden keeps the old rule for its whole run (a ripe plant per
+  // 45-minute session); later questlines count garden harvests. The rule never changes mid-event.
+  const legacyEv = from < migAt;
   const ss = S.sessions.filter(s => s.start >= from && s.start < to);
   const focus = new Set(), night = new Set(), early = new Set(), wkend = new Set(), names = new Set();
-  let ms = 0, deep = 0, plants = garden().harvested.filter(p => p.h >= Math.max(from, migAt) && p.h < to).length, subs = 0, energy = 0, notes = 0;
+  let ms = 0, deep = 0, plants = legacyEv ? 0 : garden().harvested.filter(p => p.h >= from && p.h < to).length, subs = 0, energy = 0, notes = 0;
   for (const s of ss) {
     const d = new Date(s.start), h = d.getHours(), k = dayKey(d);
     ms += +s.duration || 0;
@@ -14334,7 +14414,7 @@ function eventMetrics(ev) {
     if (d.getDay() === 0 || d.getDay() === 6) wkend.add(k);
     names.add(String(s.name || '').trim().toLowerCase());
     if (s.duration >= 50 * 60000) deep++;
-    if (s.duration >= 45 * 60000 && s.start < migAt) plants++;   // before the 1.15 garden: a ripe plant per 45-minute session
+    if (legacyEv && s.duration >= 45 * 60000) plants++;
     if (Array.isArray(s.subtasks)) subs += s.subtasks.filter(x => x && x.d).length;
     if (S.energy[s.id]) energy++;
     if (S.notes[s.id]) notes++;
@@ -14360,7 +14440,7 @@ function questState(ev) {
   const m = eventMetrics(ev), cl = S.game.claims.quests;
   const qs = ev.quests.map(([kind, goal, title], i) => {
     const id = 'q' + (i + 1), v = m[kind];
-    return { id, kind, goal, title: title || QUEST_KINDS[kind].t(goal), raw: v == null ? 0 : v, unknown: v == null, done: v != null && v >= goal,
+    return { id, kind, goal, title: title || QUEST_KINDS[kind].t(goal, evStart(ev) < gardenMigAt()), raw: v == null ? 0 : v, unknown: v == null, done: v != null && v >= goal,
       claimed: !!cl[ev.id + ':' + id], reward: ev.rewards[i] };
   });
   return { ev, qs, doneN: qs.filter(q => q.done || q.claimed).length, finalDone: qs.every(q => q.done || q.claimed), finalClaimed: !!cl[ev.id + ':final'] };
@@ -14887,8 +14967,10 @@ function paintRipe(p) {
 
 /* ==========================================================================
    SYNC MERGE — lists of items (reminders, revision plans, exams, parked thoughts,
-   presets, subtask templates) are merged item by item, by id: the newest change
-   wins (item.u = when it last changed). Deleting leaves a tombstone
+   presets, subtask templates, loadouts, to-dos and, since 1.15, garden plants and
+   purchases, saved rooms, decks, cards and the weekly plan) are merged item by
+   item, by id: the newest change wins (item.u = when it last changed); plants
+   combine their water maps (LIST_MERGE). Deleting leaves a tombstone
    (S.tomb['reminders:<id>'] = time) that syncs too, so a device with an old copy
    can't bring a deleted item back. Tombstones and fired-reminder marks are maps,
    which Firestore merges key by key on write — two devices never overwrite each other.
@@ -18680,7 +18762,7 @@ GDECOR.push(
   { id: 'dc_windchime',   name: 'Wind chime',    kind: 'spot',   rarity: 'common', price: 20,  lvl: 1, desc: 'Tinkles in the breeze' },
   { id: 'dc_wheelbarrow', name: 'Wheelbarrow',   kind: 'spot',   rarity: 'common', price: 24,  lvl: 2, desc: 'Full of soil and seedlings' },
   { id: 'dc_path_wood',   name: 'Wooden path',   kind: 'path',   rarity: 'common', price: 14,  lvl: 2, desc: 'Planks across the beds' },
-  { id: 'dc_beehive',     name: 'Beehive',       kind: 'spot',   rarity: 'rare',   price: 40,  lvl: 3, desc: 'Bees come and go' },
+  { id: 'dc_beehive',     name: 'Beehive',       kind: 'spot',   rarity: 'rare',   price: 40,  lvl: 3, desc: 'Bees come and stay' },
   { id: 'dc_fence_stone', name: 'Stone wall',    kind: 'border', rarity: 'rare',   price: 50,  lvl: 5, desc: 'A low dry-stone wall' },
   { id: 'dc_statue',      name: 'Tomato statue', kind: 'spot',   rarity: 'epic',   price: 110, lvl: 6, desc: 'A marble Pomeo' },
 );
