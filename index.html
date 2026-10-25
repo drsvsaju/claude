@@ -1421,6 +1421,55 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 }
 
 /* ==========================================================================
+   POMEO'S ROOM (v1.15)
+   ========================================================================== */
+.rm-head { flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.rm-head h1 { margin: 0; }
+.rm-scene { position: relative; padding: 0; overflow: hidden; border-radius: var(--radius); margin-bottom: 14px; }
+.rm-svg { display: block; width: 100%; height: auto; }
+.rm-pv { width: 100%; height: 100%; display: block; }
+.rm-svg .mascot { position: static; width: 72px; height: 72px; overflow: visible; }
+.rm-pomeo { cursor: pointer; transform: translate(170px, 86px); transform-box: fill-box; }
+:root[data-motion="full"] .rm-pomeo { animation: rm-wander 40s ease-in-out infinite; }
+@keyframes rm-wander { 0%, 32% { transform: translate(170px, 86px); } 42%, 64% { transform: translate(110px, 150px); } 74%, 92% { transform: translate(44px, 100px); } 100% { transform: translate(170px, 86px); } }
+:root[data-motion="full"] .rm-pomeo.poke .m-body { animation: hop .62s var(--spring) 2; }
+:root[data-motion="full"] .rm-glow { animation: rm-glow 3s ease-in-out infinite alternate; }
+@keyframes rm-glow { to { opacity: .55; } }
+:root[data-motion="full"] .rm-neon { animation: rm-neon 4s ease-in-out infinite; }
+@keyframes rm-neon { 0%, 100% { opacity: 1; } 48% { opacity: 1; } 50% { opacity: .55; } 52% { opacity: 1; } 70% { opacity: .9; } }
+:root[data-motion="full"] .rm-twinkle { animation: twinkle 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+:root[data-motion="full"] .rm-rain { animation: rm-rain .8s linear infinite; }
+@keyframes rm-rain { to { transform: translateY(12px); } }
+:root[data-motion="full"] .rm-fish { animation: rm-fish 5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes rm-fish { from { transform: translateX(-8px); } to { transform: translateX(8px) scaleX(-1); } }
+:root[data-motion="full"] .rm-tail { animation: gd-tail 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 100% 100%; }
+:root[data-motion="full"] .rm-wing { animation: gd-flap .3s ease-in-out 6 alternate; animation-delay: 3s; transform-box: fill-box; transform-origin: 100% 50%; }
+:root[data-motion="full"] .rm-blob { animation: rm-blob 6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes rm-blob { to { transform: translateY(-16px) scale(1.2); } }
+:root[data-motion="full"] .rm-bolt { animation: rm-bolt 5s ease-in-out infinite; }
+@keyframes rm-bolt { 0%, 90%, 100% { opacity: .3; } 92%, 96% { opacity: 1; } }
+.rm-say { position: absolute; left: 14px; bottom: 14px; z-index: 2; max-width: 260px; background: var(--surface); color: var(--text); padding: 6px 10px; border-radius: 12px; font-size: 12.5px; box-shadow: 0 8px 18px -10px rgba(0, 0, 0, .4); border: 1px solid var(--line); }
+.rm-sets { margin-bottom: 14px; }
+.rm-setlist { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+.rm-set { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 4px 4px 12px; background: var(--bg); }
+.rm-set .nm { font-weight: 600; font-size: 13.5px; }
+.rm-set .iconbtn.sm { width: 36px; height: 36px; }
+.rm-setform { display: flex; gap: 6px; align-items: center; flex: 1; min-width: 220px; }
+.rm-setform input { flex: 1; min-width: 0; min-height: 44px; }
+.rm-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+.rm-slot { border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; display: grid; gap: 2px; background: var(--bg); }
+.rm-slot b { font-size: 13.5px; }
+.rm-slot .btn { justify-self: start; margin-top: 4px; }
+.item .pv .rm-pv { height: 78px; width: 100%; }
+.rm-share-dlg { width: min(560px, calc(100vw - 24px)); }
+.rm-share-dlg h2 { margin: 0 0 12px; font-size: 18px; }
+.rm-share-dlg .sh-prev img { width: 100%; max-width: 480px; height: auto; border-radius: 10px; }
+@media (max-width: 640px) {
+  .rm-head { flex-direction: column; align-items: flex-start; }
+  .rm-head h1 { order: -1; }
+}
+
+/* ==========================================================================
    WRAPPED — story slides
    ========================================================================== */
 .wrapped-banner { display: flex; align-items: center; gap: 14px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px;
@@ -3605,6 +3654,11 @@ body.first-load #todayBar { opacity: 0; }
     <div id="progressView"></div>
   </section>
 
+  <!-- ================================ POMEO'S ROOM (part of Profile, v1.15) ================================ -->
+  <section class="tab" id="tab-room">
+    <div id="roomBody"></div>
+  </section>
+
   <!-- ================================ SETTINGS TAB ================================ -->
   <section class="tab" id="tab-settings">
     <div class="set-wrap">
@@ -4066,6 +4120,13 @@ body.first-load #todayBar { opacity: 0; }
 
 <!-- Keyboard shortcuts -->
 <dialog id="gdDlg" class="gd-dlg" aria-labelledby="gdTitle"><div id="gdDlgBody"></div></dialog>
+<dialog id="rmShareDlg" class="rm-share-dlg" aria-labelledby="rmShTitle">
+  <h2 id="rmShTitle">Share Pomeo’s room</h2>
+  <div class="sh-prev"><img id="rmShImg" alt="Preview of the room image"></div>
+  <div class="sh-row"><button class="btn primary" id="rmShSave">Save as image</button><button class="btn" id="rmShNative">Share…</button></div>
+  <p class="lbl" style="margin:0 0 12px">The picture shows the room and Pomeo’s outfit only.</p>
+  <div class="btn-row" style="justify-content:flex-end"><button class="btn" id="rmShClose">Close</button></div>
+</dialog>
 <dialog id="keysDlg">
   <h2 style="margin:0 0 14px">Keyboard shortcuts</h2>
   <div class="keys">
@@ -4252,6 +4313,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    31. EXAM COUNTDOWN — S.exams [{ id, name, date 'YYYY-MM-DD', added }]
    32. DISTRACTION PARKING LOT — jot a thought without stopping the timer.
    33. GARDEN (v1.15) — plots, seeds, growth from focus minutes, harvests, decor, almanac.
+   33b. POMEO'S ROOM (v1.15) — room items, placement, saved rooms, share image.
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
    36. SUBTASKS — an optional checklist for the current focus session.
@@ -4777,6 +4839,8 @@ function defaultState() {
     clanRem: {},    // clan session reminders you switched on: { sessionId: { on, before, done, snooze, u } }
     loadouts: [],   // saved looks from the bag { id, name, look: { theme, aura, color, … } }
     cardPrefs: {},  // player card: banner, featured, what it shows — { key: { v, u } } (see PLAYER CARD)
+    roomPrefs: {},  // Pomeo's room: what sits in each slot — { slot: { v, u } } (see POMEO'S ROOM)
+    roomSets: [],   // saved rooms (synced item by item)
     game: normalizeGame(null),  // purchases, equipped items, claimed rewards, used streak freezes
     // Device-only fields (never uploaded):
     timer: { phase: 'focus', round: 1, status: 'idle', endAt: 0, remaining: 0, planned: 0, focusStartedAt: 0, name: '', subtasks: [] },
@@ -4800,7 +4864,7 @@ function hydrate(obj) {
   const out = { ...def, ...obj };
   for (const k of ['settings', 'timer', 'ui']) out[k] = { ...def[k], ...(obj[k] || {}) };
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
-  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys']) if (!Array.isArray(out[k])) out[k] = [];
+  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
@@ -4810,6 +4874,7 @@ function hydrate(obj) {
   if (!out.names || typeof out.names !== 'object' || Array.isArray(out.names)) out.names = {};
   out.game = normalizeGame(obj.game);
   out.cardPrefs = mergeCardPrefs({}, obj.cardPrefs).prefs;
+  out.roomPrefs = mergeCardPrefs({}, obj.roomPrefs).prefs;
   out.clanRem = mergeCardPrefs({}, obj.clanRem).prefs;
   out.wipedAt = +obj.wipedAt || 0;
   return out;
@@ -4925,6 +4990,8 @@ function profileFromState() {
     plants: gardenPlantsForProfile(),
     gbuys: S.gbuys.slice(-600),
     cardPrefs: S.cardPrefs,
+    roomPrefs: S.roomPrefs,
+    roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
     clanRem: S.clanRem,
     // Stored for reference only; the app always recalculates streaks from the session log.
     streak: { current: cur, longest, goalMin: S.settings.goalMin, today: dayKey(new Date()) },
@@ -5034,7 +5101,7 @@ function applyProfile(d) {
   S.settings = { ...def.settings, ...(d.settings || {}) };
   if ((+d.wipedAt || 0) > (+S.wipedAt || 0)) {   // erased on another device: take the cloud copy as it is, merge nothing back
     for (const f of SYNC_LISTS) S[f] = f === 'presets' ? defaultState().presets : [];
-    S.tomb = {}; S.game = normalizeGame(null); S.cardPrefs = {}; S.wipedAt = +d.wipedAt;
+    S.tomb = {}; S.game = normalizeGame(null); S.cardPrefs = {}; S.roomPrefs = {}; S.wipedAt = +d.wipedAt;
     snapLists();
   }
   const ahead = mergeSyncFrom(d);   // reminders, revisions, exams, parked, presets, templates: item by item
@@ -5048,6 +5115,9 @@ function applyProfile(d) {
   const cp = mergeCardPrefs(S.cardPrefs, d.cardPrefs);   // the newer value wins, key by key
   S.cardPrefs = cp.prefs;
   if (cp.ahead) mg.ahead = true;
+  const rp = mergeCardPrefs(S.roomPrefs, d.roomPrefs);   // Pomeo's room: newest wins, slot by slot
+  S.roomPrefs = rp.prefs;
+  if (rp.ahead) mg.ahead = true;
   const cr = mergeCardPrefs(S.clanRem, d.clanRem);   // clan session reminders: newest wins, session by session
   S.clanRem = cr.prefs;
   if (cr.ahead) mg.ahead = true;
@@ -5395,6 +5465,8 @@ function mergeData(obj) {
   for (const [k, v] of Object.entries(src.energy)) if (!S.energy[k] && v >= 1 && v <= 4) S.energy[k] = Math.round(v);
   for (const k of ['revisions', 'exams', 'parked', 'abandoned', 'subTemplates']) for (const x of src[k]) if (x && x.id && !S[k].some(y => y.id === x.id)) S[k].push(x);
   for (const [k, v] of Object.entries(sg.trophies)) if (!g.trophies[k]) g.trophies[k] = v;
+  S.roomPrefs = mergeCardPrefs(S.roomPrefs, src.roomPrefs).prefs;   // Pomeo's room: the newer choice per slot
+  for (const x of src.roomSets) if (x && x.id && x.name && !S.roomSets.some(y => y.id === x.id)) S.roomSets.push({ ...x, u: +x.u || Date.now() });
   // Garden (1.15): plants and purchases by id — a copy already here keeps the newer one (water maps are joined); nothing is doubled.
   for (const f of ['plants', 'gbuys']) {
     for (const x of src[f]) {
@@ -6351,7 +6423,7 @@ const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
 
 /* ---------- Shop catalogue (cosmetic only). price 0 = free default. lvl = minimum level. ---------- */
 const SHOP_CATS = [
-  ['pomeo', 'Pomeo'], ['avatar', 'Profile pictures'], ['sound', 'Sounds'], ['ambient', 'Ambient'], ['theme', 'Themes'], ['ring', 'Timer ring'], ['font', 'Timer font'],
+  ['pomeo', 'Pomeo'], ['room', 'Pomeo’s room'], ['avatar', 'Profile pictures'], ['sound', 'Sounds'], ['ambient', 'Ambient'], ['theme', 'Themes'], ['ring', 'Timer ring'], ['font', 'Timer font'],
   ['effect', 'Effects'], ['stamp', 'Stamps'], ['frame', 'Badge frame'], ['color', 'Name colour'], ['extra', 'Extras'], ['freeze', 'Streak freeze'],
 ];
 const ITEMS = [
@@ -6550,70 +6622,70 @@ const EVENTS = [
     greet: 'Rainy day = study day ☔ The Monsoon Study questline is open.',
     quests: [['hours', 28], ['sessions', 28], ['bossDays', 15], ['deep', 10], ['notes', 10], ['goalDays', 10], ['earlyDays', 4, 'Rainy mornings: focus before 8 AM on 4 days'], ['streak', 5]],
     rewards: ['acc_umbrella', 'th_ev_mon26', 'snd_raindrops', 'ti_monsoon', 'av_raincloud', 'ring_rain', 'au_ev_mon26', 'frame_drops'],
-    final: ['col_ev_mon26', 'fx_ev_mon26'] },
+    final: ['col_ev_mon26', 'fx_ev_mon26', 'window_ev_mon26'] },
   { id: 'xm26', name: 'Pomeo’s Christmas', label: 'December Questline', emoji: '🎄', start: '2026-12-01', end: '2026-12-31', a: '#c0392b', b: '#2e8b57',
     costume: { hat: 'hat_santa' },
     intro: 'Ho ho ho! 🎄 Pomeo borrowed a Santa hat. Eight festive quests, eight presents.',
     greet: 'Merry focusing! 🎄 Pomeo’s Christmas questline is open.',
     quests: [['hours', 36], ['sessions', 35], ['goalDays', 14], ['subtasks', 40], ['names', 4], ['streak', 10], ['weekendDays', 6], ['bossWins', 2]],
     rewards: ['hat_santa', 'th_ev_xm26', 'snd_jingle', 'au_ev_xm26', 'ti_xmas', 'av_snowman', 'ring_lights', 'frame_holly'],
-    final: ['col_ev_xm26', 'fx_ev_xm26'] },
+    final: ['col_ev_xm26', 'fx_ev_xm26', 'lamp_ev_xm26'] },
   { id: 'ny27', name: 'New Year, New Goals', label: 'January Questline', emoji: '🎆', start: '2027-01-01', end: '2027-01-31', a: '#e6c14d', b: '#c25b7a',
     costume: { hat: 'hat_newyear' },
     intro: 'Happy New Year! 🎆 Pomeo wrote his resolutions on a tomato leaf. Start the year strong.',
     greet: 'New year, new goals 🎆 Your January questline is ready.',
     quests: [['hours', 40], ['sessions', 40], ['streak', 14], ['goalDays', 18], ['deep', 15], ['earlyDays', 6], ['revisions', 10], ['energy', 20]],
     rewards: ['hat_newyear', 'th_ev_ny27', 'snd_pop', 'au_ev_ny27', 'ti_newyear', 'av_firework', 'ring_sparkle', 'frame_stars'],
-    final: ['col_ev_ny27', 'fx_ev_ny27'] },
+    final: ['col_ev_ny27', 'fx_ev_ny27', 'poster_ev_ny27'] },
   { id: 'ex27', name: 'Exam Season Grind', label: 'February Questline', emoji: '📚', start: '2027-02-01', end: '2027-02-28', a: '#5a8f1f', b: '#1f8a70',
     costume: { acc: 'acc_headband' },
     intro: 'Exam season! 📚 Pomeo tied on his study headband. Steady grind, no all-nighters.',
     greet: 'Exam season mode 📚 The grind questline is open.',
     quests: [['hours', 40], ['sessions', 36], ['deep', 20], ['revisions', 12], ['streak', 12], ['subtasks', 50], ['goalDays', 16], ['notes', 12]],
     rewards: ['acc_headband', 'th_ev_ex27', 'snd_bell2', 'au_ev_ex27', 'ti_exam', 'av_pencil', 'ring_ink', 'frame_laurel'],
-    final: ['col_ev_ex27', 'fx_ev_ex27'] },
+    final: ['col_ev_ex27', 'fx_ev_ex27', 'desk_ev_ex27'] },
   { id: 'sp27', name: 'Spring Bloom', label: 'March Questline', emoji: '🌸', start: '2027-03-01', end: '2027-03-31', a: '#c4588a', b: '#5c9b57',
     costume: { hat: 'hat_flowers' },
     intro: 'Spring is here 🌸 Pomeo wove a flower crown. Grow your garden and your skills.',
     greet: 'Spring has sprung 🌸 The Spring Bloom questline is open.',
     quests: [['hours', 36], ['sessions', 35], ['plants', 20], ['bossDays', 20], ['names', 5], ['streak', 10], ['parked', 15], ['weekendDays', 6]],
     rewards: ['hat_flowers', 'th_ev_sp27', 'snd_birds', 'au_ev_sp27', 'ti_spring', 'av_blossom', 'ring_petal', 'frame_petals'],
-    final: ['col_ev_sp27', 'fx_ev_sp27'] },
+    final: ['col_ev_sp27', 'fx_ev_sp27', 'plant_ev_sp27'] },
   { id: 'su27', name: 'Summer Focus', label: 'April–May Questline', emoji: '☀️', start: '2027-04-01', end: '2027-05-31', a: '#e08a00', b: '#d6456b',
     costume: { acc: 'acc_shades' },
     intro: 'Summer! ☀️ Pomeo put on his coolest shades. Two months, eight bright quests.',
     greet: 'Sunny focus ☀️ The Summer Focus questline is open.',
     quests: [['hours', 70], ['sessions', 65], ['goalDays', 30], ['streak', 15], ['deep', 25], ['earlyDays', 10], ['bossWins', 4], ['energy', 30]],
     rewards: ['acc_shades', 'th_ev_su27', 'snd_uke', 'au_ev_su27', 'ti_summer', 'av_sun', 'ring_sun', 'frame_rays'],
-    final: ['col_ev_su27', 'fx_ev_su27'] },
+    final: ['col_ev_su27', 'fx_ev_su27', 'window_ev_su27'] },
   { id: 'rn27a', name: 'Rainy Season: Drizzle', label: 'June Questline', emoji: '🌦️', start: '2027-06-01', end: '2027-06-30', a: '#5b8db8', b: '#6f7c8a',
     costume: { hat: 'hat_rainhood' },
     intro: 'The first showers 🌦️ Pomeo pulled up his rain hood. Soft rain, steady focus.',
     greet: 'First showers 🌦️ The Drizzle questline is open.',
     quests: [['hours', 35], ['sessions', 32], ['bossDays', 18], ['streak', 8], ['revisions', 8], ['subtasks', 30], ['notes', 10], ['parked', 12]],
     rewards: ['hat_rainhood', 'th_ev_rn27a', 'snd_drizzle', 'au_ev_rn27a', 'ti_drizzle', 'av_drop', 'ring_drizzle', 'frame_ripple'],
-    final: ['col_ev_rn27a', 'fx_ev_rn27a'] },
+    final: ['col_ev_rn27a', 'fx_ev_rn27a', 'rug_ev_rn27a'] },
   { id: 'rn27b', name: 'Rainy Season: Thunderstorm', label: 'July Questline', emoji: '⛈️', start: '2027-07-01', end: '2027-07-31', a: '#5a5fc4', b: '#c99a00',
     costume: { hat: 'hat_cloud' },
     intro: 'Thunder rolls ⛈️ Pomeo has his own tiny storm cloud. Be the calm in the storm.',
     greet: 'Storm season ⛈️ The Thunderstorm questline is open.',
     quests: [['hours', 36], ['sessions', 34], ['deep', 15], ['nightDays', 6], ['goalDays', 14], ['streak', 10], ['bossWins', 2], ['friends', 5]],
     rewards: ['hat_cloud', 'th_ev_rn27b', 'snd_thunder', 'au_ev_rn27b', 'ti_storm', 'av_bolt', 'ring_storm', 'frame_bolt'],
-    final: ['col_ev_rn27b', 'fx_ev_rn27b'] },
+    final: ['col_ev_rn27b', 'fx_ev_rn27b', 'lamp_ev_rn27b'] },
   { id: 'rn27c', name: 'Rainy Season: Puddle Jump', label: 'August Questline', emoji: '💧', start: '2027-08-01', end: '2027-08-31', a: '#1d8a86', b: '#2f6fd6',
     costume: { hat: 'hat_boat' },
     intro: 'Puddles everywhere 💧 Pomeo folded a paper boat. Hop from task to task.',
     greet: 'Puddle season 💧 The Puddle Jump questline is open.',
     quests: [['hours', 36], ['sessions', 34], ['plants', 18], ['weekendDays', 7], ['energy', 20], ['names', 4], ['streak', 9], ['earlyDays', 5]],
     rewards: ['hat_boat', 'th_ev_rn27c', 'snd_splash', 'au_ev_rn27c', 'ti_puddle', 'av_boat', 'ring_puddle', 'frame_wave'],
-    final: ['col_ev_rn27c', 'fx_ev_rn27c'] },
+    final: ['col_ev_rn27c', 'fx_ev_rn27c', 'pet_ev_rn27c'] },
   { id: 'rn27d', name: 'Rainy Season: Rainbow', label: 'September Questline', emoji: '🌈', start: '2027-09-01', end: '2027-09-30', a: '#7a5cd6', b: '#e08a00',
     costume: { hat: 'hat_rainbow' },
     intro: 'After the rain, a rainbow 🌈 Pomeo found the end of it. Finish the season in colour.',
     greet: 'Rainbow season 🌈 The last rainy questline is open.',
     quests: [['hours', 38], ['sessions', 36], ['bossDays', 20], ['goalDays', 15], ['streak', 12], ['deep', 15], ['revisions', 10], ['subtasks', 35]],
     rewards: ['hat_rainbow', 'th_ev_rn27d', 'snd_glass', 'au_ev_rn27d', 'ti_rainbow', 'av_rainbow', 'ring_rainbow', 'frame_arc'],
-    final: ['col_ev_rn27d', 'fx_ev_rn27d'] },
+    final: ['col_ev_rn27d', 'fx_ev_rn27d', 'poster_ev_rn27d'] },
 ];
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map(e => [e.id, e]));
 
@@ -6711,6 +6783,12 @@ const EV_ITEMS = [
   ['au_ev_rn27d', 'aura', 'Prism', 'Every colour, spinning'], ['ti_rainbow', 'title', 'Rainbow Seeker', 'A title under your name'], ['av_rainbow', 'avatar', 'Rainbow', 'With two little clouds'],
   ['ring_rainbow', 'ring', 'Rainbow ring', 'Every colour'], ['frame_arc', 'frame', 'Rainbow dots', 'A circle of colours'],
   ['col_ev_rn27d', 'color', 'Spectrum', 'The whole rainbow'], ['fx_ev_rn27d', 'effect', 'Rainbow confetti', 'Colourful confetti when you finish'],
+  // Pomeo's room items (v1.15) — the final reward of every questline from November 2026 on
+  ['window_ev_mon26', 'room', 'Monsoon window', 'Rain on the glass and a puddle below'], ['lamp_ev_xm26', 'room', 'Fairy lights', 'A string of warm, twinkling lights'],
+  ['poster_ev_ny27', 'room', 'Goals poster', 'Big goals, pinned up'], ['desk_ev_ex27', 'room', 'Exam desk', 'Stacked with past papers'],
+  ['plant_ev_sp27', 'room', 'Blossom bonsai', 'Pink petals all year'], ['window_ev_su27', 'room', 'Beach window', 'Sea, sand and sun'],
+  ['rug_ev_rn27a', 'room', 'Puddle rug', 'A rug that looks like a puddle'], ['lamp_ev_rn27b', 'room', 'Storm lamp', 'Flickers like lightning'],
+  ['pet_ev_rn27c', 'room', 'Paper-boat duck', 'A rubber duck sailing a paper boat'], ['poster_ev_rn27d', 'room', 'Rainbow poster', 'Every colour, framed'],
 ];
 // Free "nothing chosen" items for the new categories.
 ITEMS.push(
@@ -6804,6 +6882,48 @@ function clanOwns(it) {
   return false;
 }
 const clanTagOn = () => inClan() && !minimal() && extraOn('x_clantag');
+/* ---------- Pomeo's room (v1.15): ordinary coin cosmetics; the slot comes from the id prefix (see POMEO'S ROOM) ---------- */
+ITEMS.push(
+  { id: 'wall_cream',      cat: 'room', name: 'Cream wall',       desc: 'Warm and plain',                    price: 0 },
+  { id: 'wall_sage',       cat: 'room', name: 'Sage wall',        desc: 'Soft green paint',                  price: 60 },
+  { id: 'wall_sky',        cat: 'room', name: 'Sky wall',         desc: 'A calm pale blue',                  price: 60 },
+  { id: 'wall_blush',      cat: 'room', name: 'Blush wall',       desc: 'Gentle pink',                       price: 60 },
+  { id: 'wall_night',      cat: 'room', name: 'Night wall',       desc: 'Deep blue with tiny stars',         price: 120, lvl: 4 },
+  { id: 'floor_wood',      cat: 'room', name: 'Wooden floor',     desc: 'Plain planks',                      price: 0 },
+  { id: 'floor_tiles',     cat: 'room', name: 'Tiled floor',      desc: 'Cool grey tiles',                   price: 60 },
+  { id: 'floor_carpet',    cat: 'room', name: 'Blue carpet',      desc: 'Soft underfoot',                    price: 80 },
+  { id: 'rug_none',        cat: 'room', name: 'No rug',           desc: 'Bare floor',                        price: 0 },
+  { id: 'rug_round',       cat: 'room', name: 'Round rug',        desc: 'Terracotta with a cream ring',      price: 50 },
+  { id: 'rug_stripe',      cat: 'room', name: 'Striped rug',      desc: 'Blue and white stripes',            price: 70 },
+  { id: 'rug_star',        cat: 'room', name: 'Starry rug',       desc: 'Navy with gold stars',              price: 120, rarity: 'rare' },
+  { id: 'desk_simple',     cat: 'room', name: 'Simple desk',      desc: 'A plank and two legs',              price: 0 },
+  { id: 'desk_oak',        cat: 'room', name: 'Oak desk',         desc: 'Solid, with two drawers',           price: 90 },
+  { id: 'desk_study',      cat: 'room', name: 'Study desk',       desc: 'Laptop, books, ready to go',        price: 140, lvl: 3 },
+  { id: 'lamp_none',       cat: 'room', name: 'No lamp',          desc: 'Daylight only',                     price: 0 },
+  { id: 'lamp_desk',       cat: 'room', name: 'Desk lamp',        desc: 'A warm pool of light on the desk',  price: 40 },
+  { id: 'lamp_floor',      cat: 'room', name: 'Floor lamp',       desc: 'Tall, with a linen shade',          price: 90 },
+  { id: 'lamp_neon',       cat: 'room', name: 'Neon sign',        desc: '“FOCUS” in pink neon · flickers',   price: 160, lvl: 6, rarity: 'epic' },
+  { id: 'shelf_none',      cat: 'room', name: 'No shelf',         desc: 'A bare wall',                       price: 0 },
+  { id: 'shelf_small',     cat: 'room', name: 'Small shelf',      desc: 'Three books and a plant',           price: 70 },
+  { id: 'shelf_books',     cat: 'room', name: 'Bookshelf',        desc: 'Two shelves of colourful books',    price: 130 },
+  { id: 'plant_none',      cat: 'room', name: 'No plant',         desc: 'Nothing in the corner',             price: 0 },
+  { id: 'plant_pot',       cat: 'room', name: 'Potted plant',     desc: 'A leafy friend',                    price: 40 },
+  { id: 'plant_cactus',    cat: 'room', name: 'Cactus',           desc: 'Needs no watering',                 price: 50 },
+  { id: 'plant_monstera',  cat: 'room', name: 'Monstera',         desc: 'Big split leaves',                  price: 110 },
+  { id: 'poster_none',     cat: 'room', name: 'No poster',        desc: 'A bare wall',                       price: 0 },
+  { id: 'poster_focus',    cat: 'room', name: 'Focus poster',     desc: 'A target that says FOCUS',          price: 50 },
+  { id: 'poster_tomato',   cat: 'room', name: 'Tomato poster',    desc: 'Pomeo’s favourite',                 price: 60 },
+  { id: 'poster_space',    cat: 'room', name: 'Space poster',     desc: 'A ringed planet',                   price: 80 },
+  { id: 'window_day',      cat: 'room', name: 'Garden window',    desc: 'Sun and a green lawn',              price: 0 },
+  { id: 'window_city',     cat: 'room', name: 'City window',      desc: 'Lit windows across the night',      price: 100 },
+  { id: 'window_mountain', cat: 'room', name: 'Mountain window',  desc: 'Snowy peaks',                       price: 120 },
+  { id: 'window_rain',     cat: 'room', name: 'Rainy window',     desc: 'Rain runs down the glass · animated', price: 150, rarity: 'rare' },
+  { id: 'pet_none',        cat: 'room', name: 'No pet',           desc: 'Just Pomeo',                        price: 0 },
+  { id: 'pet_fish',        cat: 'room', name: 'Goldfish',         desc: 'Swims back and forth',              price: 120 },
+  { id: 'pet_bird',        cat: 'room', name: 'Bluebird',         desc: 'On a perch, flaps now and then',    price: 150 },
+  { id: 'pet_cat',         cat: 'room', name: 'Sleepy cat',       desc: 'Curled up on the floor',            price: 200, lvl: 5, rarity: 'rare' },
+  ...BOSSES.map(b => ({ id: 'poster_b_' + b.id, cat: 'room', name: `${b.short} poster`, desc: `A framed ${b.short} for the wall · from a victory claimed since 1.15`, price: -1, boss: b.id, rarity: 'epic' })),
+);
 ITEMS.push({ id: 'stamp_together', cat: 'stamp', name: 'Studied together', desc: 'Stamped on blocks from live clan sessions', price: -1, clanLv: 1, rarity: 'rare' });
 
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
@@ -7011,6 +7131,7 @@ function buyItem(id) {
   S.game.purchases['b' + uid()] = { item: id, price: it.price, at: Date.now() };
   if (it.cat !== 'freeze') markEquipped(id);
   if (it.cat === 'extra') eqSet(id, true);
+  else if (it.cat === 'room') { G = null; roomPlace(id); }
   else if (it.cat !== 'freeze') eqSet(it.cat, id);
   G = null;
   save();
@@ -7023,6 +7144,7 @@ function buyItem(id) {
 function equipItem(id) {
   const it = ITEM_BY_ID[id];
   if (!it || !isOwned(id)) return;
+  if (it.cat === 'room') { roomPlace(id); markEquipped(id); renderShop(); return; }
   eqSet(it.cat, id);
   markEquipped(id);
   save();
@@ -7558,7 +7680,7 @@ function renderHeaderChip() {
   $('#gardenTabBtn').classList.toggle('hidden', !on);
   updateBagDot();
   updateGardenDot();
-  if (!on) { updateLoginDot(); if (S.ui.tab === 'shop' || S.ui.tab === 'quests' || S.ui.tab === 'bag' || S.ui.tab === 'garden') showTab('timer'); return; }
+  if (!on) { updateLoginDot(); if (['shop', 'quests', 'bag', 'garden', 'room'].includes(S.ui.tab)) showTab('timer'); return; }
   const g = game();
   const goalPct = Math.min(100, Math.round(((g.idx[dayKey(new Date())] || {}).total || 0) / S.settings.goalMin * 100));
   const fromPct = lastGoalPct ?? goalPct;
@@ -7600,7 +7722,7 @@ function pomeoCard() {
     <div class="pc-main"><div class="pc-name">Pomeo</div>
       <div class="desc">${pomeoOn() ? esc(POMEO_MOOD_TEXT[mood] || POMEO_MOOD_TEXT.idle) : 'Hidden — he’s napping'}</div>
       <div class="desc">Wearing: ${wear.length ? esc(wear.join(' · ')) : 'nothing special yet'}</div></div>
-    ${!pomeoOn() ? '<button class="btn" id="pomeoShow">Show Pomeo</button>' : S.settings.gamification ? '<button class="btn" id="pomeoOutfit">Change outfit</button>' : ''}</div>`;
+    ${!pomeoOn() ? '<button class="btn" id="pomeoShow">Show Pomeo</button>' : S.settings.gamification ? '<span class="btn-row"><button class="btn" id="pomeoRoom">His room</button><button class="btn" id="pomeoOutfit">Change outfit</button></span>' : ''}</div>`;
 }
 
 function renderProgress() {
@@ -7694,6 +7816,7 @@ function previewFor(it, g) {
   if (it.cat === 'avatar') return hasAvatar(it.id) ? avatarSVG(it.id, 60) : (S.settings.gamification ? badgeSVG(g.tier, { size: 52, frame: equippedId('frame') }) : `<span class="avatar big">${esc(USER.guest ? '?' : USER.username[0].toUpperCase())}</span>`);
   if (it.cat === 'pomhat' || it.cat === 'pomacc' || it.cat === 'pomskin') return pomeoSVG({ state: 'happy', hat: it.cat === 'pomhat' ? it.id : 'hat_none', acc: it.cat === 'pomacc' ? it.id : 'acc_none', skin: it.cat === 'pomskin' ? it.id : 'skin_none' });
   if (it.cat === 'aura' || it.cat === 'title') return rewardPreview(it, g);
+  if (it.cat === 'room') return roomItemPreview(it);
   if (it.cat === 'font') { const f = FONTS[it.id]; return `<span class="fontpv"${f ? ` style="font-family:'${f.family}',system-ui"` : ''}>25:00</span>`; }
   if (it.cat === 'frame') return badgeSVG(g.tier, { size: 48, frame: it.id });
   if (it.cat === 'color') return `<span${nameAttrs(it.id, 'namepv')}>${esc(USER.guest ? 'You' : '@' + USER.username)}</span>`;
@@ -7703,18 +7826,18 @@ function previewFor(it, g) {
 }
 function itemCard(it, g) {
   const owned = isOwned(it.id), isExtra = it.cat === 'extra', isFreeze = it.cat === 'freeze';
-  const equipped = isExtra ? extraOn(it.id) : !isFreeze && equippedId(it.cat) === it.id;
+  const equipped = isExtra ? extraOn(it.id) : it.cat === 'room' ? roomSlot(roomSlotOf(it.id)) === it.id : !isFreeze && equippedId(it.cat) === it.id;
   const locked = !owned && it.lvl && g.lv.level < it.lvl;
   const buy = `<button class="btn buy" data-buy="${it.id}"${g.balance < it.price ? ' disabled title="Not enough coins yet"' : ''}>${COIN_SVG} ${fmtNum(it.price)}</button>`;
   let btn;
   if (isFreeze) btn = locked ? '' : g.freezesHeld >= MAX_FREEZES ? '<button class="btn" disabled>Holding the maximum</button>' : buy;
-  else if (equipped) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn off</button>` : '<button class="btn" disabled>Equipped</button>';
-  else if (owned) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn on</button>` : `<button class="btn" data-equip="${it.id}">Equip</button>`;
+  else if (equipped) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn off</button>` : it.cat === 'room' ? '<button class="btn" disabled>Placed</button>' : '<button class="btn" disabled>Equipped</button>';
+  else if (owned) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn on</button>` : `<button class="btn" data-equip="${it.id}">${it.cat === 'room' ? 'Place' : 'Equip'}</button>`;
   else if (locked) btn = `<button class="btn" disabled>${LOCK_SVG} Level ${it.lvl}</button>`;
   else btn = buy;
   const canPreview = ['sound', 'ambient', 'effect'].includes(it.cat) && !['amb_none', 'fx_none'].includes(it.id);   // (rewards too, once owned)
   const play = canPreview ? `<button class="iconbtn sm" data-preview="${it.id}" title="Preview" aria-label="Preview ${esc(it.name)}">${PLAY_SVG}</button>` : '';
-  const state = equipped ? 'Equipped' : owned && it.price ? 'Owned' : '';
+  const state = equipped ? (it.cat === 'room' ? 'Placed' : 'Equipped') : owned && it.price ? 'Owned' : '';
   const fresh = equipped && it.id === justEquipped;
   return `<div class="item${equipped ? ' equipped' : ''}${locked ? ' locked' : ''}" data-id="${it.id}">
     <div class="pv">${previewFor(it, g)}${state ? `<span class="tag">${fresh ? CHECK_SVG : ''}${state}</span>` : ''}</div>
@@ -8634,20 +8757,21 @@ function renderPrivacy() {
    ========================================================================== */
 const scrollMem = {};
 function showTab(tab) {
-  if ((tab === 'shop' || tab === 'quests' || tab === 'bag' || tab === 'garden') && !S.settings.gamification) tab = 'timer';
+  if ((tab === 'shop' || tab === 'quests' || tab === 'bag' || tab === 'garden' || tab === 'room') && !S.settings.gamification) tab = 'timer';
   if (S.ui.tab === 'bag' && tab !== 'bag') leaveBag();
   hideTip();
   if (!$('#tab-' + tab)) tab = 'timer';
   if (S.ui.tab !== tab && recentGesture(800)) { uiClaim(); uiSound('swoosh'); }
   if (S.ui.tab !== tab && $('#tab-' + S.ui.tab) && $('#tab-' + S.ui.tab).classList.contains('active')) scrollMem[S.ui.tab] = window.scrollY;
   S.ui.tab = tab;
-  const navTab = tab === 'settings' || tab === 'about' ? 'profile' : tab;   // Settings and About are part of Profile
+  const navTab = tab === 'settings' || tab === 'about' || tab === 'room' ? 'profile' : tab;   // Settings, About and Pomeo's room are part of Profile
   if (tab === 'about') renderAbout();
   navMark(navTab);
   navOpen(false);
   $$('.tab').forEach(s => s.classList.toggle('active', s.id === 'tab-' + tab));
   if (tab === 'stats') renderStats();
   if (tab === 'garden') renderGarden();
+  if (tab === 'room') renderRoom();
   if (tab === 'settings') renderSettings();
   if (tab === 'profile') renderProfile();
   if (tab === 'shop') renderShop();
@@ -9686,6 +9810,7 @@ function announceVictory(st) {
 }
 
 /* ---------- Boss rewards ---------- */
+const ROOM_FROM = Date.UTC(2026, 9, 25);   // boss victories claimed from here on add a room poster (v1.15)
 const BOSS_REWARDS = { solo: id => ['th_b_' + id, 'au_b_' + id, 'av_b_' + id], squad: id => ['col_b_' + id, 'au_b_' + id + '_sq', 'av_b_' + id + '_sq'] };
 const rewardsClaimed = (id, mode) => !!S.game.claims.brew[id + '|' + mode];
 /** Victories whose rewards haven't been claimed yet (once per boss and mode, any week). */
@@ -9735,7 +9860,7 @@ async function claimBossRewards(id, mode) {
   if (!at) { toast('Already claimed on your other device — it’s in your bag', 3200); return; }
   if (rewardsClaimed(id, mode)) return;
   S.game.claims.brew[id + '|' + mode] = at;
-  const items = BOSS_REWARDS[mode](id);
+  const items = [...BOSS_REWARDS[mode](id), ...(at >= ROOM_FROM && !S.game.grants['poster_b_' + id] ? ['poster_b_' + id] : [])];
   grantItems(items, `boss:${id}:${mode}`, at);
   save();
   const b = BOSS_BY_ID[id];
@@ -11005,6 +11130,231 @@ function gardenPeriod(from, to) {
 }
 
 /* ==========================================================================
+   POMEO'S ROOM (v1.15) — a cosy room Pomeo lives in. Items are ordinary shop
+   cosmetics (cat 'room', bought with coins like everything else) plus rewards
+   from questlines and boss victories; the slot an item fills comes from its id
+   prefix (wall_, floor_, rug_, desk_, lamp_, shelf_, plant_, poster_, window_,
+   pet_). What is placed lives in S.roomPrefs { slot: { v: itemId, u } } (newest
+   wins per slot, like cardPrefs); saved rooms in S.roomSets (synced item by
+   item like loadouts). Pomeo wanders between his desk, the rug and the window.
+   "Share room" draws the same SVG to a PNG.
+   ========================================================================== */
+const ROOM_SLOTS = ['wall', 'floor', 'rug', 'desk', 'lamp', 'shelf', 'plant', 'poster', 'window', 'pet'];
+const ROOM_SLOT_NAME = { wall: 'Wall', floor: 'Floor', rug: 'Rug', desk: 'Desk', lamp: 'Lamp', shelf: 'Shelf', plant: 'Plant', poster: 'Poster', window: 'Window', pet: 'Pet' };
+const ROOM_DEFAULT = { wall: 'wall_cream', floor: 'floor_wood', rug: 'rug_none', desk: 'desk_simple', lamp: 'lamp_none', shelf: 'shelf_none', plant: 'plant_none', poster: 'poster_none', window: 'window_day', pet: 'pet_none' };
+const roomSlotOf = id => String(id || '').split('_')[0];
+const MAX_ROOM_SETS = 6;
+const roomOn = () => !!USER && S.settings.gamification !== false;
+/** The item in a slot: the placed one if it is still yours and fits, else the free default. */
+function roomSlot(slot) {
+  const p = S.roomPrefs && S.roomPrefs[slot], v = p && p.v;
+  return v && ITEM_BY_ID[v] && ITEM_BY_ID[v].cat === 'room' && roomSlotOf(v) === slot && isOwned(v) ? v : ROOM_DEFAULT[slot];
+}
+const roomLayout = () => Object.fromEntries(ROOM_SLOTS.map(s => [s, roomSlot(s)]));
+function roomPlace(id) {
+  const it = ITEM_BY_ID[id];
+  if (!it || it.cat !== 'room' || !isOwned(id) || isPreview()) return false;
+  (S.roomPrefs ||= {})[roomSlotOf(id)] = { v: id, u: Date.now() };
+  save();
+  return true;
+}
+function roomRemove(slot) {
+  if (isPreview() || !ROOM_DEFAULT[slot]) return false;
+  (S.roomPrefs ||= {})[slot] = { v: '', u: Date.now() };
+  save();
+  return true;
+}
+function saveRoomSet(name) {
+  if (isPreview()) return false;
+  if (S.roomSets.length >= MAX_ROOM_SETS) { toast(`Up to ${MAX_ROOM_SETS} saved rooms — delete one first`); return false; }
+  S.roomSets.push({ id: 'rs' + uid(), v: 1, name: (name || `Room ${S.roomSets.length + 1}`).trim().slice(0, 24), slots: roomLayout() });
+  save();
+  toast('Room saved', 1600, true);
+  return true;
+}
+function applyRoomSet(id) {
+  const rs = S.roomSets.find(x => x.id === id);
+  if (!rs || isPreview()) return false;
+  let miss = 0;
+  const now = Date.now();
+  for (const s of ROOM_SLOTS) {
+    const v = (rs.slots || {})[s];
+    if (!v) continue;
+    if (ITEM_BY_ID[v] && roomSlotOf(v) === s && isOwned(v)) (S.roomPrefs ||= {})[s] = { v: v === ROOM_DEFAULT[s] ? '' : v, u: now }; else miss++;
+  }
+  save();
+  uiClaim(); uiSound('on');
+  toast(`${rs.name} applied${miss ? ` · ${miss} item${miss === 1 ? ' is' : 's are'} no longer yours` : ''}`, 2200, true);
+  return true;
+}
+function deleteRoomSet(id) {
+  const rs = S.roomSets.find(x => x.id === id);
+  if (!rs || isPreview()) return;
+  S.roomSets = S.roomSets.filter(x => x.id !== id);
+  save();
+  renderRoom();
+  toastUndo(`Deleted “${rs.name}”`, () => { if (!S.roomSets.some(x => x.id === rs.id)) { S.roomSets.push(rs); save(); renderRoom(); } });
+}
+
+/* ---------- Art: every item drawn in a 400×250 room (wall to y=165, floor below) ---------- */
+const RM = {
+  wall: { wall_cream: ['#f3e9d6', '#e6d9c2'], wall_sage: ['#d6e3d0', '#c3d4bb'], wall_sky: ['#d5e6f3', '#bfd6ea'], wall_blush: ['#f5dde0', '#ecc8cd'], wall_night: ['#2d3250', '#232845'], wall_mint: ['#d2ece4', '#bfe0d5'], wall_lilac: ['#e3d9f1', '#d3c5e8'], wall_brick: ['#c97b63', '#b86a53'] },
+  floor: { floor_wood: ['#c89b6a', '#b98a5a'], floor_tiles: ['#dfe3e6', '#c9ced3'], floor_carpet: ['#7e8fb5', '#6d7ea5'], floor_dark: ['#6b4a35', '#5a3d2b'], floor_marble: ['#eceff1', '#d7dde2'] },
+};
+function rmWall(id) {
+  const [a, b] = RM.wall[id] || RM.wall.wall_cream;
+  return `<rect x="0" y="0" width="400" height="168" fill="${a}"/><rect x="0" y="158" width="400" height="10" fill="${b}"/>` + (id === 'wall_brick' ? Array.from({ length: 14 }, (_, r) => `<path d="M${r % 2 ? 0 : 20} ${12 + r * 11}h400" stroke="${b}" stroke-width="1" opacity=".6"/>`).join('') : id === 'wall_night' ? '<circle cx="60" cy="24" r="1.2" fill="#fff" opacity=".7"/><circle cx="220" cy="14" r="1" fill="#fff" opacity=".6"/><circle cx="360" cy="30" r="1.4" fill="#fff" opacity=".7"/><circle cx="300" cy="8" r="1" fill="#fff" opacity=".5"/>' : '');
+}
+function rmFloor(id) {
+  const [a, b] = RM.floor[id] || RM.floor.floor_wood;
+  let pat = '';
+  if (id === 'floor_wood' || id === 'floor_dark') pat = Array.from({ length: 8 }, (_, i) => `<path d="M0 ${178 + i * 10}h400" stroke="${b}" stroke-width="1.2" opacity=".5"/>`).join('') + Array.from({ length: 10 }, (_, i) => `<path d="M${30 + i * 42 + (i % 2) * 20} ${168 + (i % 3) * 10}v10" stroke="${b}" stroke-width="1.2" opacity=".5"/>`).join('');
+  else if (id === 'floor_tiles' || id === 'floor_marble') pat = Array.from({ length: 11 }, (_, i) => `<path d="M${i * 40} 168v82" stroke="${b}" stroke-width="1" opacity=".7"/>`).join('') + Array.from({ length: 3 }, (_, i) => `<path d="M0 ${195 + i * 27}h400" stroke="${b}" stroke-width="1" opacity=".7"/>`).join('');
+  return `<rect x="0" y="168" width="400" height="82" fill="${a}"/>${pat}`;
+}
+const RM_ART = {
+  rug_round: '<ellipse cx="200" cy="228" rx="100" ry="17" fill="#d98c6b"/><ellipse cx="200" cy="228" rx="78" ry="12" fill="none" stroke="#f2c9b3" stroke-width="3"/>',
+  rug_stripe: '<rect x="100" y="212" width="200" height="30" rx="4" fill="#5b8db8"/><path d="M100 220h200M100 228h200M100 236h200" stroke="#dbe9f5" stroke-width="2"/>',
+  rug_star: '<ellipse cx="200" cy="228" rx="104" ry="18" fill="#2f3f6b"/><g fill="#f6d44a">' + [[150, 228], [200, 222], [250, 230], [175, 236], [225, 236]].map(([x, y]) => `<path d="M${x} ${y - 4}l1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.5-2.5 1.5.6-2.8-2.1-1.9 2.8-.3Z"/>`).join('') + '</g>',
+  rug_ev_rn27a: '<ellipse cx="200" cy="228" rx="100" ry="17" fill="#8fc3e6"/><ellipse cx="190" cy="226" rx="60" ry="9" fill="#5aa0d6" opacity=".8"/><ellipse cx="170" cy="224" rx="16" ry="3" fill="#dff3ff" opacity=".8"/>',
+  rug_plaid: '<rect x="100" y="212" width="200" height="30" rx="4" fill="#b8553f"/><path d="M130 212v30M170 212v30M210 212v30M250 212v30M100 222h200M100 232h200" stroke="#f0c4a8" stroke-width="3" opacity=".7"/>',
+  desk_simple: '<rect x="140" y="150" width="140" height="8" rx="2" fill="#b98a5a"/><path d="M150 158v48M270 158v48" stroke="#8a6238" stroke-width="5"/>',
+  desk_oak: '<rect x="138" y="148" width="144" height="10" rx="3" fill="#8a5a2b"/><rect x="146" y="158" width="128" height="36" fill="#9c6a3a"/><rect x="156" y="166" width="48" height="10" rx="2" fill="#7a4a22"/><rect x="216" y="166" width="48" height="10" rx="2" fill="#7a4a22"/><path d="M146 194v12M274 194v12" stroke="#6b4a2e" stroke-width="5"/>',
+  desk_study: '<rect x="134" y="148" width="152" height="10" rx="3" fill="#4a4e57"/><path d="M144 158v48M276 158v48" stroke="#3a3d45" stroke-width="5"/><rect x="190" y="124" width="46" height="26" rx="2" fill="#2b2d35"/><rect x="194" y="128" width="38" height="18" fill="#9fd3ff"/><rect x="148" y="140" width="26" height="8" rx="1" fill="#d6456b"/><rect x="150" y="133" width="22" height="7" rx="1" fill="#3f8fbf"/>',
+  desk_ev_ex27: '<rect x="134" y="148" width="152" height="10" rx="3" fill="#6b8e23"/><path d="M144 158v48M276 158v48" stroke="#4e6b1a" stroke-width="5"/><rect x="150" y="134" width="40" height="14" rx="1" fill="#fff"/><rect x="153" y="130" width="40" height="14" rx="1" fill="#f7f2e0"/><path d="M158 136h28M158 140h20" stroke="#999" stroke-width="1"/><rect x="230" y="138" width="30" height="10" rx="2" fill="#f2c14e"/>',
+  lamp_desk: '<path d="M250 150v-26l16-10" stroke="#555" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M258 108h20l6 12h-32Z" fill="#e5654f"/><ellipse cx="250" cy="150" rx="9" ry="3" fill="#555"/><ellipse class="rm-glow" cx="262" cy="130" rx="26" ry="14" fill="#ffe9a8" opacity=".35"/>',
+  lamp_floor: '<path d="M44 205v-98" stroke="#555" stroke-width="3"/><ellipse cx="44" cy="206" rx="14" ry="4" fill="#555"/><path d="M26 108h36l6 20H20Z" fill="#f2c9b3"/><ellipse class="rm-glow" cx="44" cy="140" rx="30" ry="18" fill="#ffe9a8" opacity=".32"/>',
+  lamp_neon: '<text class="rm-neon" x="200" y="60" text-anchor="middle" font-size="26" font-weight="800" font-family="system-ui,sans-serif" fill="#ff5fa8" stroke="#ffb3d9" stroke-width="1" letter-spacing="4">FOCUS</text><ellipse cx="200" cy="56" rx="70" ry="22" fill="#ff5fa8" opacity=".12"/>',
+  lamp_ev_xm26: '<path d="M20 20q90 30 180 0t180 0" stroke="#4a4a4a" stroke-width="1.5" fill="none"/>' + [40, 85, 130, 175, 220, 265, 310, 355].map((x, i) => `<circle class="rm-twinkle" cx="${x}" cy="${i % 2 ? 26 : 36}" r="4" fill="${['#ff6b6b', '#ffd166', '#6ee7a8', '#5cb0ff'][i % 4]}" style="animation-delay:${i * .3}s"/>`).join(''),
+  lamp_ev_rn27b: '<path d="M44 205v-98" stroke="#555" stroke-width="3"/><ellipse cx="44" cy="206" rx="14" ry="4" fill="#555"/><path d="M26 108h36l6 20H20Z" fill="#c9cfff"/><path class="rm-bolt" d="M44 112l-5 10h6l-4 10" stroke="#f6d44a" stroke-width="2" fill="none"/><ellipse class="rm-glow" cx="44" cy="140" rx="30" ry="18" fill="#c9cfff" opacity=".3"/>',
+  lamp_lava: '<rect x="36" y="150" width="16" height="56" rx="6" fill="#e07a6f"/><rect x="39" y="156" width="10" height="42" rx="5" fill="#ffd0a0"/><circle class="rm-blob" cx="44" cy="186" r="4" fill="#e5654f"/><circle class="rm-blob" cx="44" cy="170" r="3" fill="#e5654f" style="animation-delay:-2s"/><rect x="32" y="204" width="24" height="4" rx="2" fill="#444"/>',
+  shelf_small: '<rect x="300" y="118" width="80" height="5" rx="1" fill="#8a6238"/><rect x="306" y="100" width="8" height="18" fill="#d6456b"/><rect x="316" y="104" width="8" height="14" fill="#3f8fbf"/><rect x="326" y="98" width="8" height="20" fill="#f2c14e"/><circle cx="360" cy="110" r="7" fill="#6fb162"/>',
+  shelf_books: '<rect x="296" y="96" width="90" height="5" rx="1" fill="#8a6238"/><rect x="296" y="124" width="90" height="5" rx="1" fill="#8a6238"/>' + [[300, 78, 7, '#d6456b'], [309, 82, 6, '#3f8fbf'], [317, 76, 8, '#f2c14e'], [327, 84, 6, '#8a6fd1'], [335, 80, 7, '#2f8f83'], [344, 78, 6, '#e5654f'], [352, 86, 8, '#4a76b8'], [362, 80, 6, '#c9a227'], [370, 84, 7, '#d98c6b']].map(([x, y, w, c]) => `<rect x="${x}" y="${y}" width="${w}" height="${96 - y}" fill="${c}"/>`).join('') + [[302, 108, 7, '#2f8f83'], [311, 112, 6, '#e5654f'], [319, 106, 8, '#4a76b8'], [329, 110, 6, '#f2c14e'], [340, 108, 7, '#8a6fd1'], [350, 114, 6, '#d6456b']].map(([x, y, w, c]) => `<rect x="${x}" y="${y}" width="${w}" height="${124 - y}" fill="${c}"/>`).join('') + '<circle cx="372" cy="116" r="6" fill="#6fb162"/>',
+  plant_pot: '<path d="M352 206h30l-4 20h-22Z" fill="#c8704a"/><path d="M367 206v-22" stroke="#4e8a4a" stroke-width="2.4"/><path d="M367 196q-14-2-16-14 14 2 16 14Zm0-6q14-2 16-14-14 2-16 14Zm0-8q-10-4-9-14 10 4 9 14Z" fill="#6fb162"/>',
+  plant_cactus: '<path d="M352 206h30l-4 20h-22Z" fill="#d98c6b"/><rect x="361" y="172" width="12" height="36" rx="6" fill="#5fae55"/><rect x="350" y="184" width="8" height="18" rx="4" fill="#5fae55"/><rect x="375" y="178" width="8" height="18" rx="4" fill="#5fae55"/><path d="M354 186v12M367 174v30M379 180v12" stroke="#3f8a4a" stroke-width="1" stroke-dasharray="2 3"/><circle cx="367" cy="170" r="3" fill="#f28ab0"/>',
+  plant_monstera: '<path d="M350 206h34l-4 20h-26Z" fill="#8a6238"/><path d="M367 206v-40" stroke="#3f8a4a" stroke-width="2.6"/><path d="M366 186q-22-6-22-26 16 2 22 20Zm2-10q22-10 24-30-18 4-24 26Zm-2-6q-18-10-12-30 12 8 12 30Z" fill="#3f8a4a"/><path d="M352 170l8 4M378 158l-8 6M360 150l5 6" stroke="#f3f7f3" stroke-width="2" stroke-linecap="round"/>',
+  plant_ev_sp27: '<path d="M352 206h30l-4 20h-22Z" fill="#8a9bb0"/><path d="M367 206v-22q-8-6-6-14" stroke="#6b4a2e" stroke-width="2.4" fill="none"/>' + [[358, 170], [372, 164], [366, 156], [380, 172], [354, 182]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="#f7a8c4"/>`).join('') + [[358, 170], [372, 164], [366, 156], [380, 172], [354, 182]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2" fill="#fff"/>`).join(''),
+  plant_bamboo: '<path d="M352 206h30l-4 20h-22Z" fill="#4a4e57"/><path d="M360 206v-46M367 206v-56M374 206v-40" stroke="#6fb162" stroke-width="3"/><path d="M358 180h4M365 170h4M372 186h4M358 194h4M365 188h4" stroke="#3f8a4a" stroke-width="1.6"/><path d="M360 160q-8-6-4-14 8 4 4 14ZM367 150q8-6 4-14-8 4-4 14ZM374 166q8-4 6-12-8 2-6 12Z" fill="#6fb162"/>',
+  poster_focus: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fff" stroke="#8a6238" stroke-width="3"/><circle cx="290" cy="62" r="20" fill="none" stroke="#e5654f" stroke-width="4"/><circle cx="290" cy="62" r="10" fill="none" stroke="#e5654f" stroke-width="4"/><circle cx="290" cy="62" r="2.5" fill="#e5654f"/><text x="290" y="94" text-anchor="middle" font-size="9" font-family="system-ui,sans-serif" fill="#555" font-weight="700">FOCUS</text>',
+  poster_space: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#0b0d2a" stroke="#333" stroke-width="3"/><circle cx="290" cy="60" r="12" fill="#5cb0ff"/><ellipse cx="290" cy="60" rx="20" ry="5" fill="none" stroke="#c58cff" stroke-width="2"/>' + [[262, 42], [312, 40], [270, 88], [318, 84], [300, 48]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.3" fill="#fff"/>`).join(''),
+  poster_tomato: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fff6ee" stroke="#e5654f" stroke-width="3"/><circle cx="290" cy="66" r="18" fill="#e5654f"/><path d="M290 50l-5-4 2 5-6 1 6 2 3-1 3 1 6-2-6-1 2-5Z" fill="#4e8a4a"/><ellipse cx="282" cy="60" rx="4" ry="2.4" fill="#fff" opacity=".4"/>',
+  poster_ev_ny27: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fff8dc" stroke="#c9a227" stroke-width="3"/><text x="290" y="58" text-anchor="middle" font-size="11" font-weight="800" font-family="system-ui,sans-serif" fill="#c25b7a">GOALS</text><path d="M262 68h56M262 78h40M262 88h48" stroke="#aaa" stroke-width="2"/><path d="M256 68l3 3 5-6" stroke="#2f8f83" stroke-width="2" fill="none"/>',
+  poster_ev_rn27d: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fff" stroke="#8a6238" stroke-width="3"/>' + ['#e05555', '#f28a1e', '#f6d44a', '#2fa26a', '#3a8fe0', '#9b5fe0'].map((c, i) => `<path d="M258 96a32 32 0 0 1 64 0" fill="none" stroke="${c}" stroke-width="4" transform="translate(0 ${-i * 4}) scale(${1 - i * .08}) " transform-origin="290 96"/>`).join(''),
+  poster_mountain: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#e8f1f8" stroke="#555" stroke-width="3"/><path d="M254 96l22-34 12 16 10-24 26 42Z" fill="#5e81ac"/><path d="M276 62l5 8 4-4-9-4ZM298 54l4 8 3-3Z" fill="#fff"/><circle cx="312" cy="46" r="6" fill="#f6d44a"/>',
+  window_day: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#bfe3ff"/><circle cx="105" cy="48" r="10" fill="#ffd66b"/><ellipse cx="60" cy="60" rx="16" ry="6" fill="#fff" opacity=".9"/><path d="M30 80q50-16 100-6v35H30Z" fill="#7cbd6b"/><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#fff" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#fff" stroke-width="4"/>',
+  window_city: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#1d2447"/>' + [[34, 60, 14], [50, 48, 12], [64, 70, 18], [84, 40, 14], [100, 58, 12], [114, 50, 14]].map(([x, y, w]) => `<rect x="${x}" y="${y}" width="${w}" height="${109 - y}" fill="#2f3866"/>` + Array.from({ length: 4 }, (_, i) => `<rect x="${x + 3}" y="${y + 6 + i * 10}" width="3" height="4" fill="#ffe08a" opacity="${(i + x) % 3 ? .9 : .3}"/>`).join('')).join('') + '<circle cx="110" cy="40" r="6" fill="#f1f3ff"/><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#444" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#444" stroke-width="4"/>',
+  window_mountain: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#d9ecff"/><path d="M30 95l26-40 16 22 14-30 44 48Z" fill="#6c8fb8"/><path d="M56 55l6 9 5-5-11-4ZM86 47l5 10 4-4Z" fill="#fff"/><path d="M30 92q50-10 100-2v19H30Z" fill="#8fbf7f"/><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#8a6238" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#8a6238" stroke-width="4"/>',
+  window_rain: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#8aa0b5"/><path d="M30 86q50-14 100-6v29H30Z" fill="#5f8a5a"/><g class="rm-rain" stroke="#e3f0ff" stroke-width="1.4" stroke-linecap="round">' + [[40, 32], [56, 50], [70, 34], [92, 44], [112, 36], [48, 70], [84, 64], [120, 72], [64, 90], [104, 94]].map(([x, y]) => `<path d="M${x} ${y}l-3 9"/>`).join('') + '</g><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#fff" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#fff" stroke-width="4"/>',
+  window_ev_mon26: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#6f8aa5"/><path d="M30 86q50-14 100-6v29H30Z" fill="#4f7c4a"/><g class="rm-rain" stroke="#e3f0ff" stroke-width="1.6" stroke-linecap="round">' + [[38, 30], [52, 46], [66, 32], [90, 40], [112, 34], [46, 66], [80, 60], [120, 70], [60, 88], [100, 92], [74, 76]].map(([x, y]) => `<path d="M${x} ${y}l-3 10"/>`).join('') + '</g><path d="M60 100q10-10 20 0q10-10 20 0" stroke="#dff3ff" stroke-width="2" fill="none"/><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#2f5f7a" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#2f5f7a" stroke-width="4"/>',
+  window_ev_su27: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#8fd3ff"/><circle cx="104" cy="46" r="11" fill="#ffd66b"/><path d="M30 74h100v16H30Z" fill="#3a8fe0"/><path d="M30 86q25-6 50 0t50 0v23H30Z" fill="#f4dca8"/><path d="M50 68q6-6 12 0M70 64q6-6 12 0" stroke="#fff" stroke-width="2" fill="none"/><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#fff" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#fff" stroke-width="4"/>',
+  window_night: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#141a3a"/><circle cx="104" cy="48" r="9" fill="#f1f3ff"/>' + [[44, 36], [60, 52], [120, 40], [52, 80], [90, 34]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.3" fill="#fff"/>`).join('') + '<path d="M30 84q50-14 100-6v31H30Z" fill="#1f3a2a"/><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#333" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#333" stroke-width="4"/>',
+  pet_cat: '<g class="rm-pet"><ellipse cx="84" cy="214" rx="26" ry="12" fill="#9a9a9a"/><circle cx="104" cy="204" r="10" fill="#9a9a9a"/><path d="M98 196l-2-8 7 5ZM110 196l2-8-7 5Z" fill="#9a9a9a"/><path d="M100 206q2-2 4 0M108 206q2-2 4 0" stroke="#333" stroke-width="1.4" fill="none"/><path class="rm-tail" d="M58 214q-10-6-4-16" stroke="#9a9a9a" stroke-width="4" fill="none" stroke-linecap="round"/></g>',
+  pet_fish: '<g class="rm-pet"><ellipse cx="84" cy="224" rx="24" ry="5" fill="#6b7f95" opacity=".4"/><path d="M60 218q0-26 24-26t24 26q0 8-24 8t-24-8Z" fill="#cfe9ff" opacity=".85"/><path d="M62 206q22 8 44 0" stroke="#fff" stroke-width="2" fill="none" opacity=".8"/><g class="rm-fish"><ellipse cx="84" cy="210" rx="7" ry="4" fill="#f28a1e"/><path d="M90 210l6-4v8Z" fill="#f28a1e"/><circle cx="80" cy="209" r="1" fill="#333"/></g><path d="M66 200v-14M70 196v-8" stroke="#4e8a4a" stroke-width="1.6"/></g>',
+  pet_bird: '<g class="rm-pet"><path d="M92 230v-40" stroke="#8a6238" stroke-width="3"/><path d="M78 190h28" stroke="#8a6238" stroke-width="3"/><ellipse cx="86" cy="182" rx="9" ry="7" fill="#4a90c2"/><circle cx="94" cy="177" r="5" fill="#4a90c2"/><path d="M98 177l4 1-4 1.4Z" fill="#f2b632"/><circle cx="95.5" cy="176" r=".9" fill="#222"/><path class="rm-wing" d="M80 181q4-6 10-3-4 4-10 3Z" fill="#2f6f9e"/><ellipse cx="92" cy="232" rx="14" ry="3" fill="#8a6238"/></g>',
+  pet_ev_rn27c: '<g class="rm-pet"><path d="M60 226h50l-8 8H68Z" fill="#fff" stroke="#bbb" stroke-width="1"/><path d="M85 226l-10-14h20Z" fill="#f4f4f4" stroke="#bbb" stroke-width="1"/><ellipse cx="86" cy="216" rx="9" ry="7" fill="#f6d44a"/><circle cx="93" cy="210" r="5" fill="#f6d44a"/><path d="M97 211l5 1-5 1.4Z" fill="#f28a1e"/><circle cx="94.5" cy="209" r=".9" fill="#222"/></g>',
+  pet_dog: '<g class="rm-pet"><ellipse cx="84" cy="216" rx="24" ry="11" fill="#c8945a"/><circle cx="104" cy="206" r="10" fill="#c8945a"/><path d="M96 200q-6-4-8 6" stroke="#8a6238" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="110" cy="208" r="2" fill="#333"/><circle cx="104" cy="204" r="1" fill="#333"/><path class="rm-tail" d="M60 212q-8-8 0-14" stroke="#c8945a" stroke-width="4" fill="none" stroke-linecap="round"/></g>',
+  pet_turtle: '<g class="rm-pet"><ellipse cx="84" cy="222" rx="18" ry="9" fill="#4f9a5a"/><ellipse cx="84" cy="220" rx="12" ry="6" fill="#3f8a4a"/><path d="M78 214h12M84 214v12M78 226h12" stroke="#2f6f3e" stroke-width="1"/><circle cx="104" cy="222" r="5" fill="#6fb162"/><circle cx="106" cy="221" r=".8" fill="#222"/></g>',
+};
+function rmBossPoster(id) {
+  const b = BOSS_BY_ID[id];
+  if (!b) return '';
+  return `<rect x="250" y="30" width="80" height="70" rx="3" fill="${b.c}" stroke="${b.b}" stroke-width="3"/>${bossSVG(id).replace('<svg ', '<svg x="262" y="36" width="56" height="56" ')}<rect x="256" y="92" width="68" height="3" fill="${b.a}" opacity=".6"/>`;
+}
+/** The whole room as SVG (shared by the screen and the share image). */
+function roomSVG(layout = roomLayout(), { pomeo = true, state = 'happy', self = false } = {}) {
+  const art = id => RM_ART[id] || (/^poster_b_/.test(id) ? rmBossPoster(id.slice(9)) : '');
+  const pomeoG = pomeo && pomeoOn() ? `<g class="rm-pomeo" transform="translate(170 86)">${pomeoSVG({ state, ...pomeoOutfit() }).replace('<svg ', '<svg x="0" y="0" width="72" height="72" ')}</g>` : '';
+  const style = self ? '<style>.mascot .e,.mascot .zz,.mascot .spark,.mascot .e-wink{opacity:0}.mascot .e-happy{opacity:1}</style>' : '';
+  return `<svg class="rm-svg" viewBox="0 0 400 250" role="img" aria-label="Pomeo’s room">${style}${rmWall(layout.wall)}${art(layout.window)}${art(layout.poster)}${art(layout.shelf)}${rmFloor(layout.floor)}${art(layout.rug)}${art(layout.lamp)}${art(layout.desk)}${art(layout.plant)}${art(layout.pet)}${pomeoG}</svg>`;
+}
+/** A single item drawn in a small card preview. */
+function roomItemPreview(it) {
+  const slot = roomSlotOf(it.id);
+  if (slot === 'wall') return `<svg viewBox="0 0 400 250" class="rm-pv" aria-hidden="true">${rmWall(it.id)}${rmFloor('floor_wood')}</svg>`;
+  if (slot === 'floor') return `<svg viewBox="0 0 400 250" class="rm-pv" aria-hidden="true">${rmWall('wall_cream')}${rmFloor(it.id)}</svg>`;
+  const vb = { rug: '90 200 220 50', desk: '120 110 170 110', lamp: it.id === 'lamp_neon' || it.id === 'lamp_ev_xm26' ? '10 0 380 90' : '10 95 80 120', shelf: '290 70 100 60', plant: '335 140 60 90', poster: '240 20 100 90', window: '20 15 120 105', pet: '50 180 70 60' }[slot] || '0 0 400 250';
+  const art = RM_ART[it.id] || (/^poster_b_/.test(it.id) ? rmBossPoster(it.id.slice(9)) : '');
+  return `<svg viewBox="${vb}" class="rm-pv" aria-hidden="true">${art || '<text x="50%" y="50%" font-size="20" text-anchor="middle" fill="#999">—</text>'}</svg>`;
+}
+/* ---------- The room screen ---------- */
+const RM_LINES = ['Welcome to my room 🍅', 'Cosy, right?', 'I tidied up for you ✨', 'Want to decorate? The Shop has more.', 'Shh… I was napping.'];
+let rmSayT = 0;
+function renderRoom() {
+  const el = $('#roomBody');
+  if (!el || !USER) return;
+  if (minimal()) { el.innerHTML = ''; return; }
+  const lay = roomLayout(), owned = ITEMS.filter(it => it.cat === 'room' && it.price !== 0 && isOwned(it.id)).length;
+  const night = (h => h >= 22 || h < 5)(new Date().getHours());
+  el.innerHTML = `<div class="row between rm-head"><div><button class="btn small" data-gotab="profile">‹ Profile</button></div><h1>Pomeo’s room</h1><div class="btn-row"><button class="btn small" id="rmShare">Share room</button><button class="btn small primary" data-gotab="shop" data-shopcat="room">Decorate</button></div></div>
+    <div class="card rm-scene" id="rmScene">${roomSVG(lay, { state: night ? 'sleep' : 'happy' })}<div class="rm-say hidden" id="rmSay" aria-live="polite"></div></div>
+    <div class="card rm-sets"><div class="row between" style="flex-wrap:wrap;gap:8px"><h2 style="margin:0">Saved rooms</h2><span class="lbl">${S.roomSets.length}/${MAX_ROOM_SETS}</span></div>
+      <div class="rm-setlist">${S.roomSets.map(rs => `<div class="rm-set"><span class="nm">${esc(rs.name)}</span><button class="btn small" data-rmset-apply="${esc(rs.id)}">Apply</button><button class="iconbtn sm" data-rmset-del="${esc(rs.id)}" aria-label="Delete ${esc(rs.name)}">✕</button></div>`).join('')}
+        ${S.roomSets.length < MAX_ROOM_SETS ? `<form class="rm-setform" id="rmSetForm"><input type="text" id="rmSetName" maxlength="24" placeholder="Name this room" aria-label="Name for the saved room"><button class="btn small" type="submit" data-rmset-save>Save current</button></form>` : ''}</div></div>
+    <div class="card"><div class="row between" style="flex-wrap:wrap;gap:8px"><h2 style="margin:0">What’s in it</h2><span class="lbl">${owned} item${owned === 1 ? '' : 's'} from the Shop, questlines and bosses</span></div>
+      <div class="rm-slots">${ROOM_SLOTS.map(s => { const it = ITEM_BY_ID[lay[s]]; const def = lay[s] === ROOM_DEFAULT[s]; return `<div class="rm-slot"><span class="lbl">${ROOM_SLOT_NAME[s]}</span><b>${esc(it ? it.name : '—')}</b>${def ? '' : `<button class="btn small" data-rremove="${s}">Remove</button>`}</div>`; }).join('')}</div>
+      <div class="btn-row" style="margin-top:12px"><button class="btn small" data-gotab="bag" data-bagcat="room">Change items in the bag</button></div></div>`;
+}
+function rmSay(text) {
+  const el = $('#rmSay');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove('hidden');
+  clearTimeout(rmSayT);
+  rmSayT = setTimeout(() => el.classList.add('hidden'), 2800);
+}
+async function roomPNG() {
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(roomSVG(roomLayout(), { self: true }).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" '));
+  await img.decode();
+  const c = document.createElement('canvas');
+  c.width = 1200; c.height = 750;
+  const x = c.getContext('2d');
+  x.imageSmoothingQuality = 'high';
+  x.drawImage(img, 0, 0, 1200, 750);
+  x.font = '600 26px system-ui, sans-serif'; x.fillStyle = 'rgba(0,0,0,.45)'; x.textAlign = 'right';
+  x.fillText(`${USER.guest ? 'My' : '@' + USER.username + '’s'} Pomeo · Pomodorolist`, 1176, 728);
+  return new Promise(res => c.toBlob(res, 'image/png'));
+}
+function openRoomShare() {
+  const dlg = $('#rmShareDlg');
+  $('#rmShImg').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(roomSVG(roomLayout(), { self: true }).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" '));
+  if (!dlg.open) dlg.showModal();
+}
+async function saveRoomImage(share = false) {
+  const btn = share ? $('#rmShNative') : $('#rmShSave');
+  btn.disabled = true;
+  try {
+    const blob = await roomPNG();
+    const file = new File([blob], 'pomeo-room.png', { type: 'image/png' });
+    if (share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Pomeo’s room', text: 'My Pomeo’s room on Pomodorolist' }); return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    toast('Room image saved', 2000, true);
+  } catch (e) { if (e && e.name !== 'AbortError') toast('Couldn’t make the image — try again'); }
+  finally { btn.disabled = false; }
+}
+(() => {
+  const tab = $('#tab-room');
+  tab.addEventListener('click', e => {
+    const t = e.target;
+    if (t.closest('#rmShare')) { openRoomShare(); return; }
+    if (t.closest('.rm-pomeo')) { const g = t.closest('.rm-pomeo'); restartClass(g, 'poke', 700); uiSound('tap'); rmSay(pick(RM_LINES)); return; }
+    const ap = t.closest('[data-rmset-apply]'); if (ap) { if (applyRoomSet(ap.dataset.rmsetApply)) renderRoom(); return; }
+    const dl = t.closest('[data-rmset-del]'); if (dl) { deleteRoomSet(dl.dataset.rmsetDel); return; }
+    const rm = t.closest('[data-rremove]'); if (rm) { if (roomRemove(rm.dataset.rremove)) { toast('Back in your bag', 1600, true); renderRoom(); } return; }
+  });
+  tab.addEventListener('submit', e => { if (e.target.id === 'rmSetForm') { e.preventDefault(); if (saveRoomSet($('#rmSetName').value)) renderRoom(); } });
+  const dlg = $('#rmShareDlg');
+  dlg.addEventListener('click', e => {
+    if (e.target === dlg || e.target.closest('#rmShClose')) { dlg.close(); return; }
+    if (e.target.closest('#rmShSave')) saveRoomImage(false);
+    else if (e.target.closest('#rmShNative')) saveRoomImage(true);
+  });
+})();
+
+/* ==========================================================================
    WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    Story slides computed on the device from the session log.
    ========================================================================== */
@@ -12062,6 +12412,7 @@ function cmdList(q) {
   add('🪪', 'Customise my player card', 'Profile', () => { showTab('profile'); openCardDlg(); }, 'card style banner featured privacy');
   if (S.settings.gamification) {
     add('🎒', 'Open your bag', 'Rewards', () => showTab('bag'), 'inventory items equip loadout');
+    add('🛋️', 'Pomeo’s room', 'Profile', () => showTab('room'), 'room decorate pomeo furniture');
     add('⚔️', 'Weekly boss', 'Quests', () => { S.ui.questView = 'boss'; showTab('quests'); }, 'boss battle squad solo trophy hall');
     const ev = currentEvent();
     if (ev) add(ev.emoji, `${ev.name} questline`, 'Quests', () => { S.ui.questView = 'quest'; showTab('quests'); loadEventBoard(); }, 'questline event quests');
@@ -12347,7 +12698,7 @@ function hideSplash() {
   }, wait);
 }
 
-document.addEventListener('click', e => { const g = e.target.closest('[data-gotab]'); if (g) { if (g.dataset.bagcat) S.ui.bagCat = g.dataset.bagcat; showTab(g.dataset.gotab); } });
+document.addEventListener('click', e => { const g = e.target.closest('[data-gotab]'); if (g) { if (g.dataset.bagcat) S.ui.bagCat = g.dataset.bagcat; if (g.dataset.shopcat) S.ui.shopCat = g.dataset.shopcat; showTab(g.dataset.gotab); } });
 setInterval(() => { if (USER) ibRefresh(); }, 60000);
 
 /* ==========================================================================
@@ -13109,8 +13460,8 @@ function demoDocs() {
   for (const s of sessions) { const m = monthKeyOf(new Date(s.start)); (byMonth[m] ||= []).push(s); }
   const own = (cat, ids) => ids.filter(id => ITEM_BY_ID[id]).map(id => [id, ITEM_BY_ID[id]]);
   const purchases = {}, equipped = {};
-  own('', ['th_ocean', 'ring_grad', 'frame_double', 'hat_grad', 'acc_glasses', 'snd_digital', 'av_owl', 'col_teal', 'stamp_tomato', 'stamp_pixel']).forEach(([id, it], i) => { purchases['demo' + i] = { item: id, price: it.price || 0, at: Date.now() - (30 - i) * 864e5 }; });
-  for (const [id, it] of Object.values(purchases).map(p => [p.item, ITEM_BY_ID[p.item]])) if (it.cat !== 'theme' && it.cat !== 'sound') equipped[it.cat] = id;
+  own('', ['th_ocean', 'ring_grad', 'frame_double', 'hat_grad', 'acc_glasses', 'snd_digital', 'av_owl', 'col_teal', 'stamp_tomato', 'stamp_pixel', 'wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat', 'floor_tiles']).forEach(([id, it], i) => { purchases['demo' + i] = { item: id, price: it.price || 0, at: Date.now() - (30 - i) * 864e5 }; });
+  for (const [id, it] of Object.values(purchases).map(p => [p.item, ITEM_BY_ID[p.item]])) if (!['theme', 'sound', 'room'].includes(it.cat)) equipped[it.cat] = id;
   const wkPast = k => dayKey(addDays(weekStartOf(now, 1), -7 * k));
   // Past bosses (the real rotation): a Solo win, a mastered week (Solo + Squad), a Squad win with rewards still to claim,
   // and this week's boss beaten 10 weeks ago (so its trophy already has a star).
@@ -13154,6 +13505,8 @@ function demoDocs() {
     squad: DEMO_FRIENDS.map(f => ({ uid: f.uid, name: f.name })),   // a full squad of 5, so the (smaller) v1.13.1 boss stays mid-battle
     subTemplates: [], energy,
     ...demoGarden(sessions),
+    roomPrefs: Object.fromEntries(['wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat'].map(id => [roomSlotOf(id), { v: id, u: Date.now() - 3 * 864e5 }])),
+    roomSets: [{ id: 'demo_rs1', v: 1, name: 'Study mode', slots: { wall: 'wall_sage', floor: 'floor_tiles', rug: 'rug_none', desk: 'desk_oak', lamp: 'lamp_desk', shelf: 'shelf_books', plant: 'plant_monstera', poster: 'poster_space', window: 'window_city', pet: 'pet_cat' }, u: Date.now() - 2 * 864e5 }],
     todos: [['Finish HC Verma ch. 7 problems', 0, 'high', 'Physics', [['Q1–10', true], ['Q11–20', false], ['Check answers', false]]], ['Revise organic named reactions', 1, 'med', 'Chemistry', []],
       ['Integration practice set', -1, 'high', 'Maths', []], ['Make biology flashcards', 3, 'low', 'Biology', []], ['Mock test review', null, 'med', 'JEE', []]]
       .map(([title, inDays, pri, tag, check], i) => ({ id: 'demo_t' + i, title, due: inDays === null ? '' : dayKey(addDays(now, inDays)), pri, tag, notes: '', check: check.map(([t, d]) => ({ t, d })), done: 0, order: i, created: Date.now() - (5 - i) * 864e5, u: Date.now() - 864e5 }))
@@ -13242,13 +13595,13 @@ function startPreview() {
 }
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
-const PV_BLOCK = ['.gd-plot.ready', '[data-gbuy]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
+const PV_BLOCK = ['[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
-const PV_WHY = [['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
+const PV_WHY = [['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
@@ -13567,9 +13920,9 @@ SCENES.bag = { vb: '-12 -8 66 50', state: 'idle', props: `
    game.equipped, exactly like the Shop.
    ========================================================================== */
 const CAT_LABEL = { theme: 'Theme', avatar: 'Profile picture', pomhat: 'Pomeo hat', pomacc: 'Pomeo accessory', pomskin: 'Pomeo skin', aura: 'Aura', color: 'Name colour',
-  title: 'Title', sound: 'Sound', ambient: 'Ambient sound', ring: 'Timer ring', font: 'Timer font', effect: 'Effect', frame: 'Badge frame', extra: 'Timer extra', freeze: 'Consumable', stamp: 'Stamp', card: 'Card style' };
+  title: 'Title', sound: 'Sound', ambient: 'Ambient sound', ring: 'Timer ring', font: 'Timer font', effect: 'Effect', frame: 'Badge frame', extra: 'Timer extra', freeze: 'Consumable', stamp: 'Stamp', card: 'Card style', room: 'Room item' };
 const BAG_CATS = [
-  ['theme', 'Themes', ['theme']], ['avatar', 'Profile pictures', ['avatar']], ['pomeo', 'Pomeo outfits', ['pomhat', 'pomacc', 'pomskin']], ['aura', 'Auras', ['aura']],
+  ['theme', 'Themes', ['theme']], ['avatar', 'Profile pictures', ['avatar']], ['pomeo', 'Pomeo outfits', ['pomhat', 'pomacc', 'pomskin']], ['room', 'Room', ['room']], ['aura', 'Auras', ['aura']],
   ['color', 'Name colours', ['color']], ['title', 'Titles', ['title']], ['sound', 'Sounds', ['sound', 'ambient']], ['timer', 'Timer styles', ['ring', 'extra']],
   ['font', 'Fonts', ['font']], ['effect', 'Effects', ['effect']], ['stamp', 'Stamps', ['stamp']], ['card', 'Card styles', ['card']], ['frame', 'Badge frames', ['frame']], ['trophies', 'Boss trophies', []], ['garden', 'Garden', []], ['clan', 'Clan', []], ['event', 'Event items', []], ['consumables', 'Consumables', []],
 ];
@@ -13605,7 +13958,7 @@ function bagItems() {
   }
   return out;
 }
-const isEquippedItem = it => (it.cat === 'extra' ? extraOn(it.id) : equippedId(it.cat) === it.id);
+const isEquippedItem = it => (it.cat === 'extra' ? extraOn(it.id) : it.cat === 'room' ? roomSlot(roomSlotOf(it.id)) === it.id : equippedId(it.cat) === it.id);
 const bagNewCount = () => { const seen = +S.game.seenAt || 0; return seen ? bagItems().filter(x => x.at > seen).length : 0; };
 function updateBagDot() {
   const btn = $('#bagBtn');
@@ -13666,6 +14019,7 @@ function bagCard(x, g) {
   const it = x.it, eq = isEquippedItem(it), rar = itemRarity(it), fresh = bagFresh.has(it.id);
   const canPlay = ['sound', 'ambient', 'effect'].includes(it.cat);
   const btn = it.cat === 'extra' ? `<button class="btn" data-btoggle="${it.id}">${eq ? 'Turn off' : 'Turn on'}</button>`
+    : it.cat === 'room' ? (eq ? `<button class="btn" data-rremove="${roomSlotOf(it.id)}">Remove</button>` : `<button class="btn primary" data-bequip="${it.id}">Place</button>`)
     : eq && DEFAULTS[it.cat] === it.id ? '<button class="btn" disabled>In use</button>'
     : eq ? `<button class="btn" data-bunequip="${it.cat}">Unequip</button>` : `<button class="btn primary" data-bequip="${it.id}">Equip</button>`;
   return `<div class="item bag-item r-${rar}${eq ? ' equipped' : ''}${bagSel === it.id ? ' sel' : ''}" data-bid="${it.id}" tabindex="0" aria-label="${esc(it.name)} · ${esc(CAT_LABEL[it.cat] || it.cat)}">
@@ -13801,6 +14155,7 @@ function loSwatch(lo) {
 function bagEquip(id) {
   const it = ITEM_BY_ID[id];
   if (!it || !isOwned(id)) return;
+  if (it.cat === 'room') { if (roomPlace(id)) { uiClaim(); uiSound('on'); toast(`${it.name} placed in Pomeo’s room`, 1800, true); renderBag(); } return; }
   eqSet(it.cat, id);
   markEquipped(id);
   if (themePreviewId) themePreviewId = '';
@@ -13860,6 +14215,7 @@ function deleteLoadout(id) {
     const tg = t.closest('[data-btoggle]'); if (tg) { toggleExtra(tg.dataset.btoggle); renderBag(); return; }
     const gp = t.closest('[data-gplace]'); if (gp) { openPlaceDlg(gp.dataset.gplace); return; }
     const gr = t.closest('[data-gremove]'); if (gr) { if (gardenRemove(gr.dataset.gremove)) { toast('Back in your bag', 1600, true); renderBag(); } return; }
+    const rr = t.closest('[data-rremove]'); if (rr) { if (roomRemove(rr.dataset.rremove)) { toast('Back in your bag', 1600, true); renderBag(); } return; }
     const pv = t.closest('[data-preview]'); if (pv) { previewItem(pv.dataset.preview); return; }
     if (t.closest('#loNew')) { $('#loForm').classList.remove('hidden'); $('#loNew').classList.add('hidden'); $('#loName').focus(); return; }
     if (t.closest('#loCancel')) { renderLoadouts(); return; }
@@ -13922,7 +14278,7 @@ function paintRipe(p) {
    which Firestore merges key by key on write — two devices never overwrite each other.
    Nothing here needs new security rules: it all lives in users/{uid}.
    ========================================================================== */
-const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys'];
+const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets'];
 /** Lists whose two copies of one item are combined rather than the newer one simply winning. */
 const LIST_MERGE = { plants: (win, lose) => mergePlant(win, lose) };
 const syncSnap = {};   // field -> Map(id -> the item as last saved or merged)
@@ -14155,6 +14511,7 @@ function renderAll() {
   if (S.ui.tab === 'bag') renderBag();
   if (S.ui.tab === 'stats') renderStats();
   if (S.ui.tab === 'garden') renderGarden();
+  if (S.ui.tab === 'room') renderRoom();
   if (S.ui.tab === 'reminders') renderReminders();
   if (S.ui.tab === 'profile') renderProfile();
   if (S.ui.tab === 'shop') renderShop();
@@ -14412,6 +14769,7 @@ $('#tab-profile').addEventListener('click', e => {
   if (e.target.closest('#cardEdit')) openCardDlg();
   if (e.target.closest('#cardShare')) openShareDlg();
   if (e.target.closest('#pomeoOutfit')) { S.ui.shopCat = 'pomeo'; showTab('shop'); }
+  if (e.target.closest('#pomeoRoom')) showTab('room');
   if (e.target.closest('#pomeoShow')) { S.settings.pomeo = true; save(); renderPomeo(); renderProfile(); }
 });
 $('#settingsBack').addEventListener('click', () => showTab('profile'));
