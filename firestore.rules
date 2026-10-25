@@ -12,7 +12,7 @@ rules_version = '2';
 //   friendships/{a_b}           a request or a friendship between two users
 //   inbox/{uid}/items/{id}      kudos and nudges (preset reactions, no text)
 //   challenges/{id}             weekly challenges between friends
-//   clans/… clanNames/… clanCodes/… clanOf/…   clans, the study-group system (v1.14, see CLANS below; session modes v1.14.2; raid HP table v1.14.3)
+//   clans/… clanNames/… clanCodes/… clanOf/…   clans, the study-group system (v1.14, see CLANS below; session modes v1.14.2; raid HP table + security audit v1.14.3)
 //
 // HONEST NOTE ON CHEATING: there is no server here (no Cloud Functions on the
 // free plan), so every number is calculated on the user's own device. These
@@ -30,12 +30,10 @@ service cloud.firestore {
     function myName() { return request.auth.token.email.split('@')[0]; }
     function path(col, id) { return /databases/$(database)/documents/$(col)/$(id); }
 
-    // Accepted friendship between me and uid (document id = smaller uid + "_" + larger uid).
+    // Accepted friendship between me and uid (document id = smaller uid + "_" + larger uid): one read.
     function friendDoc(a, b) { return path('friendships', a + '_' + b); }
-    function isFriend(uid) {
-      return (exists(friendDoc(me(), uid)) && get(friendDoc(me(), uid)).data.status == 'accepted')
-          || (exists(friendDoc(uid, me())) && get(friendDoc(uid, me())).data.status == 'accepted');
-    }
+    function pairDoc(uid) { return me() < uid ? friendDoc(me(), uid) : friendDoc(uid, me()); }
+    function isFriend(uid) { return exists(pairDoc(uid)) && get(pairDoc(uid)).data.status == 'accepted'; }
     // owner has blocked me
     function blockedBy(owner) { return exists(/databases/$(database)/documents/users/$(owner)/blocked/$(me())); }
 
@@ -91,8 +89,10 @@ service cloud.firestore {
     }
     // Clan tag shown next to the name (optional, v1.14): must be the tag of the clan the user is really in.
     function validClanTag(d) {
-      return !('clanTag' in d) || (exists(/databases/$(database)/documents/clanOf/$(me()))
-        && d.clanTag == get(/databases/$(database)/documents/clans/$(get(/databases/$(database)/documents/clanOf/$(me())).data.clan)).data.tag);
+      return !('clanTag' in d)
+        || (resource != null && 'clanTag' in resource.data && resource.data.clanTag == d.clanTag)      // unchanged: no reads
+        || (exists(/databases/$(database)/documents/clanOf/$(me()))
+            && d.clanTag == get(/databases/$(database)/documents/clans/$(get(/databases/$(database)/documents/clanOf/$(me())).data.clan)).data.tag);
     }
 
     // ---------------- Leaderboard stats ----------------
@@ -160,7 +160,7 @@ service cloud.firestore {
         && d.goalDays is list && d.goalDays.size() <= 90
         && d.recent is list && d.recent.size() <= 20
         // newest session: at most 4 hours long, not in the future
-        && (d.recent.size() == 0 || (d.recent[0].min is int && d.recent[0].min <= 240 && d.recent[0].t <= request.time.toMillis()))
+        && (d.recent.size() == 0 || (d.recent[0].min is int && d.recent[0].min <= 240 && d.recent[0].t <= request.time.toMillis() + 600000))   // device clocks can be a few minutes ahead
         && d.streak is int && d.longest is int
         && d.updatedAt == request.time;
     }
@@ -172,7 +172,11 @@ service cloud.firestore {
         && request.resource.data.visible is bool
         && (request.resource.data.now == null || (request.resource.data.now is map
             && request.resource.data.now.keys().hasOnly(['name', 'phase', 'status', 'endAt', 'left'])
-            && request.resource.data.now.name is string && request.resource.data.now.name.size() <= 80))
+            && request.resource.data.now.name is string && request.resource.data.now.name.size() <= 80
+            && (!('phase' in request.resource.data.now) || (request.resource.data.now.phase is string && request.resource.data.now.phase.size() <= 20))
+            && (!('status' in request.resource.data.now) || (request.resource.data.now.status is string && request.resource.data.now.status.size() <= 20))
+            && (!('endAt' in request.resource.data.now) || request.resource.data.now.endAt is number)
+            && (!('left' in request.resource.data.now) || request.resource.data.now.left is number)))
         && request.resource.data.updatedAt == request.time;
       allow delete: if signedIn() && me() == uid;
     }
@@ -215,7 +219,7 @@ service cloud.firestore {
       let d = request.resource.data;
       return d.keys().hasOnly(['from', 'fromName', 'type', 'emoji', 'target', 'day', 'createdAt'])
         && d.from == me() && d.fromName == myName() && d.createdAt == request.time
-        && ((d.type == 'kudos' && d.emoji in ['🔥', '👏', '💪', '⭐'] && d.target is string && d.target.size() <= 40
+        && ((d.type == 'kudos' && d.emoji in ['🔥', '👏', '💪', '⭐'] && d.target is string && d.target.matches('^[A-Za-z0-9_-]{1,40}$')
               && id == 'k_' + me() + '_' + d.target)
          || (d.type == 'nudge' && d.emoji == '👀' && d.day is string && d.day.size() == 10
               && id == 'n_' + me() + '_' + d.day));
@@ -333,7 +337,7 @@ service cloud.firestore {
     function validClanDoc(d) {
       return d.keys().hasOnly(['name', 'nameLower', 'tag', 'desc', 'emblem', 'banner', 'theme', 'frame', 'joinMode', 'members',
                                'xp', 'level', 'weekKey', 'weekMin', 'monthKey', 'monthMin', 'raidHP', 'weekGroups', 'lastLive',
-                               'spent', 'owned', 'lastBuy', 'tq', 'tr', 'quests', 'raids', 'gday', 'gstreak', 'createdAt', 'updatedAt'])
+                               'spent', 'owned', 'lastBuy', 'tq', 'tr', 'quests', 'raids', 'gday', 'gstreak', 'lastMember', 'createdAt', 'updatedAt'])
         && validClanName(d.name) && d.nameLower == d.name.lower() && validTag(d.tag)
         && d.desc in ['jee', 'neet', 'boards', 'college', 'coding', 'language', 'chill', 'upsc', 'school', 'work']
         && d.joinMode in ['approval', 'open']
@@ -349,6 +353,16 @@ service cloud.firestore {
         && d.updatedAt == request.time;
     }
     function changed(keys) { return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys); }
+    // A day key ('YYYY-MM-DD') or month key ('YYYY-MM') that isn't ahead of the server's calendar (one day / one month of
+    // leeway for time zones). A far-future key would freeze the clan's counting for everyone, so it's refused.
+    function dayKeyOk(k) {
+      return k is string && k.matches('^20[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
+        && int(k[0:4]) * 10000 + int(k[5:7]) * 100 + int(k[8:10]) <= request.time.year() * 10000 + request.time.month() * 100 + request.time.day() + 1;
+    }
+    function monthKeyOk(k) {
+      return k is string && k.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$')
+        && int(k[0:4]) * 12 + int(k[5:7]) <= request.time.year() * 12 + request.time.month() + 1;
+    }
 
     match /clans/{cid} {
       // The public card + leaderboard: clan-level info only (no member list, names or stats)
@@ -360,7 +374,9 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/clanNames/$(request.resource.data.nameLower)).data.clan == cid
         && request.resource.data.members == 1 && request.resource.data.xp == 0 && request.resource.data.spent == 0
         && request.resource.data.owned.size() == 0 && request.resource.data.tq == 0 && request.resource.data.tr == 0
-        && request.resource.data.monthKey.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$') && request.resource.data.raidHP == raidHPFor(request.resource.data.monthKey, 1)
+        && request.resource.data.quests.size() == 0 && request.resource.data.raids.size() == 0                       // nothing won yet
+        && request.resource.data.weekMin == 0 && request.resource.data.monthMin == 0 && request.resource.data.weekGroups == 0 && request.resource.data.gstreak == 0
+        && dayKeyOk(request.resource.data.weekKey) && monthKeyOk(request.resource.data.monthKey) && request.resource.data.raidHP == raidHPFor(request.resource.data.monthKey, 1)
         && request.resource.data.createdAt == request.time;
       allow update: if signedIn() && clanUpdate(cid);
       // disband (leader), or the last member leaving
@@ -413,7 +429,7 @@ service cloud.firestore {
       match /sessions/{sid} {
         allow read: if isMember(cid);
         allow create: if isMember(cid) && (isOfficer(cid) || get(infoPath(cid)).data.memberSchedule == true)
-          && validStudySession(request.resource.data) && request.resource.data.creator == me()
+          && validStudySession(request.resource.data) && request.resource.data.creator == me() && request.resource.data.creatorName == myName()
           && request.resource.data.rsvp.size() == 0 && request.resource.data.cancelled == false
           && request.resource.data.createdAt == request.time;
         allow update: if isMember(cid) && (
@@ -439,7 +455,7 @@ service cloud.firestore {
             // anyone can close a session whose time is up
             || (changed(['open', 'endedAt', 'updatedAt']) && request.resource.data.open == false)
             // counted once as a group session (see clanGroup)
-            || (changed(['counted', 'updatedAt']) && resource.data.counted == false && request.resource.data.counted == true)
+            || (changed(['counted', 'second', 'updatedAt']) && resource.data.counted == false && request.resource.data.counted == true)
           );
         allow delete: if isMember(cid) && (resource.data.host == me() || isOfficer(cid));
 
@@ -462,10 +478,12 @@ service cloud.firestore {
         }
         match /reactions/{rid} {
           allow read: if isMember(cid);
-          allow create: if isMember(cid) && exists(/databases/$(database)/documents/clans/$(cid)/live/$(lid)/people/$(me()))
-            && request.resource.data.keys().hasOnly(['from', 'emoji', 'at'])
-            && request.resource.data.from == me() && request.resource.data.emoji in ['🔥', '👏', '💪', '☕', '👋']
-            && request.resource.data.at == request.time;
+          // v1.14.3: one document per person (its id is their uid), rewritten for each reaction, at most one every 2 seconds
+          allow create: if isMember(cid) && rid == me() && validReaction()
+            && exists(/databases/$(database)/documents/clans/$(cid)/live/$(lid)/people/$(me()));
+          allow update: if isMember(cid) && rid == me() && validReaction()
+            && request.time.toMillis() - resource.data.at.toMillis() >= 2000;
+          allow delete: if isMember(cid) && (rid == me() || isOfficer(cid));
         }
       }
 
@@ -491,7 +509,7 @@ service cloud.firestore {
       return n.updatedAt == request.time && k.hasAny(['updatedAt'])
         && (
           (k.hasOnly(['xp', 'level', 'weekKey', 'weekMin', 'monthKey', 'monthMin', 'raidHP', 'weekGroups', 'updatedAt']) && clanFocus(cid, n, o))
-          || (k.hasOnly(['members', 'updatedAt']) && clanCount(cid, n, o))
+          || (k.hasOnly(['members', 'lastMember', 'updatedAt']) && clanCount(cid, n, o))
           || (k.hasOnly(['joinMode', 'emblem', 'banner', 'theme', 'frame', 'updatedAt']) && clanSettings(cid, n, k))
           || (k.hasOnly(['owned', 'spent', 'lastBuy', 'updatedAt']) && clanBuy(cid, n, o))
           || (k.hasOnly(['quests', 'tq', 'updatedAt']) && clanQuest(cid, n, o))
@@ -505,17 +523,19 @@ service cloud.firestore {
       return isMember(cid) && n.xp is int && d > 0 && d <= 1440 && levelOk(n.xp, n.level)
         && getAfter(memberPath(cid, me())).data.contrib - get(memberPath(cid, me())).data.contrib == d
         && ((n.weekKey == o.weekKey && n.weekMin == o.weekMin + d && n.weekGroups == o.weekGroups)
-            || (n.weekKey is string && n.weekKey.size() == 10 && n.weekKey > o.weekKey && n.weekMin == d && n.weekGroups == 0))
+            || (dayKeyOk(n.weekKey) && n.weekKey > o.weekKey && n.weekMin == d && n.weekGroups == 0))
         && ((n.monthKey == o.monthKey && n.monthMin == o.monthMin + d && n.raidHP == o.raidHP)
-            || (n.monthKey is string && n.monthKey.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$') && n.monthKey > o.monthKey && n.monthMin == d && n.raidHP == raidHPFor(n.monthKey, n.members)));
+            || (monthKeyOk(n.monthKey) && n.monthKey > o.monthKey && n.monthMin == d && n.raidHP == raidHPFor(n.monthKey, n.members)));
     }
-    // Member count: +1 when someone joins (themselves in an open clan, or accepted by a leader/officer), −1 when someone leaves or is removed.
+    // Member count: +1 when someone joins (themselves in an open clan, or accepted by a leader/officer), −1 when someone leaves
+    // or is removed. lastMember names that person, and their member row must really appear or disappear in the same write.
     function clanCount(cid, n, o) {
-      return n.members is int && n.members >= 0 && n.members <= 30 && (
-        (n.members == o.members + 1
-          && ((o.joinMode == 'open' && !exists(memberPath(cid, me())) && existsAfter(memberPath(cid, me()))) || isOfficer(cid)))
-        || (n.members == o.members - 1
-          && ((isMember(cid) && !existsAfter(memberPath(cid, me()))) || isOfficer(cid)))
+      let who = n.lastMember;
+      return n.members is int && n.members >= 0 && n.members <= 30 && who is string && (
+        (n.members == o.members + 1 && !exists(memberPath(cid, who)) && existsAfter(memberPath(cid, who))
+          && ((who == me() && o.joinMode == 'open') || (who != me() && isOfficer(cid))))
+        || (n.members == o.members - 1 && exists(memberPath(cid, who)) && !existsAfter(memberPath(cid, who))
+          && ((who == me() && isMember(cid)) || (who != me() && isOfficer(cid))))
       );
     }
     // Join mode and the clan's look: the leader (the look also by officers when the leader allows it). Only owned looks.
@@ -551,11 +571,16 @@ service cloud.firestore {
     // weekly group-session quest and the clan's study streak.
     function clanGroup(cid, n, o) {
       let live = /databases/$(database)/documents/clans/$(cid)/live/$(n.lastLive);
+      let other = getAfter(live).data.second;
       return isMember(cid) && n.lastLive is string && n.lastLive != o.lastLive
         && get(live).data.counted == false && getAfter(live).data.counted == true
+        // two different members with a seat at that table: me and the person named in "second" (v1.14.3)
+        && other is string && other != me()
+        && exists(/databases/$(database)/documents/clans/$(cid)/live/$(n.lastLive)/people/$(me()))
+        && exists(/databases/$(database)/documents/clans/$(cid)/live/$(n.lastLive)/people/$(other))
         && ((n.weekKey == o.weekKey && n.weekMin == o.weekMin && n.weekGroups == o.weekGroups + 1)
-            || (n.weekKey is string && n.weekKey.size() == 10 && n.weekKey > o.weekKey && n.weekMin == 0 && n.weekGroups == 1))     // the first group session of a new week
-        && n.gday is string && n.gday.size() == 10 && n.gstreak is int && n.gstreak >= 0 && n.gstreak <= o.gstreak + 1;
+            || (dayKeyOk(n.weekKey) && n.weekKey > o.weekKey && n.weekMin == 0 && n.weekGroups == 1))     // the first group session of a new week
+        && dayKeyOk(n.gday) && n.gstreak is int && n.gstreak >= 0 && n.gstreak <= o.gstreak + 1;
     }
 
     function validNewMember(cid, uid) {
@@ -593,15 +618,21 @@ service cloud.firestore {
       let n = request.resource.data;
       return uid == me() && isMember(cid) && changed(['avatar', 'color', 'aura', 'level', 'tier', 'shareNames', 'focusUntil'])
         && n.avatar is string && n.avatar.size() <= 30 && n.color is string && n.color.size() <= 30 && n.aura is string && n.aura.size() <= 30
+        && n.level is int && n.level >= 1 && n.level <= 1000 && n.tier is string && n.tier.size() <= 20
         && n.shareNames is bool && n.focusUntil is int && n.focusUntil <= request.time.toMillis() + 4 * 3600000;
     }
     // Roles: only the leader promotes, demotes and hands over leadership.
     function memberRole(cid, uid) {
       return isLeader(cid) && changed(['role'])
         && request.resource.data.role in ['leader', 'officer', 'member']
-        && (uid != me() || request.resource.data.role != 'leader')
+        && (uid != me() || (request.resource.data.role != 'leader' && getAfter(infoPath(cid)).data.leader != me()))   // stepping down = handing over
         // a new leader always comes with the private info pointing to them (transfer in one write)
         && (request.resource.data.role != 'leader' || getAfter(infoPath(cid)).data.leader == uid);
+    }
+    function validReaction() {
+      return request.resource.data.keys().hasOnly(['from', 'emoji', 'at'])
+        && request.resource.data.from == me() && request.resource.data.emoji in ['🔥', '👏', '💪', '☕', '👋']
+        && request.resource.data.at == request.time;
     }
     function validStudySession(d) {
       return d.keys().hasOnly(['title', 'start', 'pattern', 'repeat', 'days', 'tag', 'max', 'creator', 'creatorName', 'cancelled', 'rsvp', 'mode', 'createdAt', 'updatedAt'])
@@ -618,8 +649,9 @@ service cloud.firestore {
         && d.creatorName is string && d.creatorName.size() <= 20 && d.updatedAt == request.time;
     }
     function validLive(d) {
-      return d.keys().hasOnly(['title', 'host', 'hostName', 'pattern', 'startAt', 'pausedAt', 'pauseTotal', 'shift', 'open', 'counted', 'sid', 'mode', 'createdAt', 'endedAt', 'updatedAt'])
+      return d.keys().hasOnly(['title', 'host', 'hostName', 'pattern', 'startAt', 'pausedAt', 'pauseTotal', 'shift', 'open', 'counted', 'second', 'sid', 'mode', 'createdAt', 'endedAt', 'updatedAt'])
         && (!('mode' in d) || d.mode in ['together', 'synced'])          // v1.14.2; no mode = Synced
+        && (!('second' in d) || d.second is string)                       // v1.14.3: the second person when counted as a group session
         && d.title is string && d.title.size() >= 2 && d.title.size() <= 40 && cleanText(d.title)
         && d.pattern is map && d.pattern.focus is int && d.pattern.focus >= 5 && d.pattern.focus <= 120
         && d.pattern.short is int && d.pattern.short >= 1 && d.pattern.short <= 30 && d.pattern.rounds is int && d.pattern.rounds >= 1 && d.pattern.rounds <= 8
@@ -650,7 +682,8 @@ service cloud.firestore {
       allow create: if signedIn() && request.resource.data.keys().hasOnly(['clan', 'at']) && request.resource.data.at == request.time
         && existsAfter(memberPath(request.resource.data.clan, uid))
         && (uid == me() || (isOfficer(request.resource.data.clan) && exists(/databases/$(database)/documents/clans/$(request.resource.data.clan)/requests/$(uid))));
-      allow delete: if signedIn() && (uid == me() || isLeader(resource.data.clan) || (isOfficer(resource.data.clan) && get(memberPath(resource.data.clan, uid)).data.role == 'member'));
+      allow delete: if signedIn() && !existsAfter(memberPath(resource.data.clan, uid))                  // only when the member row goes too
+        && (uid == me() || isLeader(resource.data.clan) || (isOfficer(resource.data.clan) && get(memberPath(resource.data.clan, uid)).data.role == 'member'));
     }
 
     // Everything else is closed.

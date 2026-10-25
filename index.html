@@ -4061,6 +4061,84 @@ const USERNAME_DOMAIN = 'pomodorolist.app';
 const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
 
 /* ==========================================================================
+   TABLE OF CONTENTS — the sections of this script, in file order. Each one
+   starts with a banner comment like this one; search for its heading text.
+    1. SMALL UTILITIES
+    2. MOTION — animations and micro-interactions
+    3. STATE
+    4. FIREBASE: loading, auth, Firestore sync
+    5. SESSION START / LOGIN / LOGOUT
+    6. MIGRATION + MERGING (old device data, JSON import)
+    7. NAMES (colour + tag per session name)
+    8. SOUND + NOTIFICATIONS
+    9. TIMER ENGINE
+   10. RECENT + PINNED CHIPS
+   11. AGGREGATION + STREAKS (always derived from the synced session log)
+   12. RENDER: TIMER TAB
+   13. RENDER: STATS TAB (hand-drawn SVG charts, no dependencies)
+   14. RENDER: SETTINGS
+   15. PRESET MANAGER
+   16. PROGRESSION — XP, LEVELS, TIERS, COINS, ACHIEVEMENTS
+   17. AUDIO — end sounds, start cue and ambient sound, all generated with Web Audio
+   18. VISUAL COSMETICS — themes, ring styles, fonts, effects, live tab icon
+   19. RENDER — header chip, Progress page, Shop, level-up moment
+   20. SOCIAL — public profile, friends, leaderboards, kudos, nudges, challenges
+   21. RENDER — Friends tab (friends · leaderboard · challenges), friend profile
+   22. MASTER RENDER + TABS
+   23. POMEO — the tomato buddy
+   24. REMINDERS
+   25. GLOSSED INTERFACE — a per-device look (like Animations): off | lite | full
+   26. SMALL EXTRAS — tip of the day, session notes, today summary
+   27. QUESTS — a weekly boss (Monday–Sunday, local time) in a fixed 10-week cycle,
+   28. AURA — a glow around the badge. Automatic from the current streak, unless a
+   29. DAILY LOGIN REWARDS — a 7-day cycle; a missed day starts it again.
+   30. SPACED REVISION — topics come back after 1, 3, 7, 21, 45 days (editable).
+   31. EXAM COUNTDOWN — S.exams [{ id, name, date 'YYYY-MM-DD', added }]
+   32. DISTRACTION PARKING LOT — jot a thought without stopping the timer.
+   33. TOMATO GARDEN — one plant per focus session (separate from Pomeo).
+   34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
+   35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
+   36. SUBTASKS — an optional checklist for the current focus session.
+   37. INTERFACE SOUNDS — small, soft UI sounds, all made with Web Audio.
+   38. VISUAL POLISH — cursor glow, tilt and magnetic buttons (mouse + Full
+   39. INBOX / NOTIFICATION CENTRE — last 100 items, on this device.
+   40. WHAT'S NEW + ABOUT
+   41. SETTINGS SEARCH
+   42. COMMAND PALETTE — Ctrl/⌘ K (or the search button)
+   43. OFFLINE BANNER + QUIET SYNC RETRY
+   44. PHONES: pull to refresh, swipe between tabs, swipe-to-dismiss helper
+   45. PROFILE PICTURES — pre-made avatars (no uploads), drawn on a 24×24 grid.
+   46. REWARD LOOKS — the art and styles behind boss and questline rewards, added to
+   47. TRUE MINIMALIST — one switch (the old "Progression" setting, inverted).
+   48. CONTACT
+   49. ONBOARDING TUTORIAL WITH POMEO (replaces the old spotlight tour)
+   50. ENERGY CHECK-IN — "How focused did you feel?" after a session.
+   51. WELCOME PAGE — pitch, sign-up/log-in card, features, comparison, FAQ.
+   52. PREVIEW — a read-only demo account ("demo_scholar") built from sample data
+   53. POMEO EMPTY STATES — small scenes drawn around the usual Pomeo:
+   54. QUESTLINE — a Pomeo event each month or season (EVENTS). Progress is worked
+   55. BAG — everything you own, in one place (the bag button next to the inbox).
+   56. FOCUS ATMOSPHERE + RIPENING RING
+   57. SYNC MERGE — lists of items (reminders, revision plans, exams, parked thoughts,
+   58. EVENTS
+   59. TICK LOOP + MIDNIGHT HANDLING
+   60. INIT
+   61. COMPLETION STAMPS — when a focus block completes, the equipped stamp lands on
+   62. TIME-OF-DAY BACKGROUND — a very faint sky behind the app that follows the
+   63. PLAYER CARD — a game-style card at the top of the Profile page: banner, badge
+   64. FOCUS GUARD — nothing interrupts a focus block. While one is running or
+   65. INTRO — the first time this device opens the welcome page (nobody signed in,
+   66. TO-DO LIST — the second view of the Reminders tab. S.todos (synced item by
+   67. CLANS — the app's study-group system (also called study groups / crews).
+   68. MONTHLY RAID (v1.14.3). From November 2026 every month has its own raid boss
+   69. LIVE CLAN SESSIONS — one shared timer, computed from timestamps.
+   70. LOOKS (v1.14.1) — one picture and one name for a person, the same everywhere:
+   71. FOCUS TOGETHER (v1.14.2) — the default kind of clan session. Everyone runs
+   72. COPY AND SHARE (v1.14.3). Every Copy button goes through copyText: the
+   73. NAVIGATION (v1.14.3). One list of sections (#tabs), shown three ways:
+   ========================================================================== */
+
+/* ==========================================================================
    SMALL UTILITIES
    ========================================================================== */
 const $  = (s, el = document) => el.querySelector(s);
@@ -6790,7 +6868,6 @@ function toggleExtra(id) {
 /* ==========================================================================
    AUDIO — end sounds, start cue and ambient sound, all generated with Web Audio
    ========================================================================== */
-const getCtx = () => ensureAudio();
 function envelope(g, t, peak, attack, decay) {
   g.gain.setValueAtTime(0.0001, t);
   g.gain.linearRampToValueAtTime(peak, t + attack);
@@ -7976,7 +8053,8 @@ async function loadChallenges(force) {
       const qs = await FB.getDocs(FB.query(col, FB.where(field, 'array-contains', USER.uid), FB.where('weekKey', '==', wk)));
       qs.docs.forEach(d => { out[d.id] = { id: d.id, ...d.data() }; });
     }
-    SOC.challenges = Object.values(out);
+    const friends = new Set(friendsList().map(otherUid));   // invitations count only from friends (anyone can list uids as invited)
+    SOC.challenges = Object.values(out).filter(c => (c.members || []).includes(USER.uid) || friends.has(c.creator));
     SOC.challengesAt = Date.now();
     await syncChallengeProgress();
   } catch (e) { console.warn('challenges', e); if (!SOC.challenges) SOC.challenges = []; }
@@ -8649,14 +8727,12 @@ setInterval(pomeoNightCheck, 60000);
    ========================================================================== */
 const REM_FIRED_KEY = 'pomodorolist-rem-fired';     // occurrences already alerted on this device
 const REM_PERM_KEY = 'pomodorolist-rem-perm-asked';
-const REM_BEFORE = [0, 5, 10, 15, 30];
 const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const BELL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
 const CAL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg>';
 const EDIT_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
 const TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>';
 const TICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-const INFO_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>';
 
 const parseDay = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
 const remAt = (r, day) => { const [h, mi] = r.time.split(':').map(Number); const d = new Date(day); d.setHours(h, mi, 0, 0); return d.getTime(); };
@@ -9385,7 +9461,6 @@ function bossBattle(mode, now = new Date()) {
   const phase = done ? 'down' : left <= 0.1 ? 'almost' : left <= 0.5 ? 'angry' : 'calm';
   return { wk, mon, boss, mode, members, hp, dmg, rawDmg: raw, coins, done, formed, phase, loading: members.some(m => m.loading) };
 }
-const bossState = () => bossBattle(bossView());
 let bossLoading = false;
 async function loadSquadStats(force) {
   if (bossLoading || !squadMembers().length) return;
@@ -10110,7 +10185,6 @@ function gardenStats(items) {
   for (const it of items) { const k = plantKind(it); if (k === 'wilted') st.wilted++; else { st.grown++; if (k === 'golden') st.golden++; if (k === 'ripe') st.ripe++; } }
   return st;
 }
-let gardenNewest = 0;
 function renderGarden() {
   const el = $('#gardenSlot');
   if (!el || !USER) return;
@@ -11549,12 +11623,6 @@ const hasAvatar = id => !!id && id !== 'av_default' && !!AVATAR_ART[id] && !mini
 const avatarSVG = (id, size = 32) => `<svg class="av" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true">${avatarArt(id)}</svg>`;
 const myAvatar = () => equippedId('avatar');
 /** Someone's avatar id from what friends can read (publicProfiles first, then publicStats). Missing field = Default. */
-function avatarOf(uid) {
-  if (USER && uid === USER.uid) return myAvatar();
-  const p = cached('publicProfiles', uid), s = cached('publicStats', uid);
-  const v = (p && !p.denied && p.avatar) || (s && !s.denied && s.avatar) || 'av_default';
-  return AVATAR_ART[v] ? v : 'av_default';
-}
 /* ==========================================================================
    REWARD LOOKS — the art and styles behind boss and questline rewards, added to
    the existing systems: AVATAR_ART (profile pictures), POMEO_HATS/ACCS (+ skins),
@@ -13677,6 +13745,9 @@ function tick() {
     renderToday();
     reconcileRewards('quiet');  // new day: goal bonus bookkeeping and Streak Freezes
     if (S.ui.tab === 'stats') renderStats();
+    if (S.ui.tab === 'quests') renderQuests();   // a new week's boss, a questline's next day
+    if (S.ui.tab === 'clan' && inClan()) renderClan();   // a new week's quest, a new month's raid boss
+    renderGreeting();
   }
 }
 setInterval(tick, 250);
@@ -15134,7 +15205,7 @@ async function clanJoinOpen(c) {
   const b = FB.writeBatch(FB.db);
   b.set(cDoc(c.id, 'members', USER.uid), newMemberDoc('member', USER.username));
   b.set(FB.doc(FB.db, 'clanOf', USER.uid), { clan: c.id, at: FB.serverTimestamp() });
-  b.update(cDoc(c.id), { members: FB.increment(1), updatedAt: FB.serverTimestamp() });
+  b.update(cDoc(c.id), { members: FB.increment(1), lastMember: USER.uid, updatedAt: FB.serverTimestamp() });
   await b.commit();
   await clanRefresh(true);
 }
@@ -15159,7 +15230,7 @@ async function clanAccept(uid) {
     avatar: '', color: 'col_default', aura: '', level: 1, tier: 'novice', shareNames: false, focusUntil: 0, updatedAt: ts });
   b.set(FB.doc(FB.db, 'clanOf', uid), { clan: CLAN.id, at: ts });
   b.delete(cDoc(CLAN.id, 'requests', uid));
-  b.update(cDoc(CLAN.id), { members: FB.increment(1), updatedAt: ts });
+  b.update(cDoc(CLAN.id), { members: FB.increment(1), lastMember: uid, updatedAt: ts });
   await b.commit();
   CLAN.requests = CLAN.requests.filter(x => x.id !== uid);
   await clanRefresh(true);
@@ -15187,7 +15258,7 @@ async function clanLeave() {
   }
   b.delete(cDoc(id, 'members', USER.uid));
   b.delete(FB.doc(FB.db, 'clanOf', USER.uid));
-  b.update(cDoc(id), { members: FB.increment(-1), updatedAt: ts });
+  b.update(cDoc(id), { members: FB.increment(-1), lastMember: USER.uid, updatedAt: ts });
   await b.commit();
   clanAfterLeft();
 }
@@ -15205,7 +15276,7 @@ async function clanRemove(uid) {
   const b = FB.writeBatch(FB.db);
   b.delete(cDoc(CLAN.id, 'members', uid));
   b.delete(FB.doc(FB.db, 'clanOf', uid));
-  b.update(cDoc(CLAN.id), { members: FB.increment(-1), updatedAt: FB.serverTimestamp() });
+  b.update(cDoc(CLAN.id), { members: FB.increment(-1), lastMember: uid, updatedAt: FB.serverTimestamp() });
   await b.commit();
   await clanLoadDetails(true);
   await clanRefresh();
@@ -15601,7 +15672,7 @@ function liveListen() {
   }), e => console.warn('live people', e && e.code)));
   let first = true;
   LIVE.unsubs.push(FB.onSnapshot(FB.query(FB.collection(FB.db, ...base, 'reactions'), FB.orderBy('at', 'desc'), FB.limit(8)), safeSnap(qs => {
-    const fresh = first ? [] : qs.docChanges().filter(c => c.type === 'added').map(c => livePlain(c.doc));
+    const fresh = first ? [] : qs.docChanges().filter(c => (c.type === 'added' || c.type === 'modified') && !c.doc.metadata.hasPendingWrites).map(c => livePlain(c.doc));
     first = false;
     for (const r of fresh) if (r && SOC.blocked[r.from] === undefined && r.from !== USER.uid) showReaction(r.from, r.emoji);
   }), e => console.warn('live reactions', e && e.code)));
@@ -15760,7 +15831,8 @@ async function liveControl(kind) {
 async function liveMaybeCount() {
   const d = LIVE.doc;
   if (!d || d.counted || LIVE.counting || isPreview() || !inClan()) return;
-  if (livePeople().filter(p => ['focus', 'break', 'paused', 'idle'].includes(p.st)).length < 2) return;
+  const here = livePeople().filter(p => ['focus', 'break', 'paused', 'idle'].includes(p.st)), second = here.find(p => p.id !== USER.uid);
+  if (here.length < 2 || !second || !here.some(p => p.id === USER.uid)) return;   // the rules check both seats really exist
   LIVE.counting = true;
   const lref = FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid), cref = cDoc(LIVE.cid), today = dayKey(new Date()), wkNow = dayKey(weekMonday());
   try {
@@ -15770,7 +15842,7 @@ async function liveMaybeCount() {
       const c = cs.data(), yest = dayKey(addDays(new Date(), -1));
       const gstreak = c.gday === today ? c.gstreak : c.gday === yest ? c.gstreak + 1 : 1;
       const sameWeek = c.weekKey >= wkNow;
-      tx.update(lref, { counted: true, updatedAt: FB.serverTimestamp() });
+      tx.update(lref, { counted: true, second: second.id, updatedAt: FB.serverTimestamp() });
       tx.update(cref, { lastLive: LIVE.lid, weekGroups: sameWeek ? (c.weekGroups || 0) + 1 : 1, ...(sameWeek ? {} : { weekKey: wkNow, weekMin: 0 }),
         gday: today, gstreak, updatedAt: FB.serverTimestamp() });
     });
@@ -15785,7 +15857,7 @@ async function liveReact(emoji) {
   LIVE.lastReact = Date.now();
   showReaction(USER.uid, emoji);
   if (isPreview()) return;
-  FB.addDoc(FB.collection(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid, 'reactions'), { from: USER.uid, emoji, at: FB.serverTimestamp() }).catch(() => {});
+  FB.setDoc(FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid, 'reactions', USER.uid), { from: USER.uid, emoji, at: FB.serverTimestamp() }).catch(() => {});
 }
 function showReaction(from, emoji) {
   const seat = document.querySelector(`.lv-seat[data-uid="${CSS.escape(from)}"]`);
@@ -16732,7 +16804,6 @@ document.addEventListener('focusin', e => { const f = e.target.closest && e.targ
    - phones: a bottom bar with the five main sections plus More, which opens the list.
    Badges live on the list's items; the bottom bar, More and ☰ mirror them.
    ========================================================================== */
-const NAV_PHONE = ['timer', 'reminders', 'quests', 'stats', 'clan'];
 const NAV_MINI_KEY = 'pomodorolist-nav-mini';
 const NAV_MQ = { phone: matchMedia('(max-width: 640px)'), side: matchMedia('(min-width: 1180px)') };
 const navMode = () => (NAV_MQ.phone.matches ? 'phone' : NAV_MQ.side.matches ? 'side' : 'drawer');
