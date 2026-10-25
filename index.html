@@ -13390,7 +13390,10 @@ $('#nameTag').addEventListener('change', e => {
 });
 
 // Timer controls
+let mainBtnAt = 0;
 $('#mainBtn').addEventListener('click', () => {
+  if (performance.now() - mainBtnAt < 400) return;   // a double-click (or a bounced tap) used to start and immediately pause
+  mainBtnAt = performance.now();
   if (liveButton('main')) return;
   if (S.timer.status === 'running') pauseTimer(); else startTimer();
 });
