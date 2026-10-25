@@ -1470,6 +1470,50 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 }
 
 /* ==========================================================================
+   FLASHCARDS (v1.15)
+   ========================================================================== */
+#cardsBody.hidden { display: none; }
+.deck-list .rem-fg { align-items: center; }
+.deck-list .rem-acts { gap: 6px; align-items: center; }
+.deck-list .rem-acts .btn.small { min-height: 40px; }
+.deck-list .rem-acts .iconbtn { width: 40px; height: 40px; }
+.dk-new, .dk-rename, .dk-edit { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin: 10px 0; align-items: center; }
+.dk-new input, .dk-rename input, .dk-edit input { min-width: 0; min-height: 44px; }
+.dk-edit { width: 100%; margin: 0; }
+.cards-card .empty { padding: 20px 10px; text-align: center; color: var(--muted); }
+.deck-dlg, .card-dlg { width: min(560px, calc(100vw - 24px)); }
+.cd-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.dk-add { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-bottom: 8px; }
+.dk-add input { min-width: 0; min-height: 44px; }
+.dk-bulk { margin-bottom: 10px; }
+.dk-bulk summary { cursor: pointer; color: var(--accent); font-size: 13.5px; padding: 6px 0; min-height: 44px; display: flex; align-items: center; }
+.dk-bulk textarea { width: 100%; min-height: 90px; resize: vertical; font: inherit; margin: 6px 0; }
+.dk-list { max-height: min(46vh, 420px); overflow: auto; }
+.dk-list .rem-acts .iconbtn { width: 40px; height: 40px; }
+.cd-card { position: relative; width: 100%; min-height: 200px; border: 0; background: none; padding: 0; cursor: pointer; perspective: 1000px; display: block; text-align: left; font: inherit; color: var(--text); }
+.cd-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 22px 20px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 10px 30px -18px rgba(0, 0, 0, .35); overflow: auto; }
+.cd-back { transform: rotateY(180deg); background: var(--accent-soft); border-color: var(--accent); }
+.cd-card .cd-front, .cd-card .cd-back { transition: transform .5s var(--ease); }
+.cd-card.flipped .cd-front { transform: rotateY(180deg); }
+.cd-card.flipped .cd-back { transform: rotateY(360deg); }
+:root[data-motion="off"] .cd-card .cd-front, :root[data-motion="off"] .cd-card .cd-back { transition: none; }
+.cd-k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.cd-t { font-size: 18px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cd-hint { margin-top: auto; }
+.cd-grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+.cd-grades .btn { display: flex; flex-direction: column; gap: 2px; min-height: 52px; padding: 6px 4px; }
+.cd-grades .btn small { font-size: 11px; color: var(--muted); font-weight: 400; }
+.cd-g.g-again { border-color: var(--danger); color: var(--danger); } .cd-g.g-easy { border-color: var(--accent); color: var(--accent); }
+.cd-flipbtn { justify-content: center; margin-top: 12px; }
+.cd-done { text-align: center; padding: 12px 0 4px; }
+.cd-done .cd-big { font-size: 40px; }
+.cd-done .btn-row { justify-content: center; margin-top: 10px; }
+@media (max-width: 480px) {
+  .dk-add, .dk-new, .dk-rename, .dk-edit { grid-template-columns: 1fr; }
+  .cd-grades .btn { min-height: 48px; }
+}
+
+/* ==========================================================================
    WRAPPED — story slides
    ========================================================================== */
 .wrapped-banner { display: flex; align-items: center; gap: 14px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px;
@@ -3580,6 +3624,7 @@ body.first-load #todayBar { opacity: 0; }
     <div class="seg rem-seg" id="remSeg" role="group" aria-label="Show"></div>
     <div id="remBody"></div>
     <div id="todoBody" class="hidden"></div>
+    <div id="cardsBody" class="hidden"></div>
     <p class="rem-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
       <span>Web reminders only fire while Pomodorolist is open — a background tab is fine, a closed tab or a locked phone is not. Use the calendar button on a reminder to add it to your phone’s calendar, which can remind you even when the app is closed.</span></p>
   </section>
@@ -3808,6 +3853,10 @@ body.first-load #todayBar { opacity: 0; }
           <div><div>Water &amp; stretch nudges</div><div class="desc">A gentle reminder after about 90 minutes of focus</div></div>
           <input type="checkbox" id="setWater" aria-label="Water and stretch nudges">
         </div>
+        <div class="setting" data-k="flashcards break review cards quick five pomeo offer">
+          <div><div>Flashcards on breaks</div><div class="desc">Pomeo offers up to 5 due cards when a break starts (never during focus)</div></div>
+          <input type="checkbox" id="setBreakCards" aria-label="Flashcards on breaks">
+        </div>
         <div class="setting" data-k="exams countdown test date">
           <div><div>Exams</div><div class="desc">Countdown on the Timer screen. You enter the dates.</div></div>
           <button class="btn small" id="examsBtn">Manage exams</button>
@@ -3988,6 +4037,8 @@ body.first-load #todayBar { opacity: 0; }
   <input type="text" id="cfType" class="hidden" autocomplete="off" aria-label="Type to confirm">
   <div class="btn-row" style="justify-content:flex-end;margin-top:12px"><button class="btn" id="cfNo" type="button">Cancel</button><button class="btn primary" id="cfOk" type="button">OK</button></div>
 </dialog>
+<dialog id="deckDlg" class="deck-dlg" aria-labelledby="deckDlgTitle"><div id="deckDlgBody"></div></dialog>
+<dialog id="cardDlg" class="card-dlg" aria-label="Flashcard review"><div id="cardDlgBody"></div></dialog>
 <dialog id="todoDlg" class="todo-dlg" aria-labelledby="todoDlgTitle">
   <h2 id="todoDlgTitle" style="margin:0 0 10px">New task</h2>
   <label class="lbl" for="tdTitle">Task</label><input type="text" id="tdTitle" maxlength="120" autocomplete="off" placeholder="e.g. Finish chapter 5 problems">
@@ -4314,6 +4365,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    32. DISTRACTION PARKING LOT — jot a thought without stopping the timer.
    33. GARDEN (v1.15) — plots, seeds, growth from focus minutes, harvests, decor, almanac.
    33b. POMEO'S ROOM (v1.15) — room items, placement, saved rooms, share image.
+   33c. FLASHCARDS (v1.15) — decks, cards, review with spaced repetition, break offer.
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
    36. SUBTASKS — an optional checklist for the current focus session.
@@ -4809,7 +4861,7 @@ function defaultState() {
     version: 2,
     settings: { goalMin: 60, weekStart: 1, sound: true, notify: true, theme: 'auto', autoStart: false, gamification: true, ambientVolume: 0.5,
                 shareActivity: true, shareNames: true, globalBoard: false,
-                pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, dailyTip: true,
+                pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, dailyTip: true,
                 bossMode: 'solo', shortcuts: true, revIntervals: [1, 3, 7, 21, 45],
                 minPomeo: true, energy: 'always', useCase: '', atmosphere: true, ripen: true, festive: true, todRain: false },
     presets: [
@@ -4841,6 +4893,8 @@ function defaultState() {
     cardPrefs: {},  // player card: banner, featured, what it shows — { key: { v, u } } (see PLAYER CARD)
     roomPrefs: {},  // Pomeo's room: what sits in each slot — { slot: { v, u } } (see POMEO'S ROOM)
     roomSets: [],   // saved rooms (synced item by item)
+    decks: [],      // flashcard decks (see FLASHCARDS)
+    cards: [],      // flashcards, synced item by item
     game: normalizeGame(null),  // purchases, equipped items, claimed rewards, used streak freezes
     // Device-only fields (never uploaded):
     timer: { phase: 'focus', round: 1, status: 'idle', endAt: 0, remaining: 0, planned: 0, focusStartedAt: 0, name: '', subtasks: [] },
@@ -4864,7 +4918,7 @@ function hydrate(obj) {
   const out = { ...def, ...obj };
   for (const k of ['settings', 'timer', 'ui']) out[k] = { ...def[k], ...(obj[k] || {}) };
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
-  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets']) if (!Array.isArray(out[k])) out[k] = [];
+  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
@@ -4992,6 +5046,8 @@ function profileFromState() {
     cardPrefs: S.cardPrefs,
     roomPrefs: S.roomPrefs,
     roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
+    decks: S.decks.slice(0, DECK_MAX),
+    cards: S.cards.slice(0, CARD_MAX),
     clanRem: S.clanRem,
     // Stored for reference only; the app always recalculates streaks from the session log.
     streak: { current: cur, longest, goalMin: S.settings.goalMin, today: dayKey(new Date()) },
@@ -5465,6 +5521,7 @@ function mergeData(obj) {
   for (const [k, v] of Object.entries(src.energy)) if (!S.energy[k] && v >= 1 && v <= 4) S.energy[k] = Math.round(v);
   for (const k of ['revisions', 'exams', 'parked', 'abandoned', 'subTemplates']) for (const x of src[k]) if (x && x.id && !S[k].some(y => y.id === x.id)) S[k].push(x);
   for (const [k, v] of Object.entries(sg.trophies)) if (!g.trophies[k]) g.trophies[k] = v;
+  for (const f of ['decks', 'cards']) for (const x of src[f]) { if (!x || !x.id) continue; const i = S[f].findIndex(y => y && y.id === x.id); if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() }); else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x; }   // flashcards: by id, newer wins
   S.roomPrefs = mergeCardPrefs(S.roomPrefs, src.roomPrefs).prefs;   // Pomeo's room: the newer choice per slot
   for (const x of src.roomSets) if (x && x.id && x.name && !S.roomSets.some(y => y.id === x.id)) S.roomSets.push({ ...x, u: +x.u || Date.now() });
   // Garden (1.15): plants and purchases by id — a copy already here keeps the newer one (water maps are joined); nothing is doubled.
@@ -5686,7 +5743,7 @@ function finishPhase(reason) {
   t.remaining = 0;
   t.endAt = 0;
 
-  if (reason === 'complete' && wasFocus) setTimeout(pomeoBreakStart, 5600);
+  if (reason === 'complete' && wasFocus) { setTimeout(pomeoBreakStart, 5600); setTimeout(offerBreakCards, 11500); }   // flashcards: offered on the break, never during focus
   if (reason === 'complete') {
     if (!endSoundRang(endedAt)) playEndSound();   // the booked chime may have rung already (on time, in a background tab)
     if (wasFocus) notify('Focus complete', `Nice work on “${t.name || 'Untitled'}”. Time for a break.`);
@@ -6235,6 +6292,7 @@ function renderSettings() {
   $('#setPomeo').checked = st.pomeo !== false;
   $('#setPomeoTalk').value = st.pomeoTalk || 'sometimes';
   $('#setWater').checked = st.waterNudge !== false;
+  $('#setBreakCards').checked = st.breakCards !== false;
   $('#setTip').checked = st.dailyTip !== false;
   $('#setKeys').checked = st.shortcuts !== false;
   renderUisSettings();
@@ -9221,6 +9279,7 @@ function renderReminders() {
   if (!body || !USER) return;
   renderRemSeg();
   if (remView() === 'todo') { clearOldTodos(); renderTodos(); return; }
+  if (remView() === 'cards') { renderCards(); return; }
   const perm = 'Notification' in window ? Notification.permission : 'unsupported';
   const askPerm = S.reminders.length && perm === 'default' && localStorage.getItem(REM_PERM_KEY) !== '1';
   $('#remPerm').innerHTML = askPerm ? `<div class="card perm-card">${BELL_SVG.replace('<svg', '<svg width="22" height="22"')}
@@ -9371,6 +9430,7 @@ $('#calClose').addEventListener('click', () => $('#calDlg').close());
 $('#tab-reminders').addEventListener('click', e => {
   const t = e.target;
   if (onTodoClick(e)) return;
+  if (t.closest('#remAdd') && remView() === 'cards') { openNewDeck(); return; }
   if (t.closest('#remAdd') && remView() === 'todo') { openTodoForm(); return; }
   if (t.closest('[data-remadd], #remAdd')) { openRemForm(); return; }
   if (t.closest('#permAllow')) {
@@ -11355,6 +11415,282 @@ async function saveRoomImage(share = false) {
 })();
 
 /* ==========================================================================
+   FLASHCARDS (v1.15) — decks and cards for break-time review.
+   S.decks [{ id, v, name, subject, u }] and S.cards [{ id, v, deck, f, b, due, ivl, ease, reps, lapses, u }]
+   both sync item by item (SYNC_LISTS). Spaced repetition is a small SM-2:
+   Again → see it again this session, interval 0 · Hard → ×1.2 · Good → ×2.5
+   (ease) · Easy → ×ease×1.3, first intervals 1 / 3 days; `due` is a day key.
+   On a break Pomeo offers "Quick 5 cards?" when cards are due (never while a
+   focus block runs; a setting turns it off).
+   ========================================================================== */
+const CARD_MAX = 2000, DECK_MAX = 60;
+const cardsOn = () => !!USER;
+const deckById = id => S.decks.find(d => d.id === id);
+const cardDue = (c, tk = todayKey()) => !c.due || c.due <= tk;
+const dueCards = (deckId = '', tk = todayKey()) => S.cards.filter(c => (!deckId || c.deck === deckId) && cardDue(c, tk));
+const deckCards = id => S.cards.filter(c => c.deck === id);
+function addDeck(name, subject = '') {
+  name = String(name || '').trim().slice(0, 60);
+  if (!name) return null;
+  if (S.decks.length >= DECK_MAX) { toast(`Up to ${DECK_MAX} decks`); return null; }
+  const d = { id: 'dk' + uid(), v: 1, name, subject: String(subject || '').trim().slice(0, 30), at: Date.now() };
+  S.decks.push(d);
+  save();
+  return d;
+}
+function editDeck(id, fields) {
+  const d = deckById(id);
+  if (!d) return false;
+  if (fields.name !== undefined) d.name = String(fields.name).trim().slice(0, 60) || d.name;
+  if (fields.subject !== undefined) d.subject = String(fields.subject).trim().slice(0, 30);
+  save();
+  return true;
+}
+function deleteDeck(id) {
+  const d = deckById(id);
+  if (!d) return;
+  const cards = deckCards(id);
+  S.decks = S.decks.filter(x => x.id !== id);
+  S.cards = S.cards.filter(c => c.deck !== id);
+  save();
+  renderCards();
+  toastUndo(`Deleted “${d.name}”${cards.length ? ` and ${cards.length} card${cards.length === 1 ? '' : 's'}` : ''}`, () => {
+    if (!deckById(d.id)) { S.decks.push(d); for (const c of cards) if (!S.cards.some(x => x.id === c.id)) S.cards.push(c); save(); renderCards(); }
+  });
+}
+function addCard(deck, f, b) {
+  f = String(f || '').trim().slice(0, 300); b = String(b || '').trim().slice(0, 600);
+  if (!deckById(deck) || !f) return null;
+  if (S.cards.length >= CARD_MAX) { toast(`Up to ${CARD_MAX} cards`); return null; }
+  const c = { id: 'cd' + uid(), v: 1, deck, f, b, due: '', ivl: 0, ease: 2.5, reps: 0, lapses: 0, at: Date.now() };
+  S.cards.push(c);
+  return c;
+}
+/** "front | back" per line (also "front — back" or a tab); lines without a back become a card with an empty back. */
+function bulkAddCards(deck, text) {
+  let n = 0;
+  for (const line of String(text || '').split('\n')) {
+    const m = line.split(/\s\|\s|\t|\s—\s|\s::\s/);
+    const f = (m[0] || '').trim(), b = m.slice(1).join(' | ').trim();
+    if (f && addCard(deck, f, b)) n++;
+  }
+  if (n) save();
+  return n;
+}
+function editCard(id, f, b) {
+  const c = S.cards.find(x => x.id === id);
+  if (!c) return false;
+  c.f = String(f || '').trim().slice(0, 300) || c.f; c.b = String(b || '').trim().slice(0, 600);
+  save();
+  return true;
+}
+function deleteCard(id) {
+  const c = S.cards.find(x => x.id === id);
+  if (!c) return;
+  S.cards = S.cards.filter(x => x.id !== id);
+  save();
+  renderCards();
+  toastUndo('Card deleted', () => { if (!S.cards.some(x => x.id === c.id)) { S.cards.push(c); save(); renderCards(); } });
+}
+/** Grade a card: again | hard | good | easy. Returns the new interval in days. */
+function gradeCard(c, g, now = new Date()) {
+  const tk = dayKey(now);
+  c.reps = (+c.reps || 0) + 1;
+  let ivl = +c.ivl || 0, ease = +c.ease || 2.5;
+  if (g === 'again') { ivl = 0; ease = Math.max(1.3, ease - 0.2); c.lapses = (+c.lapses || 0) + 1; }
+  else if (g === 'hard') { ivl = ivl < 1 ? 1 : Math.max(ivl + 1, Math.round(ivl * 1.2)); ease = Math.max(1.3, ease - 0.15); }
+  else if (g === 'good') { ivl = ivl < 1 ? 1 : ivl < 3 ? 3 : Math.round(ivl * ease); }
+  else { ivl = ivl < 1 ? 3 : Math.round(Math.max(ivl * ease * 1.3, ivl + 2)); ease = Math.min(3.2, ease + 0.15); }
+  ivl = Math.min(ivl, 365);
+  c.ivl = ivl; c.ease = Math.round(ease * 100) / 100;
+  c.due = ivl ? dayKey(addDays(startOfDay(now), ivl)) : tk;
+  c.last = +now;
+  return ivl;
+}
+
+/* ---------- Review session (a dialog) ---------- */
+const RV = { q: [], i: 0, done: 0, again: 0, deck: '', flipped: false, open: false, start: 0 };
+function startReview(deckId = '', limit = 0) {
+  if (!cardsOn() || focusActive()) return false;
+  let q = dueCards(deckId);
+  if (!q.length && deckId) q = deckCards(deckId).slice();   // nothing due: run through the deck anyway
+  if (!q.length) { toast('No cards due — nice!', 2000, true); return false; }
+  q = q.slice().sort((a, b) => (a.due || '') < (b.due || '') ? -1 : 1);
+  if (limit) q = q.slice(0, limit);
+  Object.assign(RV, { q, i: 0, done: 0, again: 0, deck: deckId, flipped: false, open: true, start: Date.now() });
+  renderReview();
+  const dlg = $('#cardDlg');
+  if (!dlg.open) dlg.showModal();
+  return true;
+}
+function renderReview() {
+  const el = $('#cardDlgBody'), c = RV.q[RV.i];
+  if (!el) return;
+  if (!c) {
+    const mins = Math.max(1, Math.round((Date.now() - RV.start) / 60000));
+    el.innerHTML = `<div class="cd-done"><div class="cd-big">${RV.done ? '🎉' : '🙂'}</div><h2>${RV.done ? `${RV.done} card${RV.done === 1 ? '' : 's'} reviewed` : 'All done'}</h2>
+      <p class="desc">${RV.again ? `${RV.again} to see again soon · ` : ''}${dueCards().length ? `${dueCards().length} still due today` : 'Nothing else due today'}</p>
+      <div class="btn-row">${dueCards().length ? '<button class="btn primary" data-cdmore>Keep going</button>' : ''}<button class="btn" data-cdclose>Close</button></div></div>`;
+    return;
+  }
+  const d = deckById(c.deck);
+  el.innerHTML = `<div class="cd-top"><span class="lbl">${esc(d ? d.name : 'Deck')} · ${RV.i + 1} / ${RV.q.length}</span><button class="iconbtn" data-cdclose aria-label="Close">✕</button></div>
+    <button type="button" class="cd-card${RV.flipped ? ' flipped' : ''}" data-cdflip aria-live="polite" aria-label="${RV.flipped ? 'Back of the card. Rate how well you knew it.' : 'Front of the card. Tap to flip.'}">
+      <span class="cd-face cd-front"><span class="cd-k">Question</span><span class="cd-t">${esc(c.f)}</span><span class="lbl cd-hint">Tap to flip</span></span>
+      <span class="cd-face cd-back"><span class="cd-k">Answer</span><span class="cd-t">${c.b ? esc(c.b) : '<i class="muted">(no answer written)</i>'}</span></span></button>
+    <div class="cd-grades${RV.flipped ? '' : ' hidden'}">${[['again', 'Again', 'see it again now'], ['hard', 'Hard', ''], ['good', 'Good', ''], ['easy', 'Easy', '']].map(([g, n]) => `<button class="btn cd-g g-${g}" data-cdgrade="${g}">${n}<small>${gradePreview(c, g)}</small></button>`).join('')}</div>
+    ${RV.flipped ? '' : '<div class="btn-row cd-flipbtn"><button class="btn primary" data-cdflip>Show answer</button></div>'}`;
+}
+function gradePreview(c, g) {
+  const t = { ...c }, ivl = gradeCard(t, g);
+  return ivl === 0 ? 'again' : ivl === 1 ? '1 day' : ivl < 30 ? `${ivl} days` : ivl < 365 ? `${Math.round(ivl / 30)} mo` : '1 yr';
+}
+function reviewGrade(g) {
+  const c = RV.q[RV.i];
+  if (!c || !RV.flipped) return;
+  if (!isPreview()) { gradeCard(c, g); save(); }
+  RV.done++;
+  if (g === 'again') { RV.again++; RV.q.push(c); }
+  RV.i++; RV.flipped = false;
+  uiSound(g === 'again' ? 'off' : 'tap');
+  renderReview();
+  if (!RV.q[RV.i]) { uiSound('harvest', { always: true }); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
+}
+function closeReview() { RV.open = false; const d = $('#cardDlg'); if (d.open) d.close(); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
+
+/* ---------- Break offer: "Quick 5 cards?" ---------- */
+let lastCardOffer = 0;
+function offerBreakCards() {
+  if (!cardsOn() || S.settings.breakCards === false || isPreview() || focusActive()) return false;
+  const due = dueCards().length;
+  if (!due || Date.now() - lastCardOffer < 20 * 60000) return false;
+  lastCardOffer = Date.now();
+  const n = Math.min(5, due);
+  if (!(pomeoOn() && S.ui.tab === 'timer' && !document.body.classList.contains('zen'))) { toast(`${due} flashcard${due === 1 ? '' : 's'} due — review them in Reminders → Flashcards`, 4200, false, { go: { tab: 'reminders' } }); return true; }
+  pomeoSay(`Quick ${n} card${n === 1 ? '' : 's'} while you rest? ${due} due 🃏`, { kind: 'nudge', ms: 14000, closable: true,
+    actions: [[`Review ${n}`, () => { if (!focusActive()) startReview('', 5); }, true], ['Not now', () => {}]] });
+  return true;
+}
+
+/* ---------- Rendering: the Flashcards view in the Reminders tab ---------- */
+function renderCardsDot() { if (S.ui.tab === 'reminders') renderRemSeg(); }
+function cardsSection() {
+  const tk = todayKey(), due = dueCards().length, total = S.cards.length;
+  const decks = S.decks.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const rows = decks.map(d => {
+    const cs = deckCards(d.id), dd = cs.filter(c => cardDue(c, tk)).length, learned = cs.filter(c => +c.ivl >= 21).length;
+    return `<li class="rem deck" data-did="${esc(d.id)}"><div class="rem-fg">
+      <div class="rem-main" data-dopen><div class="rt">${esc(d.name)}${d.subject ? ` <span class="td-tag" style="--tc:${esc(colorFor(d.subject))}">${esc(d.subject)}</span>` : ''}</div>
+        <div class="rs td-meta"><span>${cs.length} card${cs.length === 1 ? '' : 's'}</span>${dd ? `<span class="td-due today">${dd} due</span>` : cs.length ? '<span>nothing due</span>' : ''}${learned ? `<span>${learned} learned</span>` : ''}</div></div>
+      <div class="rem-acts"><button class="btn small primary" data-dreview="${esc(d.id)}"${cs.length ? '' : ' disabled'}>${dd ? `Review ${dd}` : 'Practise'}</button><button class="iconbtn" data-dedit="${esc(d.id)}" title="Edit deck" aria-label="Edit ${esc(d.name)}">${EDIT_SVG}</button></div></div></li>`;
+  }).join('');
+  return `<div class="card cards-card">
+    <div class="row between" style="flex-wrap:wrap;gap:8px"><div><b>${due}</b> due today · ${total} card${total === 1 ? '' : 's'} in ${decks.length} deck${decks.length === 1 ? '' : 's'}</div>
+      <div class="btn-row">${due ? '<button class="btn small primary" data-dreview="">Review all due</button>' : ''}<button class="btn small" data-dnew>+ New deck</button></div></div>
+    <form class="dk-new hidden" id="deckNew" autocomplete="off"><input type="text" id="dnName" maxlength="60" placeholder="Deck name, e.g. Organic chemistry" aria-label="Deck name" required><input type="text" id="dnSubject" list="tdTagList" maxlength="30" placeholder="Subject (optional)" aria-label="Subject"><span class="btn-row"><button class="btn primary small" type="submit">Create</button><button class="btn small" type="button" data-dncancel>Cancel</button></span></form>
+    ${decks.length ? `<ul class="rem-list deck-list">${rows}</ul>` : `<div class="empty">${pomeoOn() ? pomeoScene('bag') : ''}No decks yet. Make one, add cards as “front | back”, and Pomeo will offer a quick review on your breaks.</div>`}
+    <p class="lbl" style="margin:10px 0 0">Again · Hard · Good · Easy set when a card comes back (1 day, 3 days, then longer). ${S.settings.breakCards === false ? 'Break offers are off in Settings.' : 'Pomeo offers up to 5 due cards on breaks — never during focus.'}</p></div>`;
+}
+function renderCards() {
+  const el = $('#cardsBody');
+  if (!el || !USER) return;
+  el.innerHTML = cardsSection();
+  renderRemSeg();
+}
+/* ---------- Deck dialog: cards list, add (single + bulk), edit, delete ---------- */
+let deckOpen = '';
+function openDeckDlg(id) {
+  const d = deckById(id);
+  if (!d) return;
+  deckOpen = id;
+  renderDeckDlg();
+  const dlg = $('#deckDlg');
+  if (!dlg.open) dlg.showModal();
+}
+function renderDeckDlg() {
+  const d = deckById(deckOpen), el = $('#deckDlgBody');
+  if (!d || !el) return;
+  const cs = deckCards(d.id).slice().sort((a, b) => (b.at || 0) - (a.at || 0)), tk = todayKey();
+  el.innerHTML = `<div class="cd-top"><div><h2 id="deckDlgTitle" style="margin:0">${esc(d.name)}</h2><div class="lbl">${cs.length} card${cs.length === 1 ? '' : 's'} · ${cs.filter(c => cardDue(c, tk)).length} due${d.subject ? ` · ${esc(d.subject)}` : ''}</div></div><button class="iconbtn" data-dkclose aria-label="Close">✕</button></div>
+    <form class="dk-add" id="dkAdd" autocomplete="off"><input type="text" id="dkFront" maxlength="300" placeholder="Front (question)" aria-label="Front"><input type="text" id="dkBack" maxlength="600" placeholder="Back (answer)" aria-label="Back"><button class="btn primary small" type="submit">Add</button></form>
+    <details class="dk-bulk"><summary>Add many at once</summary><textarea id="dkBulk" rows="4" placeholder="One card per line:&#10;Capital of France | Paris&#10;Speed of light | 3 × 10⁸ m/s"></textarea><div class="btn-row"><button class="btn small" type="button" data-dkbulk>Add all</button></div></details>
+    ${cs.length ? `<ul class="rem-list dk-list">${cs.map(c => `<li class="rem dk-card" data-cid="${esc(c.id)}"><div class="rem-fg"><div class="rem-main"><div class="rt">${esc(c.f)}</div><div class="rs td-meta"><span>${esc(c.b || '—')}</span><span class="${cardDue(c, tk) ? 'td-due today' : ''}">${!c.reps ? 'new' : cardDue(c, tk) ? 'due' : 'due ' + c.due}</span></div></div>
+      <div class="rem-acts"><button class="iconbtn" data-cedit="${esc(c.id)}" title="Edit" aria-label="Edit card">${EDIT_SVG}</button><button class="iconbtn" data-cdel="${esc(c.id)}" title="Delete" aria-label="Delete card">✕</button></div></div></li>`).join('')}</ul>` : '<div class="empty">No cards yet — add one above.</div>'}
+    <form class="dk-rename hidden" id="dkRename" autocomplete="off"><input type="text" id="drName" maxlength="60" value="${esc(d.name)}" aria-label="Deck name" required><input type="text" id="drSubject" maxlength="30" value="${esc(d.subject || '')}" placeholder="Subject (optional)" aria-label="Subject"><span class="btn-row"><button class="btn primary small" type="submit">Save</button><button class="btn small" type="button" data-drcancel>Cancel</button></span></form>
+    <div class="btn-row" style="justify-content:space-between;margin-top:12px"><span class="btn-row"><button class="btn small" data-drename="${esc(d.id)}">Rename</button><button class="btn danger small" data-ddel="${esc(d.id)}">Delete deck</button></span><button class="btn primary small" data-dreview="${esc(d.id)}"${cs.length ? '' : ' disabled'}>Review</button></div>`;
+}
+(() => {
+  // the Flashcards view
+  $('#tab-reminders').addEventListener('click', e => {
+    const t = e.target;
+    if (!t.closest('#cardsBody')) return;
+    const rv = t.closest('[data-dreview]'); if (rv) { startReview(rv.dataset.dreview); return; }
+    if (t.closest('[data-dnew]')) { openNewDeck(); return; }
+    if (t.closest('[data-dncancel]')) { $('#deckNew').classList.add('hidden'); return; }
+    const ed = t.closest('[data-dedit], [data-dopen]');
+    if (ed) { const li = t.closest('li[data-did]'); if (li) openDeckDlg(li.dataset.did); }
+  });
+  $('#tab-reminders').addEventListener('submit', e => {
+    if (e.target.id !== 'deckNew') return;
+    e.preventDefault();
+    const d = addDeck($('#dnName').value, $('#dnSubject').value);
+    if (!d) return;
+    renderCards();
+    openDeckDlg(d.id);
+  });
+  const dk = $('#deckDlg');
+  dk.addEventListener('click', e => {
+    const t = e.target;
+    if (t === dk || t.closest('[data-dkclose]')) { dk.close(); return; }
+    const rv = t.closest('[data-dreview]'); if (rv) { dk.close(); startReview(rv.dataset.dreview); return; }
+    if (t.closest('[data-dkbulk]')) { const n = bulkAddCards(deckOpen, $('#dkBulk').value); toast(n ? `${n} card${n === 1 ? '' : 's'} added` : 'Nothing to add — one card per line, “front | back”', 2200, !!n); if (n) { renderDeckDlg(); renderCards(); } return; }
+    const ce = t.closest('[data-cedit]'); if (ce) { const li = t.closest('li[data-cid]'), c = S.cards.find(x => x.id === ce.dataset.cedit); if (!li || !c) return;
+      li.querySelector('.rem-fg').innerHTML = `<form class="dk-edit" data-ceditform="${esc(c.id)}" autocomplete="off"><input type="text" name="f" maxlength="300" value="${esc(c.f)}" aria-label="Front" required><input type="text" name="b" maxlength="600" value="${esc(c.b)}" aria-label="Back"><span class="btn-row"><button class="btn primary small" type="submit">Save</button><button class="btn small" type="button" data-cecancel>Cancel</button></span></form>`;
+      li.querySelector('input').focus(); return; }
+    if (t.closest('[data-cecancel]')) { renderDeckDlg(); return; }
+    if (t.closest('[data-drcancel]')) { $('#dkRename').classList.add('hidden'); return; }
+    const cd = t.closest('[data-cdel]'); if (cd) { deleteCard(cd.dataset.cdel); renderDeckDlg(); return; }
+    const rn = t.closest('[data-drename]'); if (rn) { $('#dkRename').classList.remove('hidden'); $('#drName').focus(); return; }
+    const dd = t.closest('[data-ddel]'); if (dd) { dk.close(); deleteDeck(dd.dataset.ddel); return; }
+  });
+  dk.addEventListener('submit', e => {
+    if (e.target.id === 'dkRename') { e.preventDefault(); editDeck(deckOpen, { name: $('#drName').value, subject: $('#drSubject').value }); renderDeckDlg(); renderCards(); return; }
+    if (e.target.dataset.ceditform) { e.preventDefault(); editCard(e.target.dataset.ceditform, e.target.f.value, e.target.b.value); renderDeckDlg(); renderCards(); return; }
+    if (e.target.id !== 'dkAdd') return;
+    e.preventDefault();
+    const c = addCard(deckOpen, $('#dkFront').value, $('#dkBack').value);
+    if (!c) { toast('Write the front of the card first'); return; }
+    save();
+    $('#dkFront').value = ''; $('#dkBack').value = ''; $('#dkFront').focus();
+    renderDeckDlg(); renderCards();
+    uiSound('tap');
+  });
+  // review dialog
+  const cd = $('#cardDlg');
+  cd.addEventListener('click', e => {
+    const t = e.target;
+    if (t.closest('[data-cdclose]')) { closeReview(); return; }
+    if (t.closest('[data-cdmore]')) { startReview(RV.deck, 0); return; }
+    if (t.closest('[data-cdflip]')) { RV.flipped = !RV.flipped; uiSound('swoosh'); renderReview(); return; }
+    const g = t.closest('[data-cdgrade]'); if (g) { reviewGrade(g.dataset.cdgrade); return; }
+  });
+  cd.addEventListener('cancel', e => { e.preventDefault(); closeReview(); });
+  document.addEventListener('keydown', e => {   // on the document: after a grade the focused button is gone, so the dialog itself gets no key events
+    if (!cd.open || e.target.closest('input, textarea')) return;
+    if (e.key === ' ' || e.key === 'Enter') { if (!RV.flipped && RV.q[RV.i] && !e.target.closest('button')) { e.preventDefault(); RV.flipped = true; renderReview(); } return; }
+    const g = { 1: 'again', 2: 'hard', 3: 'good', 4: 'easy' }[e.key];
+    if (g && RV.flipped && RV.q[RV.i]) { e.preventDefault(); reviewGrade(g); }
+  });
+})();
+function openNewDeck() {
+  const f = $('#deckNew');
+  if (!f) return;
+  f.classList.remove('hidden');
+  $('#tdTagList').innerHTML = [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 30).map(n => `<option value="${esc(n)}">`).join('');
+  setTimeout(() => $('#dnName').focus(), 30);
+}
+
+/* ==========================================================================
    WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    Story slides computed on the device from the session log.
    ========================================================================== */
@@ -12395,6 +12731,7 @@ function cmdList(q) {
   if (m && +m[1] >= 1 && +m[1] <= 240 && /start|focus|min|^\d/.test(q) && !S.presets.some(p => p.focus === +m[1])) add('⏱️', `Start a ${+m[1]}-minute focus`, 'New preset', () => cmdStartMinutes(+m[1]), `start ${m[1]} min`);
   add('➕', 'Add reminder', 'Reminders', () => { S.ui.remView = 'rem'; showTab('reminders'); openRemForm(); }, 'new reminder');
   add('☑️', 'Add a task', 'To-do', () => { S.ui.remView = 'todo'; showTab('reminders'); openTodoForm(); }, 'todo to-do task new');
+  add('🃏', dueCards().length ? `Review ${dueCards().length} flashcard${dueCards().length === 1 ? '' : 's'}` : 'Flashcards', 'Flashcards', () => { if (!dueCards().length || !startReview('')) { S.ui.remView = 'cards'; showTab('reminders'); } }, 'flashcards cards deck revise review');
   add('🛡️', 'Open my clan', 'Clan', () => showTab('clan'), 'clan study group crew team');
   if (inClan() && !inLive()) add('🔴', 'Study now with my clan', 'Clan', () => { showTab('clan'); openClanSched(null, true); }, 'clan live group study together');
   add('☑️', 'Add subtask', 'Timer', focusSubAdd, 'new subtask checklist');
@@ -13064,7 +13401,7 @@ const TIPS_KEY = 'pomodorolist-tips-seen';
 const TIPS = {
   stats: () => 'Your stats live here. Pick Day, Week, Month or Year, and check in after sessions to unlock focus insights.',
   garden: () => 'Your garden! Finished focus blocks water the plants. Tap an empty plot to plant a seed, tap a ripe one to harvest.',
-  reminders: () => 'Plan study blocks here. I’ll pop up when it’s time — and you can add them to your phone’s calendar.',
+  reminders: () => 'Plan study blocks here, keep a to-do list, and make flashcards — I’ll offer a quick review on your breaks.',
   quests: () => 'A new boss every week! Every focus minute you finish is 1 damage. Team up with friends for a bigger one.',
   shop: () => 'Spend coins on themes, sounds, profile pictures and outfits for me 🍅',
   friends: () => 'Add friends by username, send kudos and see who’s focusing right now.',
@@ -13506,6 +13843,9 @@ function demoDocs() {
     subTemplates: [], energy,
     ...demoGarden(sessions),
     roomPrefs: Object.fromEntries(['wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat'].map(id => [roomSlotOf(id), { v: id, u: Date.now() - 3 * 864e5 }])),
+    decks: [{ id: 'demo_dk1', v: 1, name: 'Organic chemistry', subject: 'Chemistry', at: Date.now() - 9 * 864e5, u: Date.now() - 9 * 864e5 }, { id: 'demo_dk2', v: 1, name: 'Physics formulas', subject: 'Physics', at: Date.now() - 6 * 864e5, u: Date.now() - 6 * 864e5 }],
+    cards: [['demo_dk1', 'Aldol condensation product', 'β-hydroxy aldehyde / ketone', '', 0], ['demo_dk1', 'Tollens’ test is positive for', 'Aldehydes (silver mirror)', '', 0], ['demo_dk1', 'Clemmensen reduction reagent', 'Zn–Hg / conc. HCl', dayKey(addDays(startOfDay(now), 3)), 3], ['demo_dk1', 'Cannizzaro reaction needs', 'An aldehyde with no α-hydrogen', dayKey(startOfDay(now)), 1], ['demo_dk1', 'Fehling’s solution colour change', 'Blue → brick-red Cu₂O', '', 0],
+      ['demo_dk2', 'Kinetic energy', '½ m v²', dayKey(startOfDay(now)), 1], ['demo_dk2', 'Torque', 'τ = r × F', '', 0], ['demo_dk2', 'Snell’s law', 'n₁ sin θ₁ = n₂ sin θ₂', dayKey(addDays(startOfDay(now), 12)), 12], ['demo_dk2', 'Escape velocity', '√(2GM/R)', '', 0]].map(([deck, f, b, due, ivl], i) => ({ id: 'demo_cd' + i, v: 1, deck, f, b, due, ivl, ease: 2.5, reps: ivl ? 2 : 0, lapses: 0, at: Date.now() - (8 - i) * 864e5, u: Date.now() - 864e5 })),
     roomSets: [{ id: 'demo_rs1', v: 1, name: 'Study mode', slots: { wall: 'wall_sage', floor: 'floor_tiles', rug: 'rug_none', desk: 'desk_oak', lamp: 'lamp_desk', shelf: 'shelf_books', plant: 'plant_monstera', poster: 'poster_space', window: 'window_city', pet: 'pet_cat' }, u: Date.now() - 2 * 864e5 }],
     todos: [['Finish HC Verma ch. 7 problems', 0, 'high', 'Physics', [['Q1–10', true], ['Q11–20', false], ['Check answers', false]]], ['Revise organic named reactions', 1, 'med', 'Chemistry', []],
       ['Integration practice set', -1, 'high', 'Maths', []], ['Make biology flashcards', 3, 'low', 'Biology', []], ['Mock test review', null, 'med', 'JEE', []]]
@@ -13595,13 +13935,13 @@ function startPreview() {
 }
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
-const PV_BLOCK = ['[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
+const PV_BLOCK = ['[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
-const PV_WHY = [['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
+const PV_WHY = [['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
@@ -14278,7 +14618,7 @@ function paintRipe(p) {
    which Firestore merges key by key on write — two devices never overwrite each other.
    Nothing here needs new security rules: it all lives in users/{uid}.
    ========================================================================== */
-const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets'];
+const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards'];
 /** Lists whose two copies of one item are combined rather than the newer one simply winning. */
 const LIST_MERGE = { plants: (win, lose) => mergePlant(win, lose) };
 const syncSnap = {};   // field -> Map(id -> the item as last saved or merged)
@@ -14681,6 +15021,7 @@ $('#setGlass').addEventListener('change', e => { setGlass(e.target.value); toast
 $('#setPomeo').addEventListener('change', e => { S.settings.pomeo = e.target.checked; save(); renderPomeo(); if (!e.target.checked) hideBubble(); });
 $('#setPomeoTalk').addEventListener('change', e => { S.settings.pomeoTalk = e.target.value; save(); });
 $('#setWater').addEventListener('change', e => { S.settings.waterNudge = e.target.checked; save(); });
+$('#setBreakCards').addEventListener('change', e => { S.settings.breakCards = e.target.checked; save(); if (S.ui.tab === 'reminders') renderCards(); });
 $('#setKeys').addEventListener('change', e => { S.settings.shortcuts = e.target.checked; save(); });
 $('#examsBtn').addEventListener('click', openExams);
 $('#setRevInt').addEventListener('change', e => {
@@ -15677,7 +16018,7 @@ function holdForFocus(kind, key, run) {
 }
 /** Something on screen the next pop-up must not cover. */
 const guardBusy = () => !!document.querySelector('dialog[open]') || !$('#tour').classList.contains('hidden') || !$('#wrapped').classList.contains('hidden')
-  || achBusy || !!PB.cur || !$('#tipPop').classList.contains('hidden');
+  || achBusy || !!(PB.cur && PB.cur.ms) || !$('#tipPop').classList.contains('hidden');   // a bubble that stays until dismissed (Pomeo's good-night) must not hold everything else back
 function releaseHeld() {
   const on = guardOn();
   document.documentElement.toggleAttribute('data-focusing', on);
@@ -15849,14 +16190,15 @@ function renderTodos() {
   if (keep !== null) { $('#todoQuick').value = keep; $('#todoQuick').focus(); }
   updateFades($('.todo-filters'));
 }
-function remView() { return S.ui.remView === 'todo' ? 'todo' : 'rem'; }
+function remView() { return S.ui.remView === 'todo' ? 'todo' : S.ui.remView === 'cards' ? 'cards' : 'rem'; }
 function renderRemSeg() {
   const v = remView(), open = S.todos.filter(t => !t.done).length, due = S.todos.filter(t => !t.done && t.due && t.due <= todayKey()).length;
-  $('#remSeg').innerHTML = `<button data-rview="rem" class="${v === 'rem' ? 'active' : ''}" aria-pressed="${v === 'rem'}">Reminders</button><button data-rview="todo" class="${v === 'todo' ? 'active' : ''}" aria-pressed="${v === 'todo'}">To-do${open ? ` <span class="cnt${due ? ' due' : ''}">${open}</span>` : ''}</button>`;
-  $('#remAdd').textContent = v === 'todo' ? '+ Add task' : '+ Add reminder';
+  $('#remSeg').innerHTML = `<button data-rview="rem" class="${v === 'rem' ? 'active' : ''}" aria-pressed="${v === 'rem'}">Reminders</button><button data-rview="todo" class="${v === 'todo' ? 'active' : ''}" aria-pressed="${v === 'todo'}">To-do${open ? ` <span class="cnt${due ? ' due' : ''}">${open}</span>` : ''}</button><button data-rview="cards" class="${v === 'cards' ? 'active' : ''}" aria-pressed="${v === 'cards'}">Flashcards${S.cards.length ? ` <span class="cnt${dueCards().length ? ' due' : ''}">${dueCards().length || S.cards.length}</span>` : ''}</button>`;
+  $('#remAdd').textContent = v === 'todo' ? '+ Add task' : v === 'cards' ? '+ New deck' : '+ Add reminder';
   $('#remBody').classList.toggle('hidden', v !== 'rem');
   $('#remPerm').classList.toggle('hidden', v !== 'rem');
   $('#todoBody').classList.toggle('hidden', v !== 'todo');
+  $('#cardsBody').classList.toggle('hidden', v !== 'cards');
   $('.rem-note').classList.toggle('hidden', v !== 'rem');
 }
 function addTodo(fields) {
@@ -15980,7 +16322,7 @@ $('#remSeg').addEventListener('click', e => {
   if (!b || b.dataset.rview === remView()) return;
   S.ui.remView = b.dataset.rview; saveLocal(); uiSound('tap');
   renderReminders();
-  animateIn($(b.dataset.rview === 'todo' ? '#todoBody' : '#remBody'));
+  animateIn($(b.dataset.rview === 'todo' ? '#todoBody' : b.dataset.rview === 'cards' ? '#cardsBody' : '#remBody'));
 });
 $('#todoBody').addEventListener('submit', e => {
   if (e.target.id !== 'todoAdd') return;
