@@ -1481,8 +1481,8 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .dk-new input, .dk-rename input, .dk-edit input { min-width: 0; min-height: 44px; }
 .dk-edit { width: 100%; margin: 0; }
 .cards-card .empty { padding: 20px 10px; text-align: center; color: var(--muted); }
-.deck-dlg, .card-dlg { width: min(560px, calc(100vw - 24px)); }
-.cd-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.deck-dlg, .fc-dlg { width: min(560px, calc(100vw - 24px)); }
+.fc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
 .dk-add { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin-bottom: 8px; }
 .dk-add input { min-width: 0; min-height: 44px; }
 .dk-bulk { margin-bottom: 10px; }
@@ -1543,6 +1543,29 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
   .plan-row .plan-dot { grid-area: dot; } .plan-row .plan-nm { grid-area: nm; } .plan-row .plan-bar { grid-area: bar; } .plan-row .plan-num { grid-area: num; } .plan-row .plan-st { grid-area: st; }
   .pl-row { grid-template-columns: minmax(0, 1fr) 90px 44px; }
 }
+
+/* ==========================================================================
+   COSMETICS DROP (v1.15): ring trails, the Aurora theme, new garden decor
+   ========================================================================== */
+#ringTrail { position: absolute; inset: 0; pointer-events: none; overflow: visible; z-index: 2; }
+.tp { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--tc, var(--accent)); opacity: 0; transform: translate(0, 0) scale(var(--s, 1)) rotate(var(--rot, 0deg)); animation: tpFly var(--d, 1s) ease-out forwards; will-change: transform, opacity; }
+@keyframes tpFly { 0% { opacity: 0; transform: translate(0, 0) scale(.4) rotate(var(--rot, 0deg)); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(var(--s, 1)) rotate(calc(var(--rot, 0deg) + 160deg)); } }
+.tp.tp-sparks { width: 4px; height: 4px; box-shadow: 0 0 6px var(--tc); border-radius: 1px; }
+.tp.tp-petals { width: 9px; height: 5px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+.tp.tp-snow { width: 6px; height: 6px; box-shadow: 0 0 4px rgba(255, 255, 255, .8); }
+.tp.tp-bubbles { width: 10px; height: 10px; background: transparent; border: 1.5px solid var(--tc); box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .5); }
+.tp.tp-stars { width: 8px; height: 8px; border-radius: 0; background: none; }
+.tp.tp-stars::before { content: ""; position: absolute; inset: 0; background: var(--tc); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
+.tp.tp-embers { width: 5px; height: 5px; box-shadow: 0 0 8px var(--tc); }
+:root:not([data-motion="full"]) #ringTrail { display: none; }
+#themeFx.tfx-aurora { background: radial-gradient(60% 40% at 20% 10%, rgba(110, 231, 183, .16), transparent 70%), radial-gradient(50% 35% at 70% 0%, rgba(139, 92, 246, .16), transparent 70%), radial-gradient(45% 30% at 90% 25%, rgba(56, 189, 248, .12), transparent 70%); }
+#themeFx.tfx-aurora::before { content: ""; position: absolute; inset: -30% -10%; opacity: 1; background: linear-gradient(100deg, transparent 20%, rgba(110, 231, 183, .10) 35%, rgba(139, 92, 246, .10) 50%, rgba(56, 189, 248, .10) 65%, transparent 80%); filter: blur(30px); }
+:root[data-motion="full"] #themeFx.tfx-aurora::before { animation: auroraDrift 18s ease-in-out infinite alternate; }
+@keyframes auroraDrift { from { transform: translateX(-12%) skewX(-6deg); } to { transform: translateX(12%) skewX(6deg); } }
+.gd-ground.dc_fence_stone .gd-fence { display: block; top: -12px; height: 18px; border-radius: 6px; background: radial-gradient(ellipse at 8px 8px, #a9a398 6px, transparent 7px) 0 0 / 18px 10px, radial-gradient(ellipse at 17px 14px, #9a9488 6px, transparent 7px) 0 0 / 18px 10px, #8a8478; }
+.gd-ground.dc_path_wood .gd-path { height: 24px; border-radius: 4px; background: repeating-linear-gradient(90deg, #b07a4a 0 22px, #8a6238 22px 24px); }
+.dcpv.dc_fence_stone { background: radial-gradient(ellipse at 8px 8px, #a9a398 6px, transparent 7px) 0 0 / 18px 10px, radial-gradient(ellipse at 17px 14px, #9a9488 6px, transparent 7px) 0 0 / 18px 10px, #8a8478; }
+.dcpv.dc_path_wood { height: 24px; background: repeating-linear-gradient(90deg, #b07a4a 0 22px, #8a6238 22px 24px); }
 
 /* ==========================================================================
    WRAPPED — story slides
@@ -3545,6 +3568,7 @@ body.first-load #todayBar { opacity: 0; }
           <div class="ring" id="ring">
             <div class="ring-glow"></div>
             <div class="ring-burst"></div>
+            <div id="ringTrail" aria-hidden="true"></div>
             <svg viewBox="0 0 260 260" aria-hidden="true">
               <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.25"/></linearGradient><linearGradient id="ringGradEv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--rg1, var(--accent))"/><stop offset=".5" style="stop-color:var(--rg2, var(--accent))"/><stop offset="1" style="stop-color:var(--rg3, var(--accent))"/></linearGradient></defs>
               <g class="ringdots" id="ringDots"></g>
@@ -4079,7 +4103,7 @@ body.first-load #todayBar { opacity: 0; }
   <div class="btn-row" style="justify-content:flex-end"><button class="btn" type="button" id="plCancel">Cancel</button><button class="btn primary" type="button" id="plSave">Save plan</button></div>
 </dialog>
 <dialog id="deckDlg" class="deck-dlg" aria-labelledby="deckDlgTitle"><div id="deckDlgBody"></div></dialog>
-<dialog id="cardDlg" class="card-dlg" aria-label="Flashcard review"><div id="cardDlgBody"></div></dialog>
+<dialog id="fcDlg" class="fc-dlg" aria-label="Flashcard review"><div id="fcDlgBody"></div></dialog>
 <dialog id="todoDlg" class="todo-dlg" aria-labelledby="todoDlgTitle">
   <h2 id="todoDlgTitle" style="margin:0 0 10px">New task</h2>
   <label class="lbl" for="tdTitle">Task</label><input type="text" id="tdTitle" maxlength="120" autocomplete="off" placeholder="e.g. Finish chapter 5 problems">
@@ -4408,6 +4432,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    33b. POMEO'S ROOM (v1.15) — room items, placement, saved rooms, share image.
    33c. FLASHCARDS (v1.15) — decks, cards, review with spaced repetition, break offer.
    33d. WEEKLY SUBJECT PLAN (v1.15) — target hours per subject, progress from session names.
+   33e. COSMETICS DROP (v1.15) — new themes, stamps, ring trails, room items, seeds, decor (items before ITEM_BY_ID, art near the end).
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
    36. SUBTASKS — an optional checklist for the current focus session.
@@ -4738,7 +4763,7 @@ function ensureRingLoop() {
   const step = () => {
     if (!USER || S.timer.status !== 'running' || S.ui.tab !== 'timer' || motion() === 'off') { ringRAF = 0; $('#ring').classList.remove('ring-live'); return; }
     $('#ring').classList.add('ring-live');
-    paintRing();
+    trailTick(paintRing());   // ring trails (v1.15): particles at the ring's head, Animations = Full only
     ringRAF = requestAnimationFrame(step);
   };
   ringRAF = requestAnimationFrame(step);
@@ -6526,7 +6551,7 @@ const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
 
 /* ---------- Shop catalogue (cosmetic only). price 0 = free default. lvl = minimum level. ---------- */
 const SHOP_CATS = [
-  ['pomeo', 'Pomeo'], ['room', 'Pomeo’s room'], ['avatar', 'Profile pictures'], ['sound', 'Sounds'], ['ambient', 'Ambient'], ['theme', 'Themes'], ['ring', 'Timer ring'], ['font', 'Timer font'],
+  ['pomeo', 'Pomeo'], ['room', 'Pomeo’s room'], ['avatar', 'Profile pictures'], ['sound', 'Sounds'], ['ambient', 'Ambient'], ['theme', 'Themes'], ['ring', 'Timer ring'], ['trail', 'Ring trails'], ['font', 'Timer font'],
   ['effect', 'Effects'], ['stamp', 'Stamps'], ['frame', 'Badge frame'], ['color', 'Name colour'], ['extra', 'Extras'], ['freeze', 'Streak freeze'],
 ];
 const ITEMS = [
@@ -7029,8 +7054,65 @@ ITEMS.push(
 );
 ITEMS.push({ id: 'stamp_together', cat: 'stamp', name: 'Studied together', desc: 'Stamped on blocks from live clan sessions', price: -1, clanLv: 1, rarity: 'rare' });
 
+/* ==========================================================================
+   COSMETICS DROP (v1.15) — 8 themes, 10 stamps, 6 timer-ring trails (a new
+   'trail' category: particles that follow the ring's head while a block runs,
+   Animations = Full only), 22 room items, 5 seeds and 6 garden decor pieces.
+   Everything here is private cosmetics: nothing new is published to other
+   users (the public profile still carries only colour, frame, picture, aura
+   and title).
+   ========================================================================== */
+ITEMS.push(
+  { id: 'th_lavender', cat: 'theme', name: 'Lavender',  desc: 'Soft purple, calm and airy',            price: 250, lvl: 3 },
+  { id: 'th_mint',     cat: 'theme', name: 'Mint',      desc: 'Cool mint green',                       price: 250 },
+  { id: 'th_coffee',   cat: 'theme', name: 'Coffee',    desc: 'Warm browns and cream',                 price: 300, lvl: 4 },
+  { id: 'th_slate',    cat: 'theme', name: 'Slate',     desc: 'Cool greys with a blue accent',         price: 300 },
+  { id: 'th_peach',    cat: 'theme', name: 'Peach',     desc: 'Soft peach and coral',                  price: 300, lvl: 5 },
+  { id: 'th_candy',    cat: 'theme', name: 'Candy',     desc: 'Pink and sky blue',                     price: 350, lvl: 6, rarity: 'rare' },
+  { id: 'th_monsoon',  cat: 'theme', name: 'Monsoon',   desc: 'Deep teal-grey · always dark',          price: 450, lvl: 8, rarity: 'epic' },
+  { id: 'th_aurora',   cat: 'theme', name: 'Aurora',    desc: 'Northern lights drifting over the page · always dark · animated', price: 1000, lvl: 12, rarity: 'legendary' },
+  { id: 'stamp_leaf',    cat: 'stamp', name: 'Leaf stamp',    desc: 'A green leaf seal',               price: 90 },
+  { id: 'stamp_heart',   cat: 'stamp', name: 'Heart stamp',   desc: 'Studied with love',               price: 100 },
+  { id: 'stamp_moon',    cat: 'stamp', name: 'Moon stamp',    desc: 'For the late ones',               price: 110 },
+  { id: 'stamp_bolt',    cat: 'stamp', name: 'Bolt stamp',    desc: 'Charged up',                      price: 120 },
+  { id: 'stamp_books',   cat: 'stamp', name: 'Books stamp',   desc: 'A stack of books',                price: 120 },
+  { id: 'stamp_coffee',  cat: 'stamp', name: 'Coffee stamp',  desc: 'A cup ring, on purpose',          price: 130 },
+  { id: 'stamp_wave',    cat: 'stamp', name: 'Wave stamp',    desc: 'Deep-work waves',                 price: 140 },
+  { id: 'stamp_sun',     cat: 'stamp', name: 'Sun stamp',     desc: 'A bright morning seal',           price: 150, lvl: 4 },
+  { id: 'stamp_rocket',  cat: 'stamp', name: 'Rocket stamp',  desc: 'Launched',                        price: 180, lvl: 6, rarity: 'rare' },
+  { id: 'stamp_diamond', cat: 'stamp', name: 'Diamond stamp', desc: 'A faceted gem seal',              price: 300, lvl: 10, rarity: 'epic' },
+  { id: 'trail_none',    cat: 'trail', name: 'No trail',      desc: 'Just the ring',                   price: 0 },
+  { id: 'trail_sparks',  cat: 'trail', name: 'Sparks',        desc: 'Little sparks fly off the ring’s edge', price: 120 },
+  { id: 'trail_petals',  cat: 'trail', name: 'Petals',        desc: 'Pink petals drift down',          price: 160 },
+  { id: 'trail_snow',    cat: 'trail', name: 'Snow',          desc: 'Soft snow falls from the ring',   price: 160 },
+  { id: 'trail_bubbles', cat: 'trail', name: 'Bubbles',       desc: 'Bubbles rise and pop',            price: 180 },
+  { id: 'trail_stars',   cat: 'trail', name: 'Stars',         desc: 'Twinkling stars trail the ring',  price: 200, lvl: 5, rarity: 'rare' },
+  { id: 'trail_embers',  cat: 'trail', name: 'Embers',        desc: 'Glowing embers rise and fade',    price: 260, lvl: 8, rarity: 'rare' },
+  { id: 'wall_mint',       cat: 'room', name: 'Mint wall',        desc: 'Fresh pale green',             price: 60 },
+  { id: 'wall_lilac',      cat: 'room', name: 'Lilac wall',       desc: 'A soft purple',                price: 60 },
+  { id: 'wall_stripes',    cat: 'room', name: 'Striped wall',     desc: 'Cream and sage stripes',       price: 80 },
+  { id: 'wall_brick',      cat: 'room', name: 'Brick wall',       desc: 'Exposed red brick',            price: 140, lvl: 4, rarity: 'rare' },
+  { id: 'floor_dark',      cat: 'room', name: 'Dark wood floor',  desc: 'Walnut planks',                price: 80 },
+  { id: 'floor_marble',    cat: 'room', name: 'Marble floor',     desc: 'Pale marble tiles',            price: 160, lvl: 6, rarity: 'rare' },
+  { id: 'rug_plaid',       cat: 'room', name: 'Plaid rug',        desc: 'Warm red tartan',              price: 80 },
+  { id: 'rug_heart',       cat: 'room', name: 'Heart rug',        desc: 'A big soft heart',             price: 110, rarity: 'rare' },
+  { id: 'desk_white',      cat: 'room', name: 'White desk',       desc: 'Clean and bright',             price: 90 },
+  { id: 'desk_glass',      cat: 'room', name: 'Glass desk',       desc: 'See-through, with a monitor',  price: 180, lvl: 7, rarity: 'epic' },
+  { id: 'lamp_candle',     cat: 'room', name: 'Candles',          desc: 'Three candles, a soft flicker', price: 70 },
+  { id: 'lamp_lava',       cat: 'room', name: 'Lava lamp',        desc: 'Slow blobs, very 70s',         price: 150, lvl: 5, rarity: 'rare' },
+  { id: 'shelf_tall',      cat: 'room', name: 'Tall shelf',       desc: 'Three shelves to the ceiling', price: 170, lvl: 4 },
+  { id: 'plant_fern',      cat: 'room', name: 'Fern',             desc: 'Feathery fronds',              price: 50 },
+  { id: 'plant_bamboo',    cat: 'room', name: 'Lucky bamboo',     desc: 'Three green stalks',           price: 70 },
+  { id: 'poster_mountain', cat: 'room', name: 'Mountain poster',  desc: 'Snowy peaks',                  price: 70 },
+  { id: 'poster_wave',     cat: 'room', name: 'Wave poster',      desc: 'The great wave',               price: 90, rarity: 'rare' },
+  { id: 'window_night',    cat: 'room', name: 'Night window',     desc: 'Moon and stars',               price: 110 },
+  { id: 'window_forest',   cat: 'room', name: 'Forest window',    desc: 'Pines and mist',               price: 130, lvl: 3 },
+  { id: 'pet_turtle',      cat: 'room', name: 'Turtle',           desc: 'Slow and steady',              price: 130 },
+  { id: 'pet_hamster',     cat: 'room', name: 'Hamster',          desc: 'Runs its wheel',               price: 160, lvl: 4, rarity: 'rare' },
+  { id: 'pet_dog',         cat: 'room', name: 'Sleepy dog',       desc: 'Snoozes by the desk',          price: 220, lvl: 6, rarity: 'rare' },
+);
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
-const DEFAULTS = { avatar: 'av_default', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none', sound: 'snd_chime', ambient: 'amb_none', theme: 'th_default', ring: 'ring_classic', font: 'font_system', effect: 'fx_none', frame: 'frame_none', color: 'col_default', aura: 'au_streak', title: 'ti_none', stamp: 'stamp_classic', card: 'card_minimal' };
+const DEFAULTS = { avatar: 'av_default', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none', sound: 'snd_chime', ambient: 'amb_none', theme: 'th_default', ring: 'ring_classic', font: 'font_system', effect: 'fx_none', frame: 'frame_none', color: 'col_default', aura: 'au_streak', title: 'ti_none', stamp: 'stamp_classic', card: 'card_minimal', trail: 'trail_none' };
 const NAME_COLORS = { col_teal: '#2f9e8f', col_sky: '#4a90c2', col_coral: '#e07a5f', col_violet: '#8a6fd1', col_rose: '#c95c84', col_gold: '#c9a227' };
 
 /* ---------- Derived game state (cached; cleared whenever state is saved) ---------- */
@@ -7582,6 +7664,7 @@ function applyRingStyle() {
   ring.classList.remove(...new Set(Object.values(RING_CLASSES).join(' ').split(' ')));   // some styles use two classes
   const cls = RING_CLASSES[equippedId('ring')];
   if (cls) ring.classList.add(...cls.split(' '));
+  ring.dataset.trail = equippedId('trail');
   lastDots = -1;
 }
 
@@ -7916,6 +7999,7 @@ function previewFor(it, g) {
     return `<div class="thprev${it.id === 'th_starfield' ? ' stars' : ''}" style="${st}"><div class="sf"><i></i><b></b><b class="s"></b></div></div>`;
   }
   if (it.cat === 'ring') return ringPreview(it.id);
+  if (it.cat === 'trail') return trailPreview(it.id);
   if (it.cat === 'avatar') return hasAvatar(it.id) ? avatarSVG(it.id, 60) : (S.settings.gamification ? badgeSVG(g.tier, { size: 52, frame: equippedId('frame') }) : `<span class="avatar big">${esc(USER.guest ? '?' : USER.username[0].toUpperCase())}</span>`);
   if (it.cat === 'pomhat' || it.cat === 'pomacc' || it.cat === 'pomskin') return pomeoSVG({ state: 'happy', hat: it.cat === 'pomhat' ? it.id : 'hat_none', acc: it.cat === 'pomacc' ? it.id : 'acc_none', skin: it.cat === 'pomskin' ? it.id : 'skin_none' });
   if (it.cat === 'aura' || it.cat === 'title') return rewardPreview(it, g);
@@ -10912,6 +10996,9 @@ function fruitArt(sp, fill, big) {
     case 'big': return `<ellipse cx="30" cy="56" rx="${big ? 15 : 10}" ry="${big ? 9 : 6}" fill="${fill}"/><path d="M${big ? 22 : 25} 50q8 10 16 0M30 ${big ? 47 : 50}v${big ? 18 : 12}" stroke="${shade(sp.fruit, -.25)}" stroke-width="1.4" fill="none" opacity=".7"/><path d="M30 ${big ? 46 : 49}v-5" stroke="#5c9b57" stroke-width="2.4" stroke-linecap="round"/>`;
     case 'lotus': return `<ellipse cx="30" cy="56" rx="17" ry="6" fill="${shade(sp.leaf, .1)}"/><path d="M30 50q-9-3-9-13 9 3 9 13Zm0 0q9-3 9-13-9 3-9 13Zm0 0q-4-9 0-16 4 7 0 16Z" fill="${fill}"/><circle cx="30" cy="44" r="2.2" fill="#f6d44a"/>`;
     case 'moon': return `<circle cx="30" cy="26" r="${big ? 11 : 8}" fill="${fill}" opacity=".95"/><circle cx="30" cy="26" r="${big ? 15 : 11}" fill="${fill}" opacity=".18"/><circle cx="30" cy="26" r="3" fill="#f6d44a" opacity=".9"/>`;
+    case 'root': return `<path d="M22 64q0-10 8-10t8 10" fill="${fill}"/><ellipse cx="30" cy="62" rx="9" ry="3" fill="#8a6a4a" opacity=".45"/><path d="M30 64v6" stroke="${shade(sp.fruit, -.3)}" stroke-width="1.6"/>` + (big ? `<path d="M14 56q5-4 8 0M38 56q5-4 8 0" fill="none" stroke="${fill}" stroke-width="2"/>` : '');
+    case 'orchid': return [[18, 30], [42, 26], [30, 40]].map(([x, y]) => `<path d="M${x} ${y}q-8-8-2-12 6 2 2 12Zm0 0q8-8 2-12-6 2-2 12Zm0 0q-10 2-10 8 8 2 10-8Zm0 0q10 2 10 8-8 2-10-8Zm0 0q-4 8 0 12 4-4 0-12Z" fill="${fill}"/><circle cx="${x}" cy="${y}" r="2" fill="#f6d44a"/>`).join('');
+    case 'dragon': return [[20, 36], [40, 34]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="${big ? 7 : 5}" ry="${big ? 9 : 6.5}" fill="${fill}"/>` + [[-4, -6], [4, -4], [-3, 2], [4, 4], [0, 8]].map(([dx, dy]) => `<path d="M${x + dx} ${y + dy}q3-3 6 0" stroke="${sp.leaf}" stroke-width="1.4" fill="none"/>`).join('')).join('');
     case 'star': return [[20, 36], [40, 32], [30, 48]].map(([x, y]) => `<path d="M${x} ${y - 6}l1.8 4 4.4.4-3.3 3 1 4.3-3.9-2.3-3.9 2.3 1-4.3-3.3-3 4.4-.4Z" fill="${fill}"/>`).join('');
     default: return [[18, 38], [41, 34], [28, 48], [36, 46]].map(([x, y], i) => F(x, y, i < 3 ? (big ? 5.2 : 4.4) : 3.6)).join('');
   }
@@ -11564,12 +11651,12 @@ function startReview(deckId = '', limit = 0) {
   if (limit) q = q.slice(0, limit);
   Object.assign(RV, { q, i: 0, done: 0, again: 0, deck: deckId, flipped: false, open: true, start: Date.now() });
   renderReview();
-  const dlg = $('#cardDlg');
+  const dlg = $('#fcDlg');
   if (!dlg.open) dlg.showModal();
   return true;
 }
 function renderReview() {
-  const el = $('#cardDlgBody'), c = RV.q[RV.i];
+  const el = $('#fcDlgBody'), c = RV.q[RV.i];
   if (!el) return;
   if (!c) {
     const mins = Math.max(1, Math.round((Date.now() - RV.start) / 60000));
@@ -11579,7 +11666,7 @@ function renderReview() {
     return;
   }
   const d = deckById(c.deck);
-  el.innerHTML = `<div class="cd-top"><span class="lbl">${esc(d ? d.name : 'Deck')} · ${RV.i + 1} / ${RV.q.length}</span><button class="iconbtn" data-cdclose aria-label="Close">✕</button></div>
+  el.innerHTML = `<div class="fc-top"><span class="lbl">${esc(d ? d.name : 'Deck')} · ${RV.i + 1} / ${RV.q.length}</span><button class="iconbtn" data-cdclose aria-label="Close">✕</button></div>
     <button type="button" class="cd-card${RV.flipped ? ' flipped' : ''}" data-cdflip aria-live="polite" aria-label="${RV.flipped ? 'Back of the card. Rate how well you knew it.' : 'Front of the card. Tap to flip.'}">
       <span class="cd-face cd-front"><span class="cd-k">Question</span><span class="cd-t">${esc(c.f)}</span><span class="lbl cd-hint">Tap to flip</span></span>
       <span class="cd-face cd-back"><span class="cd-k">Answer</span><span class="cd-t">${c.b ? esc(c.b) : '<i class="muted">(no answer written)</i>'}</span></span></button>
@@ -11601,7 +11688,7 @@ function reviewGrade(g) {
   renderReview();
   if (!RV.q[RV.i]) { uiSound('harvest', { always: true }); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
 }
-function closeReview() { RV.open = false; const d = $('#cardDlg'); if (d.open) d.close(); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
+function closeReview() { RV.open = false; const d = $('#fcDlg'); if (d.open) d.close(); if (S.ui.tab === 'reminders') renderCards(); renderCardsDot(); }
 
 /* ---------- Break offer: "Quick 5 cards?" ---------- */
 let lastCardOffer = 0;
@@ -11656,7 +11743,7 @@ function renderDeckDlg() {
   const d = deckById(deckOpen), el = $('#deckDlgBody');
   if (!d || !el) return;
   const cs = deckCards(d.id).slice().sort((a, b) => (b.at || 0) - (a.at || 0)), tk = todayKey();
-  el.innerHTML = `<div class="cd-top"><div><h2 id="deckDlgTitle" style="margin:0">${esc(d.name)}</h2><div class="lbl">${cs.length} card${cs.length === 1 ? '' : 's'} · ${cs.filter(c => cardDue(c, tk)).length} due${d.subject ? ` · ${esc(d.subject)}` : ''}</div></div><button class="iconbtn" data-dkclose aria-label="Close">✕</button></div>
+  el.innerHTML = `<div class="fc-top"><div><h2 id="deckDlgTitle" style="margin:0">${esc(d.name)}</h2><div class="lbl">${cs.length} card${cs.length === 1 ? '' : 's'} · ${cs.filter(c => cardDue(c, tk)).length} due${d.subject ? ` · ${esc(d.subject)}` : ''}</div></div><button class="iconbtn" data-dkclose aria-label="Close">✕</button></div>
     <form class="dk-add" id="dkAdd" autocomplete="off"><input type="text" id="dkFront" maxlength="300" placeholder="Front (question)" aria-label="Front"><input type="text" id="dkBack" maxlength="600" placeholder="Back (answer)" aria-label="Back"><button class="btn primary small" type="submit">Add</button></form>
     <details class="dk-bulk"><summary>Add many at once</summary><textarea id="dkBulk" rows="4" placeholder="One card per line:&#10;Capital of France | Paris&#10;Speed of light | 3 × 10⁸ m/s"></textarea><div class="btn-row"><button class="btn small" type="button" data-dkbulk>Add all</button></div></details>
     ${cs.length ? `<ul class="rem-list dk-list">${cs.map(c => `<li class="rem dk-card" data-cid="${esc(c.id)}"><div class="rem-fg"><div class="rem-main"><div class="rt">${esc(c.f)}</div><div class="rs td-meta"><span>${esc(c.b || '—')}</span><span class="${cardDue(c, tk) ? 'td-due today' : ''}">${!c.reps ? 'new' : cardDue(c, tk) ? 'due' : 'due ' + c.due}</span></div></div>
@@ -11711,7 +11798,7 @@ function renderDeckDlg() {
     uiSound('tap');
   });
   // review dialog
-  const cd = $('#cardDlg');
+  const cd = $('#fcDlg');
   cd.addEventListener('click', e => {
     const t = e.target;
     if (t.closest('[data-cdclose]')) { closeReview(); return; }
@@ -13948,13 +14035,44 @@ function demoGarden(sessions) {
   return { plants, gbuys };
 }
 /** Builds the demo account's documents (called when the preview starts, so dates are always current). */
+/** Goal days and achievements as the sample sessions would have earned them, each stamped with the session that
+ *  earned it. Claims made at load time would be stamped "now", and the coin replay would then refund every demo
+ *  purchase dated before them. Runs the real stats code over the sample sessions, then restores the live state. */
+function demoClaims(sessions) {
+  const keep = { sessions: S.sessions, goalDays: S.game.claims.goalDays, goalMin: S.settings.goalMin }, goalDays = {}, achievements = {};
+  try {
+    S.game.claims.goalDays = goalDays; S.settings.goalMin = 120;
+    const sorted = sessions.slice().sort((a, b) => a.end - b.end);
+    for (let i = 0; i < sorted.length; i++) {
+      S.sessions = sorted.slice(0, i + 1);
+      const at = sorted[i].end, idx = buildIndex();
+      for (const [k, d] of Object.entries(idx)) if (d.total >= 120 && !goalDays[k]) goalDays[k] = at;
+      const stats = computeStats(idx, computeStreaks(idx), 0);
+      for (const a of ACHIEVEMENTS) if (!achievements[a.id] && a.val(stats) >= a.goal) achievements[a.id] = at;
+    }
+  } finally { S.sessions = keep.sessions; S.game.claims.goalDays = keep.goalDays; S.settings.goalMin = keep.goalMin; G = null; }
+  return { goalDays, achievements };
+}
 function demoDocs() {
   const now = new Date(), ts = ms => ({ toMillis: () => ms, toDate: () => new Date(ms) });
-  const sessions = demoSessions(), byMonth = {};
+  const sessions = demoSessions(), byMonth = {}, claimed = demoClaims(sessions);
   for (const s of sessions) { const m = monthKeyOf(new Date(s.start)); (byMonth[m] ||= []).push(s); }
   const own = (cat, ids) => ids.filter(id => ITEM_BY_ID[id]).map(id => [id, ITEM_BY_ID[id]]);
   const purchases = {}, equipped = {};
-  own('', ['th_ocean', 'ring_grad', 'frame_double', 'hat_grad', 'acc_glasses', 'snd_digital', 'av_owl', 'col_teal', 'stamp_tomato', 'stamp_pixel', 'wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat', 'floor_tiles']).forEach(([id, it], i) => { purchases['demo' + i] = { item: id, price: it.price || 0, at: Date.now() - (30 - i) * 864e5 }; });
+  // Each purchase is dated to the first day the demo had earned enough coins for it (sessions, goal days,
+  // achievements and the two streak milestones below), so the coin replay never refunds a demo item. The three
+  // newest cosmetics are gifts.
+  const sessEnds = sessions.map(s => +s.end).sort((a, b) => a - b), msDemo = Date.now();
+  const estAt = t => sessEnds.filter(e => e <= t).length * COINS_PER_SESSION + (t >= msDemo - 20 * 864e5 ? STREAK_BONUS[3] || 0 : 0) + (t >= msDemo - 16 * 864e5 ? STREAK_BONUS[7] || 0 : 0)
+    + Object.values(claimed.goalDays).filter(x => x <= t).length * GOAL_BONUS + Object.entries(claimed.achievements).filter(([, x]) => x <= t).reduce((a, [id]) => a + (ACH_BY_ID[id] ? ACH_BY_ID[id].coins : 0), 0);
+  let cum = 0;
+  own('', ['th_ocean', 'ring_grad', 'frame_double', 'hat_grad', 'acc_glasses', 'snd_digital', 'av_owl', 'col_teal', 'stamp_tomato', 'stamp_pixel', 'wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat', 'floor_tiles', 'trail_petals', 'stamp_leaf', 'th_mint']).forEach(([id, it], i) => {
+    const gift = ['trail_petals', 'stamp_leaf', 'th_mint'].includes(id), price = gift ? 0 : it.price || 0;
+    cum += price;
+    let at = msDemo - (30 - i) * 60e3;
+    for (let d = 30; d >= 1; d--) { const t = msDemo - d * 864e5; if (estAt(t) >= cum + 5) { at = t + i * 60e3; break; } }
+    purchases['demo' + i] = { item: id, price, ...(gift ? { gift: true } : {}), at };
+  });
   for (const [id, it] of Object.values(purchases).map(p => [p.item, ITEM_BY_ID[p.item]])) if (!['theme', 'sound', 'room'].includes(it.cat)) equipped[it.cat] = id;
   const wkPast = k => dayKey(addDays(weekStartOf(now, 1), -7 * k));
   // Past bosses (the real rotation): a Solo win, a mastered week (Solo + Squad), a Squad win with rewards still to claim,
@@ -13984,7 +14102,7 @@ function demoDocs() {
     recent: [{ name: 'Physics', presetId: 'p-deep', ts: Date.now() - 3600e3 }, { name: 'Maths', presetId: 'p-classic', ts: Date.now() - 7200e3 }, { name: 'Chemistry', presetId: 'p-deep', ts: Date.now() - 864e5 }],
     pinned: [{ name: 'Physics', presetId: 'p-deep' }],
     game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb' },
-      tierFrom: '2000-01-03', claims: { bosses, brew, quests, milestones: { 3: Date.now() - 20 * 864e5, 7: Date.now() - 16 * 864e5 } }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
+      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: { 3: Date.now() - 20 * 864e5, 7: Date.now() - 16 * 864e5 } }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
     cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:7', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
     loadouts: [{ id: 'demo_lo1', name: 'Exam mode', look: { theme: 'th_ocean', avatar: 'av_owl', frame: 'frame_double', color: 'col_teal', aura: 'au_streak', pomhat: 'hat_grad', pomacc: 'acc_glasses', pomskin: 'skin_none', title: 'ti_none' } },
       { id: 'demo_lo2', name: 'Spooky', look: { avatar: 'av_bat', frame: 'frame_cobweb', aura: 'au_streak', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none' } }],
@@ -14418,10 +14536,10 @@ SCENES.bag = { vb: '-12 -8 66 50', state: 'idle', props: `
    game.equipped, exactly like the Shop.
    ========================================================================== */
 const CAT_LABEL = { theme: 'Theme', avatar: 'Profile picture', pomhat: 'Pomeo hat', pomacc: 'Pomeo accessory', pomskin: 'Pomeo skin', aura: 'Aura', color: 'Name colour',
-  title: 'Title', sound: 'Sound', ambient: 'Ambient sound', ring: 'Timer ring', font: 'Timer font', effect: 'Effect', frame: 'Badge frame', extra: 'Timer extra', freeze: 'Consumable', stamp: 'Stamp', card: 'Card style', room: 'Room item' };
+  title: 'Title', sound: 'Sound', ambient: 'Ambient sound', ring: 'Timer ring', font: 'Timer font', effect: 'Effect', frame: 'Badge frame', extra: 'Timer extra', freeze: 'Consumable', stamp: 'Stamp', card: 'Card style', room: 'Room item', trail: 'Ring trail' };
 const BAG_CATS = [
   ['theme', 'Themes', ['theme']], ['avatar', 'Profile pictures', ['avatar']], ['pomeo', 'Pomeo outfits', ['pomhat', 'pomacc', 'pomskin']], ['room', 'Room', ['room']], ['aura', 'Auras', ['aura']],
-  ['color', 'Name colours', ['color']], ['title', 'Titles', ['title']], ['sound', 'Sounds', ['sound', 'ambient']], ['timer', 'Timer styles', ['ring', 'extra']],
+  ['color', 'Name colours', ['color']], ['title', 'Titles', ['title']], ['sound', 'Sounds', ['sound', 'ambient']], ['timer', 'Timer styles', ['ring', 'trail', 'extra']],
   ['font', 'Fonts', ['font']], ['effect', 'Effects', ['effect']], ['stamp', 'Stamps', ['stamp']], ['card', 'Card styles', ['card']], ['frame', 'Badge frames', ['frame']], ['trophies', 'Boss trophies', []], ['garden', 'Garden', []], ['clan', 'Clan', []], ['event', 'Event items', []], ['consumables', 'Consumables', []],
 ];
 const BAG_FILTERS = [['all', 'All'], ['equipped', 'Equipped'], ['new', 'New'], ['shop', 'Shop'], ['boss', 'Bosses'], ['event', 'Events'], ['clan', 'Clan'], ['reward', 'Rewards']];
@@ -15564,7 +15682,7 @@ function skyAt(d = new Date()) {
   return Object.fromEntries(SKY_PHASES.map((p, j) => [p, +(a[j] + (b[j] - a[j]) * k).toFixed(3)]));
 }
 const skyPhase = (d = new Date()) => { const w = skyAt(d); return SKY_PHASES.reduce((x, y) => (w[y] > w[x] ? y : x)); };
-const todOn = () => !!USER && (S.settings.tod === undefined ? !minimal() : !!S.settings.tod) && equippedId('theme') !== 'th_starfield';
+const todOn = () => !!USER && (S.settings.tod === undefined ? !minimal() : !!S.settings.tod) && !['th_starfield', 'th_aurora'].includes(equippedId('theme'));
 let skyKey = '';
 function renderSky() {
   const el = $('#todSky');
@@ -16134,6 +16252,7 @@ function shareCardLink() { return shareLink({ title: 'My Pomodorolist card', tex
 function themeFx(skinId) {
   const el = $('#themeFx');
   if (!el) return;
+  if (skinId === 'th_aurora' && USER && !minimal()) { el.className = 'tfx-aurora'; el.innerHTML = ''; return; }
   const m = /^th_b_(\w+)$/.exec(skinId || ''), b = m && BOSS_BY_ID[m[1]], n = b && USER && !minimal() ? bossTier(b.id).n : 0;
   el.className = n >= 3 ? `tfx tfx-${n}` : 'hidden';
   if (n < 3) return;
@@ -18477,6 +18596,101 @@ function syncShareButtons(root = document) {
 }
 // A read-only link field selects all of its text on focus, so it's easy to copy by hand too
 document.addEventListener('focusin', e => { const f = e.target.closest && e.target.closest('input[readonly][data-copyfield]'); if (f) setTimeout(() => selectField(f), 0); });
+
+/* ---------- COSMETICS DROP (v1.15), part 2: art, skins, trails, seeds, decor (after every catalogue they extend) ---------- */
+Object.assign(SKINS, {
+  th_lavender: { light: { bg: '#f3eff9', surface: '#fcfaff', text: '#2a2338', muted: '#6e6480', line: '#e3dcef', accent: '#8a6fd1', heat0: '#ece6f4' },
+                 dark:  { bg: '#15121c', surface: '#1e1927', text: '#ece6f4', muted: '#a398b8', line: '#302840', accent: '#b49cf0', heat0: '#262031', 'on-accent': '#15121c' } },
+  th_mint:     { light: { bg: '#eef7f3', surface: '#f9fdfb', text: '#1b2a24', muted: '#5c7068', line: '#d9e9e1', accent: '#2f9e8f', heat0: '#e2efe9' },
+                 dark:  { bg: '#0f1a16', surface: '#16231e', text: '#e0efe8', muted: '#86a398', line: '#223229', accent: '#5fd1bd', heat0: '#1b2a24', 'on-accent': '#0f1a16' } },
+  th_coffee:   { light: { bg: '#f4ede4', surface: '#fcf8f2', text: '#2f2419', muted: '#7a6655', line: '#e6d9c9', accent: '#8a5a2b', heat0: '#ebe0d2' },
+                 dark:  { bg: '#1a1410', surface: '#241c16', text: '#efe4d6', muted: '#ad9a86', line: '#372c23', accent: '#d29a63', heat0: '#2d241d', 'on-accent': '#1a1410' } },
+  th_slate:    { light: { bg: '#eef0f3', surface: '#f9fafb', text: '#1f252d', muted: '#5f6b78', line: '#dbe0e6', accent: '#4a78b8', heat0: '#e3e7ec' },
+                 dark:  { bg: '#12161b', surface: '#1a1f26', text: '#e3e8ee', muted: '#8f9bab', line: '#2a323c', accent: '#7fa9e6', heat0: '#222932', 'on-accent': '#12161b' } },
+  th_peach:    { light: { bg: '#fdf1ea', surface: '#fffaf6', text: '#33211a', muted: '#8a6a5c', line: '#f3dfd3', accent: '#e07a5f', heat0: '#f6e4da' },
+                 dark:  { bg: '#1c1411', surface: '#261a16', text: '#f4e4dc', muted: '#b19084', line: '#3a2a24', accent: '#f29b82', heat0: '#2f211c', 'on-accent': '#1c1411' } },
+  th_candy:    { light: { bg: '#fdf0f6', surface: '#fffafc', text: '#2f1c2a', muted: '#86657a', line: '#f3dbe8', accent: '#e05597', heat0: '#f7e3ee', 'accent-soft': 'rgba(224,85,151,.14)' },
+                 dark:  { bg: '#1b1219', surface: '#251822', text: '#f6e2ee', muted: '#b08aa3', line: '#3a2533', accent: '#ff7ab8', heat0: '#2e1f2a', 'on-accent': '#1b1219' } },
+  th_monsoon:  { force: 'dark', dark: { bg: '#0e1b1e', surface: '#15262a', text: '#dfeef0', muted: '#88a6ab', line: '#22393e', accent: '#4fc3c7', heat0: '#1c3035', 'on-accent': '#0e1b1e' } },
+  th_aurora:   { force: 'dark', dark: { bg: '#070b14', surface: 'rgba(14,20,36,.9)', text: '#e6ecff', muted: '#8d9ac0', line: '#1f2a48', accent: '#6ee7b7', heat0: '#162038', 'on-accent': '#070b14' } },
+});
+Object.assign(STAMP_ART, {
+  stamp_leaf: '<circle cx="32" cy="32" r="27" fill="none" stroke="#4e8a4a" stroke-width="3"/><path d="M20 44q0-22 24-24-2 24-24 24Z" fill="#6fb162" stroke="#4e8a4a" stroke-width="1.6"/><path d="M22 42l18-18" stroke="#4e8a4a" stroke-width="1.6"/>',
+  stamp_heart: '<circle cx="32" cy="32" r="27" fill="none" stroke="#d6456b" stroke-width="3"/><path d="M32 46q-14-9-14-18a7 7 0 0 1 14-3 7 7 0 0 1 14 3q0 9-14 18Z" fill="#e8739b" stroke="#d6456b" stroke-width="1.6"/>',
+  stamp_moon: '<circle cx="32" cy="32" r="27" fill="none" stroke="#5e81ac" stroke-width="3"/><path d="M38 16a16 16 0 1 0 8 28 13 13 0 0 1-8-28Z" fill="#8c9aff" stroke="#5e81ac" stroke-width="1.4"/><circle cx="21" cy="22" r="1.6" fill="#5e81ac"/><circle cx="26" cy="40" r="1.2" fill="#5e81ac"/>',
+  stamp_bolt: '<circle cx="32" cy="32" r="27" fill="none" stroke="#c9a227" stroke-width="3"/><path d="M36 14 20 36h10l-4 14 18-24H34Z" fill="#f6d44a" stroke="#c9a227" stroke-width="1.6" stroke-linejoin="round"/>',
+  stamp_books: '<circle cx="32" cy="32" r="27" fill="none" stroke="#8a6238" stroke-width="3"/><rect x="18" y="38" width="28" height="6" rx="1" fill="#d6456b"/><rect x="20" y="31" width="26" height="6" rx="1" fill="#3f8fbf"/><rect x="17" y="24" width="27" height="6" rx="1" fill="#f2c14e"/><rect x="21" y="17" width="22" height="6" rx="1" fill="#6fb162"/>',
+  stamp_coffee: '<circle cx="32" cy="32" r="27" fill="none" stroke="#8a5a2b" stroke-width="3"/><circle cx="32" cy="32" r="18" fill="none" stroke="#8a5a2b" stroke-width="5" opacity=".35" stroke-dasharray="70 14"/><path d="M22 26h18v9a9 9 0 0 1-18 0Z" fill="#fff" stroke="#8a5a2b" stroke-width="1.8"/><path d="M40 29h3a3 3 0 0 1 0 6h-3" fill="none" stroke="#8a5a2b" stroke-width="1.8"/><path d="M27 22q1-3 0-5M32 22q1-3 0-5" stroke="#8a5a2b" stroke-width="1.4" fill="none"/>',
+  stamp_wave: '<circle cx="32" cy="32" r="27" fill="none" stroke="#2f8f83" stroke-width="3"/><path d="M14 36q6-8 12 0t12 0 12 0" fill="none" stroke="#2f8f83" stroke-width="3.5" stroke-linecap="round"/><path d="M14 28q6-8 12 0t12 0 12 0" fill="none" stroke="#2f8f83" stroke-width="2" stroke-linecap="round" opacity=".6"/>',
+  stamp_sun: '<circle cx="32" cy="32" r="27" fill="none" stroke="#e08a00" stroke-width="3"/><circle cx="32" cy="32" r="9" fill="#f6c33b" stroke="#e08a00" stroke-width="1.6"/>' + Array.from({ length: 8 }, (_, i) => { const a = i * Math.PI / 4; return `<path d="M${(32 + 13 * Math.cos(a)).toFixed(1)} ${(32 + 13 * Math.sin(a)).toFixed(1)}L${(32 + 19 * Math.cos(a)).toFixed(1)} ${(32 + 19 * Math.sin(a)).toFixed(1)}" stroke="#e08a00" stroke-width="3" stroke-linecap="round"/>`; }).join(''),
+  stamp_rocket: '<circle cx="32" cy="32" r="27" fill="none" stroke="#c8584e" stroke-width="3"/><path d="M32 12q10 8 6 26H26q-4-18 6-26Z" fill="#fff" stroke="#c8584e" stroke-width="1.8"/><circle cx="32" cy="26" r="3.5" fill="#5cb0ff"/><path d="M26 32l-6 8h6M38 32l6 8h-6" fill="#c8584e"/><path d="M29 40q3 10 3 10t3-10" fill="#f6c33b"/>',
+  stamp_diamond: '<circle cx="32" cy="32" r="27" fill="none" stroke="#8a6fd1" stroke-width="3"/><path d="M22 24h20l6 8-16 16-16-16Z" fill="#c9b7f5" stroke="#8a6fd1" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 32h32M22 24l10 24 10-24M28 24l4 8 4-8" stroke="#8a6fd1" stroke-width="1.2" fill="none"/>',
+});
+/* ---------- Timer-ring trails ---------- */
+const TRAIL_COLORS = { trail_sparks: ['#ffd166', '#ff9f43', '#fff3b0'], trail_petals: ['#f7a8c4', '#f28ab0', '#ffd3e2'], trail_snow: ['#ffffff', '#e8f3ff', '#cfe3ff'], trail_bubbles: ['rgba(140,200,255,.7)', 'rgba(180,230,255,.6)', 'rgba(255,255,255,.5)'], trail_stars: ['#fff6c4', '#ffe08a', '#ffffff'], trail_embers: ['#ff6b35', '#ff9f43', '#ffd166'] };
+let trailLast = 0, trailN = 0;
+function trailOn() { return motion() === 'full' && equippedId('trail') !== 'trail_none' && !!TRAIL_COLORS[equippedId('trail')] && S.timer.status === 'running'; }
+/** Called every frame while the ring is live: drops a particle at the ring's head a few times a second. */
+function trailTick(p, t = performance.now()) {
+  if (!trailOn()) return;
+  const kind = equippedId('trail'), host = $('#ringTrail');
+  if (!host || t - trailLast < (kind === 'trail_sparks' ? 70 : 130) || trailN >= 36) return;
+  trailLast = t;
+  const a = -Math.PI / 2 + Math.PI * 2 * p, r = 46.2;   // the ring's radius as % of the box (120 of 260)
+  const x = 50 + r * Math.cos(a), y = 50 + r * Math.sin(a), cols = TRAIL_COLORS[kind];
+  const el = document.createElement('i');
+  el.className = 'tp ' + kind.replace('trail_', 'tp-');
+  const out = kind === 'trail_sparks' ? 1 : 0.3;   // sparks fly outward; the rest drift
+  const dx = (Math.cos(a) * out * (10 + Math.random() * 18) + (Math.random() - .5) * 12).toFixed(1);
+  const dy = (kind === 'trail_bubbles' || kind === 'trail_embers' ? -(22 + Math.random() * 26) : kind === 'trail_petals' || kind === 'trail_snow' ? 22 + Math.random() * 26 : Math.sin(a) * out * (10 + Math.random() * 18)).toFixed(1);
+  el.style.cssText = `left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--dx:${dx}px;--dy:${dy}px;--tc:${cols[Math.floor(Math.random() * cols.length)]};--rot:${Math.round(Math.random() * 360)}deg;--s:${(0.7 + Math.random() * 0.8).toFixed(2)};--d:${(kind === 'trail_sparks' ? 0.5 + Math.random() * 0.4 : 1.1 + Math.random() * 0.9).toFixed(2)}s`;
+  host.appendChild(el);
+  trailN++;
+  el.addEventListener('animationend', () => { el.remove(); trailN--; }, { once: true });
+  setTimeout(() => { if (el.isConnected) { el.remove(); trailN--; } }, 2600);
+}
+function trailPreview(id) {
+  const cols = TRAIL_COLORS[id];
+  if (!cols) return '<svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--line)" stroke-width="4"/><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--accent)" stroke-width="4" stroke-dasharray="90 138" transform="rotate(-90 30 30)"/></svg>';
+  const dots = [[48, 12], [54, 20], [44, 6], [58, 30], [50, 4], [40, 10]].map(([x, y], i) => id === 'trail_stars' ? `<path d="M${x} ${y - 3}l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9Z" fill="${cols[i % 3]}"/>` : id === 'trail_petals' ? `<ellipse cx="${x}" cy="${y}" rx="3" ry="1.8" fill="${cols[i % 3]}" transform="rotate(${i * 50} ${x} ${y})"/>` : `<circle cx="${x}" cy="${y}" r="${id === 'trail_bubbles' ? 2.6 : 1.8}" fill="${cols[i % 3]}"${id === 'trail_bubbles' ? ' stroke="rgba(120,180,240,.8)" stroke-width=".6"' : ''}/>`).join('');
+  return `<svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--line)" stroke-width="4"/><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--accent)" stroke-width="4" stroke-dasharray="90 138" transform="rotate(-90 30 30)"/>${dots}</svg>`;
+}
+/* ---------- More room art, seeds and garden decor ---------- */
+Object.assign(RM.wall, { wall_stripes: ['#f3e9d6', '#d6e3d0'] });
+Object.assign(RM_ART, {
+  desk_white: '<rect x="138" y="148" width="144" height="10" rx="3" fill="#f4f4f0"/><rect x="146" y="158" width="128" height="30" fill="#e8e8e2"/><rect x="156" y="166" width="48" height="10" rx="2" fill="#d2d2cb"/><rect x="216" y="166" width="48" height="10" rx="2" fill="#d2d2cb"/><path d="M146 188v18M274 188v18" stroke="#c9c9c2" stroke-width="5"/>',
+  desk_glass: '<rect x="134" y="148" width="152" height="8" rx="2" fill="#bfe6f0" opacity=".8"/><rect x="134" y="148" width="152" height="8" rx="2" fill="none" stroke="#7fb8c8" stroke-width="1.4"/><path d="M142 156v50M278 156v50" stroke="#8fa0a8" stroke-width="4"/><rect x="186" y="112" width="52" height="34" rx="3" fill="#1f2430"/><rect x="190" y="116" width="44" height="26" fill="#7cc8ff"/><path d="M212 146v4M200 150h24" stroke="#555" stroke-width="3"/>',
+  shelf_tall: '<rect x="296" y="60" width="90" height="6" rx="1" fill="#8a6238"/><rect x="296" y="92" width="90" height="6" rx="1" fill="#8a6238"/><rect x="296" y="124" width="90" height="6" rx="1" fill="#8a6238"/>' + [[300, 44, 7, '#d6456b'], [309, 48, 6, '#3f8fbf'], [317, 42, 8, '#f2c14e'], [340, 46, 7, '#8a6fd1'], [349, 44, 6, '#2f8f83']].map(([x, y, w, c]) => `<rect x="${x}" y="${y}" width="${w}" height="${60 - y}" fill="${c}"/>`).join('') + [[302, 76, 7, '#e5654f'], [311, 80, 6, '#4a76b8'], [330, 74, 8, '#c9a227'], [360, 78, 6, '#d98c6b'], [368, 76, 7, '#6fb162']].map(([x, y, w, c]) => `<rect x="${x}" y="${y}" width="${w}" height="${92 - y}" fill="${c}"/>`).join('') + '<circle cx="372" cy="52" r="6" fill="#6fb162"/><rect x="300" y="108" width="30" height="16" rx="2" fill="#f4f4f0"/><circle cx="366" cy="116" r="7" fill="#e5654f"/>',
+  lamp_candle: '<g class="rm-glow">' + [[250, 150, 22], [262, 150, 16], [274, 150, 26]].map(([x, y, h]) => `<rect x="${x - 4}" y="${y - h}" width="8" height="${h}" rx="2" fill="#f4e6c8"/><ellipse cx="${x}" cy="${y - h - 4}" rx="2.6" ry="5" fill="#ffb347"/><ellipse cx="${x}" cy="${y - h - 4}" rx="1.2" ry="2.6" fill="#fff3b0"/>`).join('') + '</g><rect x="242" y="150" width="40" height="4" rx="2" fill="#8a6238"/>',
+  plant_fern: '<path d="M352 206h30l-4 20h-22Z" fill="#9c6a3a"/>' + [[-40, -10], [-25, -26], [0, -32], [25, -26], [40, -10]].map(([dx, dy]) => `<path d="M367 206q${dx / 2} ${dy / 2 - 6} ${dx} ${dy}" stroke="#4f9a5a" stroke-width="2.2" fill="none"/>` + Array.from({ length: 4 }, (_, i) => { const t = (i + 1) / 5, x = 367 + dx * t, y = 206 + (dy / 2 - 6) * 2 * t * (1 - t) + dy * t * t; return `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="5" ry="2" fill="#6fb162" transform="rotate(${Math.atan2(dy, dx) * 57 + 90} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; }).join('')).join(''),
+  window_forest: '<rect x="30" y="25" width="100" height="84" rx="4" fill="#c9dfe6"/><path d="M30 90q25-8 50-2t50-4v25H30Z" fill="#8fb5a6"/>' + [[42, 92], [60, 96], [80, 90], [100, 95], [118, 92]].map(([x, b]) => `<path d="M${x} ${b}l-12-22 5 0-7-14 5 0-7-14 16 0-7 14 5 0-7 14 5 0Z" fill="#3f7a5a" transform="scale(1 1)"/>`).join('') + '<rect x="30" y="70" width="100" height="18" fill="#fff" opacity=".35"/><rect x="30" y="25" width="100" height="84" rx="4" fill="none" stroke="#5a4a3a" stroke-width="6"/><path d="M80 25v84M30 67h100" stroke="#5a4a3a" stroke-width="4"/>',
+  rug_heart: '<path d="M200 244q-80-30-80-62 0-20 20-20 14 0 20 12 6-12 20-12 20 0 20 20 0 32-80 62Z" transform="translate(0 -26) scale(1 .55) translate(0 160)" fill="#e8739b"/><path d="M200 244q-80-30-80-62 0-20 20-20 14 0 20 12 6-12 20-12 20 0 20 20 0 32-80 62Z" transform="translate(0 -26) scale(1 .55) translate(0 160)" fill="none" stroke="#f7c1d4" stroke-width="3"/>',
+  poster_wave: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#f3efe4" stroke="#333" stroke-width="3"/><path d="M254 96q10-30 30-28 14 2 22 16 6-14 20-12v24H254Z" fill="#2f6fa8"/><path d="M262 78q6-12 18-8 10 4 10 16" fill="none" stroke="#fff" stroke-width="2"/><path d="M284 64q10-14 24-6" fill="none" stroke="#fff" stroke-width="2" opacity=".8"/>',
+  pet_hamster: '<g class="rm-pet"><circle cx="84" cy="208" r="22" fill="none" stroke="#8a8a8a" stroke-width="3"/><path d="M84 186v44M62 208h44" stroke="#8a8a8a" stroke-width="1.2" opacity=".5"/><ellipse class="rm-fish" cx="84" cy="216" rx="9" ry="6" fill="#d9a066"/><circle cx="92" cy="213" r="4.5" fill="#d9a066"/><circle cx="93.5" cy="212" r=".8" fill="#222"/><path d="M89 209l-1-3 3 1Z" fill="#d9a066"/><rect x="80" y="229" width="8" height="4" fill="#8a8a8a"/></g>',
+});
+GSPECIES.push(
+  { id: 'mint',        name: 'Mint',        rarity: 'common',    need: 65,  price: 3,   lvl: 1, leaf: '#5fae7a', flower: '#f3e6ff', fruit: '#3f8a5a', shape: 'leafy',  hint: 'Fresh and fast.' },
+  { id: 'radish',      name: 'Radish',      rarity: 'common',    need: 80,  price: 4,   lvl: 2, leaf: '#6aa35a', flower: '#fbfbea', fruit: '#e63e6b', shape: 'root',   hint: 'A common seed from garden level 2.' },
+  { id: 'dahlia',      name: 'Dahlia',      rarity: 'rare',      need: 340, price: 34,  lvl: 4, leaf: '#4e8a4a', flower: '#f28ab0', fruit: '#e04f8a', shape: 'pom',    hint: 'A rare seed from garden level 4.' },
+  { id: 'orchid',      name: 'Orchid',      rarity: 'rare',      need: 380, price: 38,  lvl: 5, leaf: '#5b8f5e', flower: '#e8b4ff', fruit: '#c58cff', shape: 'orchid', hint: 'A rare seed from garden level 5.' },
+  { id: 'dragonfruit', name: 'Dragon fruit', rarity: 'legendary', need: 720, price: 115, lvl: 7, leaf: '#4f9a7a', flower: '#fff6f6', fruit: '#f23c7a', shape: 'dragon', hint: 'A legendary seed from garden level 7.' },
+);
+for (const sp of GSPECIES) GSP_BY_ID[sp.id] = sp;
+GDECOR.push(
+  { id: 'dc_windchime',   name: 'Wind chime',    kind: 'spot',   rarity: 'common', price: 20,  lvl: 1, desc: 'Tinkles in the breeze' },
+  { id: 'dc_wheelbarrow', name: 'Wheelbarrow',   kind: 'spot',   rarity: 'common', price: 24,  lvl: 2, desc: 'Full of soil and seedlings' },
+  { id: 'dc_path_wood',   name: 'Wooden path',   kind: 'path',   rarity: 'common', price: 14,  lvl: 2, desc: 'Planks across the beds' },
+  { id: 'dc_beehive',     name: 'Beehive',       kind: 'spot',   rarity: 'rare',   price: 40,  lvl: 3, desc: 'Bees come and go' },
+  { id: 'dc_fence_stone', name: 'Stone wall',    kind: 'border', rarity: 'rare',   price: 50,  lvl: 5, desc: 'A low dry-stone wall' },
+  { id: 'dc_statue',      name: 'Tomato statue', kind: 'spot',   rarity: 'epic',   price: 110, lvl: 6, desc: 'A marble Pomeo' },
+);
+for (const d of GDECOR) GDECOR_BY_ID[d.id] = d;
+Object.assign(DECOR_ART, {
+  dc_windchime: '<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M20 58V8" stroke="#8a6238" stroke-width="2"/><path d="M8 14h24" stroke="#8a6238" stroke-width="3" stroke-linecap="round"/>' + [10, 15, 20, 25, 30].map((x, i) => `<path d="M${x} 16v${14 + (i % 3) * 6}" stroke="#b8c2c8" stroke-width="2.4" stroke-linecap="round"/>`).join('') + '<circle cx="20" cy="44" r="3" fill="#f2c14e"/></svg>',
+  dc_wheelbarrow: '<svg viewBox="0 0 70 50" aria-hidden="true"><path d="M14 18h40l-6 18H20Z" fill="#4a76b8"/><path d="M18 18q16-8 32 0" fill="#8a6238"/><path d="M26 12q6-6 10 0M38 12q6-6 10 0" stroke="#6fb162" stroke-width="2.4" fill="none"/><circle cx="24" cy="42" r="7" fill="#333"/><circle cx="24" cy="42" r="3" fill="#888"/><path d="M54 18l12 4M44 36l12 8" stroke="#555" stroke-width="3"/></svg>',
+  dc_beehive: '<svg viewBox="0 0 50 60" aria-hidden="true"><path d="M25 56V40" stroke="#8a6238" stroke-width="3"/><ellipse cx="25" cy="40" rx="18" ry="6" fill="#e8b84a"/><ellipse cx="25" cy="30" rx="16" ry="7" fill="#f2c95a"/><ellipse cx="25" cy="20" rx="13" ry="7" fill="#e8b84a"/><ellipse cx="25" cy="11" rx="9" ry="6" fill="#f2c95a"/><ellipse cx="25" cy="34" rx="4" ry="3" fill="#5a3a1e"/><circle cx="8" cy="18" r="2.2" fill="#f2c14e" stroke="#3a2a1a" stroke-width=".6"/><circle cx="42" cy="26" r="2.2" fill="#f2c14e" stroke="#3a2a1a" stroke-width=".6"/></svg>',
+  dc_statue: '<svg viewBox="0 0 60 80" aria-hidden="true"><rect x="12" y="62" width="36" height="14" rx="2" fill="#c9cbd1"/><rect x="18" y="56" width="24" height="8" fill="#dcdee3"/><ellipse cx="30" cy="38" rx="17" ry="16" fill="#e6e8ec"/><path d="M30 24l-5-3 1.5 4-4.5 1 5 1 3-1 3 1 5-1-4.5-1 1.5-4Z" fill="#cfd2d8"/><circle cx="25" cy="38" r="1.6" fill="#9a9ca3"/><circle cx="35" cy="38" r="1.6" fill="#9a9ca3"/><path d="M27 44q3 2 6 0" stroke="#9a9ca3" stroke-width="1.4" fill="none"/></svg>',
+});
 
 /* ==========================================================================
    NAVIGATION (v1.14.3). One list of sections (#tabs), shown three ways:
