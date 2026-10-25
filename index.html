@@ -1476,6 +1476,7 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .deck-list .rem-fg { align-items: center; }
 .deck-list .rem-acts { gap: 6px; align-items: center; }
 .deck-list .rem-acts .btn.small { min-height: 40px; }
+@media (pointer: coarse) { .deck-list .rem-acts .btn.small { min-height: 44px; } }   /* a full-size tap target on touch screens */
 .deck-list .rem-acts .iconbtn { width: 40px; height: 40px; }
 .dk-new, .dk-rename, .dk-edit { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; margin: 10px 0; align-items: center; }
 .dk-new input, .dk-rename input, .dk-edit input { min-width: 0; min-height: 44px; }
