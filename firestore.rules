@@ -12,7 +12,7 @@ rules_version = '2';
 //   friendships/{a_b}           a request or a friendship between two users
 //   inbox/{uid}/items/{id}      kudos and nudges (preset reactions, no text)
 //   challenges/{id}             weekly challenges between friends
-//   clans/… clanNames/… clanCodes/… clanOf/…   clans, the study-group system (v1.14, see CLANS below; session modes v1.14.2)
+//   clans/… clanNames/… clanCodes/… clanOf/…   clans, the study-group system (v1.14, see CLANS below; session modes v1.14.2; raid HP table v1.14.3)
 //
 // HONEST NOTE ON CHEATING: there is no server here (no Cloud Functions on the
 // free plan), so every number is calculated on the user's own device. These
@@ -314,7 +314,21 @@ service cloud.firestore {
     }
     function lookOk(d, field, free) {
       return d[field] is string && (d[field] == free || d.owned.get(d[field], false) == true
-        || (field == 'emblem' && d.emblem.matches('ce_r_(titan|leviathan|colossus)') && d.raids.values().hasAny([d.emblem.split('_')[2]])));
+        || (field == 'emblem' && d.emblem.matches('ce_r_(titan|leviathan|colossus|behemoth|wyrm|hydra|phantom|swarm|goblin|sloth|kraken|wizard|gremlin|tyrant|pumpkin)')
+            && d.raids.values().hasAny([d.emblem.split('_')[2], d.emblem.split('_')[2] + '+'])));
+    }
+    // Monthly raid HP (v1.14.3, the same table as the app). Up to October 2026: 600 per member, at least 1,800.
+    // From November 2026 each month has a boss with an HP range [for 1 member, for 30 members], in a 12-month cycle
+    // starting in November; HP = min + (max - min) × (members - 1) / 29, rounded to the nearest 100.
+    function raidRange(mk) {
+      let i = ((int(mk[0:4]) * 12 + int(mk[5:7]) - 24323) % 12 + 12) % 12;
+      return [[7000, 9300], [7500, 10000], [5000, 6000], [6500, 8500], [8000, 10000], [5000, 6000],
+              [7000, 9300], [6500, 8500], [5000, 6000], [6000, 8000], [8500, 10000], [5500, 7500]][i];
+    }
+    function raidHPFor(mk, members) {
+      return mk < '2026-11'
+        ? (members * 600 > 1800 ? members * 600 : 1800)
+        : math.round((raidRange(mk)[0] * 29 + (raidRange(mk)[1] - raidRange(mk)[0]) * ((members > 30 ? 30 : (members < 1 ? 1 : members)) - 1)) / 2900.0) * 100;
     }
     function validClanDoc(d) {
       return d.keys().hasOnly(['name', 'nameLower', 'tag', 'desc', 'emblem', 'banner', 'theme', 'frame', 'joinMode', 'members',
@@ -346,6 +360,7 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/clanNames/$(request.resource.data.nameLower)).data.clan == cid
         && request.resource.data.members == 1 && request.resource.data.xp == 0 && request.resource.data.spent == 0
         && request.resource.data.owned.size() == 0 && request.resource.data.tq == 0 && request.resource.data.tr == 0
+        && request.resource.data.monthKey.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$') && request.resource.data.raidHP == raidHPFor(request.resource.data.monthKey, 1)
         && request.resource.data.createdAt == request.time;
       allow update: if signedIn() && clanUpdate(cid);
       // disband (leader), or the last member leaving
@@ -492,7 +507,7 @@ service cloud.firestore {
         && ((n.weekKey == o.weekKey && n.weekMin == o.weekMin + d && n.weekGroups == o.weekGroups)
             || (n.weekKey is string && n.weekKey.size() == 10 && n.weekKey > o.weekKey && n.weekMin == d && n.weekGroups == 0))
         && ((n.monthKey == o.monthKey && n.monthMin == o.monthMin + d && n.raidHP == o.raidHP)
-            || (n.monthKey is string && n.monthKey.size() == 7 && n.monthKey > o.monthKey && n.monthMin == d && n.raidHP == (n.members * 600 > 1800 ? n.members * 600 : 1800)));
+            || (n.monthKey is string && n.monthKey.matches('^20[0-9]{2}-(0[1-9]|1[0-2])$') && n.monthKey > o.monthKey && n.monthMin == d && n.raidHP == raidHPFor(n.monthKey, n.members)));
     }
     // Member count: +1 when someone joins (themselves in an open clan, or accepted by a leader/officer), −1 when someone leaves or is removed.
     function clanCount(cid, n, o) {
@@ -528,7 +543,9 @@ service cloud.firestore {
     function clanRaid(cid, n, o) {
       return isMember(cid) && n.tr == o.tr + 1
         && n.raids.diff(o.raids).affectedKeys().hasOnly([n.monthKey]) && !(n.monthKey in o.raids)
-        && n.raids[n.monthKey] in ['titan', 'leviathan', 'colossus'] && n.raidHP > 0 && n.monthMin >= n.raidHP;
+        && n.raids[n.monthKey] is string && n.raids[n.monthKey].matches('^(titan|leviathan|colossus|behemoth|wyrm|hydra|phantom|swarm|goblin|sloth|kraken|wizard|gremlin|tyrant|pumpkin)[+]?$')
+        && (!n.raids[n.monthKey].matches('.*[+]$') || n.members >= 5)        // the rally bonus: 5+ members contributed (v1.14.3)
+        && n.raidHP > 0 && n.monthMin >= n.raidHP;
     }
     // A live session with 2+ people: counted once (its live document flips "counted"), for the
     // weekly group-session quest and the clan's study streak.
@@ -558,8 +575,13 @@ service cloud.firestore {
       let o = resource.data;
       let elapsed = (request.time.toMillis() - o.updatedAt.toMillis()) / 60000;
       return uid == me() && isMember(cid)
-        && changed(['contrib', 'weekKey', 'weekMin', 'lastAt', 'lastIds', 'updatedAt'])
+        && changed(['contrib', 'weekKey', 'weekMin', 'moKey', 'moMin', 'lastAt', 'lastIds', 'updatedAt'])
         && n.contrib > o.contrib && n.contrib - o.contrib <= elapsed + 240
+        // this month's raid hits (v1.14.3; apps before it leave these two fields alone)
+        && ((n.get('moKey', '') == o.get('moKey', '') && n.get('moMin', 0) == o.get('moMin', 0))
+            || (n.moKey == getAfter(clanPath(cid)).data.monthKey && n.moMin is int
+                && ((n.moKey == o.get('moKey', '') && n.moMin == o.get('moMin', 0) + (n.contrib - o.contrib))
+                    || (n.moKey != o.get('moKey', '') && n.moMin == n.contrib - o.contrib))))
         && getAfter(clanPath(cid)).data.xp - get(clanPath(cid)).data.xp == n.contrib - o.contrib
         && ((n.weekKey == o.weekKey && n.weekMin == o.weekMin + (n.contrib - o.contrib)) || (n.weekKey > o.weekKey && n.weekMin == n.contrib - o.contrib))
         && n.lastIds is list && n.lastIds.size() <= 12
