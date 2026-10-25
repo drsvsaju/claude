@@ -1514,6 +1514,37 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 }
 
 /* ==========================================================================
+   WEEKLY SUBJECT PLAN (v1.15)
+   ========================================================================== */
+.plan-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+.plan-row { display: grid; grid-template-columns: 10px minmax(80px, 1fr) minmax(90px, 2fr) auto auto; gap: 10px; align-items: center; font-size: 13.5px; }
+.plan-dot { width: 10px; height: 10px; border-radius: 50%; }
+.plan-nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.plan-bar { position: relative; height: 8px; background: var(--heat0); border-radius: 999px; overflow: hidden; display: block; }
+.plan-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.plan-bar em { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--text); opacity: .45; }
+.plan-row.st-behind .plan-bar i { background: var(--warn); }
+.plan-row.st-done .plan-bar i { background: var(--accent); }
+.plan-num { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.plan-num small { font-size: 11px; }
+.plan-st { font-size: 12px; font-weight: 600; white-space: nowrap; border-radius: 999px; padding: 2px 8px; background: var(--heat0); color: var(--muted); }
+.plan-st.ok { color: var(--accent); background: var(--accent-soft); }
+.plan-st.behind { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+.plan-st.done { color: var(--on-accent, #fff); background: var(--accent); }
+.today-plan button { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font: inherit; text-align: left; }
+.plan-dlg { width: min(520px, calc(100vw - 24px)); }
+.plan-dlg h2 { margin: 0 0 4px; }
+.pl-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px 44px; gap: 6px; margin-top: 8px; align-items: center; }
+.pl-row input { min-width: 0; min-height: 44px; }
+.pl-row .iconbtn { width: 44px; height: 44px; }
+.plan-dlg .btn-row { margin-top: 12px; }
+@media (max-width: 640px) {
+  .plan-row { grid-template-columns: 10px minmax(60px, 1fr) auto; grid-template-areas: "dot nm st" "bar bar bar" "num num num"; row-gap: 4px; }
+  .plan-row .plan-dot { grid-area: dot; } .plan-row .plan-nm { grid-area: nm; } .plan-row .plan-bar { grid-area: bar; } .plan-row .plan-num { grid-area: num; } .plan-row .plan-st { grid-area: st; }
+  .pl-row { grid-template-columns: minmax(0, 1fr) 90px 44px; }
+}
+
+/* ==========================================================================
    WRAPPED — story slides
    ========================================================================== */
 .wrapped-banner { display: flex; align-items: center; gap: 14px; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px;
@@ -3657,6 +3688,7 @@ body.first-load #todayBar { opacity: 0; }
     <div id="wrappedSlot"></div>
     <div class="tiles" id="tiles"></div>
     <div id="statsBody"></div>
+    <div id="planSlot" style="margin-top:16px"></div>
     <div id="subStatSlot" style="margin-top:16px"></div>
     <div id="energySlot" style="margin-top:16px"></div>
     <div id="gardenSlot" style="margin-top:16px"></div>
@@ -4037,6 +4069,15 @@ body.first-load #todayBar { opacity: 0; }
   <input type="text" id="cfType" class="hidden" autocomplete="off" aria-label="Type to confirm">
   <div class="btn-row" style="justify-content:flex-end;margin-top:12px"><button class="btn" id="cfNo" type="button">Cancel</button><button class="btn primary" id="cfOk" type="button">OK</button></div>
 </dialog>
+<dialog id="planDlg" class="plan-dlg" aria-labelledby="planDlgTitle">
+  <h2 id="planDlgTitle">Weekly plan</h2>
+  <p class="desc" style="margin:0 0 6px">Target hours per subject each week. A subject matches your session names (or their tags) — the plan fills in as you focus.</p>
+  <datalist id="plNames"></datalist>
+  <div id="plRows"></div>
+  <div class="btn-row" style="margin-top:8px"><button class="btn small" type="button" id="plAdd">+ Add subject</button></div>
+  <p style="color:var(--danger);font-size:13px;min-height:18px;margin:6px 0 0" id="plErr"></p>
+  <div class="btn-row" style="justify-content:flex-end"><button class="btn" type="button" id="plCancel">Cancel</button><button class="btn primary" type="button" id="plSave">Save plan</button></div>
+</dialog>
 <dialog id="deckDlg" class="deck-dlg" aria-labelledby="deckDlgTitle"><div id="deckDlgBody"></div></dialog>
 <dialog id="cardDlg" class="card-dlg" aria-label="Flashcard review"><div id="cardDlgBody"></div></dialog>
 <dialog id="todoDlg" class="todo-dlg" aria-labelledby="todoDlgTitle">
@@ -4366,6 +4407,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    33. GARDEN (v1.15) — plots, seeds, growth from focus minutes, harvests, decor, almanac.
    33b. POMEO'S ROOM (v1.15) — room items, placement, saved rooms, share image.
    33c. FLASHCARDS (v1.15) — decks, cards, review with spaced repetition, break offer.
+   33d. WEEKLY SUBJECT PLAN (v1.15) — target hours per subject, progress from session names.
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
    36. SUBTASKS — an optional checklist for the current focus session.
@@ -4895,6 +4937,7 @@ function defaultState() {
     roomSets: [],   // saved rooms (synced item by item)
     decks: [],      // flashcard decks (see FLASHCARDS)
     cards: [],      // flashcards, synced item by item
+    plan: [],       // weekly subject plan: { id, v, name, hrs } (see WEEKLY SUBJECT PLAN)
     game: normalizeGame(null),  // purchases, equipped items, claimed rewards, used streak freezes
     // Device-only fields (never uploaded):
     timer: { phase: 'focus', round: 1, status: 'idle', endAt: 0, remaining: 0, planned: 0, focusStartedAt: 0, name: '', subtasks: [] },
@@ -4918,7 +4961,7 @@ function hydrate(obj) {
   const out = { ...def, ...obj };
   for (const k of ['settings', 'timer', 'ui']) out[k] = { ...def[k], ...(obj[k] || {}) };
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
-  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards']) if (!Array.isArray(out[k])) out[k] = [];
+  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
@@ -5048,6 +5091,7 @@ function profileFromState() {
     roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
     decks: S.decks.slice(0, DECK_MAX),
     cards: S.cards.slice(0, CARD_MAX),
+    plan: S.plan.slice(0, PLAN_MAX),
     clanRem: S.clanRem,
     // Stored for reference only; the app always recalculates streaks from the session log.
     streak: { current: cur, longest, goalMin: S.settings.goalMin, today: dayKey(new Date()) },
@@ -5521,7 +5565,7 @@ function mergeData(obj) {
   for (const [k, v] of Object.entries(src.energy)) if (!S.energy[k] && v >= 1 && v <= 4) S.energy[k] = Math.round(v);
   for (const k of ['revisions', 'exams', 'parked', 'abandoned', 'subTemplates']) for (const x of src[k]) if (x && x.id && !S[k].some(y => y.id === x.id)) S[k].push(x);
   for (const [k, v] of Object.entries(sg.trophies)) if (!g.trophies[k]) g.trophies[k] = v;
-  for (const f of ['decks', 'cards']) for (const x of src[f]) { if (!x || !x.id) continue; const i = S[f].findIndex(y => y && y.id === x.id); if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() }); else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x; }   // flashcards: by id, newer wins
+  for (const f of ['decks', 'cards', 'plan']) for (const x of src[f]) { if (!x || !x.id) continue; const i = S[f].findIndex(y => y && y.id === x.id); if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() }); else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x; }   // flashcards: by id, newer wins
   S.roomPrefs = mergeCardPrefs(S.roomPrefs, src.roomPrefs).prefs;   // Pomeo's room: the newer choice per slot
   for (const x of src.roomSets) if (x && x.id && x.name && !S.roomSets.some(y => y.id === x.id)) S.roomSets.push({ ...x, u: +x.u || Date.now() });
   // Garden (1.15): plants and purchases by id — a copy already here keeps the newer one (water maps are joined); nothing is doubled.
@@ -6159,6 +6203,7 @@ function topList(top, total) {
 }
 
 function renderStats() {
+  renderPlanCard();
   renderSubStat();
   renderEnergyCard();
   renderWrappedBanner();
@@ -9614,7 +9659,7 @@ function renderTodayExtra() {
   const left = Math.max(0, S.settings.goalMin - (e.total || 0));
   const nx = nextReminderToday();
   el.innerHTML = `<div><b>${n}</b> session${n === 1 ? '' : 's'} today · ${left ? `<b>${fmtMin(left)}</b> to your goal` : 'goal met ✓'}</div>` +
-    (nx ? `<div>Next reminder: <button data-goremind>${esc(nx.r.title)} · ${fmtHM(nx.at)}</button></div>` : `<div><button data-goremind>+ Plan a study block</button></div>`) + todayTodoLine() + clanTodayLine();
+    (nx ? `<div>Next reminder: <button data-goremind>${esc(nx.r.title)} · ${fmtHM(nx.at)}</button></div>` : `<div><button data-goremind>+ Plan a study block</button></div>`) + todayTodoLine() + planTodayLine() + clanTodayLine();
 }
 /** Tasks due today (and overdue) in the Today card. */
 function todayTodoLine() {
@@ -9623,7 +9668,7 @@ function todayTodoLine() {
   const over = due.filter(todoOverdue).length;
   return `<div class="today-todo">To-do: <button data-gotodo>${due.length === 1 ? esc(due[0].title) : `${due.length} tasks due`}${over ? ` <span class="over">· ${over} overdue</span>` : ''}</button></div>`;
 }
-$('#todayExtra').addEventListener('click', e => { if (e.target.closest('[data-goclan]')) { showTab('clan'); return; } if (e.target.closest('[data-gotodo]')) { S.ui.remView = 'todo'; S.ui.todoFilter = 'today'; showTab('reminders'); return; } if (e.target.closest('[data-goremind]')) { S.ui.remView = 'rem'; showTab('reminders'); } });
+$('#todayExtra').addEventListener('click', e => { if (e.target.closest('[data-goclan]')) { showTab('clan'); return; } const gp = e.target.closest('[data-goplan]'); if (gp) { loadChip(gp.dataset.goplan, S.activePresetId); showTab('timer'); return; } if (e.target.closest('[data-gotodo]')) { S.ui.remView = 'todo'; S.ui.todoFilter = 'today'; showTab('reminders'); return; } if (e.target.closest('[data-goremind]')) { S.ui.remView = 'rem'; showTab('reminders'); } });
 
 /* Session note: after a focus block, an optional one-line note shown in the Stats → Day list. */
 let noteFor = null;
@@ -11691,6 +11736,117 @@ function openNewDeck() {
 }
 
 /* ==========================================================================
+   WEEKLY SUBJECT PLAN (v1.15) — target hours per subject per week.
+   S.plan [{ id, v, name, hrs, u }] syncs item by item. Progress comes from the
+   session log: a session counts for a subject when its name, or the tag of its
+   name (Session names in Settings), matches the subject (case-insensitive).
+   The week follows the "Week starts on" setting. Last week's shortfall is
+   carried over (capped at the target itself) — derived, nothing stored.
+   ========================================================================== */
+const PLAN_MAX = 20;
+const planKey = s => String(s || '').trim().toLowerCase();
+const planOf = () => (S.plan || []).filter(p => p && p.id && p.name && +p.hrs > 0);
+/** Minutes per subject key inside [from, to) from the session log. */
+function planMinutes(from, to, keys) {
+  const out = Object.fromEntries(keys.map(k => [k, 0]));
+  for (const s of S.sessions) {
+    if (s.start < from || s.start >= to) continue;
+    const n = planKey(s.name), t = planKey(tagFor(s.name));
+    const k = keys.includes(n) ? n : keys.includes(t) ? t : '';
+    if (k) out[k] += (+s.duration || 0) / 60000;
+  }
+  return out;
+}
+/** The plan for a week: rows with target, carry-over from the week before, done minutes and a status. */
+function planWeek(now = new Date()) {
+  const ws = S.settings.weekStart, from = weekStartOf(now, ws), to = addDays(from, 7), prevFrom = addDays(from, -7);
+  const rows = planOf().map(p => ({ ...p, key: planKey(p.name) }));
+  const keys = rows.map(r => r.key);
+  const cur = planMinutes(from.getTime(), to.getTime(), keys), prev = planMinutes(prevFrom.getTime(), from.getTime(), keys);
+  const elapsed = Math.min(1, Math.max(0, (now - from) / (7 * DAY_MS)));
+  const daysLeft = Math.max(1, Math.ceil((to - now) / DAY_MS));
+  const out = rows.map(r => {
+    const target = Math.round(+r.hrs * 60), carry = Math.min(target, Math.max(0, target - Math.round(prev[r.key])));
+    const hadPrev = S.sessions.some(s => s.start >= prevFrom.getTime() && s.start < from.getTime());   // no carry-over on a brand-new plan or an empty week
+    const goal = target + (hadPrev && (r.at || 0) < from.getTime() ? carry : 0), done = Math.round(cur[r.key]);
+    const expected = goal * elapsed, left = Math.max(0, goal - done);
+    const status = done >= goal ? 'done' : done >= expected - Math.max(20, goal * 0.1) ? 'ontrack' : 'behind';
+    return { ...r, target, carry: goal - target, goal, done, left, expected, status, perDay: Math.ceil(left / daysLeft), behindBy: Math.max(0, Math.round(expected - done)) };
+  });
+  return { from, to, elapsed, daysLeft, rows, total: out.reduce((a, r) => a + r.goal, 0), doneTotal: out.reduce((a, r) => a + r.done, 0), list: out };
+}
+const PLAN_STATUS = { done: ['Done ✓', 'done'], ontrack: ['On track', 'ok'], behind: ['Behind', 'behind'] };
+function savePlan(rows) {
+  if (isPreview()) return false;
+  const seen = new Set(), keep = [];
+  for (const r of rows) {
+    const name = String(r.name || '').trim().slice(0, 40), hrs = Math.min(60, Math.max(0.5, Math.round((+r.hrs || 0) * 2) / 2));
+    if (!name || !(+r.hrs > 0) || seen.has(planKey(name)) || keep.length >= PLAN_MAX) continue;
+    seen.add(planKey(name));
+    const old = S.plan.find(p => planKey(p.name) === planKey(name));
+    if (old) { old.name = name; old.hrs = hrs; keep.push(old); } else keep.push({ id: 'pn' + uid(), v: 1, name, hrs, at: Date.now() });
+  }
+  S.plan = keep;   // rows left out of the dialog are deleted (tombstoned)
+  save();
+  renderPlanCard(); renderTodayExtra();
+  return true;
+}
+function renderPlanCard() {
+  const el = $('#planSlot');
+  if (!el || !USER) return;
+  const w = planWeek();
+  if (!w.list.length) {
+    el.innerHTML = `<div class="card plan-card"><div class="row between" style="flex-wrap:wrap;gap:8px"><div><h2 style="margin:0 0 4px">Weekly plan</h2><div class="desc">Set target hours per subject — progress fills from your sessions’ names.</div></div><button class="btn small primary" data-planedit>Set targets</button></div></div>`;
+    return;
+  }
+  const rows = w.list.map(r => `<li class="plan-row st-${r.status}"><span class="plan-dot" style="background:${esc(colorFor(r.name))}"></span><span class="plan-nm">${esc(r.name)}</span>
+      <span class="plan-bar"><i data-fill="${Math.min(100, r.done / r.goal * 100).toFixed(1)}" data-fill-key="plan:${esc(r.key)}"></i><em style="left:${Math.min(100, r.expected / r.goal * 100).toFixed(1)}%" title="Where you should be by now"></em></span>
+      <span class="plan-num">${fmtMin(r.done)} / ${fmtMin(r.goal)}${r.carry ? ` <small title="Carried over from last week">(+${fmtMin(r.carry)})</small>` : ''}</span>
+      <span class="plan-st ${PLAN_STATUS[r.status][1]}">${PLAN_STATUS[r.status][0]}${r.status === 'behind' ? ` · ${fmtMin(r.behindBy)}` : r.status === 'ontrack' && r.left ? ` · ~${fmtMin(r.perDay)}/day` : ''}</span></li>`).join('');
+  el.innerHTML = `<div class="card plan-card"><div class="row between" style="flex-wrap:wrap;gap:8px"><div><h2 style="margin:0 0 2px">Weekly plan</h2><div class="desc">${fmtShort(w.from)} – ${fmtShort(addDays(w.to, -1))} · <b>${fmtMin(w.doneTotal)}</b> of ${fmtMin(w.total)} · ${w.daysLeft} day${w.daysLeft === 1 ? '' : 's'} left</div></div><button class="btn small" data-planedit>Edit plan</button></div>
+    <ul class="plan-list">${rows}</ul>
+    <p class="lbl" style="margin:8px 0 0">A session counts for a subject when its name, or the name’s tag, matches. The marker shows where each bar should be by now${w.list.some(r => r.carry) ? '; a shortfall last week is carried over (at most doubling the target)' : ''}.</p></div>`;
+  animateFills(el);
+}
+/** The Today card: the subject that is furthest behind, with a one-tap way to start it. */
+function planTodayLine() {
+  const w = planWeek();
+  if (!w.list.length) return '';
+  const behind = w.list.filter(r => r.status === 'behind').sort((a, b) => b.behindBy - a.behindBy)[0];
+  if (!behind) return `<div class="today-plan">Plan: ${w.list.every(r => r.status === 'done') ? 'every subject done this week 🎉' : 'all subjects on track ✓'}</div>`;
+  return `<div class="today-plan">Plan: <b>${esc(behind.name)}</b> is ${fmtMin(behind.behindBy)} behind · <button data-goplan="${esc(behind.name)}">Focus on ${esc(behind.name)}</button></div>`;
+}
+/* ---------- The plan dialog ---------- */
+function openPlanDlg() {
+  const dlg = $('#planDlg'), rows = planOf();
+  $('#plRows').innerHTML = (rows.length ? rows : [{ name: '', hrs: '' }]).map(r => planRowHTML(r.name, r.hrs)).join('');
+  $('#plNames').innerHTML = [...new Set([...Object.entries(S.names).flatMap(([n, x]) => [n, x.tag]), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 40).map(n => `<option value="${esc(n)}">`).join('');
+  $('#plErr').textContent = '';
+  if (!dlg.open) dlg.showModal();
+  setTimeout(() => { const i = $('#plRows input[name="name"]'); if (i && !i.value) i.focus(); }, 50);
+}
+const planRowHTML = (name = '', hrs = '') => `<div class="pl-row"><input type="text" name="name" list="plNames" maxlength="40" placeholder="Subject (session name or tag)" aria-label="Subject" value="${esc(name)}"><input type="number" name="hrs" min="0.5" max="60" step="0.5" placeholder="h / week" aria-label="Hours per week" value="${hrs === '' ? '' : esc(String(hrs))}"><button type="button" class="iconbtn" data-plremove aria-label="Remove this subject">✕</button></div>`;
+(() => {
+  const dlg = $('#planDlg');
+  dlg.addEventListener('click', e => {
+    const t = e.target;
+    if (t === dlg || t.closest('#plCancel')) { dlg.close(); return; }
+    if (t.closest('#plAdd')) { if ($$('#plRows .pl-row').length >= PLAN_MAX) { $('#plErr').textContent = `Up to ${PLAN_MAX} subjects`; return; } $('#plRows').insertAdjacentHTML('beforeend', planRowHTML()); $$('#plRows input[name="name"]').pop().focus(); return; }
+    const rm = t.closest('[data-plremove]'); if (rm) { rm.closest('.pl-row').remove(); return; }
+    if (t.closest('#plSave')) {
+      const rows = $$('#plRows .pl-row').map(r => ({ name: r.querySelector('[name="name"]').value, hrs: r.querySelector('[name="hrs"]').value }));
+      const bad = rows.find(r => r.name.trim() && !(+r.hrs > 0));
+      if (bad) { $('#plErr').textContent = `Give “${bad.name.trim()}” a target (0.5–60 hours a week)`; return; }
+      savePlan(rows);
+      dlg.close();
+      toast(planOf().length ? 'Weekly plan saved' : 'Weekly plan cleared', 1800, true);
+    }
+  });
+  dlg.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.closest('input')) { e.preventDefault(); $('#plSave').click(); } });
+  document.addEventListener('click', e => { if (e.target.closest('[data-planedit]')) openPlanDlg(); });
+})();
+
+/* ==========================================================================
    WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    Story slides computed on the device from the session log.
    ========================================================================== */
@@ -12731,6 +12887,7 @@ function cmdList(q) {
   if (m && +m[1] >= 1 && +m[1] <= 240 && /start|focus|min|^\d/.test(q) && !S.presets.some(p => p.focus === +m[1])) add('⏱️', `Start a ${+m[1]}-minute focus`, 'New preset', () => cmdStartMinutes(+m[1]), `start ${m[1]} min`);
   add('➕', 'Add reminder', 'Reminders', () => { S.ui.remView = 'rem'; showTab('reminders'); openRemForm(); }, 'new reminder');
   add('☑️', 'Add a task', 'To-do', () => { S.ui.remView = 'todo'; showTab('reminders'); openTodoForm(); }, 'todo to-do task new');
+  add('📊', planOf().length ? 'Edit weekly plan' : 'Set a weekly subject plan', 'Stats', openPlanDlg, 'plan targets hours subjects week');
   add('🃏', dueCards().length ? `Review ${dueCards().length} flashcard${dueCards().length === 1 ? '' : 's'}` : 'Flashcards', 'Flashcards', () => { if (!dueCards().length || !startReview('')) { S.ui.remView = 'cards'; showTab('reminders'); } }, 'flashcards cards deck revise review');
   add('🛡️', 'Open my clan', 'Clan', () => showTab('clan'), 'clan study group crew team');
   if (inClan() && !inLive()) add('🔴', 'Study now with my clan', 'Clan', () => { showTab('clan'); openClanSched(null, true); }, 'clan live group study together');
@@ -13399,7 +13556,7 @@ $('#tutBody').addEventListener('change', e => { if (e.target.id === 'tutMinimal'
 /* ---------- One-time tips, the first time a screen is opened ---------- */
 const TIPS_KEY = 'pomodorolist-tips-seen';
 const TIPS = {
-  stats: () => 'Your stats live here. Pick Day, Week, Month or Year, and check in after sessions to unlock focus insights.',
+  stats: () => 'Your stats live here, with a weekly subject plan at the top. Pick Day, Week, Month or Year, and check in after sessions to unlock focus insights.',
   garden: () => 'Your garden! Finished focus blocks water the plants. Tap an empty plot to plant a seed, tap a ripe one to harvest.',
   reminders: () => 'Plan study blocks here, keep a to-do list, and make flashcards — I’ll offer a quick review on your breaks.',
   quests: () => 'A new boss every week! Every focus minute you finish is 1 damage. Team up with friends for a bigger one.',
@@ -13843,6 +14000,7 @@ function demoDocs() {
     subTemplates: [], energy,
     ...demoGarden(sessions),
     roomPrefs: Object.fromEntries(['wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat'].map(id => [roomSlotOf(id), { v: id, u: Date.now() - 3 * 864e5 }])),
+    plan: [['Physics', 8], ['Chemistry', 6], ['Maths', 7], ['Biology', 3]].map(([name, hrs], i) => ({ id: 'demo_pn' + i, v: 1, name, hrs, at: Date.now() - 30 * 864e5, u: Date.now() - 30 * 864e5 })),
     decks: [{ id: 'demo_dk1', v: 1, name: 'Organic chemistry', subject: 'Chemistry', at: Date.now() - 9 * 864e5, u: Date.now() - 9 * 864e5 }, { id: 'demo_dk2', v: 1, name: 'Physics formulas', subject: 'Physics', at: Date.now() - 6 * 864e5, u: Date.now() - 6 * 864e5 }],
     cards: [['demo_dk1', 'Aldol condensation product', 'β-hydroxy aldehyde / ketone', '', 0], ['demo_dk1', 'Tollens’ test is positive for', 'Aldehydes (silver mirror)', '', 0], ['demo_dk1', 'Clemmensen reduction reagent', 'Zn–Hg / conc. HCl', dayKey(addDays(startOfDay(now), 3)), 3], ['demo_dk1', 'Cannizzaro reaction needs', 'An aldehyde with no α-hydrogen', dayKey(startOfDay(now)), 1], ['demo_dk1', 'Fehling’s solution colour change', 'Blue → brick-red Cu₂O', '', 0],
       ['demo_dk2', 'Kinetic energy', '½ m v²', dayKey(startOfDay(now)), 1], ['demo_dk2', 'Torque', 'τ = r × F', '', 0], ['demo_dk2', 'Snell’s law', 'n₁ sin θ₁ = n₂ sin θ₂', dayKey(addDays(startOfDay(now), 12)), 12], ['demo_dk2', 'Escape velocity', '√(2GM/R)', '', 0]].map(([deck, f, b, due, ivl], i) => ({ id: 'demo_cd' + i, v: 1, deck, f, b, due, ivl, ease: 2.5, reps: ivl ? 2 : 0, lapses: 0, at: Date.now() - (8 - i) * 864e5, u: Date.now() - 864e5 })),
@@ -13935,13 +14093,13 @@ function startPreview() {
 }
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
-const PV_BLOCK = ['[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
+const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
-const PV_WHY = [['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
+const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
@@ -14618,7 +14776,7 @@ function paintRipe(p) {
    which Firestore merges key by key on write — two devices never overwrite each other.
    Nothing here needs new security rules: it all lives in users/{uid}.
    ========================================================================== */
-const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards'];
+const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan'];
 /** Lists whose two copies of one item are combined rather than the newer one simply winning. */
 const LIST_MERGE = { plants: (win, lose) => mergePlant(win, lose) };
 const syncSnap = {};   // field -> Map(id -> the item as last saved or merged)
