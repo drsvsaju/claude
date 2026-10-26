@@ -5257,7 +5257,7 @@ function profileFromState() {
     gbuys: S.gbuys.slice(-1500),
     cardPrefs: S.cardPrefs,
     roomPrefs: S.roomPrefs,
-    eggs: S.eggs.map(e => e && e.h ? { id: e.id, v: e.v, kind: e.kind, src: e.src, at: e.at, need: e.need, h: e.h, pet: e.pet, ...(e.hs ? { hs: e.hs } : {}), ...(e.u ? { u: e.u } : {}) } : e).slice(-400),   // hatched eggs are final: no water map, so 400 fit easily (v1.16)
+    eggs: eggsForProfile(),
     petPrefs: S.petPrefs,
     roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
     decks: S.decks.slice(0, DECK_MAX),
@@ -11331,9 +11331,33 @@ const eggsWaiting = () => eggList().filter(e => !e.h).length;
 /** Two copies of one egg: a hatched copy is final; otherwise the newer one with both water maps joined. */
 function mergeEgg(win, lose) {
   if (!lose || lose === win) return win;
+  if (win.sum || lose.sum) return (+lose.n || 0) > (+win.n || 0) ? lose : win;   // the folded history: the richer record wins
   const base = win.h ? win : lose.h ? lose : win;
   if (base.h) { const { w, ...rest } = base; return rest; }   // hatched: the water map is spent and never uploaded, so both copies match
   return { ...base, w: sortedMap({ ...(lose.w || {}), ...(win.w || {}) }) };
+}
+/** Egg history stays small: once more than 400 hatched eggs are stored, the oldest beyond the newest 300 fold into one
+ *  record ('eggfold': how many, and how many copies of each pet), so the upload cap never cuts a copy this device still
+ *  holds — the two copies would differ for good and the profile would be re-uploaded forever. Both devices fold the
+ *  same way; the richer record wins in mergeEgg. */
+const EGGFOLD_AT = 400, EGGFOLD_KEEP = 300;
+const eggFoldRec = () => (S.eggs || []).find(e => e && e.id === 'eggfold' && e.sum) || null;
+function eggFold() {
+  const hatched = (S.eggs || []).filter(e => e && e.h && e.kind).sort((a, b) => a.h - b.h || (a.id < b.id ? -1 : 1));
+  if (hatched.length <= EGGFOLD_AT) return false;
+  let f = eggFoldRec();
+  if (!f) { f = { id: 'eggfold', v: 1, sum: 1, n: 0, pets: {}, at: 0, u: 0 }; S.eggs.unshift(f); }
+  const old = hatched.slice(0, hatched.length - EGGFOLD_KEEP), gone = new Set(old.map(e => e.id));
+  for (const e of old) { f.n = (+f.n || 0) + 1; if (e.pet) f.pets[e.pet] = (+f.pets[e.pet] || 0) + 1; f.at = Math.max(+f.at || 0, +e.h || 0); }
+  f.u = Date.now();
+  S.eggs = S.eggs.filter(e => !(e && gone.has(e.id)));
+  return true;
+}
+/** What the profile document carries: the folded history first, then the newest eggs — hatched ones without their spent water map. */
+function eggsForProfile() {
+  const f = eggFoldRec();
+  const rest = (S.eggs || []).filter(e => e && e !== f).map(e => e.h ? { id: e.id, v: e.v, kind: e.kind, src: e.src, at: e.at, need: e.need, h: e.h, pet: e.pet, ...(e.hs ? { hs: e.hs } : {}), ...(e.u ? { u: e.u } : {}) } : e);
+  return [...(f ? [f] : []), ...rest.slice(-(EGGFOLD_AT - 1))];   // hatched eggs are final, so 400 fit easily (v1.16)
 }
 /** One focus egg in the queue at all times: 'egg1', then 'egg' + (focus eggs so far + 1) — the same id on every device. */
 function ensureEgg() {
@@ -11378,6 +11402,8 @@ function eggAfterSession(s, mins) {
 function petsOwned() {
   const m = {};
   for (const e of eggList()) if (e.h && e.pet && PET_BY_ID[e.pet]) { const x = (m[e.pet] ||= { id: e.pet, pet: PET_BY_ID[e.pet], n: 0, at: e.h }); x.n++; x.at = Math.min(x.at, e.h); }
+  const f = eggFoldRec();   // copies hatched long ago live in the folded record
+  for (const [id, n] of Object.entries((f && f.pets) || {})) if (PET_BY_ID[id] && +n > 0) { const x = (m[id] ||= { id, pet: PET_BY_ID[id], n: 0, at: +f.at || 0 }); x.n += Math.round(+n); x.at = Math.min(x.at, +f.at || x.at); }
   for (const x of Object.values(m)) x.level = Math.min(PET_LEVEL_MAX, x.n);
   return Object.values(m).sort((a, b) => a.at - b.at);
 }
@@ -11864,8 +11890,8 @@ function gardenGifts() {
   const lv = garden().level;
   const given = [];
   for (const [id, at, sp] of GARDEN_GIFTS) if (lv >= at && !S.gbuys.some(b => b && b.id === id)) { S.gbuys.push({ id, v: 1, item: 'seed_' + sp, price: 0, at: Date.now(), slot: '', src: 'gift' }); given.push(GSP_BY_ID[sp].name); }
-  const newEggs = eggGifts(), first = ensureEgg(), settled = eggSettle();   // pets (v1.16): milestone eggs, the first egg, eggs filled on two devices
-  if (given.length || newEggs.length || first || settled.length) { GD = null; save(); }
+  const newEggs = eggGifts(), first = ensureEgg(), settled = eggSettle(), folded = eggFold();   // pets (v1.16): milestone eggs, the first egg, eggs filled on two devices, old hatches folded
+  if (given.length || newEggs.length || first || settled.length || folded) { GD = null; save(); }
   if (given.length) toast(`🎁 Garden level ${lv}: ${given.join(' and ')} seed${given.length > 1 ? 's' : ''} — plant ${given.length > 1 ? 'them' : 'it'} from an empty plot`, 3400, true, { type: 'garden' });
   if (newEggs.length) toast(`🥚 Garden level ${lv}: a ${newEggs.join(' and a ')} egg joined your garden’s queue`, 3400, true, { type: 'garden' });
   if (settled.length) announceHatched(settled);
