@@ -11342,13 +11342,23 @@ function mergeEgg(win, lose) {
  *  same way; the richer record wins in mergeEgg. */
 const EGGFOLD_AT = 400, EGGFOLD_KEEP = 300;
 const eggFoldRec = () => (S.eggs || []).find(e => e && e.id === 'eggfold' && e.sum) || null;
+const eggOrder = (a, b) => a.h - b.h || (a.id < b.id ? -1 : 1);   // oldest hatch first; the same order on every device
+/** A hatched egg the fold already counted (older than its cut): a copy a long-closed device brings back is dropped, not counted twice. */
+const eggFolded = (e, f) => !!(f && e && e.h && e.kind && (e.h < (+f.at || 0) || (e.h === +f.at && !!f.top && e.id <= f.top)));
 function eggFold() {
-  const hatched = (S.eggs || []).filter(e => e && e.h && e.kind).sort((a, b) => a.h - b.h || (a.id < b.id ? -1 : 1));
-  if (hatched.length <= EGGFOLD_AT) return false;
-  let f = eggFoldRec();
-  if (!f) { f = { id: 'eggfold', v: 1, sum: 1, n: 0, pets: {}, at: 0, u: 0 }; S.eggs.unshift(f); }
-  const old = hatched.slice(0, hatched.length - EGGFOLD_KEEP), gone = new Set(old.map(e => e.id));
-  for (const e of old) { f.n = (+f.n || 0) + 1; if (e.pet) f.pets[e.pet] = (+f.pets[e.pet] || 0) + 1; f.at = Math.max(+f.at || 0, +e.h || 0); }
+  const f0 = eggFoldRec();
+  if (f0 && (S.eggs || []).some(e => eggFolded(e, f0))) S.eggs = S.eggs.filter(e => !eggFolded(e, f0));
+  if (eggList().length <= EGGFOLD_AT) return false;   // the stored list never grows past what the upload carries
+  const hatched = eggList().filter(e => e.h).sort(eggOrder);
+  const old = hatched.slice(0, Math.max(0, hatched.length - EGGFOLD_KEEP));
+  if (!old.length) return false;
+  let f = f0;
+  if (!f) { f = { id: 'eggfold', v: 1, sum: 1, n: 0, pets: {}, at: 0, top: '', u: 0 }; S.eggs.unshift(f); }
+  f.pets ||= {};
+  const gone = new Set(old.map(e => e.id)), last = old[old.length - 1];
+  for (const e of old) { f.n = (+f.n || 0) + 1; if (e.pet) f.pets[e.pet] = (+f.pets[e.pet] || 0) + 1; }
+  f.at = +last.h; f.top = last.id;
+  f.topN = Math.max(+f.topN || 0, ...old.filter(e => /^egg\d+$/.test(e.id)).map(e => +e.id.slice(3)));
   f.u = Date.now();
   S.eggs = S.eggs.filter(e => !(e && gone.has(e.id)));
   return true;
@@ -11357,13 +11367,14 @@ function eggFold() {
 function eggsForProfile() {
   const f = eggFoldRec();
   const rest = (S.eggs || []).filter(e => e && e !== f).map(e => e.h ? { id: e.id, v: e.v, kind: e.kind, src: e.src, at: e.at, need: e.need, h: e.h, pet: e.pet, ...(e.hs ? { hs: e.hs } : {}), ...(e.u ? { u: e.u } : {}) } : e);
-  return [...(f ? [f] : []), ...rest.slice(-(EGGFOLD_AT - 1))];   // hatched eggs are final, so 400 fit easily (v1.16)
+  return [...(f ? [f] : []), ...rest.slice(-EGGFOLD_AT)];   // hatched eggs are final, so 400 fit easily (v1.16)
 }
 /** One focus egg in the queue at all times: 'egg1', then 'egg' + (focus eggs so far + 1) — the same id on every device. */
 function ensureEgg() {
   if (!USER || isPreview() || !gardenMig()) return false;
   if (eggList().some(e => e.src === 'focus' && !e.h)) return false;
-  const id = 'egg' + (eggList().filter(e => e.src === 'focus').length + 1);
+  const f = eggFoldRec(), top = Math.max(0, f && +f.topN || 0, ...eggList().filter(e => /^egg\d+$/.test(e.id)).map(e => +e.id.slice(3)));
+  const id = 'egg' + (top + 1);   // after the highest so far (folded ones are gone from the list), the same on every device
   if (eggList().some(e => e.id === id)) return false;
   S.eggs.push({ id, v: 1, kind: 'common', src: 'focus', at: Date.now(), u: Date.now(), need: EGG_NEED.common, w: {} });
   return true;
@@ -11401,8 +11412,8 @@ function eggAfterSession(s, mins) {
 /** Owned pets, from hatched eggs: level = copies hatched (max 3). */
 function petsOwned() {
   const m = {};
-  for (const e of eggList()) if (e.h && e.pet && PET_BY_ID[e.pet]) { const x = (m[e.pet] ||= { id: e.pet, pet: PET_BY_ID[e.pet], n: 0, at: e.h }); x.n++; x.at = Math.min(x.at, e.h); }
   const f = eggFoldRec();   // copies hatched long ago live in the folded record
+  for (const e of eggList()) if (e.h && e.pet && PET_BY_ID[e.pet] && !eggFolded(e, f)) { const x = (m[e.pet] ||= { id: e.pet, pet: PET_BY_ID[e.pet], n: 0, at: e.h }); x.n++; x.at = Math.min(x.at, e.h); }
   for (const [id, n] of Object.entries((f && f.pets) || {})) if (PET_BY_ID[id] && +n > 0) { const x = (m[id] ||= { id, pet: PET_BY_ID[id], n: 0, at: +f.at || 0 }); x.n += Math.round(+n); x.at = Math.min(x.at, +f.at || x.at); }
   for (const x of Object.values(m)) x.level = Math.min(PET_LEVEL_MAX, x.n);
   return Object.values(m).sort((a, b) => a.at - b.at);
