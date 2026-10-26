@@ -14478,13 +14478,15 @@ $('#tutBody').addEventListener('click', e => {
     setTimeout(() => { if (S.timer.status === 'idle') { S.timer.phase = 'focus'; UIS.gesture = performance.now(); startTimer(); } }, 300);
   }
   if (e.target.closest('#tutDemo')) {
+    FG.demoSoon = true; setTimeout(() => { FG.demoSoon = false; }, 5000);   // the focus guard holds pop-ups (the Day 1 reward) until the demo is running
     finishTutorial();
     showTab('timer');
     setTimeout(() => {
-      if (S.timer.status !== 'idle') return;
+      if (S.timer.status !== 'idle') { FG.demoSoon = false; return; }
       $('#nameInput').value = 'Demo session'; onNameChange();
       S.timer.phase = 'focus'; S.timer.oneOff = 60000; S.timer.demo = true;
       UIS.gesture = performance.now(); startTimer();
+      FG.demoSoon = false;
       pomeoSay('One minute! Watch what happens when it ends ⏱️', { kind: 'tap', ms: 4000 });
     }, 300);
   }
@@ -17158,7 +17160,7 @@ const FG = { q: [], n: 0, until: 0, ending: false, input: -1e9, running: false }
 const HOLD_ORDER = { level: 1, ach: 2, boss: 3, reveal: 4, unlock: 5, login: 6, migrate: 7, tip: 8, pomeo: 9, toast: 10 };
 const HOLD_GAP = { level: 900, ach: 3200, boss: 4200, reveal: 900, unlock: 3000, login: 900, migrate: 900, tip: 900, pomeo: 4500, toast: 1600 };
 /** A focus block is in progress (running or paused), and it isn't the moment it ends. */
-const guardOn = () => !!USER && focusActive() && !FG.ending;
+const guardOn = () => !!USER && (focusActive() || !!FG.demoSoon) && !FG.ending;   // demoSoon: the tutorial's demo block is about to start (v1.16)
 // Feedback for something the user just did (a tap or a key) is never held.
 const userJustActed = () => performance.now() - FG.input < 1500;
 for (const type of ['pointerdown', 'keydown']) document.addEventListener(type, e => { if (e.isTrusted) FG.input = performance.now(); }, true);
