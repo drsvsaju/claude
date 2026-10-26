@@ -5257,7 +5257,7 @@ function profileFromState() {
     gbuys: S.gbuys.slice(-1500),
     cardPrefs: S.cardPrefs,
     roomPrefs: S.roomPrefs,
-    eggs: S.eggs.map(e => e && e.h ? { id: e.id, v: e.v, kind: e.kind, src: e.src, at: e.at, h: e.h, pet: e.pet, ...(e.hs ? { hs: e.hs } : {}), ...(e.u ? { u: e.u } : {}) } : e).slice(-400),   // hatched eggs are final: no water map, so 400 fit easily (v1.16)
+    eggs: S.eggs.map(e => e && e.h ? { id: e.id, v: e.v, kind: e.kind, src: e.src, at: e.at, need: e.need, h: e.h, pet: e.pet, ...(e.hs ? { hs: e.hs } : {}), ...(e.u ? { u: e.u } : {}) } : e).slice(-400),   // hatched eggs are final: no water map, so 400 fit easily (v1.16)
     petPrefs: S.petPrefs,
     roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
     decks: S.decks.slice(0, DECK_MAX),
