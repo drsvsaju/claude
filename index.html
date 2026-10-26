@@ -7318,8 +7318,8 @@ let knownInvalid = null;
  */
 function reconcileRewards(mode = 'quiet') {
   if (!rewardsReady()) return [];
-  gardenGifts();   // exclusive seeds at garden levels 6, 8 and 9 (v1.16)
   gardenMigrate();   // once per account: the old session-derived garden becomes history + starting produce (see GARDEN)
+  gardenGifts();   // after the migration: exclusive seeds at garden levels 6, 8 and 9, the first egg, milestone eggs (v1.16)
   const now = Date.now(), cl = S.game.claims, news = [];
   if (!S.game.tierFrom) { S.game.tierFrom = dayKey(addDays(weekMonday(), 7)); save(); }   // fixed boss HP from next Monday
   G = null;
