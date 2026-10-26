@@ -1460,6 +1460,11 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .eg-line .rar { font-weight: 700; }
 @media (max-width: 640px) { .gd-egg { flex-basis: 100%; } }
 
+/* Garden looks (v1.16) */
+.gd-lookgrid .pv { min-height: 72px; display: flex; align-items: center; justify-content: center; }
+.gd-lookgrid .bi-src span:last-child { color: var(--muted); }
+.gd-look .titlepv { font-size: 13px; }
+
 /* Focus-weather mutations (v1.16) */
 .gd-plant.wm-shocked { filter: drop-shadow(0 0 5px rgba(255, 220, 60, .95)); }
 .gd-plant.wm-moonlit { filter: drop-shadow(0 0 5px rgba(170, 200, 255, .95)); }
@@ -1647,6 +1652,8 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .tp.tp-stars { width: 8px; height: 8px; border-radius: 0; background: none; }
 .tp.tp-stars::before { content: ""; position: absolute; inset: 0; background: var(--tc); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); }
 .tp.tp-embers { width: 5px; height: 5px; box-shadow: 0 0 8px var(--tc); }
+.tp.tp-leaves { width: 9px; height: 6px; border-radius: 0 70% 0 70%; }
+.tp.tp-fireflies { width: 5px; height: 5px; box-shadow: 0 0 7px 2px var(--tc); opacity: .9; }
 :root:not([data-motion="full"]) #ringTrail { display: none; }
 #themeFx.tfx-aurora { background: radial-gradient(60% 40% at 20% 10%, rgba(110, 231, 183, .16), transparent 70%), radial-gradient(50% 35% at 70% 0%, rgba(139, 92, 246, .16), transparent 70%), radial-gradient(45% 30% at 90% 25%, rgba(56, 189, 248, .12), transparent 70%); }
 #themeFx.tfx-aurora::before { content: ""; position: absolute; inset: -30% -10%; opacity: 1; background: linear-gradient(100deg, transparent 20%, rgba(110, 231, 183, .10) 35%, rgba(139, 92, 246, .10) 50%, rgba(56, 189, 248, .10) 65%, transparent 80%); filter: blur(30px); }
@@ -4537,6 +4544,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    33f. ROTATING SEED SHOP (v1.16) — featured seeds per 4-hour UTC slot, the rare seed of the day, exclusives, gift seeds, restock dot (inside GARDEN).
    33g. GARDEN PETS (v1.16) — eggs filled by focus, deterministic hatching, pets with capped boosts, slots by garden level, bag + almanac (inside GARDEN).
    33h. CROP WEIGHT (v1.16) — every harvest weighs something (deterministic), Giant harvests, records, the harvest log, the player card stat (inside GARDEN).
+   33j. GARDEN LOOKS (v1.16) — cosmetics the garden sells for produce (avatars, themes, titles, frames, colours, stamps, trails, room items): bought into gbuys, owned through the garden ledger, equipped like any item (inside GARDEN).
    33i. FOCUS-WEATHER MUTATIONS (v1.16) — Shocked, Moonlit, Frozen, Clan-blessed, Dawn, Streak-touched, Stormy: from how the finishing block was studied, at most two, capped (inside GARDEN).
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
@@ -6611,6 +6619,10 @@ const FRAMES = {
   frame_hex: '<path d="M12 .7 21.8 6.35v11.3L12 23.3 2.2 17.65V6.35Z" stroke-width="1" opacity=".6"/>',
   frame_orbit: '<circle cx="12" cy="12" r="11.2" stroke-width="1" stroke-dasharray="1.2 2.2" opacity=".7"/><circle cx="12" cy=".8" r="1.1" stroke="none" fill="currentColor"/>',
 };
+Object.assign(FRAMES, {   // garden looks (v1.16)
+  frame_vine: '<circle cx="12" cy="12" r="11.1" stroke-width=".9" opacity=".55"/>' + [20, 110, 200, 290].map(a => `<path d="M12 .9q1.6 1.2 0 2.6-1.6-1.4 0-2.6Z" fill="currentColor" stroke="none" opacity=".85" transform="rotate(${a} 12 12)"/>`).join('') + [65, 155, 245, 335].map(a => `<path d="M12 1.4q1.1 1 0 2-1.1-1 0-2Z" fill="currentColor" stroke="none" opacity=".6" transform="rotate(${a} 12 12)"/>`).join(''),
+  frame_wreath: '<circle cx="12" cy="12" r="11" stroke-width="1.1" opacity=".45"/>' + [0, 60, 120, 180, 240, 300].map(a => `<g transform="rotate(${a} 12 12)" stroke="none"><circle cx="12" cy="1.3" r="1.25" fill="currentColor" opacity=".9"/><circle cx="12" cy="1.3" r=".45" fill="#fff" opacity=".9"/></g>`).join('') + [30, 90, 150, 210, 270, 330].map(a => `<path d="M12 .8q1.3 1 0 2.2-1.3-1.2 0-2.2Z" fill="currentColor" stroke="none" opacity=".55" transform="rotate(${a} 12 12)"/>`).join(''),
+});
 function badgeSVG(tier, { size = 24, frame = 'frame_none', locked = false, draw = false, avatar = '' } = {}) {
   const col = locked ? 'var(--muted)' : tier.color;
   // A profile picture replaces the tier symbol; the frame stays around it.
@@ -7238,9 +7250,34 @@ ITEMS.push(
   { id: 'pet_hamster',     cat: 'room', name: 'Hamster',          desc: 'Runs its wheel',               price: 160, lvl: 4, rarity: 'rare' },
   { id: 'pet_dog',         cat: 'room', name: 'Sleepy dog',       desc: 'Snoozes by the desk',          price: 220, lvl: 6, rarity: 'rare' },
 );
+/* Garden looks (v1.16): sold only in the garden, for produce. price -1 keeps them out of the coin shop (they show there
+   once owned, like rewards); gprice is the produce price, glvl the garden level needed. Owned through the garden ledger. */
+ITEMS.push(
+  { id: 'av_pumpkin',       cat: 'avatar', name: 'Pumpkin',        desc: 'A round autumn pumpkin',                 price: -1, gprice: 35,  glvl: 1, rarity: 'common' },
+  { id: 'av_sunflower',     cat: 'avatar', name: 'Sunflower',      desc: 'Always facing the light',                price: -1, gprice: 35,  glvl: 1, rarity: 'common' },
+  { id: 'av_strawberry',    cat: 'avatar', name: 'Strawberry',     desc: 'Sweet, with a leafy top',                price: -1, gprice: 90,  glvl: 3, rarity: 'rare' },
+  { id: 'av_lotus',         cat: 'avatar', name: 'Lotus',          desc: 'A calm pink lotus on still water',       price: -1, gprice: 200, glvl: 6, rarity: 'legendary' },
+  { id: 'th_orchard',       cat: 'theme',  name: 'Orchard',        desc: 'Leaf green and warm peach, day or night', price: -1, gprice: 120, glvl: 3, rarity: 'rare' },
+  { id: 'th_moonlit',       cat: 'theme',  name: 'Moonlit garden', desc: 'Pale lavender by day, deep indigo at night', price: -1, gprice: 220, glvl: 6, rarity: 'legendary' },
+  { id: 'ti_gardener',      cat: 'title',  name: 'Gardener',       desc: 'A title under your name',                price: -1, gprice: 40,  glvl: 1, rarity: 'common' },
+  { id: 'ti_greenthumb',    cat: 'title',  name: 'Green Thumb',    desc: 'A title under your name',                price: -1, gprice: 100, glvl: 3, rarity: 'rare' },
+  { id: 'ti_harvestmoon',   cat: 'title',  name: 'Harvest Moon',   desc: 'A title under your name',                price: -1, gprice: 200, glvl: 6, rarity: 'legendary' },
+  { id: 'frame_vine',       cat: 'frame',  name: 'Vine frame',     desc: 'A leafy vine around your badge',         price: -1, gprice: 90,  glvl: 3, rarity: 'rare' },
+  { id: 'frame_wreath',     cat: 'frame',  name: 'Flower wreath',  desc: 'A wreath of small blooms',               price: -1, gprice: 190, glvl: 6, rarity: 'legendary' },
+  { id: 'col_moss',         cat: 'color',  name: 'Moss',           desc: 'Deep garden green',                      price: -1, gprice: 30,  glvl: 1, rarity: 'common' },
+  { id: 'col_marigold',     cat: 'color',  name: 'Marigold',       desc: 'Warm orange-gold',                       price: -1, gprice: 30,  glvl: 1, rarity: 'common' },
+  { id: 'stamp_sprout',     cat: 'stamp',  name: 'Sprout stamp',   desc: 'A seedling seal that says GROWN',        price: -1, gprice: 85,  glvl: 3, rarity: 'rare' },
+  { id: 'stamp_basket',     cat: 'stamp',  name: 'Harvest stamp',  desc: 'A full basket seal',                     price: -1, gprice: 180, glvl: 6, rarity: 'legendary' },
+  { id: 'trail_leaves',     cat: 'trail',  name: 'Falling leaves', desc: 'Autumn leaves drift from the ring',      price: -1, gprice: 110, glvl: 3, rarity: 'rare' },
+  { id: 'trail_fireflies',  cat: 'trail',  name: 'Fireflies',      desc: 'Soft fireflies rise from the ring',      price: -1, gprice: 210, glvl: 6, rarity: 'legendary' },
+  { id: 'plant_sunflower',  cat: 'room',   name: 'Sunflower pot',  desc: 'A tall sunflower for the corner',        price: -1, gprice: 45,  glvl: 1, rarity: 'common' },
+  { id: 'poster_seeds',     cat: 'room',   name: 'Seed packets',   desc: 'A poster of seed packets',               price: -1, gprice: 45,  glvl: 1, rarity: 'common' },
+  { id: 'rug_grass',        cat: 'room',   name: 'Grass rug',      desc: 'A patch of lawn indoors',                price: -1, gprice: 95,  glvl: 3, rarity: 'rare' },
+);
+const GARDEN_LOOKS = ITEMS.filter(i => i.gprice);
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const DEFAULTS = { avatar: 'av_default', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none', sound: 'snd_chime', ambient: 'amb_none', theme: 'th_default', ring: 'ring_classic', font: 'font_system', effect: 'fx_none', frame: 'frame_none', color: 'col_default', aura: 'au_streak', title: 'ti_none', stamp: 'stamp_classic', card: 'card_minimal', trail: 'trail_none' };
-const NAME_COLORS = { col_teal: '#2f9e8f', col_sky: '#4a90c2', col_coral: '#e07a5f', col_violet: '#8a6fd1', col_rose: '#c95c84', col_gold: '#c9a227' };
+const NAME_COLORS = { col_teal: '#2f9e8f', col_sky: '#4a90c2', col_coral: '#e07a5f', col_violet: '#8a6fd1', col_rose: '#c95c84', col_gold: '#c9a227', col_moss: '#5a8f3c', col_marigold: '#e08a1e' };   // moss + marigold: garden looks (v1.16)
 
 /* ---------- Derived game state (cached; cleared whenever state is saved) ---------- */
 let G = null;
@@ -7299,6 +7336,7 @@ function computeGame() {
   }
   for (const id of Object.keys(S.game.grants)) if (ITEM_BY_ID[id]) owned.add(id);   // boss and questline rewards (free)
   for (const it of ITEMS) if ((it.clanLv || it.clanRaid) && clanOwns(it)) owned.add(it.id);   // clan cosmetics: while you're in the clan
+  for (const b of garden().valid) if (ITEM_BY_ID[b.item] && ITEM_BY_ID[b.item].gprice) owned.add(b.item);   // garden looks, bought with produce (v1.16; computeGarden never calls game())
   const earned = earnedAt(Infinity);
   return {
     idx, streak, xp, lv, tier: tierFor(lv.level), focusMs, earned, spent,
@@ -7757,6 +7795,16 @@ const systemDark = () => matchMedia('(prefers-color-scheme: dark)').matches;
 /** Light/dark/system setting + the equipped theme. Shop themes set CSS variables inline. */
 let themeReady = false, themeFadeTimer;
 let landingSkin = '';
+Object.assign(SKINS, {   // garden looks (v1.16)
+  th_orchard: {
+    light: { bg: '#f3f5ea', surface: '#fbfcf6', text: '#22301f', muted: '#5f6e58', line: '#dfe5d2', accent: '#5a8f3c', heat0: '#e7ecdc', 'accent-soft': 'rgba(90,143,60,.12)' },
+    dark:  { bg: '#121a10', surface: '#192218', text: '#e6ecdf', muted: '#93a28b', line: '#27322a', accent: '#8ec46d', heat0: '#20291f', 'on-accent': '#121a10' },
+  },
+  th_moonlit: {
+    light: { bg: '#f1f0fa', surface: '#faf9ff', text: '#23223a', muted: '#636282', line: '#dedcf0', accent: '#5b63c9', heat0: '#e5e3f3', 'accent-soft': 'rgba(91,99,201,.12)' },
+    dark:  { bg: '#0f1024', surface: '#171833', text: '#e7e6f7', muted: '#9c9cc0', line: '#272848', accent: '#a9b4ff', heat0: '#1f2040', 'on-accent': '#0f1024' },
+  },
+});
 function applyTheme(themeArg) {
   const root = document.documentElement;
   // Colours crossfade instead of snapping (skipped on the very first paint).
@@ -10943,9 +10991,11 @@ function computeGarden() {
   const used = new Set(plants.map(p => p.seed));   // a seed a plant grew from is settled whatever the clocks said
   let spent = 0;
   const valid = [], invalid = [];
+  const looks = new Set();   // garden looks (v1.16): one copy each
   for (const b of buys) {
     const price = Math.max(0, Math.round(+b.price || 0));
-    if (b.ok || used.has(b.id) || earnedAt(+b.at || 0) - spent >= price) { spent += price; valid.push(b); } else invalid.push(b.id);
+    if (ITEM_BY_ID[b.item] && ITEM_BY_ID[b.item].gprice && looks.has(b.item)) { invalid.push(b.id); continue; }
+    if (b.ok || used.has(b.id) || earnedAt(+b.at || 0) - spent >= price) { spent += price; valid.push(b); if (ITEM_BY_ID[b.item] && ITEM_BY_ID[b.item].gprice) looks.add(b.item); } else invalid.push(b.id);
   }
   const produce = Math.max(0, earnedAt(Infinity) - spent);
   const seeds = {};   // species -> [unplanted seed buys]
@@ -11449,7 +11499,8 @@ function gardenHarvest(id) {
 }
 /** Buy a seed or decor piece with produce. how: '' (always-available grid), 'feat' (this slot's featured seed, 20% off) or 'daily' (the rare seed of the day). */
 function gardenBuy(item, how = '') {
-  const g = garden(), sp = item.startsWith('seed_') ? GSP_BY_ID[item.slice(5)] : null, dc = GDECOR_BY_ID[item];
+  const g = garden(), sp = item.startsWith('seed_') ? GSP_BY_ID[item.slice(5)] : null, dc = GDECOR_BY_ID[item], look = ITEM_BY_ID[item] && ITEM_BY_ID[item].gprice ? ITEM_BY_ID[item] : null;
+  if (look) return gardenBuyLook(look);
   const it = sp || dc;
   if (!it || gardenBusy()) return false;
   if (how && (!sp || (how === 'feat' && !featuredSeeds().some(x => x.id === sp.id)) || (how === 'daily' && dailySeed().id !== sp.id))) { toast('The shop has restocked — that seed has moved on'); renderGarden(); return false; }
@@ -11465,6 +11516,24 @@ function gardenBuy(item, how = '') {
   save();
   uiClaim(); uiSound('coin');
   toast(sp ? `${sp.name} seed${price ? ' bought' : ' added'}${how === 'feat' ? ' — featured, 20% off' : how === 'daily' ? ` — ${Math.max(0, SEED_DAILY_MAX - dailyBought())} left today` : ''}` : `${dc.name} is yours — place it in the garden`, 2200, true);
+  return true;
+}
+/** A garden look (v1.16): paid with produce, recorded in gbuys, owned through the garden ledger, equipped at once. */
+function gardenBuyLook(it) {
+  const g = garden();
+  if (gardenBusy() || !rewardsReady()) { toast('Still syncing — try again in a moment'); return false; }
+  if (isOwned(it.id)) { toast(`${it.name} is already yours — it is in your bag`); return false; }
+  if (g.level < (it.glvl || 1)) { toast(`Unlocks at garden level ${it.glvl}`); return false; }
+  if (g.produce < it.gprice) { toast(`You need ${it.gprice - g.produce} more produce — harvest something`); return false; }
+  S.gbuys.push({ id: 'gb' + uid(), v: 1, item: it.id, price: it.gprice, at: Date.now(), slot: '' });
+  GD = null; G = null;
+  markEquipped(it.id);
+  if (it.cat === 'room') roomPlace(it.id); else eqSet(it.cat, it.id);
+  save();
+  applyCosmetics();
+  uiClaim(); uiSound('coin');
+  toast(`${it.name} is yours${it.cat === 'room' ? ' — placed in Pomeo’s room' : ' — equipped'}`, 2400, true);
+  if (S.ui.tab === 'bag') renderBag();
   return true;
 }
 /** Put a decor item in a slot ('border', 'path', 's1'…'s6'); anything already there goes back to the bag. */
@@ -11721,7 +11790,24 @@ function decorShopHTML(g) {
       <div class="nm">${esc(it.name)}</div><div class="ds">${esc(it.desc)}</div>
       <div class="bi-src"><span class="rar">${RARITY_LABEL[rar]}</span><span>${own ? 'Yours' : PRODUCE_SVG + ' ' + it.price}</span></div>
       <div class="act">${btn}</div></div>`;
-  }).join('')}</div>`;
+  }).join('')}</div>${gardenLooksHTML(g)}`;
+}
+/** Garden looks for sale (v1.16): a section under the decor, paid with produce. */
+function gardenLooksHTML(g) {
+  const gm = game();
+  const card = it => {
+    const own = isOwned(it.id), eq = own && isEquippedItem(it), locked = !own && g.level < (it.glvl || 1), rar = itemRarity(it);
+    const btn = locked ? `<button class="btn" disabled>${LOCK_SVG} Garden level ${it.glvl}</button>`
+      : eq ? `<button class="btn" disabled>${it.cat === 'room' ? 'Placed' : 'Equipped'}</button>`
+      : own ? `<button class="btn primary" data-gequip="${it.id}">${it.cat === 'room' ? 'Place' : 'Equip'}</button>`
+      : `<button class="btn buy" data-gbuy="${it.id}"${g.produce >= it.gprice ? '' : ' disabled'}>Buy</button>`;
+    return `<div class="item gd-item gd-look r-${rar}${locked ? ' locked' : ''}${eq ? ' equipped' : ''}" data-id="${it.id}"><div class="pv">${rewardPreview(it, gm)}${eq ? `<span class="tag">${CHECK_SVG}${it.cat === 'room' ? 'Placed' : 'Equipped'}</span>` : own ? '<span class="tag">Owned</span>' : ''}</div>
+      <div class="nm">${esc(it.name)}</div><div class="ds">${esc(it.desc)}</div>
+      <div class="bi-src"><span class="rar">${RARITY_LABEL[rar]}</span><span>${own ? 'Yours' : PRODUCE_SVG + ' ' + it.gprice}</span><span>· ${esc(CAT_LABEL[it.cat] || it.cat)}</span></div>
+      <div class="act">${btn}</div></div>`;
+  };
+  return `<h2 class="gd-looks-h" style="margin:18px 0 4px">Garden looks</h2><p class="lbl" style="margin:0 0 10px">Profile pictures, themes, titles, frames, name colours, stamps, ring trails and room pieces that only the garden sells — paid with produce, never coins. They go to your bag like any other item.</p>
+    <div class="shopgrid gd-grid gd-lookgrid">${GARDEN_LOOKS.map(card).join('')}</div>`;
 }
 function decorPreview(it) {
   if (DECOR_ART[it.id]) return DECOR_ART[it.id];
@@ -11895,6 +11981,7 @@ const GD_POMEO_LINES = ['Every focus block is a watering can 💧', 'I love it h
     const t = e.target;
     const v = t.closest('[data-gview]'); if (v) { S.ui.gardenView = v.dataset.gview; saveLocal(); uiSound('tap'); renderGarden(); return; }
     const buy = t.closest('[data-gbuy]'); if (buy) { if (gardenBuy(buy.dataset.gbuy, buy.dataset.ghow || '')) renderGarden(); return; }
+    const ge = t.closest('[data-gequip]'); if (ge) { if (isOwned(ge.dataset.gequip)) { equipItem(ge.dataset.gequip); uiSound('on'); renderGarden(); } return; }
     const pl = t.closest('[data-gplace]'); if (pl) { openPlaceDlg(pl.dataset.gplace); return; }
     const rm = t.closest('[data-gremove]'); if (rm) { if (gardenRemove(rm.dataset.gremove)) { toast('Back in your bag', 1600, true); renderGarden(); } return; }
     const vis = t.closest('[data-visitor]'); if (vis) { restartClass(vis, 'poke', 700); uiSound('chirp'); gdSay(`The ${VISITOR_NAME[vis.dataset.visitor].toLowerCase()} ${VISITOR_SAY[vis.dataset.visitor]}`); return; }
@@ -12073,6 +12160,11 @@ function roomSVG(layout = roomLayout(), { pomeo = true, state = 'happy', self = 
   return `<svg class="rm-svg" viewBox="0 0 400 250" role="img" aria-label="Pomeo’s room">${style}${rmWall(layout.wall)}${art(layout.window)}${art(layout.poster)}${art(layout.shelf)}${rmFloor(layout.floor)}${art(layout.rug)}${art(layout.lamp)}${art(layout.desk)}${art(layout.plant)}${art(layout.pet)}${pomeoG}</svg>`;
 }
 /** A single item drawn in a small card preview. */
+Object.assign(RM_ART, {   // garden looks (v1.16)
+  plant_sunflower: '<path d="M352 206h30l-3 20h-24Z" fill="#b0603a"/><path d="M367 206v-44" stroke="#4e8a4a" stroke-width="3"/><path d="M367 190q-14-2-16-16 12 2 16 16Zm0-8q14-2 16-16-12 2-16 16Z" fill="#5c9b57"/>' + [0, 45, 90, 135, 180, 225, 270, 315].map(a => `<ellipse cx="367" cy="152" rx="4.5" ry="8" fill="#f4c430" transform="rotate(${a} 367 162)"/>`).join('') + '<circle cx="367" cy="162" r="7" fill="#7a4a22"/>',
+  poster_seeds: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fbf6ea" stroke="#b8865a" stroke-width="3"/><g><rect x="258" y="40" width="20" height="26" rx="2" fill="#fde3dc" stroke="#e5654f" stroke-width="1.2"/><circle cx="268" cy="54" r="5" fill="#e5654f"/><rect x="280" y="40" width="20" height="26" rx="2" fill="#fff4cf" stroke="#d9a21b" stroke-width="1.2"/><circle cx="290" cy="54" r="5" fill="#f4c430"/><rect x="302" y="40" width="20" height="26" rx="2" fill="#e8f0e4" stroke="#5a8f3c" stroke-width="1.2"/><path d="M312 60q-6-4-5-12 7 2 5 12Z" fill="#6fb162"/><rect x="258" y="70" width="64" height="22" rx="2" fill="#efe4cf"/><path d="M264 78h52M264 84h36" stroke="#b8865a" stroke-width="1.6" stroke-linecap="round"/></g>',
+  rug_grass: '<ellipse cx="200" cy="228" rx="102" ry="17" fill="#6a9e49"/><ellipse cx="200" cy="228" rx="88" ry="12" fill="#7fb069"/>' + [[120, 226], [150, 232], [185, 222], [220, 234], [250, 224], [280, 230], [205, 228], [165, 236]].map(([x, y]) => `<path d="M${x} ${y}l2-6 2 6M${x + 5} ${y}l1.5-5 1.5 5" stroke="#4e8a4a" stroke-width="1.4" fill="none" stroke-linecap="round"/>`).join('') + '<circle cx="140" cy="228" r="2" fill="#f4c430"/><circle cx="262" cy="233" r="2" fill="#f2a0c2"/>',
+});
 function roomItemPreview(it) {
   const slot = roomSlotOf(it.id);
   if (slot === 'wall') return `<svg viewBox="0 0 400 250" class="rm-pv" aria-hidden="true">${rmWall(it.id)}${rmFloor('floor_wood')}</svg>`;
@@ -13944,6 +14036,13 @@ const AVATAR_ART = {
 /** The avatar art for use inside another SVG (expects the 24×24 grid). */
 const avatarArt = id => { const a = AVATAR_ART[id]; return a ? `<g clip-path="url(#avClip)"${a.anim ? ' class="av-anim"' : ''}><circle cx="12" cy="12" r="12" fill="${a.bg}"/>${a.art}</g>` : ''; };
 const hasAvatar = id => !!id && id !== 'av_default' && !!AVATAR_ART[id] && !minimal();   // True Minimalist: plain initials
+/* Garden looks (v1.16) */
+Object.assign(AVATAR_ART, {
+  av_pumpkin: { bg: '#fdebd3', art: '<ellipse cx="12" cy="14" rx="8.4" ry="6.6" fill="#e8761e"/><ellipse cx="12" cy="14" rx="3.2" ry="6.6" fill="none" stroke="#c75f12" stroke-width=".9"/><path d="M6.4 9.6q5.6-2.6 11.2 0" fill="none" stroke="#c75f12" stroke-width=".8" opacity=".6"/><rect x="11" y="5.2" width="2.2" height="3.4" rx="1" fill="#5c9b57"/><path d="M13 6.4q3-1.6 4.2.6" fill="none" stroke="#5c9b57" stroke-width="1.1"/>' + EYE(9.4, 13.2, .8) + EYE(14.6, 13.2, .8) + '<path d="M9.6 16.4q2.4 1.8 4.8 0" fill="none" stroke="#2a1d18" stroke-width=".9" stroke-linecap="round"/>' },
+  av_sunflower: { bg: '#fff4cf', art: '<g fill="#f4c430">' + [0, 45, 90, 135, 180, 225, 270, 315].map(a => `<ellipse cx="12" cy="5.2" rx="2" ry="3.4" transform="rotate(${a} 12 12)"/>`).join('') + '</g><circle cx="12" cy="12" r="4.6" fill="#7a4a22"/><circle cx="12" cy="12" r="3" fill="none" stroke="#5c3416" stroke-width=".7" stroke-dasharray="1 1"/>' + EYE(10.6, 11.4, .6) + EYE(13.4, 11.4, .6) + '<path d="M10.8 13.6q1.2 1 2.4 0" fill="none" stroke="#2a1d18" stroke-width=".7" stroke-linecap="round"/>' },
+  av_strawberry: { bg: '#ffe3e8', art: '<path d="M12 20.4q-6.4-3.2-6.4-9 0-3.6 6.4-4.6 6.4 1 6.4 4.6 0 5.8-6.4 9Z" fill="#e6414f"/><path d="M8.6 7.2 12 4.6l3.4 2.6-1.4 1.6-2-1-2 1Z" fill="#5c9b57"/><g fill="#fff6f6" opacity=".9"><circle cx="9.6" cy="11" r=".6"/><circle cx="14.4" cy="11" r=".6"/><circle cx="12" cy="14" r=".6"/><circle cx="9.8" cy="15.8" r=".6"/><circle cx="14.2" cy="15.8" r=".6"/></g>' + EYE(10.2, 12.6, .7) + EYE(13.8, 12.6, .7) + '<path d="M10.6 15q1.4 1 2.8 0" fill="none" stroke="#2a1d18" stroke-width=".8" stroke-linecap="round"/>' },
+  av_lotus: { bg: '#e4f2f5', anim: true, art: '<ellipse cx="12" cy="18.6" rx="9" ry="2" fill="#9fd1d8" opacity=".7"/><g fill="#f2a0c2"><path d="M12 17 7.2 10.4Q9.6 8 12 9.2 14.4 8 16.8 10.4Z"/><path d="M12 17 3.8 12.6Q6.6 9.6 9 11.4Z"/><path d="M12 17l8.2-4.4Q17.4 9.6 15 11.4Z"/></g><path d="M12 17 9.4 8.2Q12 5.6 14.6 8.2Z" fill="#f7bcd3"/><circle cx="12" cy="13.8" r="1.2" fill="#f4c430"/>' },
+});
 /** A plain round avatar. */
 const avatarSVG = (id, size = 32) => `<svg class="av" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true">${avatarArt(id)}</svg>`;
 const myAvatar = () => equippedId('avatar');
@@ -14085,6 +14184,7 @@ for (const r of RAID_BOSSES) SPECIAL_AURAS['au_cr_' + r.id] = { cols: [r.a, r.b,
 
 // ---- Titles and session-complete effects ----
 const TITLE_TEXT = Object.fromEntries(EV_ITEMS.filter(x => x[1] === 'title').map(x => [x[0], x[2]]));
+Object.assign(TITLE_TEXT, { ti_gardener: 'Gardener', ti_greenthumb: 'Green Thumb', ti_harvestmoon: 'Harvest Moon' });   // garden looks (v1.16)
 const EV_FX = Object.fromEntries(EVENTS.filter(ev => EV_LOOK[ev.id].fx).map(ev => ['fx_ev_' + ev.id, EV_LOOK[ev.id].fx]));
 
 /** One stylesheet for every reward look, built from the data above. */
@@ -14642,7 +14742,7 @@ function demoGarden(sessions) {
   const now = Date.now(), d = n => now - n * 864e5, ids = sessions.slice(-40).map(s => s.id);
   const water = (mins, from) => Object.fromEntries(mins.map((m, i) => [ids[from + i] || 'demo_w' + (from + i), m]));
   const plants = [
-    { id: 'mig1', v: 1, sum: 1, at: d(20), grown: 96, golden: 7, ripe: 40, wilted: 3, y: 220, xp: 40 },
+    { id: 'mig1', v: 1, sum: 1, at: d(20), grown: 96, golden: 7, ripe: 40, wilted: 3, y: 255, xp: 40 },   // y covers the garden look bought below (v1.16)
     { id: 'demo_pl1', v: 1, sp: 'tomato', plot: 0, seed: 'st1', at: d(6), sk: 20, w: water([25, 20], 0), u: d(1) },         // leafy
     { id: 'demo_pl2', v: 1, sp: 'sunflower', plot: 1, seed: 'st3', at: d(5), sk: 21, w: water([25, 35], 3), u: d(1) },      // flowering
     { id: 'demo_pl3', v: 1, sp: 'strawberry', plot: 2, seed: 'demo_gb1', at: d(4), sk: 22, w: water([12], 5), u: d(1) },     // sprout
@@ -14661,6 +14761,7 @@ function demoGarden(sessions) {
     gb('demo_gb1', 'seed_strawberry', 5, d(4)), gb('demo_gb2', 'seed_lavender', 25, d(9)), gb('demo_gb3', 'seed_basil', 3, d(3)), gb('demo_gb4', 'seed_chilli', 6, d(2)), gb('demo_gb5', 'seed_marigold', 3, d(1)),
     gb('demo_gb6', 'seed_basil', 3, d(16)), gb('demo_gb7', 'seed_sunflower', 0, d(15)), gb('demo_gb8', 'seed_blueberry', 30, d(17)), gb('demo_gb9', 'seed_marigold', 3, d(12)), gb('demo_gb10', 'seed_tomato', 0, d(2)),
     { ...gb('demo_gb_daily', 'seed_' + dailySeed().id, dailySeed().price, now - 2 * 3600e3), src: 'daily', day: seedDayKey() },   // today's rare seed, bought once
+    { ...gb('demo_gb_look', 'av_sunflower', 35, now - 6 * 864e5), ok: 1 },   // a garden look (v1.16)
     gb('demo_gb11', 'dc_fence_wood', 12, d(13), 'border'), gb('demo_gb12', 'dc_path_stone', 10, d(13), 'path'), gb('demo_gb13', 'dc_lantern', 15, d(10), 's1'), gb('demo_gb14', 'dc_birdhouse', 18, d(10), 's5'), gb('demo_gb15', 'dc_pond', 45, d(7), 's4'), gb('demo_gb16', 'dc_bench', 22, d(5), '')];
   return { plants, gbuys };
 }
@@ -14845,13 +14946,13 @@ function startPreview() {
 }
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
-const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
+const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
-const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
+const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
@@ -15210,8 +15311,9 @@ function bagItems() {
     if (it.price === 0 || it.cat === 'freeze' || !isOwned(it.id)) continue;
     const gr = S.game.grants[it.id], pu = firstBuy[it.id];
     if (it.clanLv || it.clanRaid) { out.push({ it, src: { kind: 'clan', label: it.clanRaid ? 'Clan raid' : `Clan level ${it.clanLv}` }, at: +CLAN.me.joinedAt || 0 }); continue; }
-    const src = gr ? srcOf(gr.src) : pu && pu.gift ? { kind: 'reward', label: 'Daily reward' } : { kind: 'shop', label: 'Shop' };
-    out.push({ it, src, at: +((gr || pu || {}).at) || 0 });
+    const gb = it.gprice ? garden().valid.find(b => b.item === it.id) : null;   // a garden look (v1.16)
+    const src = gr ? srcOf(gr.src) : gb ? { kind: 'shop', label: 'Garden shop' } : pu && pu.gift ? { kind: 'reward', label: 'Daily reward' } : { kind: 'shop', label: 'Shop' };
+    out.push({ it, src, at: +((gr || gb || pu || {}).at) || 0 });
   }
   return out;
 }
@@ -16242,6 +16344,10 @@ const STAMP_ART = {
   stamp_pumpkin: '<circle cx="32" cy="32" r="27.5" fill="none" stroke="#e8761e" stroke-width="2.6" stroke-dasharray="5 3"/><ellipse cx="32" cy="36" rx="17" ry="14" fill="none" stroke="#e8761e" stroke-width="3"/><path d="M32 22q-5 6-5 14t5 14M32 22q5 6 5 14t-5 14" fill="none" stroke="#e8761e" stroke-width="1.6"/><path d="M31 22q-.6-4 2-6.4" stroke="#6b4a1f" stroke-width="2.6" stroke-linecap="round" fill="none"/><path d="M24.5 33l3.6-.4-1.6 3.4ZM36 32.6l3.6.4-2 3.2Z" fill="#e8761e"/><path d="M25 40.5q7 4 14 0" stroke="#e8761e" stroke-width="2" fill="none" stroke-linecap="round"/>',
   stamp_snow: '<circle cx="32" cy="32" r="27" fill="none" stroke="#4a90c2" stroke-width="3"/><g stroke="#4a90c2" stroke-width="3" stroke-linecap="round">' + [0, 60, 120].map(a => `<path d="M32 12v40M27 15l5 5 5-5M27 49l5-5 5 5" transform="rotate(${a} 32 32)" fill="none"/>`).join('') + '</g>',
 };
+Object.assign(STAMP_ART, {   // garden looks (v1.16)
+  stamp_sprout: '<circle cx="32" cy="32" r="27" fill="none" stroke="#5a8f3c" stroke-width="3"/><path d="M32 44V28" stroke="#5a8f3c" stroke-width="2.6" stroke-linecap="round"/><path d="M32 32q-10 0-11-11 10 0 11 11Zm0-4q0-11 11-11-1 11-11 11Z" fill="#8ec46d" stroke="#5a8f3c" stroke-width="1.4"/><path d="M22 46h20" stroke="#8a5a2b" stroke-width="2.6" stroke-linecap="round"/><text x="32" y="56" font-size="8.5" font-weight="900" letter-spacing="1.5" text-anchor="middle" fill="#5a8f3c" font-family="system-ui,sans-serif">GROWN</text>',
+  stamp_basket: '<circle cx="32" cy="32" r="27" fill="none" stroke="#b8865a" stroke-width="3"/><path d="M15 30h34l-3.5 16h-27Z" fill="#d9a066" stroke="#8a5a2b" stroke-width="1.6"/><path d="M20 30v16M26 30v16M32 30v16M38 30v16M44 30v16" stroke="#8a5a2b" stroke-width="1" opacity=".6"/><path d="M22 30q10-14 20 0" fill="none" stroke="#8a5a2b" stroke-width="2.2"/><circle cx="24" cy="27" r="4" fill="#e6414f"/><circle cx="32" cy="24.5" r="4.4" fill="#f4c430"/><circle cx="40" cy="27" r="4" fill="#8ec46d"/><path d="M31 20l1-3 1 3" stroke="#5a8f3c" stroke-width="1.2" fill="none"/>',
+});
 function stampArt(id) {
   if (STAMP_ART[id]) return STAMP_ART[id];
   const b = /^stamp_b_(\w+)$/.exec(id || '');
@@ -19278,7 +19384,7 @@ Object.assign(STAMP_ART, {
   stamp_diamond: '<circle cx="32" cy="32" r="27" fill="none" stroke="#8a6fd1" stroke-width="3"/><path d="M22 24h20l6 8-16 16-16-16Z" fill="#c9b7f5" stroke="#8a6fd1" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 32h32M22 24l10 24 10-24M28 24l4 8 4-8" stroke="#8a6fd1" stroke-width="1.2" fill="none"/>',
 });
 /* ---------- Timer-ring trails ---------- */
-const TRAIL_COLORS = { trail_sparks: ['#ffd166', '#ff9f43', '#fff3b0'], trail_petals: ['#f7a8c4', '#f28ab0', '#ffd3e2'], trail_snow: ['#ffffff', '#e8f3ff', '#cfe3ff'], trail_bubbles: ['rgba(140,200,255,.7)', 'rgba(180,230,255,.6)', 'rgba(255,255,255,.5)'], trail_stars: ['#fff6c4', '#ffe08a', '#ffffff'], trail_embers: ['#ff6b35', '#ff9f43', '#ffd166'] };
+const TRAIL_COLORS = { trail_sparks: ['#ffd166', '#ff9f43', '#fff3b0'], trail_petals: ['#f7a8c4', '#f28ab0', '#ffd3e2'], trail_snow: ['#ffffff', '#e8f3ff', '#cfe3ff'], trail_bubbles: ['rgba(140,200,255,.7)', 'rgba(180,230,255,.6)', 'rgba(255,255,255,.5)'], trail_stars: ['#fff6c4', '#ffe08a', '#ffffff'], trail_embers: ['#ff6b35', '#ff9f43', '#ffd166'], trail_leaves: ['#c9a227', '#d9703a', '#7fb069'], trail_fireflies: ['#fff3a0', '#ffe066', '#d6ff8a'] };   // leaves + fireflies: garden looks (v1.16)
 let trailLast = 0, trailN = 0;
 function trailOn() { return motion() === 'full' && equippedId('trail') !== 'trail_none' && !!TRAIL_COLORS[equippedId('trail')] && S.timer.status === 'running'; }
 /** Called every frame while the ring is live: drops a particle at the ring's head a few times a second. */
@@ -19293,7 +19399,7 @@ function trailTick(p, t = performance.now()) {
   el.className = 'tp ' + kind.replace('trail_', 'tp-');
   const out = kind === 'trail_sparks' ? 1 : 0.3;   // sparks fly outward; the rest drift
   const dx = (Math.cos(a) * out * (10 + Math.random() * 18) + (Math.random() - .5) * 12).toFixed(1);
-  const dy = (kind === 'trail_bubbles' || kind === 'trail_embers' ? -(22 + Math.random() * 26) : kind === 'trail_petals' || kind === 'trail_snow' ? 22 + Math.random() * 26 : Math.sin(a) * out * (10 + Math.random() * 18)).toFixed(1);
+  const dy = (kind === 'trail_bubbles' || kind === 'trail_embers' || kind === 'trail_fireflies' ? -(22 + Math.random() * 26) : kind === 'trail_petals' || kind === 'trail_snow' || kind === 'trail_leaves' ? 22 + Math.random() * 26 : Math.sin(a) * out * (10 + Math.random() * 18)).toFixed(1);
   el.style.cssText = `left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;--dx:${dx}px;--dy:${dy}px;--tc:${cols[Math.floor(Math.random() * cols.length)]};--rot:${Math.round(Math.random() * 360)}deg;--s:${(0.7 + Math.random() * 0.8).toFixed(2)};--d:${(kind === 'trail_sparks' ? 0.5 + Math.random() * 0.4 : 1.1 + Math.random() * 0.9).toFixed(2)}s`;
   host.appendChild(el);
   trailN++;
@@ -19303,7 +19409,7 @@ function trailTick(p, t = performance.now()) {
 function trailPreview(id) {
   const cols = TRAIL_COLORS[id];
   if (!cols) return '<svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--line)" stroke-width="4"/><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--accent)" stroke-width="4" stroke-dasharray="90 138" transform="rotate(-90 30 30)"/></svg>';
-  const dots = [[48, 12], [54, 20], [44, 6], [58, 30], [50, 4], [40, 10]].map(([x, y], i) => id === 'trail_stars' ? `<path d="M${x} ${y - 3}l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9Z" fill="${cols[i % 3]}"/>` : id === 'trail_petals' ? `<ellipse cx="${x}" cy="${y}" rx="3" ry="1.8" fill="${cols[i % 3]}" transform="rotate(${i * 50} ${x} ${y})"/>` : `<circle cx="${x}" cy="${y}" r="${id === 'trail_bubbles' ? 2.6 : 1.8}" fill="${cols[i % 3]}"${id === 'trail_bubbles' ? ' stroke="rgba(120,180,240,.8)" stroke-width=".6"' : ''}/>`).join('');
+  const dots = [[48, 12], [54, 20], [44, 6], [58, 30], [50, 4], [40, 10]].map(([x, y], i) => id === 'trail_stars' ? `<path d="M${x} ${y - 3}l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9Z" fill="${cols[i % 3]}"/>` : id === 'trail_petals' || id === 'trail_leaves' ? `<ellipse cx="${x}" cy="${y}" rx="3" ry="1.8" fill="${cols[i % 3]}" transform="rotate(${i * 50} ${x} ${y})"/>` : `<circle cx="${x}" cy="${y}" r="${id === 'trail_bubbles' ? 2.6 : 1.8}" fill="${cols[i % 3]}"${id === 'trail_bubbles' ? ' stroke="rgba(120,180,240,.8)" stroke-width=".6"' : ''}/>`).join('');
   return `<svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--line)" stroke-width="4"/><circle cx="30" cy="30" r="22" fill="none" style="stroke:var(--accent)" stroke-width="4" stroke-dasharray="90 138" transform="rotate(-90 30 30)"/>${dots}</svg>`;
 }
 /* ---------- More room art, seeds and garden decor ---------- */
