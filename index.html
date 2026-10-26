@@ -8388,6 +8388,7 @@ function writePublic(col, data) {
   if (lastPub[col] === json) return null;
   lastPub[col] = json;
   const p = FB.setDoc(FB.doc(FB.db, col, USER.uid), { ...data, updatedAt: FB.serverTimestamp() });
+  if (col === 'publicProfiles' && SOC.bigProbe && !('big' in data)) p.then(() => { SOC.bigProbe = false; console.warn('Firestore rules do not accept "big" yet — publishing without it. Update the rules so friends can see your biggest harvest.'); }, () => { SOC.bigProbe = false; SOC.bigRejected = false; });
   if (col === 'publicProfiles' && 'aura' in data) p.then(() => { writeLS('pomodorolist-auraok:' + USER.uid, 1); if (!SOC.auraOk) { SOC.auraOk = true; delete lastPub.publicStats; schedulePublish(); } }, () => {});
   trackWrite(p.catch(e => {
     // Rules from before special auras refuse the "aura" field: publish without it (friends see the streak aura).
@@ -8406,17 +8407,17 @@ function writePublic(col, data) {
       return;
     }
     // Rules from before 1.16 refuse "produce" / "harvests" (the garden leaderboards): publish without them until the rules are updated.
+    // A denied stats write can also mean the minutes grew too fast (an import, a long offline stretch): try once without
+    // the fields — if that write goes through the rules refused them; if it is refused too, the fields were not the cause.
     if (e.code === 'permission-denied' && col === 'publicStats' && 'produce' in data && !SOC.gardenStatsRejected) {
-      SOC.gardenStatsRejected = true;
-      console.warn('Firestore rules do not accept "produce" / "harvests" yet — publishing without them. Update the rules for the garden leaderboards.');
+      SOC.gardenStatsRejected = true; SOC.gardenProbe = true;
       delete lastPub.publicStats;
       setTimeout(() => publishPublic(), 300);
       return;
     }
     // Rules from before 1.16 refuse the "big" field (biggest harvest): publish without it until the rules are updated.
     if (e.code === 'permission-denied' && 'big' in data && col === 'publicProfiles' && !SOC.bigRejected) {
-      SOC.bigRejected = true;
-      console.warn('Firestore rules do not accept "big" yet — publishing without it. Update the rules so friends can see your biggest harvest.');
+      SOC.bigRejected = true; SOC.bigProbe = true;   // the same probe: the next profile write goes without "big"
       delete lastPub.publicProfiles; delete lastPub.publicStats;
       setTimeout(() => publishPublic(), 300);
       return;
@@ -8487,7 +8488,11 @@ function publishPublic(first) {
   const stats = clampStats({ username: USER.username, ...flair, ...(SOC.auraOk ? aura : {}), global: !!s.globalBoard, ...myPeriodStats() }, SOC.myStats);
   if (SOC.gardenStatsRejected) { delete stats.produce; delete stats.harvests; }
   const p = writePublic('publicStats', stats);
-  if (p) p.then(() => { SOC.myStats = { ...stats, at: Date.now() }; SOC.statRetries = 0; }, e => {
+  if (p) p.then(() => {
+    SOC.myStats = { ...stats, at: Date.now() }; SOC.statRetries = 0;
+    if (SOC.gardenProbe) { SOC.gardenProbe = false; console.warn('Firestore rules do not accept "produce" / "harvests" yet — publishing without them. Update the rules for the garden leaderboards.'); }   // the probe went through: confirmed
+  }, e => {
+    if (SOC.gardenProbe) { SOC.gardenProbe = false; SOC.gardenStatsRejected = false; }   // refused without the fields too: not their fault, send them again next time
     // Another device may have written newer totals: re-read what the server has, then try once more.
     if (e.code === 'permission-denied' && (SOC.statRetries = (SOC.statRetries || 0) + 1) <= 2) {
       delete lastPub.publicStats;
@@ -13548,9 +13553,10 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
    command palette, offline banner, pull to refresh, tab swipes, haptics.
    Everything here is stored on this device (localStorage); no new cloud data.
    ========================================================================== */
-const APP_VERSION = '1.15';
+const APP_VERSION = '1.16';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
+  { v: '1.16', t: 'Garden pets, a rotating seed shop, crop weights, focus-weather mutations, garden looks and new leaderboards', d: 'The garden grew up: every finished focus block also fills the egg in the garden head, and after 5 hours it hatches one of ten pets (bunny to golden snail) that help the garden a little — more water from your blocks, better mutation odds, slower wilting, bonus produce, heavier crops (all capped); duplicates level a pet up, and garden levels 4 and 8 and questline finals add rarer eggs. The Seeds shop restocks every 4 hours UTC with featured seeds at 20% off and a rare seed of the day (two a day; bamboo, pineapple and sakura come only this way or as level gifts). Every harvest now weighs something — long blocks, mutations and pets make it heavier, and 3 in 100 harvests are Giants — with records, a harvest log and a biggest-harvest line on your player card. Seven focus-weather mutations (Shocked for 90-minute blocks, Moonlit after 10 PM, Dawn before 7 AM, Frozen in December, Clan-blessed in a live clan session, Streak-touched at a 14-day streak, Stormy in monsoon questlines) stack up to two on a plant, capped at ×8 produce. The garden sells twenty looks for produce — avatars, themes, titles, frames, name colours, stamps, ring trails, room pieces. And the leaderboard got a podium, rank arrows, your own rank pinned, Pomeo empty states, a "You passed…" moment and two garden boards: produce earned and plants harvested, for friends and for everyone.' },
   { v: '1.15', t: 'A real garden, Pomeo’s room, flashcards, a weekly plan and new looks', d: 'The garden is now its own tab: plant seeds in up to 16 plots, every completed focus block waters them (the plant you choose gets the most), harvest ripe plants for produce, spend it on seeds and decor, discover 18 species with golden, rainbow and crystal mutations, visitors, weather, seasons and an almanac — the plants your past sessions grew are credited as a head start. Pomeo has a room you furnish from the coin shop (walls, floors, rugs, desks, lamps, shelves, plants, posters, windows, pets), with saved rooms and a share picture; questline finals and boss wins add room rewards from now on. Break-time flashcards: decks and cards in Reminders, a flip-and-grade review with spaced repetition, and Pomeo offers a few due cards during breaks (never during focus). A weekly subject plan in Stats: hours per subject, progress from your session names and tags, on-track / behind hints and carry-over. Plus 8 themes (Lavender, Mint, Coffee, Slate, Peach, Candy, Monsoon, Aurora), 10 stamps, 6 ring trails, 22 room items, 5 garden species and 6 decor pieces. Everything syncs across devices, works as a guest and is in your backup.' },
   { v: '1.14.3', t: 'Stronger raids, cleaner menu', d: 'Monthly clan raid bosses are much stronger from November: every month has its own boss, tier and HP (about 5,000–10,000 depending on the boss and clan size), with everyone’s hits, a rally bonus for 5+ contributors and rarer rewards in harder months. The navigation never cuts labels off any more: a sidebar on wide screens, a ☰ menu on tablets and a bottom bar with More on phones. Copy buttons work everywhere (with a Share button on phones), your profile card can fold its stats away, and the welcome page shows what’s inside before asking you to sign up.' },
   { v: '1.14.2', t: 'Focus together', d: 'Clan sessions now start as Focus together by default: everyone runs their own timer and preset at one study table, sees each other’s countdowns and states, and stepping away or leaving only affects you. The shared Synced timer with host controls is still there when you want it, and planned sessions show which mode they use.' },
@@ -13575,7 +13581,7 @@ const CHANGELOG = [
   { v: '1.1', t: 'Accounts & sync', d: 'Log in and keep your sessions in sync on every device, even offline.' },
   { v: '1.0', t: 'Focus timer', d: 'Pomodoro timer with named sessions, presets, streaks and stats.' },
 ];
-const NEWS = ['🌱 A real garden: plant seeds in up to 16 plots, water them with focus blocks, harvest produce, mutations, visitors, weather and an almanac', '🛋️ Pomeo’s room: furnish it from the coin shop, save rooms, share a picture; questline and boss rewards now include room items', '🃏 Break-time flashcards with spaced repetition — Pomeo offers a few due cards in your breaks, never during focus', '📊 A weekly subject plan in Stats: hours per subject, progress from your session names and tags, carry-over', '🎨 8 themes, 10 stamps, 6 ring trails, 22 room items, 5 garden species and 6 decor pieces', '⚔️ Much stronger monthly clan raid bosses from November: a new boss every month, with everyone’s hits and a rally bonus', '🧭 A cleaner menu: a sidebar on wide screens, ☰ on tablets, More on phones — no more cut-off tabs', '📋 Copy buttons that always work, plus Share on phones; fold the stats on your profile card', '🪑 Focus together: clan sessions where everyone runs their own timer at one table (the Synced timer is still an option)', '✨ Cosmetics fixes: Squad auras look different from Solo ones, and your look is the same on every screen', '🛡️ Clans: your study group — create one or join with a link or code', '🔴 Study live on one shared timer, at a study table with your clan (reactions, no chat)', '📅 Plan group sessions: RSVP, a reminder 5–30 min before, add to your calendar', '⭐ Clan levels, Clan Points and a cosmetic clan shop; clan tags, colours and auras in your bag', '🏆 A weekly clan quest, a monthly raid boss, a clan leaderboard and a trophy case', '☑️ A to-do list in Reminders: due dates, priorities, tags and a checklist that becomes subtasks', '🔒 Members-only clan data, approval by default, and leave / remove / disband any time'];
+const NEWS = ['🥚 Garden pets: every focus block fills the egg; ten pets that water, protect and fatten your plants (capped boosts), hearts for duplicates', '🏪 The Seeds shop restocks every 4 hours: featured seeds at 20% off and a rare seed of the day — bamboo, pineapple and sakura come only this way', '⚖️ Every harvest has a weight: long blocks, mutations and pets make it heavier; Giants (3 in 100), records, a harvest log and a card stat', '⚡ Focus-weather mutations: Shocked, Moonlit, Dawn, Frozen, Clan-blessed, Streak-touched, Stormy — up to two per plant, ×8 produce at most', '🎁 Twenty garden looks for produce: avatars, themes, titles, frames, colours, stamps, trails and room pieces', '🏆 Leaderboard v2: a podium, rank arrows, your rank pinned, “You passed…”, and garden boards for produce and harvests', '🌱 A real garden: plant seeds in up to 16 plots, water them with focus blocks, harvest produce, mutations, visitors, weather and an almanac', '🛋️ Pomeo’s room: furnish it from the coin shop, save rooms, share a picture; questline and boss rewards now include room items', '🃏 Break-time flashcards with spaced repetition — Pomeo offers a few due cards in your breaks, never during focus', '📊 A weekly subject plan in Stats: hours per subject, progress from your session names and tags, carry-over', '🎨 8 themes, 10 stamps, 6 ring trails, 22 room items, 5 garden species and 6 decor pieces', '⚔️ Much stronger monthly clan raid bosses from November: a new boss every month, with everyone’s hits and a rally bonus', '🧭 A cleaner menu: a sidebar on wide screens, ☰ on tablets, More on phones — no more cut-off tabs', '📋 Copy buttons that always work, plus Share on phones; fold the stats on your profile card', '🪑 Focus together: clan sessions where everyone runs their own timer at one table (the Synced timer is still an option)', '✨ Cosmetics fixes: Squad auras look different from Solo ones, and your look is the same on every screen', '🛡️ Clans: your study group — create one or join with a link or code', '🔴 Study live on one shared timer, at a study table with your clan (reactions, no chat)', '📅 Plan group sessions: RSVP, a reminder 5–30 min before, add to your calendar', '⭐ Clan levels, Clan Points and a cosmetic clan shop; clan tags, colours and auras in your bag', '🏆 A weekly clan quest, a monthly raid boss, a clan leaderboard and a trophy case', '☑️ A to-do list in Reminders: due dates, priorities, tags and a checklist that becomes subtasks', '🔒 Members-only clan data, approval by default, and leave / remove / disband any time'];
 
 /* ---------- Haptics ---------- */
 const HAPTIC_KEY = 'pomodorolist-haptics';
