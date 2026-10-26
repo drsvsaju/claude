@@ -9042,7 +9042,7 @@ async function renderBoard(fromLoad) {
     const me = r.uid === USER.uid, L = personLook(r.uid, r.username, r);
     return `<div class="lb-pod p${r.rank}${me ? ' me' : ''}" data-uid="${r.uid}"${!me && scope === 'friends' ? ` data-open="${r.uid}" role="button" tabindex="0"` : ''}>
       <span class="lb-pr">${r.rank}</span><span class="lb-crown" aria-hidden="true">${r.rank === 1 ? '👑' : ''}</span>${lookPic(L, r.rank === 1 ? 52 : 40)}
-      <span class="lb-pn">${lookName(L, { tag: false })}${me ? ' <span class="lbl">(you)</span>' : ''}</span><span class="lb-pv">${fmtBoardVal(period, r.minutes)}</span>${lbDeltaHTML(prev, r)}</div>`;
+      <span class="lb-pn">${lookName(L)}${me ? ' <span class="lbl">(you)</span>' : ''}</span><span class="lb-pv">${fmtBoardVal(period, r.minutes)}</span>${lbDeltaHTML(prev, r)}</div>`;
   };
   const lonely = scope === 'friends' && !friendsList().length;   // only me on the board: Pomeo's empty state instead of a one-row list
   const podium = !res.error && !lonely && res.rows.length >= 3 ? `<div class="lb-podium">${[res.rows[1], res.rows[0], res.rows[2]].map(pod).join('')}</div>` : '';
