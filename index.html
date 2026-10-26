@@ -5257,7 +5257,7 @@ function profileFromState() {
     gbuys: S.gbuys.slice(-1500),
     cardPrefs: S.cardPrefs,
     roomPrefs: S.roomPrefs,
-    eggs: S.eggs.slice(-80),
+    eggs: S.eggs.map(e => e && e.h ? { id: e.id, v: e.v, kind: e.kind, src: e.src, at: e.at, h: e.h, pet: e.pet, ...(e.hs ? { hs: e.hs } : {}), ...(e.u ? { u: e.u } : {}) } : e).slice(-400),   // hatched eggs are final: no water map, so 400 fit easily (v1.16)
     petPrefs: S.petPrefs,
     roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
     decks: S.decks.slice(0, DECK_MAX),
@@ -8409,7 +8409,7 @@ function writePublic(col, data) {
     // Rules from before 1.16 refuse "produce" / "harvests" (the garden leaderboards): publish without them until the rules are updated.
     // A denied stats write can also mean the minutes grew too fast (an import, a long offline stretch): try once without
     // the fields — if that write goes through the rules refused them; if it is refused too, the fields were not the cause.
-    if (e.code === 'permission-denied' && col === 'publicStats' && 'produce' in data && !SOC.gardenStatsRejected) {
+    if (e.code === 'permission-denied' && col === 'publicStats' && 'produce' in data && !SOC.gardenStatsRejected && (SOC.statRetries || 0) >= 2) {
       SOC.gardenStatsRejected = true; SOC.gardenProbe = true;
       delete lastPub.publicStats;
       setTimeout(() => publishPublic(), 300);
@@ -8487,12 +8487,12 @@ function publishPublic(first) {
   });
   const stats = clampStats({ username: USER.username, ...flair, ...(SOC.auraOk ? aura : {}), global: !!s.globalBoard, ...myPeriodStats() }, SOC.myStats);
   if (SOC.gardenStatsRejected) { delete stats.produce; delete stats.harvests; }
-  const p = writePublic('publicStats', stats);
+  const p = writePublic('publicStats', stats), probing = !!SOC.gardenProbe && !('produce' in stats);   // this very write is the probe (without the fields)
   if (p) p.then(() => {
     SOC.myStats = { ...stats, at: Date.now() }; SOC.statRetries = 0;
-    if (SOC.gardenProbe) { SOC.gardenProbe = false; console.warn('Firestore rules do not accept "produce" / "harvests" yet — publishing without them. Update the rules for the garden leaderboards.'); }   // the probe went through: confirmed
+    if (probing) { SOC.gardenProbe = false; console.warn('Firestore rules do not accept "produce" / "harvests" yet — publishing without them. Update the rules for the garden leaderboards.'); }   // the probe went through: confirmed
   }, e => {
-    if (SOC.gardenProbe) { SOC.gardenProbe = false; SOC.gardenStatsRejected = false; }   // refused without the fields too: not their fault, send them again next time
+    if (probing) { SOC.gardenProbe = false; SOC.gardenStatsRejected = false; }   // refused without the fields too: not their fault, send them again next time
     // Another device may have written newer totals: re-read what the server has, then try once more.
     if (e.code === 'permission-denied' && (SOC.statRetries = (SOC.statRetries || 0) + 1) <= 2) {
       delete lastPub.publicStats;
@@ -11242,6 +11242,7 @@ function mergePlant(win, lose) {
   if (lose.sum || win.sum) return lose.sum && win.sum && (+lose.grown || 0) + (+lose.xp || 0) > (+win.grown || 0) + (+win.xp || 0) ? lose : win;
   if (!win.h && lose.h) return lose;
   if (win.h) return win;
+  if (!win.fin && lose.fin) [win, lose] = [lose, win];   // the copy that ripened keeps fin / fd / m / wm (v1.16)
   return { ...win, w: { ...(lose.w || {}), ...(win.w || {}) } };
 }
 
@@ -11271,7 +11272,8 @@ function gardenAfterSession(s) {
     const amt = give[p.id];
     if (!amt) continue;
     (p.w ||= {})[s.id] = amt;
-    if (plantReady(p) && !p.fin) { p.fin = s.id; p.fd = mins; p.m = mutationOf(p); const wm = weatherMutations(p, s, game().streak.cur); if (wm.length) p.wm = wm; p.fc = 0; ripe.push(p); }
+    (p.b ||= {})[s.id] = raw;   // the block's own length, unboosted and unsplit: crop size and Giants read this (v1.16)
+    if (plantReady(p) && !p.fin) { p.fin = s.id; p.fd = raw; p.m = mutationOf(p); const wm = weatherMutations(p, s, computeStreaks(buildIndex()).cur); if (wm.length) p.wm = wm; p.fc = 0; ripe.push(p); }
     if (plantStage(p) > before[p.id]) stagesUp.push(p);
   }
   GD = null;
@@ -11448,16 +11450,17 @@ function openPetsDlg() {
     <p class="lbl">${out.length} of ${n} out${n < 3 ? ` · one more slot at garden level ${PET_SLOTS_AT[n]}` : ''}${active.length ? ` · now: ${active.map(([k, v]) => BOOST_TEXT[k](v)).join(', ')}` : ''}</p>
     ${own.length ? `<div class="shopgrid gd-grid gd-petgrid">${own.map(card).join('')}</div>` : `<p class="muted">No pets yet. Your first egg hatches after 5 hours of finished focus.</p>`}
     <h3 class="gd-eggq">Eggs</h3>
-    ${eggs.length ? `<ul class="gd-egglist">${eggs.map((e, i) => `<li><span class="eg">${eggArt(e.kind, Math.round(Math.min(eggFill(e), eggNeed(e)) / eggNeed(e) * 100), 28)}</span><span><b>${RARITY_LABEL[e.kind]} egg</b>${i === 0 ? ' · in the slot' : ' · waiting'}<br><span class="lbl">${fmtNum(Math.min(eggFill(e), eggNeed(e)))} / ${eggNeed(e)} min${e.src === 'focus' ? '' : e.src.startsWith('lv') ? ` · from garden level ${e.src.slice(2)}` : ' · questline reward'}</span></span></li>`).join('')}</ul>` : '<p class="lbl">No eggs waiting.</p>'}
+    ${eggs.length ? `<ul class="gd-egglist">${eggs.map((e, i) => `<li><span class="eg">${eggArt(e.kind, Math.round(Math.min(eggFill(e), eggNeed(e)) / eggNeed(e) * 100), 28)}</span><span><b>${RARITY_LABEL[e.kind]} egg</b>${i === 0 ? ' · in the slot' : ' · waiting'}<br><span class="lbl">${fmtNum(Math.min(eggFill(e), eggNeed(e)))} / ${eggNeed(e)} min${e.src === 'focus' ? '' : String(e.src || '').startsWith('lv') ? ` · from garden level ${e.src.slice(2)}` : ' · questline reward'}</span></span></li>`).join('')}</ul>` : '<p class="lbl">No eggs waiting.</p>'}
     <p class="lbl">Eggs come only from focus: every finished block fills the egg in the slot. Garden levels 4 and 8 and questline finals add rarer eggs. Boosts are capped (${Object.entries(BOOST_CAP).map(([k, v]) => BOOST_TEXT[k](v)).join('; ')}).</p>
     <div class="btn-row"><button class="btn" data-gclose>Close</button></div>`);
 }
 /* The hatch reveal (queued after a focus block) */
 let hatchQueue = [];
 function showHatch(e) {
-  if (!userJustActed() && holdForFocus('reveal', 'egg:' + e.id, () => showHatch(e))) return;
+  if (holdForFocus('reveal', 'egg:' + e.id, () => showHatch(e))) return;   // never during a block, whatever the user just tapped
   const dlg = $('#eggDlg'), pet = PET_BY_ID[e.pet];
   if (!dlg || !pet) return;
+  if (dlg.open) { if (!hatchQueue.some(x => x.id === e.id)) hatchQueue.push(e); return; }   // one reveal at a time: the next egg waits for this one to close
   const lv = (petsOwned().find(x => x.id === e.pet) || { level: 1 }).level, dup = eggList().filter(x => x.h && x.pet === e.pet).length > 1;
   dlg.className = 'egg-dlg k-' + e.kind + ' r-' + pet.rarity;
   dlg.dataset.pet = e.pet;
@@ -11476,6 +11479,7 @@ function showHatch(e) {
   uiClaim();
 }
 $('#egOk').addEventListener('click', () => $('#eggDlg').close());
+$('#eggDlg').addEventListener('close', () => { const next = hatchQueue.shift(); if (next) setTimeout(() => showHatch(next), 450); });   // the next hatched egg follows
 $('#egOut').addEventListener('click', () => { const id = $('#eggDlg').dataset.pet; $('#eggDlg').close(); if (petEquip(id)) { toast(`${PET_BY_ID[id].name} is out in the garden`, 2000, true); if (S.ui.tab === 'garden') renderGarden(); } });
 /** After a session: announce hatched eggs (toast + inbox now, the reveal through the focus queue). */
 function announceHatched(list) {
@@ -11483,7 +11487,7 @@ function announceHatched(list) {
     const pet = PET_BY_ID[e.pet];
     if (!pet) continue;
     inboxAdd({ type: 'event', key: 'egg:' + e.id, title: `🐣 A ${pet.name} hatched in your garden`, go: { tab: 'garden' }, read: true });
-    setTimeout(() => showHatch(e), 5200);
+    setTimeout(() => showHatch(e), 5200);   // several hatches in one block queue behind the open dialog
   }
 }
 /* Bag cards for pets */
@@ -11523,7 +11527,7 @@ const GKG_BY_RARITY = { common: [.1, .3], rare: [.2, .6], legendary: [.4, 1.2] }
 const KG_MUT = { golden: 1.4, rainbow: 1.7, crystal: 2 };
 const KG_CAP = 6, GIANT_CHANCE = .03, GIANT_LONG_BONUS = .02, GIANT_MULT = 3;
 /** Average minutes per watering block (long blocks grow bigger crops). */
-const plantAvgMin = p => { const v = Object.values(p.w || {}).map(Number).filter(x => x > 0); return v.length ? v.reduce((a, x) => a + x, 0) / v.length : (+p.fd || 25); };
+const plantAvgMin = p => { const v = Object.values(p.b || p.w || {}).map(Number).filter(x => x > 0); return v.length ? v.reduce((a, x) => a + x, 0) / v.length : (+p.fd || 25); };   // p.b: block lengths (1.16); older plants fall back to their water shares
 const isGiantRoll = p => hash01(p.id + ':giant') < GIANT_CHANCE + (plantAvgMin(p) >= 60 ? GIANT_LONG_BONUS : 0);
 function cropKg(p, petW = 0) {
   const [lo, hi] = GKG[p.sp] || GKG_BY_RARITY[speciesOf(p).rarity] || GKG_BY_RARITY.common;
@@ -11556,11 +11560,11 @@ function harvestLogHTML(g) {
 }
 let lastHarvestRec = null;   // the records before the latest harvest (for the "new record" moment)
 /** The Giant reveal (held during a focus block). */
-function showGiant(p) {
-  if (holdForFocus('reveal', 'giant:' + p.id, () => showGiant(p))) return;   // during a focus block the harvest toast is enough; the reveal waits
+function showGiant(p, rec = lastHarvestRec) {
+  if (holdForFocus('reveal', 'giant:' + p.id, () => showGiant(p, rec))) return;   // during a focus block the harvest toast is enough; the reveal waits
   const sp = speciesOf(p);
   gdDialog(`<div class="gd-giant"><div class="gd-giant-art">${plantArt(sp, 4, p.m || '')}</div><div class="rw-kicker">A Giant harvest!</div><h2 id="gdTitle">${fmtKg(kgOf(p))} ${esc(sp.name)}</h2>
-    <p class="lbl">About three times the usual size${lastHarvestRec && (!lastHarvestRec.best || kgOf(p) > lastHarvestRec.best.kg) ? ' — your biggest harvest yet' : ''}. Giants come to about 3 in 100 harvests, 5 in 100 when grown with hour-long blocks.</p>
+    <p class="lbl">About three times the usual size${rec && (!rec.best || kgOf(p) > rec.best.kg) ? ' — your biggest harvest yet' : ''}. Giants come to about 3 in 100 harvests, 5 in 100 when grown with hour-long blocks.</p>
     <div class="btn-row"><button class="btn primary" data-gclose>Nice!</button></div></div>`);
   if (motion() !== 'off') setTimeout(() => burstParticles($('#gdDlg .gd-giant-art'), motion() === 'full' ? 24 : 8), 120);
   uiSound('reward', { always: true });
@@ -11836,7 +11840,7 @@ function dailySeed(now = Date.now()) {
   return GSPECIES.filter(sp => sp.rarity !== 'common' && !sp.shop).sort((a, b) => h(a) - h(b))[0];
 }
 const featPrice = sp => Math.max(1, Math.round(sp.price * (1 - SEED_FEAT_OFF)));
-const dailyBought = (now = Date.now()) => (S.gbuys || []).filter(b => b && b.src === 'daily' && b.day === seedDayKey(now)).length;
+const dailyBought = (now = Date.now()) => garden().valid.filter(b => b.src === 'daily' && b.day === seedDayKey(now)).length;   // the ledger's verdict: a refunded buy does not count
 const untilRestock = (now = Date.now()) => (seedSlot(now) + 1) * SEED_SLOT_MS - now;
 const untilDailySeed = (now = Date.now()) => (seedDayN(now) + 1) * 864e5 - now;
 const fmtCountdown = ms => { const m = Math.max(0, Math.ceil(ms / 60000)), h = Math.floor(m / 60); return h ? `${h}h ${pad(m % 60)}m` : `${m} min`; };
@@ -11984,12 +11988,12 @@ function renderGarden() {
   el.innerHTML = gardenHeadHTML(g) + (view === 'garden' ? sceneHTML(g) + gardenInfoHTML(g) + harvestLogHTML(g) : view === 'seeds' ? seedShopHTML(g) : view === 'decor' ? decorShopHTML(g) : almanacHTML(g));
   animateCounts(el);
   animateFills(el);
-  if (view === 'seeds') { seedShownSlot = seedSlot(); writeLS(SEEDSLOT_KEY, String(seedShownSlot)); }
+  if (view === 'seeds') { seedShownSlot = seedSlot(); if (!isPreview()) writeLS(SEEDSLOT_KEY, String(seedShownSlot)); }
   if (view === 'garden') {
     const seen = readJSON(GSEEN_KEY, {}), now = {};
     for (const p of g.growing) now[p.id] = plantStage(p);
     if (el.querySelector('.gd-plot.grow')) { uiSound('grow'); if (motion() === 'full') haptic(12); }
-    writeLS(GSEEN_KEY, now);
+    if (!isPreview()) writeLS(GSEEN_KEY, now);
     gdSeenAt = Date.now();
   }
   updateGardenDot();
@@ -12027,7 +12031,7 @@ function openPlantDlg(id) {
   const sp = speciesOf(p), st = plantStage(p), w = waterOf(p), n = needOf(p), ready = plantReady(p), m = ready ? (p.m || mutationOf(p)) : '';
   const since = Math.max(1, Math.round((Date.now() - p.at) / DAY_MS));
   gdDialog(`<div class="gd-dlg-plant"><div class="gd-dlg-art r-${sp.rarity}">${plantArtOf(p, false)}</div>
-    <h2 id="gdTitle">${ready ? mutNames(p).map(n => n + ' ').join('') : ''}${esc(sp.name)}</h2>
+    <h2 id="gdTitle">${ready ? mutNames({ ...p, m }).map(n => n + ' ').join('') : ''}${esc(sp.name)}</h2>
     <div class="desc">${GSTAGES[st]} · ${w}/${n} min${ready ? ' · ready to harvest' : ''} · planted ${since === 1 ? 'today' : since + ' days ago'}</div>
     <div class="xpbar" aria-hidden="true"><i data-fill="${Math.min(100, Math.round(w / n * 100))}" data-fill-key="gplant"></i></div>
     <div class="gd-stages" aria-hidden="true">${GSTAGES.map((s, i) => `<span class="${i <= st ? 'on' : ''}">${s}</span>`).join('')}</div>
@@ -12077,7 +12081,7 @@ function harvestMoment(p, host) {
   toast(`${p.giant ? '🏆 GIANT ' : mn ? '✨ ' : ''}${mn ? mn + ' ' : ''}${sp.name} harvested · ${fmtKg(kg)} · +${p.y} produce${p.pb ? ' (bonus from your pet!)' : ''}`, 3000, true, { type: 'garden' });
   inboxAdd({ type: 'info', key: 'gh:' + p.id, title: `${p.giant ? 'Giant ' : ''}${mn ? mn + ' ' : ''}${sp.name} harvested · ${fmtKg(kg)} · +${p.y} produce`, go: { tab: 'garden' }, read: true });
   if (newAll || newSp) setTimeout(() => toast(`🏆 New record: ${fmtKg(kg)} ${sp.name}${newAll ? ' — your biggest harvest' : ''}`, 3200, true, { type: 'garden' }), 900);
-  if (p.giant) setTimeout(() => showGiant(p), host && motion() !== 'off' ? 900 : 200);
+  if (p.giant) { const rec = lastHarvestRec; setTimeout(() => showGiant(p, rec), host && motion() !== 'off' ? 900 : 200); }
   setTimeout(renderGarden, host && motion() !== 'off' ? 720 : 0);
 }
 function gdSay(text) {
@@ -16758,7 +16762,7 @@ function friendCardData(prof, act, name) {
     fr: ITEM_BY_ID[prof.frame] ? prof.frame : 'frame_none', st: 'card_minimal', bn: 'bn_mint', au: profAura(prof), sk: profStreak(prof), ...(/^[A-Z0-9]{2,5}$/.test(prof.clanTag || '') ? { ct: prof.clanTag } : {}) });
   d.h = +prof.hours || 0; d.cs = +prof.streak || 0; d.ls = +prof.longest || 0;
   const bg = typeof prof.big === 'string' ? prof.big.split(':') : null;   // biggest harvest (v1.16): 'species:kg'
-  if (bg && GSP_BY_ID[bg[0]] && +bg[1] > 0) d.bh = [bg[0], Math.min(1e5, Math.round(+bg[1] * 100) / 100)];
+  if (bg && Object.hasOwn(GSP_BY_ID, bg[0]) && +bg[1] > 0) d.bh = [bg[0], Math.min(1e5, Math.round(+bg[1] * 100) / 100)];
   if (act && !act.denied && act.visible && act.days) {
     const today = startOfDay(new Date()), start = addDays(weekStartOf(today, S.settings.weekStart), -77);
     d.wd = dayKey(addDays(today, -6)); d.wk = Array.from({ length: 7 }, (_, i) => +act.days[dayKey(addDays(today, i - 6))] || 0);
@@ -16784,7 +16788,7 @@ function sanitizeCard(o) {
   }
   for (const [k, hi, dec] of [['h', 1e6, 1], ['cs', 99999], ['ls', 99999], ['ss', 1e6], ['bd', 9999], ['ms', BOSSES.length], ['gp', 1e6]]) { const v = num(o[k], hi, dec); if (v !== undefined) d[k] = v; }
   if (d.cs !== undefined && d.ls === undefined) d.ls = d.cs;
-  if (Array.isArray(o.bh) && GSP_BY_ID[o.bh[0]] && num(o.bh[1], 1e5, 2) > 0) d.bh = [o.bh[0], num(o.bh[1], 1e5, 2)];   // biggest harvest (v1.16)
+  if (Array.isArray(o.bh) && Object.hasOwn(GSP_BY_ID, String(o.bh[0])) && num(o.bh[1], 1e5, 2) > 0) d.bh = [o.bh[0], num(o.bh[1], 1e5, 2)];   // biggest harvest (v1.16)
   if (Array.isArray(o.wk) && o.wk.length === 7 && DAY_RE.test(o.wd || '')) { d.wk = o.wk.map(v => num(v, 1440) || 0); d.wd = o.wd; }
   if (typeof o.hm === 'string' && /^[0-4]{1,84}$/.test(o.hm) && DAY_RE.test(o.hs || '')) { d.hm = o.hm; d.hs = o.hs; }
   if (['Morning', 'Afternoon', 'Evening', 'Night'].includes(o.bt)) d.bt = o.bt;

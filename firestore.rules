@@ -137,8 +137,9 @@ service cloud.firestore {
           && (!('harvests' in d) || (d.harvests is int && d.harvests >= 0 && d.harvests <= 1000000));
     }
     // An all-time total that is new on the document (an older document, or an older app that stopped sending it)
-    // may take any value under its ceiling once; after that it never goes down and grows at most perMin per
-    // minute since the last write (plus one 4-hour session), plus slack.
+    // may take any value under its ceiling; while it stays on the document it never goes down and grows at most
+    // perMin per minute since the last write (plus one 4-hour session), plus slack. Like lifeMin's first upload,
+    // this is a self-reported stat: dropping and re-adding the field resets the bound (accepted; see the notes).
     function growsTotal(f, perMin, slack) {
       let n = request.resource.data;
       let o = resource.data;
