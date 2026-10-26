@@ -5295,6 +5295,9 @@ function pushProfile(force) {
   if (!force && json === lastProfileJSON) return;
   lastProfileJSON = json;
   if (SYNC.stale.length && FB.deleteField) { for (const [f, k] of SYNC.stale) p[f][k] = FB.deleteField(); SYNC.stale = []; }
+  // A merge write replaces a map with an empty one wholesale: keys another device set a moment ago would vanish.
+  // Nothing here is ever cleared except by Erase (a plain set), so an empty map is simply left out.
+  for (const k of ['cardPrefs', 'roomPrefs', 'petPrefs', 'clanRem', 'tomb', 'remFired', 'notes', 'energy']) if (p[k] && typeof p[k] === 'object' && !Object.keys(p[k]).length) delete p[k];
   trackWrite(FB.setDoc(userRef(), { ...p, updatedAt: FB.serverTimestamp() }, { merge: true }));
 }
 
@@ -11247,8 +11250,10 @@ function mergePlant(win, lose) {
   if (!win.h && lose.h) return lose;
   if (win.h) return win;
   if (!win.fin && lose.fin) [win, lose] = [lose, win];   // the copy that ripened keeps fin / fd / m / wm (v1.16)
-  return { ...win, w: { ...(lose.w || {}), ...(win.w || {}) } };
+  return { ...win, w: sortedMap({ ...(lose.w || {}), ...(win.w || {}) }) };
 }
+/** A map with its keys in a fixed order: two devices joining the same water maps end up with identical copies (v1.16). */
+function sortedMap(m) { const o = {}; for (const k of Object.keys(m || {}).sort()) o[k] = m[k]; return o; }
 
 /* ---------- Watering: every finished focus block waters the growing plants ---------- */
 function gardenAfterSession(s) {
@@ -11327,7 +11332,8 @@ const eggsWaiting = () => eggList().filter(e => !e.h).length;
 function mergeEgg(win, lose) {
   if (!lose || lose === win) return win;
   const base = win.h ? win : lose.h ? lose : win;
-  return { ...base, w: { ...(lose.w || {}), ...(win.w || {}) } };
+  if (base.h) { const { w, ...rest } = base; return rest; }   // hatched: the water map is spent and never uploaded, so both copies match
+  return { ...base, w: sortedMap({ ...(lose.w || {}), ...(win.w || {}) }) };
 }
 /** One focus egg in the queue at all times: 'egg1', then 'egg' + (focus eggs so far + 1) — the same id on every device. */
 function ensureEgg() {
@@ -11335,14 +11341,14 @@ function ensureEgg() {
   if (eggList().some(e => e.src === 'focus' && !e.h)) return false;
   const id = 'egg' + (eggList().filter(e => e.src === 'focus').length + 1);
   if (eggList().some(e => e.id === id)) return false;
-  S.eggs.push({ id, v: 1, kind: 'common', src: 'focus', at: Date.now(), need: EGG_NEED.common, w: {} });
+  S.eggs.push({ id, v: 1, kind: 'common', src: 'focus', at: Date.now(), u: Date.now(), need: EGG_NEED.common, w: {} });
   return true;
 }
 /** Rarer eggs with fixed ids: garden level 4 (rare) and 8 (legendary). */
 function eggGifts() {
   if (!USER || isPreview() || !gardenMig()) return 0;
   const lv = garden().level, made = [];
-  for (const [id, at, kind] of [['egg_lv4', 4, 'rare'], ['egg_lv8', 8, 'legendary']]) if (lv >= at && !eggList().some(e => e.id === id)) { S.eggs.push({ id, v: 1, kind, src: 'lv' + at, at: Date.now(), need: EGG_NEED[kind], w: {} }); made.push(kind); }
+  for (const [id, at, kind] of [['egg_lv4', 4, 'rare'], ['egg_lv8', 8, 'legendary']]) if (lv >= at && !eggList().some(e => e.id === id)) { S.eggs.push({ id, v: 1, kind, src: 'lv' + at, at: Date.now(), u: Date.now(), need: EGG_NEED[kind], w: {} }); made.push(kind); }
   return made;
 }
 /** An egg that is full but not marked hatched (water joined from two devices) hatches now. */
@@ -15253,7 +15259,7 @@ async function claimQuest(evId, qid) {
   const items = qid === 'final' ? ev.final : [q.reward];
   grantItems(items, 'ev:' + ev.id, at);
   if (qid === 'final' && evStart(ev) >= EGG_EVENT_FROM && !eggList().some(e => e.id === 'egg_ev_' + ev.id)) {   // a rare pet egg with the final (v1.16)
-    S.eggs.push({ id: 'egg_ev_' + ev.id, v: 1, kind: 'rare', src: 'ev:' + ev.id, at, need: EGG_NEED.rare, w: {} });
+    S.eggs.push({ id: 'egg_ev_' + ev.id, v: 1, kind: 'rare', src: 'ev:' + ev.id, at, u: Date.now(), need: EGG_NEED.rare, w: {} });
     setTimeout(() => toast('🥚 A rare pet egg joined your garden’s queue — focus to hatch it', 3600, true, { go: { tab: 'garden' } }), 3000);
   }
   save();
@@ -15807,6 +15813,8 @@ function mergeList(f, local, remote, tomb) {
   }
   return [...out.values()];
 }
+/** JSON with object keys in a fixed order, so two copies with the same content compare equal whichever device wrote them. */
+function canonJSON(x) { return JSON.stringify(x, (k, v) => v && typeof v === 'object' && !Array.isArray(v) ? sortedMap(v) : v); }
 /** Merge the cloud's copy into ours. Returns true when ours has something the cloud doesn't yet (so we upload). */
 function mergeSyncFrom(d) {
   const before = SYNC_LISTS.map(f => JSON.stringify(S[f]));
@@ -15820,7 +15828,7 @@ function mergeSyncFrom(d) {
     if (f === 'presets' && !remote.length) { ahead = true; continue; }   // presets are never empty
     const merged = mergeList(f, S[f], remote, S.tomb);
     if (f === 'presets' && !merged.length) continue;
-    if (JSON.stringify(merged) !== JSON.stringify(remote)) ahead = true;
+    if (canonJSON(merged) !== canonJSON(remote)) ahead = true;   // key order never counts as a difference (v1.16)
     S[f] = merged;
   }
   S.revisions = cleanRevisions(S.revisions);
