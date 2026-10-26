@@ -8409,8 +8409,11 @@ function writePublic(col, data) {
     // Rules from before 1.16 refuse "produce" / "harvests" (the garden leaderboards): publish without them until the rules are updated.
     // A denied stats write can also mean the minutes grew too fast (an import, a long offline stretch): try once without
     // the fields — if that write goes through the rules refused them; if it is refused too, the fields were not the cause.
-    if (e.code === 'permission-denied' && col === 'publicStats' && 'produce' in data && !SOC.gardenStatsRejected && (SOC.statRetries || 0) >= 2) {
-      SOC.gardenStatsRejected = true; SOC.gardenProbe = true;
+    if (e.code === 'permission-denied' && col === 'publicStats' && 'produce' in data && !SOC.gardenStatsRejected && (SOC.gardenConfirm || (SOC.statRetries || 0) >= 2)) {
+      // the confirmation write (the same totals the probe just got through, plus the fields) was refused: it is the fields
+      if (SOC.gardenConfirm) { SOC.gardenConfirm = false; console.warn('Firestore rules do not accept "produce" / "harvests" yet — publishing without them. Update the rules for the garden leaderboards.'); }
+      else SOC.gardenProbe = true;
+      SOC.gardenStatsRejected = true;
       delete lastPub.publicStats;
       setTimeout(() => publishPublic(), 300);
       return;
@@ -8490,7 +8493,8 @@ function publishPublic(first) {
   const p = writePublic('publicStats', stats), probing = !!SOC.gardenProbe && !('produce' in stats);   // this very write is the probe (without the fields)
   if (p) p.then(() => {
     SOC.myStats = { ...stats, at: Date.now() }; SOC.statRetries = 0;
-    if (probing) { SOC.gardenProbe = false; console.warn('Firestore rules do not accept "produce" / "harvests" yet — publishing without them. Update the rules for the garden leaderboards.'); }   // the probe went through: confirmed
+    if (probing) { SOC.gardenProbe = false; SOC.gardenConfirm = true; SOC.gardenStatsRejected = false; delete lastPub.publicStats; setTimeout(() => publishPublic(), 300); }   // the probe went through: confirm with the fields once more before giving them up
+    else if (SOC.gardenConfirm && 'produce' in stats) SOC.gardenConfirm = false;   // the fields are accepted after all (the earlier refusal was something else)
   }, e => {
     if (probing) { SOC.gardenProbe = false; SOC.gardenStatsRejected = false; }   // refused without the fields too: not their fault, send them again next time
     // Another device may have written newer totals: re-read what the server has, then try once more.
