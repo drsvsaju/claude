@@ -549,6 +549,32 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 .lb .top3 .rk { background: rgba(176,112,58,.16); color: #a2662f; }
 .lb li.me { background: var(--accent-soft); }
 .lb.pinned { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 8px; }
+/* Leaderboard v2 (v1.16): podium, rank arrows, your own rank, Pomeo's empty states */
+.lb-head .seg { flex-wrap: wrap; }
+.lb-podium { display: grid; grid-template-columns: 1fr 1.18fr 1fr; gap: 8px; align-items: end; margin: 4px 0 14px; }
+.lb-pod { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 14px 6px 10px; border-radius: 14px; background: var(--bg); text-align: center; }
+.lb-pod.p1 { padding-top: 20px; background: linear-gradient(180deg, rgba(201, 162, 39, .18), var(--bg) 80%); }
+.lb-pod.p2 { background: linear-gradient(180deg, rgba(140, 150, 160, .2), var(--bg) 80%); }
+.lb-pod.p3 { background: linear-gradient(180deg, rgba(176, 112, 58, .18), var(--bg) 80%); }
+.lb-pod.me { box-shadow: inset 0 0 0 2px var(--accent); }
+.lb-pod[data-open] { cursor: pointer; }
+.lb-pod .lb-pr { position: absolute; top: 7px; left: 9px; font-size: 12px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lb-pod.p1 .lb-pr { color: #a8861d; } .lb-pod.p2 .lb-pr { color: #7d8790; } .lb-pod.p3 .lb-pr { color: #a2662f; }
+.lb-crown { height: 16px; line-height: 16px; font-size: 14px; }
+.lb-pod .lb-pn { max-width: 100%; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-pod .lb-pn .nm { font-size: 13px; }
+.lb-pod .lb-pv { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 4px; }
+.lb-delta { font-size: 11px; font-weight: 700; min-width: 26px; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+.lb-delta.up { color: #2f9e5f; } .lb-delta.down { color: #d9480f; } .lb-delta.new { color: var(--accent); font-size: 10px; text-transform: uppercase; letter-spacing: .04em; }
+.lb .v { display: inline-flex; align-items: center; gap: 4px; }
+.lb-you { position: sticky; bottom: 6px; display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--accent-soft); font-size: 14px; }
+.lb-you .rk { width: auto; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 999px; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--surface); color: var(--accent); font-variant-numeric: tabular-nums; }
+.lb-you .lb-yt { flex: 1; min-width: 0; display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.lb-empty { text-align: center; padding: 18px 8px 10px; color: var(--muted); font-size: 14px; }
+.lb-empty svg { width: 72px; height: auto; display: block; margin: 0 auto 6px; }
+:root[data-motion="full"] .lb-pod { animation: popIn .45s var(--spring) both; }
+:root[data-motion="full"] .lb-pod.p2 { animation-delay: .08s; } :root[data-motion="full"] .lb-pod.p3 { animation-delay: .16s; }
+@media (max-width: 420px) { .lb-podium { gap: 6px; } .lb-pod { padding: 12px 4px 8px; } .lb-pod .lb-pn, .lb-pod .lb-pn .nm { font-size: 12px; } .lb-head .seg button { padding-left: 9px; padding-right: 9px; } }
 .lb-note { margin-top: 12px; font-size: 13px; color: var(--muted); }
 .lb-note .linkbtn { color: var(--accent); padding: 0; }
 .recap { margin-bottom: 16px; border-color: var(--accent); }
@@ -4544,6 +4570,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    33f. ROTATING SEED SHOP (v1.16) — featured seeds per 4-hour UTC slot, the rare seed of the day, exclusives, gift seeds, restock dot (inside GARDEN).
    33g. GARDEN PETS (v1.16) — eggs filled by focus, deterministic hatching, pets with capped boosts, slots by garden level, bag + almanac (inside GARDEN).
    33h. CROP WEIGHT (v1.16) — every harvest weighs something (deterministic), Giant harvests, records, the harvest log, the player card stat (inside GARDEN).
+   33k. LEADERBOARD v2 (v1.16) — podium, rank arrows, your own rank pinned, Focus / Garden boards (Produce earned, Plants harvested from publicStats.produce / .harvests), Pomeo empty states, "You passed" (inside SOCIAL).
    33j. GARDEN LOOKS (v1.16) — cosmetics the garden sells for produce (avatars, themes, titles, frames, colours, stamps, trails, room items): bought into gbuys, owned through the garden ledger, equipped like any item (inside GARDEN).
    33i. FOCUS-WEATHER MUTATIONS (v1.16) — Shocked, Moonlit, Frozen, Clan-blessed, Dawn, Streak-touched, Stormy: from how the finishing block was studied, at most two, capped (inside GARDEN).
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
@@ -8378,6 +8405,14 @@ function writePublic(col, data) {
       setTimeout(() => { publishPublic(); setTimeout(() => { SOC.clanTagRejected = false; }, 60000); }, 300);
       return;
     }
+    // Rules from before 1.16 refuse "produce" / "harvests" (the garden leaderboards): publish without them until the rules are updated.
+    if (e.code === 'permission-denied' && col === 'publicStats' && 'produce' in data && !SOC.gardenStatsRejected) {
+      SOC.gardenStatsRejected = true;
+      console.warn('Firestore rules do not accept "produce" / "harvests" yet — publishing without them. Update the rules for the garden leaderboards.');
+      delete lastPub.publicStats;
+      setTimeout(() => publishPublic(), 300);
+      return;
+    }
     // Rules from before 1.16 refuse the "big" field (biggest harvest): publish without it until the rules are updated.
     if (e.code === 'permission-denied' && 'big' in data && col === 'publicProfiles' && !SOC.bigRejected) {
       SOC.bigRejected = true;
@@ -8412,14 +8447,22 @@ function myPeriodStats() {
     monthKey: monthKeyOf(now), monthMin: Math.round(sum(m1, addDays(today, 1))),
     lifeMin: Math.round(life),
     lastWeekKey: dayKey(addDays(mon, -7)), lastWeekMin: Math.min(10080, Math.round(sum(addDays(mon, -7), mon))),
+    produce: Math.max(0, Math.round(garden().produceAll)), harvests: Math.max(0, Math.round(garden().grownTotal)),   // the garden boards (v1.16)
   };
 }
 /** Keep within what the security rules allow (e.g. after importing a big history, totals catch up over a few sessions). */
 function clampStats(n, o) {
   const cap = { dayMin: 1440, weekMin: 10080, weekMinSun: 10080, monthMin: 44640 };
+  // the garden totals (v1.16): never below what is published, growth bounded like the rules (2 produce per minute,
+  // a harvest per 30 minutes); a document from before 1.16 takes the whole total once
+  const gcap = { produce: 10000000, harvests: 1000000 };
+  const allow = o ? Math.floor(Math.max(0, (Date.now() - o.at) / 60000 - 1)) + 239 : 0;
+  for (const k of ['produce', 'harvests']) {
+    const room = k === 'produce' ? allow * 2 : Math.floor(allow / 30) + 2;
+    n[k] = !o || o[k] === undefined || o[k] === null ? Math.min(Math.max(0, Math.round(+n[k] || 0)), gcap[k]) : Math.max(+o[k], Math.min(Math.round(+n[k] || 0), +o[k] + room));
+  }
   if (!o) { for (const k in cap) n[k] = Math.min(n[k], cap[k]); n.lifeMin = Math.min(n.lifeMin, 3600000); }
   else {
-    const allow = Math.floor(Math.max(0, (Date.now() - o.at) / 60000 - 1)) + 239;
     for (const [kf, mf] of [['dayKey', 'dayMin'], ['weekKey', 'weekMin'], ['weekKeySun', 'weekMinSun'], ['monthKey', 'monthMin']]) {
       n[mf] = n[kf] === o[kf] ? Math.max(o[mf], Math.min(n[mf], o[mf] + allow)) : Math.min(n[mf], allow, cap[mf]);
     }
@@ -8442,6 +8485,7 @@ function publishPublic(first) {
     joined: user && user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : Date.now() - 3600e3,
   });
   const stats = clampStats({ username: USER.username, ...flair, ...(SOC.auraOk ? aura : {}), global: !!s.globalBoard, ...myPeriodStats() }, SOC.myStats);
+  if (SOC.gardenStatsRejected) { delete stats.produce; delete stats.harvests; }
   const p = writePublic('publicStats', stats);
   if (p) p.then(() => { SOC.myStats = { ...stats, at: Date.now() }; SOC.statRetries = 0; }, e => {
     // Another device may have written newer totals: re-read what the server has, then try once more.
@@ -8636,7 +8680,16 @@ function presenceText(p) {
 }
 
 /* ---------- Leaderboards ---------- */
+/* Leaderboard v2 (v1.16): two kinds of board — Focus time (daily / weekly / monthly / lifetime) and Garden (produce
+   earned and plants harvested, both all-time, from the optional publicStats fields `produce` and `harvests`). */
+const BOARD_KINDS = { focus: [['day', 'Daily'], ['week', 'Weekly'], ['month', 'Monthly'], ['life', 'Lifetime']], garden: [['produce', 'Produce'], ['harvests', 'Harvests']] };
+const boardKindOf = period => (period === 'produce' || period === 'harvests' ? 'garden' : 'focus');
+const BOARD_NAME = { day: 'daily', week: 'weekly', month: 'monthly', life: 'lifetime', produce: 'produce', harvests: 'harvests' };
+/** A board value as text: focus minutes, produce or plants. */
+const fmtBoardVal = (period, v) => period === 'produce' ? `${PRODUCE_SVG} ${fmtNum(v)}` : period === 'harvests' ? `${fmtNum(v)} 🌱` : fmtMin(v);
 function periodField(period) {
+  if (period === 'produce') return { key: null, min: 'produce' };
+  if (period === 'harvests') return { key: null, min: 'harvests' };
   if (period === 'day') return { key: 'dayKey', min: 'dayMin' };
   if (period === 'week') return S.settings.weekStart === 0 ? { key: 'weekKeySun', min: 'weekMinSun' } : { key: 'weekKey', min: 'weekMin' };
   if (period === 'month') return { key: 'monthKey', min: 'monthMin' };
@@ -8657,6 +8710,8 @@ function minutesFor(d, period) {
   return d[f.min] || 0;
 }
 function resetText(period) {
+  if (period === 'produce') return 'All produce ever harvested in the garden';
+  if (period === 'harvests') return 'Plants harvested, all time';
   const now = new Date();
   let end;
   if (period === 'day') end = addDays(startOfDay(now), 1);
@@ -8679,6 +8734,7 @@ async function loadLeaderboard(scope, period, force) {
       const ids = friendsList().map(otherUid);
       const docs = await Promise.all(ids.map(id => getPublic('publicStats', id, force ? 0 : CACHE_MS)));
       rows = docs.map((d, i) => d && !d.denied ? { uid: ids[i], ...d, minutes: minutesFor(d, period) } : null).filter(Boolean);
+      if (boardKindOf(period) === 'garden') rows = rows.filter(r => r[periodField(period).min] !== undefined);   // friends on an app before 1.16 have no garden totals yet
       rows.push({ ...me, minutes: mine });
     } else {
       const f = periodField(period), col = FB.collection(FB.db, 'publicStats');
@@ -8915,13 +8971,42 @@ async function shareRecap() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+/* Where everyone stood the last time each board was loaded (per account, on this device): rank arrows and "You passed". */
+const LB_PREV_KEY = () => 'pomodorolist-lbprev:' + (USER ? USER.uid : 'x');
+function lbRecord(key, res) {
+  if (!res || res.error || !res.at || !USER) return { prev: null, fresh: false };
+  const all = readJSON(LB_PREV_KEY(), {}), cur = all[key];
+  if (cur && cur.at === res.at) return { prev: cur.prev || null, fresh: false };   // the same load: the arrows stay as they were
+  const ranks = {};
+  for (const r of res.rows) ranks[r.uid] = r.rank;
+  if (res.myRow) ranks[res.myRow.uid] = res.myRow.rank;
+  const same = cur && JSON.stringify(cur.ranks) === JSON.stringify(ranks);
+  if (same) { all[key] = { ...cur, at: res.at }; if (!isPreview()) writeLS(LB_PREV_KEY(), all); return { prev: cur.prev || null, fresh: false }; }   // nothing moved: the arrows stay
+  const prev = cur ? cur.ranks : null;
+  all[key] = { at: res.at, ranks, prev };
+  const keys = Object.keys(all);
+  if (keys.length > 16) for (const k of keys.sort((a, b) => all[a].at - all[b].at).slice(0, keys.length - 16)) delete all[k];
+  if (!isPreview()) writeLS(LB_PREV_KEY(), all);
+  return { prev, fresh: !!prev };
+}
+const lbDeltaHTML = (prev, r) => { if (!prev) return ''; const p = prev[r.uid]; if (p === undefined) return '<span class="lb-delta new" title="New on the board">new</span>'; const d = p - r.rank; return d > 0 ? `<span class="lb-delta up" title="Up ${d}">▲${d}</span>` : d < 0 ? `<span class="lb-delta down" title="Down ${-d}">▼${-d}</span>` : '<span class="lb-delta same" aria-hidden="true">·</span>'; };
+/** Pomeo's empty states, one per situation. */
+function lbEmptyHTML(scope, period) {
+  const kind = boardKindOf(period);
+  const txt = scope === 'friends' && !friendsList().length ? 'No friends on the board yet — add one and race them.'
+    : kind === 'garden' ? (scope === 'friends' ? 'Nobody you know has harvested anything yet. Grow something!' : 'No harvests on the global board yet — yours could be the first.')
+    : scope === 'friends' ? 'No one has focused yet in this period. Start a block and take the lead.' : 'No one has focused yet in this period.';
+  return `<div class="lb-empty">${pomeoSVG({ state: 'idle', size: 72 })}<p>${txt}</p></div>`;
+}
 async function renderBoard(fromLoad) {
-  const scope = S.ui.lbScope || 'friends', period = S.ui.lbPeriod || 'week';
+  const scope = S.ui.lbScope || 'friends', period = S.ui.lbPeriod || 'week', kind = boardKindOf(period);
+  S.ui[kind === 'garden' ? 'lbGardenPeriod' : 'lbFocusPeriod'] = period;   // the kind buttons return to the last period of each kind
   if (scope === 'clans') return renderClanBoard(fromLoad);
   const head = `
     <div class="lb-head">
       <div class="seg" id="lbScope"><button data-scope="friends" class="${scope === 'friends' ? 'active' : ''}">Friends</button><button data-scope="global" class="${scope === 'global' ? 'active' : ''}">Global</button><button data-scope="clans">Clans</button></div>
-      <div class="seg" id="lbPeriod">${[['day', 'Daily'], ['week', 'Weekly'], ['month', 'Monthly'], ['life', 'Lifetime']].map(([p, n]) => `<button data-period="${p}" class="${p === period ? 'active' : ''}">${n}</button>`).join('')}</div>
+      <div class="seg lb-kind" id="lbKind"><button data-period="${S.ui.lbFocusPeriod || 'week'}" class="${kind === 'focus' ? 'active' : ''}">Focus time</button><button data-period="${S.ui.lbGardenPeriod || 'produce'}" class="${kind === 'garden' ? 'active' : ''}">Garden</button></div>
+      <div class="seg" id="lbPeriod">${BOARD_KINDS[kind].map(([p, n]) => `<button data-period="${p}" class="${p === period ? 'active' : ''}">${n}</button>`).join('')}</div>
     </div>`;
   const key = `${scope}|${period}|${periodKey(period)}|${S.settings.weekStart}`, c = SOC.lb[key];
   if (!c || Date.now() - c.at > CACHE_MS) {
@@ -8935,20 +9020,43 @@ async function renderBoard(fromLoad) {
   const res = c || { rows: [] };
   const rowSel = '#boardBody .lb:not(.pinned) li[data-uid]';
   const before = $('#boardBody .lb li[data-uid]') ? flipCapture(rowSel) : SOC.flipFrom;
+  const { prev, fresh } = lbRecord(key, res);
   const row = r => {
     const me = r.uid === USER.uid, L = personLook(r.uid, r.username, r);
     return `<li class="${me ? 'me' : ''}${r.rank <= 3 ? ' top' + r.rank : ''}" data-uid="${r.uid}"${!me && scope === 'friends' ? ` data-open="${r.uid}"` : ''}>
-      <span class="rk">${r.rank}</span>${lookPic(L, 26)}
+      <span class="rk">${r.rank}</span>${lbDeltaHTML(prev, r)}${lookPic(L, 26)}
       <span class="nm-row">${lookName(L)}${me ? ' <span class="lbl">(you)</span>' : ''}</span>
-      <span class="v">${fmtMin(r.minutes)}</span></li>`;
+      <span class="v">${fmtBoardVal(period, r.minutes)}</span></li>`;
   };
+  // the podium: the top three, the leader in the middle
+  const pod = r => {
+    const me = r.uid === USER.uid, L = personLook(r.uid, r.username, r);
+    return `<div class="lb-pod p${r.rank}${me ? ' me' : ''}" data-uid="${r.uid}"${!me && scope === 'friends' ? ` data-open="${r.uid}" role="button" tabindex="0"` : ''}>
+      <span class="lb-pr">${r.rank}</span><span class="lb-crown" aria-hidden="true">${r.rank === 1 ? '👑' : ''}</span>${lookPic(L, r.rank === 1 ? 52 : 40)}
+      <span class="lb-pn">${lookName(L, { tag: false })}${me ? ' <span class="lbl">(you)</span>' : ''}</span><span class="lb-pv">${fmtBoardVal(period, r.minutes)}</span>${lbDeltaHTML(prev, r)}</div>`;
+  };
+  const lonely = scope === 'friends' && !friendsList().length;   // only me on the board: Pomeo's empty state instead of a one-row list
+  const podium = !res.error && !lonely && res.rows.length >= 3 ? `<div class="lb-podium">${[res.rows[1], res.rows[0], res.rows[2]].map(pod).join('')}</div>` : '';
+  const rest = podium ? res.rows.slice(3) : res.rows;
+  // my own rank, always in view
+  const mine = res.rows.find(r => r.uid === USER.uid) || res.myRow;
+  const you = res.error ? '' : `<div class="lb-you">${mine && mine.minutes > 0
+    ? `<span class="rk">#${mine.rank}</span><span class="lb-yt"><b>You</b> · ${fmtBoardVal(period, mine.minutes)}</span>${lbDeltaHTML(prev, mine)}`
+    : scope === 'global' && !S.settings.globalBoard ? `<span class="lb-yt">You’re not on the global board. <button class="linkbtn" id="goPrivacy">Turn it on in Settings</button></span>`
+    : `<span class="lb-yt">${kind === 'garden' ? 'Harvest something to appear here' : 'Finish a block to appear here'}</span>`}</div>`;
+  // "You passed …": someone who stood above me last time is below me now
+  if (fresh && mine && prev && prev[USER.uid] !== undefined) {
+    const passed = res.rows.filter(r => r.uid !== USER.uid && prev[r.uid] !== undefined && prev[r.uid] < prev[USER.uid] && r.rank > mine.rank).map(r => '@' + r.username);
+    if (passed.length) toast(`You passed ${passed.slice(0, 2).join(' and ')}${passed.length > 2 ? ` and ${passed.length - 2} more` : ''} on the ${BOARD_NAME[period]} board 🎉`, 3400, true, { type: 'board' });
+  }
   let note = '';
-  if (scope === 'global' && !S.settings.globalBoard) note = `<div class="lb-note">You’re not on the global leaderboard. <button class="linkbtn" id="goPrivacy">Turn it on in Settings</button></div>`;
+  if (scope === 'global' && !S.settings.globalBoard && mine) note = `<div class="lb-note">You’re not on the global leaderboard. <button class="linkbtn" id="goPrivacy">Turn it on in Settings</button></div>`;
   $('#boardBody').innerHTML = head + `
-    <div class="card">
+    <div class="card lb-card">
       <div class="row between lb-meta"><span class="lbl">${resetText(period)}</span><span class="lbl">Updated ${Math.max(0, Math.round((Date.now() - (res.at || Date.now())) / 60000))} min ago <button class="linkbtn" id="lbRefresh" title="Refresh">↻</button></span></div>
-      ${res.error ? `<div class="empty">${esc(res.error)}</div>` : res.rows.length ? `<ol class="lb">${res.rows.map(row).join('')}</ol>` : '<div class="empty">No one has focused yet in this period.</div>'}
+      ${res.error ? `<div class="empty">${esc(res.error)}</div>` : res.rows.length && !lonely ? podium + (rest.length ? `<ol class="lb">${rest.map(row).join('')}</ol>` : '') : lbEmptyHTML(scope, period)}
       ${res.myRow ? `<ol class="lb pinned">${row(res.myRow)}</ol>` : ''}
+      ${you}
       ${note}
       ${scope === 'friends' && !friendsList().length && !res.error ? `<div class="cta-card"><p>Add friends to compete</p><button class="btn primary small" id="boardAddFriend">Add friend</button></div>` : ''}
     </div>`;
@@ -11019,7 +11127,8 @@ function computeGarden() {
   const harvSpecies = new Set([...harvested.map(p => p.sp), ...Object.keys((fold && fold.sp) || {})]);
   const muts = {}; for (const m of Object.keys(GMUT)) muts[m] = harvested.filter(p => p.m === m).length + (fold ? +fold[m] || 0 : 0) + (m === 'golden' && sum ? +sum.golden || 0 : 0);
   const wmuts = {}; for (const k of Object.keys(WMUT)) wmuts[k] = harvested.filter(p => wmOf(p).includes(k)).length + (fold && fold.wm ? +fold.wm[k] || 0 : 0);   // focus-weather mutations (v1.16)
-  return { sum, fold, plants, growing, harvested, harvestsN, harvSpecies, muts, wmuts, xp, level, next, into, need: next ? next - GXP_LEVELS[level - 1] : 0, produce, spent, valid, invalid, seeds, decor, placed, discovered, plots, byPlot,
+  const produceAll = sums.reduce((a, x) => a + (+x.y || 0), 0) + harvested.reduce((a, p) => a + (+p.y || 0), 0);   // every produce ever harvested (leaderboards, v1.16)
+  return { sum, fold, plants, growing, harvested, harvestsN, harvSpecies, muts, wmuts, xp, produceAll, level, next, into, need: next ? next - GXP_LEVELS[level - 1] : 0, produce, spent, valid, invalid, seeds, decor, placed, discovered, plots, byPlot,
     ready: growing.filter(plantReady), grownTotal: sums.reduce((a, x) => a + (+x.grown || 0), 0) + harvested.length };
 }
 const GFOLD_AT = 500, GFOLD_KEEP = 300;
@@ -14731,11 +14840,11 @@ function demoSessions() {
   return out;
 }
 const DEMO_FRIENDS = [
-  { uid: 'demo_f1', name: 'James', tier: 'focused', level: 14, streak: 31, color: 'col_teal', frame: 'frame_orbit', avatar: 'av_fox', life: 9800 },
-  { uid: 'demo_f2', name: 'siverieg', tier: 'scholar', level: 11, streak: 9, color: '', frame: 'frame_ring', avatar: 'av_robot', life: 6100 },
-  { uid: 'demo_f3', name: 'Justin', tier: 'apprentice', level: 7, streak: 4, color: '', frame: '', avatar: 'av_owl', life: 2900 },
-  { uid: 'demo_f4', name: 'Princess_cupcake', tier: 'disciplined', level: 18, streak: 52, color: 'col_rose', frame: 'frame_hex', avatar: 'av_panda', life: 15400 },
-  { uid: 'demo_f5', name: 'lenvixty', tier: 'scholar', level: 12, streak: 16, color: 'col_violet', frame: 'frame_double', avatar: 'av_cat', life: 7300 },
+  { uid: 'demo_f1', name: 'James', tier: 'focused', level: 14, streak: 31, color: 'col_teal', frame: 'frame_orbit', avatar: 'av_fox', life: 9800, produce: 610, harvests: 88 },
+  { uid: 'demo_f2', name: 'siverieg', tier: 'scholar', level: 11, streak: 9, color: '', frame: 'frame_ring', avatar: 'av_robot', life: 6100, produce: 140, harvests: 31 },
+  { uid: 'demo_f3', name: 'Justin', tier: 'apprentice', level: 7, streak: 4, color: '', frame: '', avatar: 'av_owl', life: 2900, produce: 0, harvests: 0 },
+  { uid: 'demo_f4', name: 'Princess_cupcake', tier: 'disciplined', level: 18, streak: 52, color: 'col_rose', frame: 'frame_hex', avatar: 'av_panda', life: 15400, produce: 1230, harvests: 164 },
+  { uid: 'demo_f5', name: 'lenvixty', tier: 'scholar', level: 12, streak: 16, color: 'col_violet', frame: 'frame_double', avatar: 'av_cat', life: 7300, produce: 395, harvests: 57 },
 ];
 /** The demo garden: level 4, a few plants at every stage, two mutations in the almanac, some decor placed. */
 function demoGarden(sessions) {
@@ -14875,7 +14984,7 @@ function demoDocs() {
     const weekMin = Math.max(30, weekOf[i]), dayMin = Math.round(Math.min(weekMin, 35 + i * 20));
     const pub = { username: f.name, level: f.level, tier: f.tier, frame: ITEM_BY_ID[f.frame] ? f.frame : 'frame_none', color: ITEM_BY_ID[f.color] ? f.color : 'col_default', avatar: f.avatar };
     docs['publicProfiles/' + f.uid] = { ...pub, streak: f.streak, longest: f.streak + 6, hours: Math.round(f.life / 6) / 10, joined: Date.now() - (120 + i * 30) * 864e5, updatedAt: ts(Date.now()) };
-    docs['publicStats/' + f.uid] = { ...pub, global: true, dayKey: dayKey(now), dayMin, weekKey: wk, weekMin, weekKeySun: wkSun, weekMinSun: weekMin, monthKey: monthKeyOf(now), monthMin: weekMin * 3, lifeMin: f.life, lastWeekKey: dayKey(addDays(mon, -7)), lastWeekMin: weekMin + 40, updatedAt: ts(Date.now()) };
+    docs['publicStats/' + f.uid] = { ...pub, global: true, dayKey: dayKey(now), dayMin, weekKey: wk, weekMin, weekKeySun: wkSun, weekMinSun: weekMin, monthKey: monthKeyOf(now), monthMin: weekMin * 3, lifeMin: f.life, lastWeekKey: dayKey(addDays(mon, -7)), lastWeekMin: weekMin + 40, ...(f.produce ? { produce: f.produce, harvests: f.harvests } : {}), updatedAt: ts(Date.now()) };   // Justin has no garden totals yet (an older app), so he is off the garden boards
     const days = {}, goalDays = [];
     for (let k = 0; k < 28; k++) { if ((k * 7 + i) % 5 === 4) continue; const m = 60 + ((k * 37 + i * 11) % 120); days[dayKey(addDays(startOfDay(now), -k))] = m; if (m >= 120) goalDays.push(dayKey(addDays(startOfDay(now), -k))); }
     docs['activity/' + f.uid] = { visible: true, shareNames: true, days, goalDays, streak: f.streak, longest: f.streak + 6, updatedAt: ts(Date.now()),
@@ -16149,7 +16258,7 @@ $('#tab-board').addEventListener('click', e => {
   const b = t.closest('[data-scope],[data-period],[data-open]');
   if (!b) return;
   if (b.dataset.scope) { S.ui.lbScope = b.dataset.scope; saveLocal(); renderBoard(); }
-  else if (b.dataset.period) { S.ui.lbPeriod = b.dataset.period; saveLocal(); renderBoard(); }
+  else if (b.dataset.period) { S.ui.lbPeriod = b.dataset.period; S.ui[boardKindOf(b.dataset.period) === 'garden' ? 'lbGardenPeriod' : 'lbFocusPeriod'] = b.dataset.period; saveLocal(); renderBoard(); }
   else { S.ui.friendsView = 'friends'; showTab('friends'); openFriend(b.dataset.open); }
 });
 // Shop tab

@@ -66,9 +66,9 @@ service cloud.firestore {
     }
     function validProfile() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'clanTag', 'streak', 'longest', 'hours', 'joined', 'updatedAt'])
+      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'clanTag', 'streak', 'longest', 'hours', 'joined', 'big', 'updatedAt'])
         && d.username == myName()
-        && validAvatar(d) && validAura(d) && validClanTag(d)
+        && validAvatar(d) && validAura(d) && validClanTag(d) && validBig(d)
         && d.level is int && d.level >= 1 && d.level <= 1000
         && d.tier is string && d.tier.size() <= 20
         && d.frame is string && d.frame.size() <= 30
@@ -79,6 +79,10 @@ service cloud.firestore {
         && d.updatedAt == request.time;
     }
 
+    // Biggest harvest (optional, v1.16): 'species:kg' such as "pumpkin:12.4" — a species id and a weight up to 9999.99.
+    function validBig(d) {
+      return !('big' in d) || (d.big is string && d.big.size() <= 40 && d.big.matches('^[a-z]{2,20}:[0-9]{1,4}(\\.[0-9]{1,2})?$'));
+    }
     // Profile picture id (optional, so older app versions keep working): a short string such as "av_cat".
     function validAvatar(d) {
       return !('avatar' in d) || (d.avatar is string && d.avatar.size() <= 30);
@@ -107,9 +111,9 @@ service cloud.firestore {
       let d = request.resource.data;
       return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'clanTag', 'global',
                                'dayKey', 'dayMin', 'weekKey', 'weekMin', 'weekKeySun', 'weekMinSun',
-                               'monthKey', 'monthMin', 'lifeMin', 'lastWeekKey', 'lastWeekMin', 'updatedAt'])
+                               'monthKey', 'monthMin', 'lifeMin', 'lastWeekKey', 'lastWeekMin', 'produce', 'harvests', 'updatedAt'])
         && d.username == myName()
-        && validAvatar(d) && validAura(d) && validClanTag(d)
+        && validAvatar(d) && validAura(d) && validClanTag(d) && validGardenTotals(d)
         && d.global is bool
         && d.level is int && d.level >= 1 && d.level <= 1000
         && d.tier is string && d.tier.size() <= 20 && d.frame is string && d.frame.size() <= 30 && d.color is string && d.color.size() <= 30
@@ -127,6 +131,19 @@ service cloud.firestore {
         && d.weekMin <= d.lifeMin && d.weekMinSun <= d.lifeMin && d.monthMin <= d.lifeMin
         && d.updatedAt == request.time;                          // server time: can't be in the future
     }
+    // Garden leaderboards (optional, v1.16): produce ever harvested and plants harvested, whole numbers with a ceiling.
+    function validGardenTotals(d) {
+      return (!('produce' in d) || (d.produce is int && d.produce >= 0 && d.produce <= 10000000))
+          && (!('harvests' in d) || (d.harvests is int && d.harvests >= 0 && d.harvests <= 1000000));
+    }
+    // An all-time total that is new on the document (an older document, or an older app that stopped sending it)
+    // may take any value under its ceiling once; after that it never goes down and grows at most perMin per
+    // minute since the last write (plus one 4-hour session), plus slack.
+    function growsTotal(f, perMin, slack) {
+      let n = request.resource.data;
+      let o = resource.data;
+      return !(f in n) || !(f in o) || (n[f] >= o[f] && n[f] - o[f] <= (elapsedMin() + 240) * perMin + slack);
+    }
     function createLimits() { return true; }                  // first upload may include past history
     // Minutes since this document was last written (server clock).
     function elapsedMin() { return (request.time.toMillis() - resource.data.updatedAt.toMillis()) / 60000; }
@@ -142,7 +159,8 @@ service cloud.firestore {
       let n = request.resource.data;
       let o = resource.data;
       return grows('dayKey', 'dayMin') && grows('weekKey', 'weekMin') && grows('weekKeySun', 'weekMinSun') && grows('monthKey', 'monthMin')
-        && n.lifeMin >= o.lifeMin && n.lifeMin - o.lifeMin <= elapsedMin() + 240;
+        && n.lifeMin >= o.lifeMin && n.lifeMin - o.lifeMin <= elapsedMin() + 240
+        && growsTotal('produce', 2.0, 0) && growsTotal('harvests', 0.034, 2);   // ≤ 2 produce per minute of focus; a harvest per ~30 minutes (v1.16)
     }
 
     // ---------------- Friend-visible activity + "focusing now" ----------------
