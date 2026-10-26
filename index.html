@@ -1420,6 +1420,17 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
   .gd-say { max-width: calc(100% - 28px); }
 }
 
+/* Rotating seed shop (v1.16) */
+.gd-shop-sec { margin-bottom: 20px; }
+.gd-shop-sec h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; font-size: 17px; }
+.gd-shop-sec > .lbl { margin: 0 0 10px; }
+.gd-shop-sec .count { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.gd-shop-sec .count b { color: var(--text); font-weight: 600; }
+.gd-one { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); max-width: 420px; }
+.gd-item .pv .tag.off { color: var(--accent); border-color: var(--accent); font-weight: 700; }
+.gd-item .bi-src s { color: var(--muted); margin-right: 2px; }
+.gd-item.excl .pv { background: linear-gradient(135deg, var(--accent-soft), transparent 70%); }
+
 /* ==========================================================================
    POMEO'S ROOM (v1.15)
    ========================================================================== */
@@ -3915,6 +3926,10 @@ body.first-load #todayBar { opacity: 0; }
           <div><div>Flashcards on breaks</div><div class="desc">Pomeo offers up to 5 due cards when a break starts (never during focus)</div></div>
           <input type="checkbox" id="setBreakCards" aria-label="Flashcards on breaks">
         </div>
+        <div class="setting" data-k="garden seed shop restock dot featured">
+          <div><div>Dot when the seed shop restocks</div><div class="desc">A small dot on the Garden tab when new Featured seeds are in (never during focus)</div></div>
+          <input type="checkbox" id="setShopDot" aria-label="Dot when the seed shop restocks">
+        </div>
         <div class="setting" data-k="exams countdown test date">
           <div><div>Exams</div><div class="desc">Countdown on the Timer screen. You enter the dates.</div></div>
           <button class="btn small" id="examsBtn">Manage exams</button>
@@ -4435,6 +4450,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    33c. FLASHCARDS (v1.15) — decks, cards, review with spaced repetition, break offer.
    33d. WEEKLY SUBJECT PLAN (v1.15) — target hours per subject, progress from session names.
    33e. COSMETICS DROP (v1.15) — new themes, stamps, ring trails, room items, seeds, decor (items before ITEM_BY_ID, art near the end).
+   33f. ROTATING SEED SHOP (v1.16) — featured seeds per 4-hour UTC slot, the rare seed of the day, exclusives, gift seeds, restock dot (inside GARDEN).
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
    36. SUBTASKS — an optional checklist for the current focus session.
@@ -4931,7 +4947,7 @@ function defaultState() {
     version: 2,
     settings: { goalMin: 60, weekStart: 1, sound: true, notify: true, theme: 'auto', autoStart: false, gamification: true, ambientVolume: 0.5,
                 shareActivity: true, shareNames: true, globalBoard: false,
-                pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, dailyTip: true,
+                pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, shopDot: true, dailyTip: true,
                 bossMode: 'solo', shortcuts: true, revIntervals: [1, 3, 7, 21, 45],
                 minPomeo: true, energy: 'always', useCase: '', atmosphere: true, ripen: true, festive: true, todRain: false },
     presets: [
@@ -6376,6 +6392,7 @@ function renderSettings() {
   $('#setPomeoTalk').value = st.pomeoTalk || 'sometimes';
   $('#setWater').checked = st.waterNudge !== false;
   $('#setBreakCards').checked = st.breakCards !== false;
+  $('#setShopDot').checked = st.shopDot !== false;
   $('#setTip').checked = st.dailyTip !== false;
   $('#setKeys').checked = st.shortcuts !== false;
   renderUisSettings();
@@ -7243,6 +7260,7 @@ let knownInvalid = null;
  */
 function reconcileRewards(mode = 'quiet') {
   if (!rewardsReady()) return [];
+  gardenGifts();   // exclusive seeds at garden levels 6, 8 and 9 (v1.16)
   gardenMigrate();   // once per account: the old session-derived garden becomes history + starting produce (see GARDEN)
   const now = Date.now(), cl = S.game.claims, news = [];
   if (!S.game.tierFrom) { S.game.tierFrom = dayKey(addDays(weekMonday(), 7)); save(); }   // fixed boss HP from next Monday
@@ -10859,7 +10877,7 @@ function gardenNextUnlock(g) {
   if (!g.next) return 'Top level — every plot is yours';
   const lv = g.level + 1, bits = [];
   if (plotsForLevel(lv) > plotsForLevel(g.level)) bits.push(`${plotsForLevel(lv)} plots`);
-  for (const s of GSPECIES) if (s.lvl === lv) bits.push(s.name + ' seeds');
+  for (const s of GSPECIES) if (s.lvl === lv && !s.shop) bits.push(s.name + ' seeds');
   for (const d of GDECOR) if (d.lvl === lv) bits.push(d.name.toLowerCase());
   return `Level ${lv}: ${bits.length ? bits.slice(0, 3).join(', ') : 'a new title for your garden'}`;
 }
@@ -10999,22 +11017,28 @@ function gardenHarvest(id) {
   GD = null;
   gardenFold();
   save();
+  gardenGifts();
   updateGardenDot();
   return p;
 }
-function gardenBuy(item) {
+/** Buy a seed or decor piece with produce. how: '' (always-available grid), 'feat' (this slot's featured seed, 20% off) or 'daily' (the rare seed of the day). */
+function gardenBuy(item, how = '') {
   const g = garden(), sp = item.startsWith('seed_') ? GSP_BY_ID[item.slice(5)] : null, dc = GDECOR_BY_ID[item];
   const it = sp || dc;
   if (!it || gardenBusy()) return false;
-  if (g.level < it.lvl) { toast(`Unlocks at garden level ${it.lvl}`); return false; }
-  if (sp && !sp.price && (g.seeds[sp.id] || []).length >= GFREE_MAX) { toast(`You already hold ${GFREE_MAX} ${sp.name} seeds — plant one first`); return false; }
+  if (how && (!sp || (how === 'feat' && !featuredSeeds().some(x => x.id === sp.id)) || (how === 'daily' && dailySeed().id !== sp.id))) { toast('The shop has restocked — that seed has moved on'); renderGarden(); return false; }
+  if (sp && sp.shop && !how) { toast(`${sp.name} seeds only come round in the Featured and Rare-seed-of-the-day slots`); return false; }
+  if (g.level < it.lvl - (how ? 1 : 0)) { toast(`Unlocks at garden level ${it.lvl - (how ? 1 : 0)}`); return false; }
+  if (how === 'daily' && dailyBought() >= SEED_DAILY_MAX) { toast(`You have today’s ${SEED_DAILY_MAX} rare seeds — more after midnight UTC`); return false; }
+  if (sp && !sp.price && !how && (g.seeds[sp.id] || []).length >= GFREE_MAX) { toast(`You already hold ${GFREE_MAX} ${sp.name} seeds — plant one first`); return false; }
   if (dc && g.decor.some(d => d.it.id === dc.id)) { toast('You already have one — place it from the Decor shop or your bag'); return false; }
-  if (g.produce < it.price) { toast(`You need ${it.price - g.produce} more produce — harvest something`); return false; }
-  S.gbuys.push({ id: 'gb' + uid(), v: 1, item, price: it.price, at: Date.now(), slot: '' });
+  const price = how === 'feat' ? featPrice(sp) : it.price;
+  if (g.produce < price) { toast(`You need ${price - g.produce} more produce — harvest something`); return false; }
+  S.gbuys.push({ id: 'gb' + uid(), v: 1, item, price, at: Date.now(), slot: '', ...(how ? { src: how } : {}), ...(how === 'daily' ? { day: seedDayKey() } : {}) });
   GD = null;
   save();
   uiClaim(); uiSound('coin');
-  toast(sp ? `${sp.name} seed${sp.price ? ' bought' : ' added'}` : `${dc.name} is yours — place it in the garden`, 2200, true);
+  toast(sp ? `${sp.name} seed${price ? ' bought' : ' added'}${how === 'feat' ? ' — featured, 20% off' : how === 'daily' ? ` — ${Math.max(0, SEED_DAILY_MAX - dailyBought())} left today` : ''}` : `${dc.name} is yours — place it in the garden`, 2200, true);
   return true;
 }
 /** Put a decor item in a slot ('border', 'path', 's1'…'s6'); anything already there goes back to the bag. */
@@ -11116,7 +11140,7 @@ let gdTip = { id: '', timer: 0 };
 function updateGardenDot() {
   const dot = $('#gardenDot');
   if (!dot) return;
-  dot.classList.toggle('hidden', !USER || minimal() || isPreview() || !rewardsReady() || !garden().ready.length);
+  dot.classList.toggle('hidden', !USER || minimal() || isPreview() || !rewardsReady() || !(garden().ready.length || seedRestocked()));
 }
 function gardenHeadHTML(g) {
   const pct = g.next ? Math.min(100, Math.round(g.into / g.need * 100)) : 100;
@@ -11166,21 +11190,93 @@ function gardenInfoHTML(g) {
   const tip = wilted ? 'Your plants are thirsty — finish a focus block and they perk up again.'
     : !g.growing.length ? (Object.keys(g.seeds).length ? 'Tap an empty plot to plant a seed.' : 'Get a seed from the Seeds shop — Tomato and Sunflower are free.')
     : g.ready.length ? `${g.ready.length === 1 ? speciesOf(g.ready[0]).name + ' is' : g.ready.length + ' plants are'} ready — tap to harvest.`
+    : seedRestocked() ? 'The seed shop has restocked — new Featured seeds are in.'
     : `Every finished focus block waters your plants${g.growing.length > 1 ? ' — evenly, or tap one to water it first' : ''}.`;
   return `<div class="card gd-info"><div class="gd-tipline">${esc(tip)}</div>
     <div class="garden-stats"><span><b>${g.growing.length}</b> growing</span><span><b>${g.ready.length}</b> ready</span><span><b data-count="g-harv" data-val="${g.grownTotal}">${fmtNum(g.grownTotal)}</b> harvested</span><span><b>${g.plots}</b> plots</span>${vis.length ? `<span><b>${vis.length}</b> visitor${vis.length === 1 ? '' : 's'}</span>` : ''}</div>
     ${!g.growing.length && !Object.keys(g.seeds).length ? '<button class="btn small" data-gview="seeds">Get seeds</button>' : ''}</div>`;
 }
-function seedShopHTML(g) {
-  return `<div class="shopgrid gd-grid">${GSPECIES.map(sp => {
-    const owned = (g.seeds[sp.id] || []).length, locked = g.level < sp.lvl, free = !sp.price, rar = sp.rarity;
-    const can = !locked && (free ? owned < GFREE_MAX : g.produce >= sp.price);
-    return `<div class="item gd-item r-${rar}${locked ? ' locked' : ''}" data-id="seed_${sp.id}"><div class="pv">${plantArt(sp, 4)}${owned ? `<span class="tag">×${owned}</span>` : ''}</div>
-      <div class="nm">${esc(sp.name)}</div><div class="ds">${esc(sp.hint)} · ${sp.need} min to grow</div>
-      <div class="bi-src"><span class="rar">${RARITY_LABEL[rar]}</span><span>${free ? 'Free' : PRODUCE_SVG + ' ' + sp.price}</span></div>
-      <div class="act">${locked ? `<button class="btn" disabled>${LOCK_SVG} Level ${sp.lvl}</button>` : `<button class="btn buy" data-gbuy="seed_${sp.id}"${can ? '' : ' disabled'}>${free ? (owned >= GFREE_MAX ? 'Plant one first' : 'Take a seed') : 'Buy'}</button>`}</div></div>`;
-  }).join('')}</div>`;
+/* ---------- ROTATING SEED SHOP (v1.16) ----------
+   The same shop for everyone, worked out from the UTC clock (no server): four Featured seeds change every 4 hours
+   (20% off, one level early), the Rare seed of the day changes at 00:00 UTC (2 per person per UTC day, one level
+   early; every third day it is one of the three exclusive species in turn, so each comes round within 9 days), and
+   the "Always available" grid is the old shop without the exclusives. A daily purchase stores the UTC day it was
+   made on, so the limit is counted from stored data on every device. Garden levels 6, 8 and 9 gift one exclusive
+   seed each (fixed ids, created once). The restock dot compares the current slot with the last one seen here. */
+const SEED_SLOT_MS = 4 * 3600e3, SEED_FEATURED = 4, SEED_DAILY_MAX = 2, SEED_FEAT_OFF = 0.2, SEEDSLOT_KEY = 'pomodorolist-seedslot';
+const seedSlot = (now = Date.now()) => Math.floor(now / SEED_SLOT_MS);
+const seedDayN = (now = Date.now()) => Math.floor(now / 864e5);                              // UTC day number
+const seedDayKey = (now = Date.now()) => new Date(now).toISOString().slice(0, 10);          // UTC day, stored on a daily purchase
+const seedExclusives = () => GSPECIES.filter(sp => sp.shop === 'rotating');
+/** The four paid seeds of this 4-hour slot, in hash order (every device agrees); at least one rare or better. */
+function featuredSeeds(now = Date.now()) {
+  const slot = seedSlot(now), h = sp => hash01('feat:' + slot + ':' + sp.id);
+  const pool = GSPECIES.filter(sp => sp.price > 0).sort((a, b) => h(a) - h(b));
+  const pick = pool.slice(0, SEED_FEATURED);
+  if (!pick.some(sp => sp.rarity !== 'common')) pick[SEED_FEATURED - 1] = pool.find(sp => sp.rarity !== 'common') || pick[SEED_FEATURED - 1];
+  return pick;
 }
+/** The rare seed of the day (00:00 UTC): every third day an exclusive species in turn, otherwise a rare or legendary one by hash. */
+function dailySeed(now = Date.now()) {
+  const d = seedDayN(now), ex = seedExclusives();
+  if (ex.length && d % 3 === 0) return ex[Math.floor(d / 3) % ex.length];
+  const h = sp => hash01('daily:' + d + ':' + sp.id);
+  return GSPECIES.filter(sp => sp.rarity !== 'common' && !sp.shop).sort((a, b) => h(a) - h(b))[0];
+}
+const featPrice = sp => Math.max(1, Math.round(sp.price * (1 - SEED_FEAT_OFF)));
+const dailyBought = (now = Date.now()) => (S.gbuys || []).filter(b => b && b.src === 'daily' && b.day === seedDayKey(now)).length;
+const untilRestock = (now = Date.now()) => (seedSlot(now) + 1) * SEED_SLOT_MS - now;
+const untilDailySeed = (now = Date.now()) => (seedDayN(now) + 1) * 864e5 - now;
+const fmtCountdown = ms => { const m = Math.max(0, Math.ceil(ms / 60000)), h = Math.floor(m / 60); return h ? `${h}h ${pad(m % 60)}m` : `${m} min`; };
+const seedSeenSlot = () => { const v = localStorage.getItem(SEEDSLOT_KEY); return v === null || v === '' ? null : +v; };
+/** The seed shop restocked since this device last looked (never shown during a focus block). */
+const seedRestocked = () => S.settings.shopDot !== false && !guardOn() && seedSeenSlot() !== null && seedSlot() > seedSeenSlot();
+const GARDEN_GIFTS = [['gift_lv6', 6, 'bamboo'], ['gift_lv8', 8, 'pineapple'], ['gift_lv9', 9, 'sakura']];
+/** One exclusive seed at garden levels 6, 8 and 9 — fixed ids, so two devices create the same record once. */
+function gardenGifts() {
+  if (!USER || isPreview() || !gardenMig()) return 0;
+  const lv = garden().level;
+  const given = [];
+  for (const [id, at, sp] of GARDEN_GIFTS) if (lv >= at && !S.gbuys.some(b => b && b.id === id)) { S.gbuys.push({ id, v: 1, item: 'seed_' + sp, price: 0, at: Date.now(), slot: '', src: 'gift' }); given.push(GSP_BY_ID[sp].name); }
+  if (given.length) { GD = null; save(); toast(`🎁 Garden level ${lv}: ${given.join(' and ')} seed${given.length > 1 ? 's' : ''} — plant ${given.length > 1 ? 'them' : 'it'} from an empty plot`, 3400, true, { type: 'garden' }); }
+  return given.length;
+}
+function seedCardHTML(g, sp, how = '') {
+  const owned = (g.seeds[sp.id] || []).length, free = !sp.price && !how, rar = sp.rarity;
+  const locked = how ? g.level < sp.lvl - 1 : g.level < sp.lvl;
+  const price = how === 'feat' ? featPrice(sp) : sp.price;
+  const soldOut = how === 'daily' && dailyBought() >= SEED_DAILY_MAX;
+  const can = !locked && !soldOut && (free ? owned < GFREE_MAX : g.produce >= price);
+  const tag = how === 'feat' ? `<span class="tag off">−${Math.round(SEED_FEAT_OFF * 100)}%</span>` : how === 'daily' ? `<span class="tag off">${SEED_DAILY_MAX - dailyBought()} left today</span>` : owned ? `<span class="tag">×${owned}</span>` : '';
+  const btn = locked ? `<button class="btn" disabled>${LOCK_SVG} Level ${how ? sp.lvl - 1 : sp.lvl}</button>`
+    : `<button class="btn buy" data-gbuy="seed_${sp.id}"${how ? ` data-ghow="${how}"` : ''}${can ? '' : ' disabled'}>${soldOut ? 'Sold out today' : free ? (owned >= GFREE_MAX ? 'Plant one first' : 'Take a seed') : 'Buy'}</button>`;
+  return `<div class="item gd-item r-${rar}${locked ? ' locked' : ''}${sp.shop ? ' excl' : ''}" data-id="seed_${sp.id}"${how ? ` data-how="${how}"` : ''}><div class="pv">${plantArt(sp, 4)}${tag}</div>
+      <div class="nm">${esc(sp.name)}</div><div class="ds">${esc(sp.hint)} · ${sp.need} min to grow${how && owned ? ` · you hold ×${owned}` : ''}</div>
+      <div class="bi-src"><span class="rar">${RARITY_LABEL[rar]}</span><span>${free ? 'Free' : how === 'feat' ? `<s>${sp.price}</s> ${PRODUCE_SVG} ${price}` : PRODUCE_SVG + ' ' + price}</span></div>
+      <div class="act">${btn}</div></div>`;
+}
+function seedShopHTML(g) {
+  const now = Date.now(), feat = featuredSeeds(now), daily = dailySeed(now);
+  return `<section class="gd-shop-sec gd-feat"><h2><span>✨ Featured</span><span class="lbl count">Restocks in <b data-restock="slot">${fmtCountdown(untilRestock(now))}</b></span></h2>
+      <p class="lbl">Four seeds every 4 hours, 20% off and one level early — the same for every gardener.</p>
+      <div class="shopgrid gd-grid">${feat.map(sp => seedCardHTML(g, sp, 'feat')).join('')}</div></section>
+    <section class="gd-shop-sec gd-daily"><h2><span>🌟 Rare seed of the day</span><span class="lbl count">Changes in <b data-restock="daily">${fmtCountdown(untilDailySeed(now))}</b></span></h2>
+      <p class="lbl">Up to ${SEED_DAILY_MAX} a day, one level early. Every third day it is a seed you can only get here.</p>
+      <div class="shopgrid gd-grid gd-one">${seedCardHTML(g, daily, 'daily')}</div></section>
+    <section class="gd-shop-sec"><h2><span>Always available</span></h2>
+      <div class="shopgrid gd-grid">${GSPECIES.filter(sp => !sp.shop).map(sp => seedCardHTML(g, sp)).join('')}</div></section>`;
+}
+/** Live countdowns while the Seeds view is open; a new slot re-renders the shop. */
+let seedShownSlot = -1;
+function seedShopTick() {
+  if (S.ui.tab !== 'garden' || gardenView() !== 'seeds' || !$('#gardenBody [data-restock]')) return;
+  const now = Date.now();
+  if (seedSlot(now) !== seedShownSlot) { renderGarden(); return; }
+  const a = $('#gardenBody [data-restock="slot"]'), b = $('#gardenBody [data-restock="daily"]');
+  if (a) a.textContent = fmtCountdown(untilRestock(now));
+  if (b) b.textContent = fmtCountdown(untilDailySeed(now));
+}
+setInterval(seedShopTick, 1000);
 function decorShopHTML(g) {
   return `<div class="shopgrid gd-grid">${GDECOR.map(it => {
     const own = g.decor.find(d => d.it.id === it.id), locked = g.level < it.lvl, rar = it.rarity;
@@ -11243,6 +11339,7 @@ function renderGarden() {
   el.innerHTML = gardenHeadHTML(g) + (view === 'garden' ? sceneHTML(g) + gardenInfoHTML(g) : view === 'seeds' ? seedShopHTML(g) : view === 'decor' ? decorShopHTML(g) : almanacHTML(g));
   animateCounts(el);
   animateFills(el);
+  if (view === 'seeds') { seedShownSlot = seedSlot(); writeLS(SEEDSLOT_KEY, String(seedShownSlot)); }
   if (view === 'garden') {
     const seen = readJSON(GSEEN_KEY, {}), now = {};
     for (const p of g.growing) now[p.id] = plantStage(p);
@@ -11347,7 +11444,7 @@ const GD_POMEO_LINES = ['Every focus block is a watering can 💧', 'I love it h
   tab.addEventListener('click', e => {
     const t = e.target;
     const v = t.closest('[data-gview]'); if (v) { S.ui.gardenView = v.dataset.gview; saveLocal(); uiSound('tap'); renderGarden(); return; }
-    const buy = t.closest('[data-gbuy]'); if (buy) { if (gardenBuy(buy.dataset.gbuy)) renderGarden(); return; }
+    const buy = t.closest('[data-gbuy]'); if (buy) { if (gardenBuy(buy.dataset.gbuy, buy.dataset.ghow || '')) renderGarden(); return; }
     const pl = t.closest('[data-gplace]'); if (pl) { openPlaceDlg(pl.dataset.gplace); return; }
     const rm = t.closest('[data-gremove]'); if (rm) { if (gardenRemove(rm.dataset.gremove)) { toast('Back in your bag', 1600, true); renderGarden(); } return; }
     const vis = t.closest('[data-visitor]'); if (vis) { restartClass(vis, 'poke', 700); uiSound('chirp'); gdSay(`The ${VISITOR_NAME[vis.dataset.visitor].toLowerCase()} ${VISITOR_SAY[vis.dataset.visitor]}`); return; }
@@ -14109,6 +14206,7 @@ function demoGarden(sessions) {
   const gbuys = [gb('st1', 'seed_tomato', 0, d(20)), gb('st2', 'seed_tomato', 0, d(20)), gb('st3', 'seed_sunflower', 0, d(20)),
     gb('demo_gb1', 'seed_strawberry', 5, d(4)), gb('demo_gb2', 'seed_lavender', 25, d(9)), gb('demo_gb3', 'seed_basil', 3, d(3)), gb('demo_gb4', 'seed_chilli', 6, d(2)), gb('demo_gb5', 'seed_marigold', 3, d(1)),
     gb('demo_gb6', 'seed_basil', 3, d(16)), gb('demo_gb7', 'seed_sunflower', 0, d(15)), gb('demo_gb8', 'seed_blueberry', 30, d(17)), gb('demo_gb9', 'seed_marigold', 3, d(12)), gb('demo_gb10', 'seed_tomato', 0, d(2)),
+    { ...gb('demo_gb_daily', 'seed_' + dailySeed().id, dailySeed().price, now - 2 * 3600e3), src: 'daily', day: seedDayKey() },   // today's rare seed, bought once
     gb('demo_gb11', 'dc_fence_wood', 12, d(13), 'border'), gb('demo_gb12', 'dc_path_stone', 10, d(13), 'path'), gb('demo_gb13', 'dc_lantern', 15, d(10), 's1'), gb('demo_gb14', 'dc_birdhouse', 18, d(10), 's5'), gb('demo_gb15', 'dc_pond', 45, d(7), 's4'), gb('demo_gb16', 'dc_bench', 22, d(5), '')];
   return { plants, gbuys };
 }
@@ -14759,7 +14857,7 @@ function renderBag() {
   if (!el || !USER) return;
   clearInterval(bagTipTimer);
   const g = game(), all = bagItems(), trophies = trophyCards(), cons = consumableCards(g);
-  const total = all.length + trophies.length + cons.length;
+  const total = all.length + trophies.length + cons.length + gardenBagCards('').length;   // garden seeds and decor count too (a bag with only those is not empty)
   const head = `<div class="bag-head"><div><h1 class="bag-title">Your bag</h1><div class="lbl">${total ? `${all.length} item${all.length === 1 ? '' : 's'}${trophies.length ? ` · ${trophies.length} trophies` : ''}` : 'Nothing here yet'}</div></div>
     ${total ? `<input type="search" id="bagSearch" placeholder="Search your bag" aria-label="Search your bag" value="${esc(bagQuery)}" autocomplete="off">` : ''}</div>`;
   if (!total) {
@@ -15381,6 +15479,7 @@ $('#setPomeo').addEventListener('change', e => { S.settings.pomeo = e.target.che
 $('#setPomeoTalk').addEventListener('change', e => { S.settings.pomeoTalk = e.target.value; save(); });
 $('#setWater').addEventListener('change', e => { S.settings.waterNudge = e.target.checked; save(); });
 $('#setBreakCards').addEventListener('change', e => { S.settings.breakCards = e.target.checked; save(); if (S.ui.tab === 'reminders') renderCards(); });
+$('#setShopDot').addEventListener('change', e => { S.settings.shopDot = e.target.checked; save(); updateGardenDot(); });
 $('#setKeys').addEventListener('change', e => { S.settings.shortcuts = e.target.checked; save(); });
 $('#examsBtn').addEventListener('click', openExams);
 $('#setRevInt').addEventListener('change', e => {
@@ -18757,6 +18856,10 @@ GSPECIES.push(
   { id: 'dahlia',      name: 'Dahlia',      rarity: 'rare',      need: 340, price: 34,  lvl: 4, leaf: '#4e8a4a', flower: '#f28ab0', fruit: '#e04f8a', shape: 'pom',    hint: 'A rare seed from garden level 4.' },
   { id: 'orchid',      name: 'Orchid',      rarity: 'rare',      need: 380, price: 38,  lvl: 5, leaf: '#5b8f5e', flower: '#e8b4ff', fruit: '#c58cff', shape: 'orchid', hint: 'A rare seed from garden level 5.' },
   { id: 'dragonfruit', name: 'Dragon fruit', rarity: 'legendary', need: 720, price: 115, lvl: 7, leaf: '#4f9a7a', flower: '#fff6f6', fruit: '#f23c7a', shape: 'dragon', hint: 'A legendary seed from garden level 7.' },
+  // v1.16 — only in the rotating shop (featured slots and the rare seed of the day); also gifted at garden levels 6, 8 and 9
+  { id: 'bamboo',      name: 'Bamboo',      rarity: 'rare',      need: 280, price: 28,  lvl: 3, shop: 'rotating', leaf: '#6fb162', flower: '#e9f5d0', fruit: '#7cc26a', shape: 'long',  hint: 'Rotating shop only — shoots up fast.' },
+  { id: 'pineapple',   name: 'Pineapple',   rarity: 'rare',      need: 330, price: 33,  lvl: 4, shop: 'rotating', leaf: '#4e8a4a', flower: '#fbe7a0', fruit: '#f2b632', shape: 'big',   hint: 'Rotating shop only — sweet and spiky.' },
+  { id: 'sakura',      name: 'Sakura',      rarity: 'legendary', need: 640, price: 100, lvl: 6, shop: 'rotating', leaf: '#8fae8a', flower: '#ffd6e7', fruit: '#f7a8c4', shape: 'pom',   hint: 'Rotating shop only — a cloud of blossom.' },
 );
 for (const sp of GSPECIES) GSP_BY_ID[sp.id] = sp;
 GDECOR.push(
