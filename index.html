@@ -1420,6 +1420,46 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
   .gd-say { max-width: calc(100% - 28px); }
 }
 
+/* Garden pets (v1.16) */
+.gd-egg { flex: 1 1 240px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+.gd-eggbtn { flex: none; width: 56px; height: 56px; border: 0; background: var(--bg); border-radius: 14px; padding: 6px; cursor: pointer; }
+.gd-eggbtn svg { width: 100%; height: 100%; display: block; }
+.gd-egg.k-rare .gd-eggbtn { background: rgba(127, 180, 232, .18); } .gd-egg.k-legendary .gd-eggbtn { background: rgba(232, 185, 60, .2); }
+.gd-eggtxt { flex: 1; min-width: 0; }
+.gd-eggtxt .xpbar.mini { height: 6px; margin: 5px 0 4px; }
+.gd-petsline { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.gd-petsline .linkbtn { color: var(--accent); padding: 0; min-height: 0; }
+.gd-pets { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.gd-pet { pointer-events: auto; position: absolute; border: 0; background: none; padding: 4px; width: 46px; height: 46px; cursor: pointer; }
+.gd-pet svg { width: 100%; height: 100%; overflow: visible; display: block; }
+.gd-pet.n-0 { left: 27%; bottom: 4px; } .gd-pet.n-1 { left: 45%; bottom: 8px; } .gd-pet.n-2 { left: 63%; bottom: 3px; }
+:root[data-motion="full"] .gd-pet { animation: gd-idle 3.2s ease-in-out infinite; }
+:root[data-motion="full"] .gd-pet.n-1 { animation-delay: -1.1s; } :root[data-motion="full"] .gd-pet.n-2 { animation-delay: -2.2s; }
+@keyframes gd-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+:root[data-motion="full"] .gd-pet .wing { animation: gd-flap .25s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 100% 100%; }
+.gd-pet.poke { animation: gd-poke .7s ease-out; }
+.hearts { color: #e2576b; font-size: 12px; letter-spacing: 1px; } .hearts .dim { opacity: .3; }
+.pet-card .pv svg { height: 64px; }
+.gd-petgrid { margin-bottom: 12px; }
+.gd-eggq { margin: 14px 0 6px; font-size: 15px; }
+.gd-egglist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.gd-egglist li { display: flex; gap: 10px; align-items: center; }
+.gd-egglist .eg svg { display: block; }
+.egg-dlg { width: min(400px, calc(100vw - 32px)); text-align: center; padding: 22px 20px 18px; }
+.eg-stage { position: relative; height: 120px; display: grid; place-items: center; margin-bottom: 6px; }
+.eg-egg, .eg-pet { position: absolute; width: 96px; height: 96px; display: grid; place-items: center; }
+.eg-egg svg, .eg-pet svg { width: 100%; height: 100%; }
+.eg-pet { opacity: 0; transform: scale(.6); }
+:root[data-motion="full"] .egg-dlg:not(.cracked) .eg-egg { animation: eg-wobble 1.4s ease-in-out; }
+.egg-dlg.cracked .eg-egg { opacity: 0; transform: scale(1.2); transition: opacity .35s, transform .35s; }
+.egg-dlg.cracked .eg-pet { opacity: 1; transform: scale(1); transition: opacity .4s .2s, transform .5s .2s cubic-bezier(.2, 1.4, .4, 1); }
+.egg-dlg.still .eg-egg, .egg-dlg.still .eg-pet { transition: none; }
+@keyframes eg-wobble { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(-10deg); } 30% { transform: rotate(9deg); } 45% { transform: rotate(-7deg); } 60% { transform: rotate(6deg); } 75% { transform: rotate(-4deg); } 90% { transform: rotate(3deg); } }
+.egg-dlg h3 { margin: 4px 0 6px; }
+.eg-line { margin: 0 0 14px; font-size: 14px; }
+.eg-line .rar { font-weight: 700; }
+@media (max-width: 640px) { .gd-egg { flex-basis: 100%; } }
+
 /* Rotating seed shop (v1.16) */
 .gd-shop-sec { margin-bottom: 20px; }
 .gd-shop-sec h2 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 0 0 4px; font-size: 17px; }
@@ -4194,6 +4234,13 @@ body.first-load #todayBar { opacity: 0; }
 </dialog>
 
 <!-- Boss and questline rewards -->
+<dialog id="eggDlg" class="egg-dlg" aria-labelledby="egTitle">
+  <div class="eg-stage" id="egStage"><div class="eg-egg" id="egEgg"></div><div class="eg-pet" id="egPet"></div></div>
+  <div class="rw-kicker" id="egKicker"></div>
+  <h3 id="egTitle"></h3>
+  <p class="eg-line" id="egLine"></p>
+  <div class="btn-row"><button class="btn" id="egOk">Keep it in the bag</button><button class="btn primary" id="egOut">Let it out</button></div>
+</dialog>
 <dialog id="rewardDlg" class="reward-dlg" aria-labelledby="rwTitle">
   <div class="rw-pomeo" id="rwPomeo"></div>
   <div class="rw-kicker" id="rwKicker"></div>
@@ -4451,6 +4498,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    33d. WEEKLY SUBJECT PLAN (v1.15) — target hours per subject, progress from session names.
    33e. COSMETICS DROP (v1.15) — new themes, stamps, ring trails, room items, seeds, decor (items before ITEM_BY_ID, art near the end).
    33f. ROTATING SEED SHOP (v1.16) — featured seeds per 4-hour UTC slot, the rare seed of the day, exclusives, gift seeds, restock dot (inside GARDEN).
+   33g. GARDEN PETS (v1.16) — eggs filled by focus, deterministic hatching, pets with capped boosts, slots by garden level, bag + almanac (inside GARDEN).
    34. WRAPPED — monthly (previous month, from the 1st) and yearly (from Dec 20)
    35. KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
    36. SUBTASKS — an optional checklist for the current focus session.
@@ -4979,6 +5027,8 @@ function defaultState() {
     cardPrefs: {},  // player card: banner, featured, what it shows — { key: { v, u } } (see PLAYER CARD)
     roomPrefs: {},  // Pomeo's room: what sits in each slot — { slot: { v, u } } (see POMEO'S ROOM)
     roomSets: [],   // saved rooms (synced item by item)
+    eggs: [],       // garden pet eggs (v1.16): { id, v, kind, src, at, need, w:{sessionId: minutes}, h, pet } — water maps joined like plants
+    petPrefs: {},   // pets out in the garden: { p1..p3: { v: petId, u } } (merged like roomPrefs)
     decks: [],      // flashcard decks (see FLASHCARDS)
     cards: [],      // flashcards, synced item by item
     plan: [],       // weekly subject plan: { id, v, name, hrs } (see WEEKLY SUBJECT PLAN)
@@ -5005,7 +5055,7 @@ function hydrate(obj) {
   const out = { ...def, ...obj };
   for (const k of ['settings', 'timer', 'ui']) out[k] = { ...def[k], ...(obj[k] || {}) };
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
-  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan']) if (!Array.isArray(out[k])) out[k] = [];
+  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
@@ -5016,6 +5066,7 @@ function hydrate(obj) {
   out.game = normalizeGame(obj.game);
   out.cardPrefs = mergeCardPrefs({}, obj.cardPrefs).prefs;
   out.roomPrefs = mergeCardPrefs({}, obj.roomPrefs).prefs;
+  out.petPrefs = mergeCardPrefs({}, obj.petPrefs).prefs;
   out.clanRem = mergeCardPrefs({}, obj.clanRem).prefs;
   out.wipedAt = +obj.wipedAt || 0;
   return out;
@@ -5132,6 +5183,8 @@ function profileFromState() {
     gbuys: S.gbuys.slice(-1500),
     cardPrefs: S.cardPrefs,
     roomPrefs: S.roomPrefs,
+    eggs: S.eggs.slice(-80),
+    petPrefs: S.petPrefs,
     roomSets: S.roomSets.slice(0, MAX_ROOM_SETS),
     decks: S.decks.slice(0, DECK_MAX),
     cards: S.cards.slice(0, CARD_MAX),
@@ -5245,7 +5298,7 @@ function applyProfile(d) {
   S.settings = { ...def.settings, ...(d.settings || {}) };
   if ((+d.wipedAt || 0) > (+S.wipedAt || 0)) {   // erased on another device: take the cloud copy as it is, merge nothing back
     for (const f of SYNC_LISTS) S[f] = f === 'presets' ? defaultState().presets : [];
-    S.tomb = {}; S.game = normalizeGame(null); S.cardPrefs = {}; S.roomPrefs = {}; S.wipedAt = +d.wipedAt;
+    S.tomb = {}; S.game = normalizeGame(null); S.cardPrefs = {}; S.roomPrefs = {}; S.petPrefs = {}; S.wipedAt = +d.wipedAt;
     snapLists();
   }
   const ahead = mergeSyncFrom(d);   // reminders, revisions, exams, parked, presets, templates: item by item
@@ -5262,6 +5315,9 @@ function applyProfile(d) {
   const rp = mergeCardPrefs(S.roomPrefs, d.roomPrefs);   // Pomeo's room: newest wins, slot by slot
   S.roomPrefs = rp.prefs;
   if (rp.ahead) mg.ahead = true;
+  const pp = mergeCardPrefs(S.petPrefs, d.petPrefs);   // pets out in the garden (v1.16): newest wins, slot by slot
+  S.petPrefs = pp.prefs;
+  if (pp.ahead) mg.ahead = true;
   const cr = mergeCardPrefs(S.clanRem, d.clanRem);   // clan session reminders: newest wins, session by session
   S.clanRem = cr.prefs;
   if (cr.ahead) mg.ahead = true;
@@ -5611,14 +5667,15 @@ function mergeData(obj) {
   for (const [k, v] of Object.entries(sg.trophies)) if (!g.trophies[k]) g.trophies[k] = v;
   for (const f of ['decks', 'cards', 'plan']) for (const x of src[f]) { if (!x || !x.id) continue; const i = S[f].findIndex(y => y && y.id === x.id); if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() }); else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x; }   // flashcards: by id, newer wins
   S.roomPrefs = mergeCardPrefs(S.roomPrefs, src.roomPrefs).prefs;   // Pomeo's room: the newer choice per slot
+  S.petPrefs = mergeCardPrefs(S.petPrefs, src.petPrefs).prefs;   // pets out (v1.16)
   for (const x of src.roomSets) if (x && x.id && x.name && !S.roomSets.some(y => y.id === x.id)) S.roomSets.push({ ...x, u: +x.u || Date.now() });
   // Garden (1.15): plants and purchases by id — a copy already here keeps the newer one (water maps are joined); nothing is doubled.
-  for (const f of ['plants', 'gbuys']) {
+  for (const f of ['plants', 'gbuys', 'eggs']) {
     for (const x of src[f]) {
       if (!x || !x.id || typeof x !== 'object') continue;
       const i = S[f].findIndex(y => y && y.id === x.id);
       if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() });
-      else if (f === 'plants') S[f][i] = mergePlant((+x.u || 0) > (+S[f][i].u || 0) ? x : S[f][i], (+x.u || 0) > (+S[f][i].u || 0) ? S[f][i] : x);
+      else if (LIST_MERGE[f]) { const newer = (+x.u || 0) > (+S[f][i].u || 0); S[f][i] = LIST_MERGE[f](newer ? x : S[f][i], newer ? S[f][i] : x); }   // plants and eggs join their water maps
       else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x;
     }
   }
@@ -5892,6 +5949,7 @@ function logSession(focusedMs, end) {
   setTimeout(() => uiSound('coin'), 900);
   floatUp([[`+${xpForSession(s)} XP`], [`+${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins`, 'coin'], ...(victoryOf(dayKey(weekMonday()), bossView()) ? [] : [[`⚔️ −${Math.round(focusedMs / 60000)} HP`]]), ...(gw && gw.mins ? [[`🌱 +${gw.mins} min water`]] : [])]);
   if (gw && gw.ripe.length) setTimeout(() => toast(`${gw.ripe.length === 1 ? speciesOf(gw.ripe[0]).name + ' is' : gw.ripe.length + ' plants are'} ready to harvest 🌱`, 3600, true, { go: { tab: 'garden' } }), 1500);
+  if (gw && gw.hatched && gw.hatched.length) announceHatched(gw.hatched);   // the reveal waits for the end-of-block feedback, then the focus queue (v1.16)
   announce(news, 'loud');
   socialAfterSession();
   const levelAfter = game().lv.level;
@@ -10779,7 +10837,7 @@ function hash01(str) { let h = 2166136261; for (const c of String(str)) { h ^= c
 /** Chance of any mutation: species rarity, the streak when it was planted and a long finishing session. */
 function mutationChance(p) {
   const base = { common: .06, rare: .1, legendary: .16 }[speciesOf(p).rarity] || .06;
-  return base + Math.min(+p.sk || 0, 30) / 30 * .06 + ((+p.fd || 0) >= 90 ? .06 : (+p.fd || 0) >= 50 ? .03 : 0);
+  return base + Math.min(+p.sk || 0, 30) / 30 * .06 + ((+p.fd || 0) >= 90 ? .06 : (+p.fd || 0) >= 50 ? .03 : 0) + petBoost().mut;   // pets out add a little (capped at +8%, v1.16)
 }
 /** Decided from stored data only (plant id, species, sk, fd), so every device gets the same answer and it can't be re-rolled. */
 function mutationOf(p) {
@@ -10900,7 +10958,7 @@ function gardenWilted(now = Date.now()) {
   const ab = (S.abandoned || []).length ? Math.max(...S.abandoned.slice(-20).map(a => +a.end || 0)) : 0;
   if (ab > last && ab > now - 2 * DAY_MS) return true;
   const since = Math.max(last, gardenMigAt() === Infinity ? 0 : gardenMigAt(), ...garden().growing.map(p => +p.at || 0));
-  return since > 0 && now - since > 3 * DAY_MS;
+  return since > 0 && now - since > (3 + petBoost().wilt) * DAY_MS;   // a hedgehog out keeps the beds damp longer (v1.16)
 }
 /** Who is visiting: butterflies and bees for this week's sessions and blooms, a bird, a frog and a cat for streaks. */
 function gardenVisitors() {
@@ -10950,10 +11008,12 @@ function mergePlant(win, lose) {
 
 /* ---------- Watering: every finished focus block waters the growing plants ---------- */
 function gardenAfterSession(s) {
-  const mins = Math.floor((+s.duration || 0) / 60000);
-  if (mins < 1 || !gardenMig()) return null;
+  const raw = Math.floor((+s.duration || 0) / 60000);
+  if (raw < 1 || !gardenMig()) return null;
+  const hatched = eggAfterSession(s, raw);   // the egg in the slot drinks the block's minutes too (v1.16)
+  const mins = Math.floor(raw * (1 + petBoost().water));   // pets out add a little water (capped at +25%)
   const g = garden(), alive = g.growing.filter(p => !plantReady(p) && !(p.w && p.w[s.id] !== undefined));   // a block waters each plant once, whatever device replays it
-  if (!alive.length) return null;
+  if (!alive.length) { GD = null; save(); return { watered: 0, mins: 0, stagesUp: [], ripe: [], hatched, egg: raw }; }
   const give = {}, room = p => needOf(p) - waterOf(p) - (give[p.id] || 0);
   let left = mins;
   const pour = targets => {
@@ -10978,7 +11038,236 @@ function gardenAfterSession(s) {
   GD = null;
   save();
   updateGardenDot();
-  return { watered: Object.keys(give).length, mins: mins - left, stagesUp, ripe };
+  return { watered: Object.keys(give).length, mins: mins - left, stagesUp, ripe, hatched, egg: raw };
+}
+
+/* ---------- GARDEN PETS (v1.16) ----------
+   Eggs come only from focus. The egg in the slot (the oldest unhatched one) drinks every finished block's minutes
+   and hatches at 300 (common), 420 (rare) or 600 (legendary) minutes; what is left over flows into the next egg.
+   Which pet hatches is decided from the egg's id alone (hash), so every device agrees and nothing re-rolls.
+   Garden levels 4 and 8 and questline finals (from November 2026) add rarer eggs with fixed ids. Pets give small,
+   capped boosts; 1 / 2 / 3 can be out at garden level 1 / 5 / 8. A duplicate hatch raises that pet's level
+   (hearts, up to 3), which strengthens its boost by 25% per heart. */
+const PETS = [
+  { id: 'bunny',       name: 'Bunny',        rarity: 'common',    boost: { water: .06 },                        line: 'nibbles the clover and hops after every block' },
+  { id: 'hedgehog',    name: 'Hedgehog',     rarity: 'common',    boost: { wilt: 1 },                           line: 'keeps the beds damp a day longer' },
+  { id: 'frog',        name: 'Frog',         rarity: 'common',    boost: { bonus: .06 },                        line: 'sometimes finds extra produce in the mud' },
+  { id: 'turtle',      name: 'Turtle',       rarity: 'common',    boost: { weight: .05 },                       line: 'slow and steady — the crops grow bigger' },
+  { id: 'bee',         name: 'Bee',          rarity: 'rare',      boost: { mut: .02 },                          line: 'pollinates the beds — mutations come more often' },
+  { id: 'owl',         name: 'Owl',          rarity: 'rare',      boost: { mut: .025, water: .03 },             line: 'watches over the night-time blocks' },
+  { id: 'deer',        name: 'Deer',         rarity: 'rare',      boost: { weight: .08, water: .04 },           line: 'grazes gently; the fruit swells' },
+  { id: 'fox',         name: 'Fox',          rarity: 'rare',      boost: { bonus: .10 },                        line: 'a clever forager — extra produce turns up' },
+  { id: 'hummingbird', name: 'Hummingbird',  rarity: 'legendary', boost: { water: .12, mut: .02 },              line: 'a blur of wings; every block waters more' },
+  { id: 'snail',       name: 'Golden snail', rarity: 'legendary', boost: { weight: .12, bonus: .08, mut: .02 }, line: 'leaves a golden trail — luck follows it' },
+];
+const PET_BY_ID = Object.fromEntries(PETS.map(p => [p.id, p]));
+const BOOST_CAP = { water: .25, mut: .08, wilt: 2, bonus: .20, weight: .25 };
+const BOOST_TEXT = { water: v => `+${Math.round(v * 100)}% water from sessions`, mut: v => `+${(v * 100).toFixed(1).replace(/\.0$/, '')}% mutation chance`, wilt: v => `wilts ${v % 1 ? v.toFixed(1) : v} day${v === 1 ? '' : 's'} later`, bonus: v => `${Math.round(v * 100)}% chance of bonus produce`, weight: v => `+${Math.round(v * 100)}% crop weight` };
+const EGG_NEED = { common: 300, rare: 420, legendary: 600 };
+const EGG_ODDS = { common: [.70, .95], rare: [.20, .80], legendary: [0, .40] };   // cumulative: below [0] common, below [1] rare, else legendary
+const PET_LEVEL_MAX = 3, PET_SLOTS_AT = [1, 5, 8];
+const EGG_EVENT_FROM = Date.UTC(2026, 10, 1);   // questline finals from the November 2026 questline on add a rare egg
+/** Which pet an egg holds — from its id only, so every device gets the same answer. */
+function petFor(egg) {
+  const [c, r] = EGG_ODDS[egg.kind] || EGG_ODDS.common, x = hash01(egg.id + ':pet'), tier = x < c ? 'common' : x < r ? 'rare' : 'legendary';
+  const pool = PETS.filter(p => p.rarity === tier);
+  return pool[Math.floor(hash01(egg.id + ':sp') * pool.length) % pool.length].id;
+}
+const eggList = () => (S.eggs || []).filter(e => e && typeof e === 'object' && e.id && e.kind);
+const eggFill = e => Object.values(e.w || {}).reduce((a, v) => a + (+v || 0), 0);
+const eggNeed = e => +e.need || EGG_NEED[e.kind] || EGG_NEED.common;
+const eggActive = () => eggList().filter(e => !e.h).sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1))[0] || null;
+const eggsWaiting = () => eggList().filter(e => !e.h).length;
+/** Two copies of one egg: a hatched copy is final; otherwise the newer one with both water maps joined. */
+function mergeEgg(win, lose) {
+  if (!lose || lose === win) return win;
+  const base = win.h ? win : lose.h ? lose : win;
+  return { ...base, w: { ...(lose.w || {}), ...(win.w || {}) } };
+}
+/** One focus egg in the queue at all times: 'egg1', then 'egg' + (focus eggs so far + 1) — the same id on every device. */
+function ensureEgg() {
+  if (!USER || isPreview() || !gardenMig()) return false;
+  if (eggList().some(e => e.src === 'focus' && !e.h)) return false;
+  const id = 'egg' + (eggList().filter(e => e.src === 'focus').length + 1);
+  if (eggList().some(e => e.id === id)) return false;
+  S.eggs.push({ id, v: 1, kind: 'common', src: 'focus', at: Date.now(), need: EGG_NEED.common, w: {} });
+  return true;
+}
+/** Rarer eggs with fixed ids: garden level 4 (rare) and 8 (legendary). */
+function eggGifts() {
+  if (!USER || isPreview() || !gardenMig()) return 0;
+  const lv = garden().level, made = [];
+  for (const [id, at, kind] of [['egg_lv4', 4, 'rare'], ['egg_lv8', 8, 'legendary']]) if (lv >= at && !eggList().some(e => e.id === id)) { S.eggs.push({ id, v: 1, kind, src: 'lv' + at, at: Date.now(), need: EGG_NEED[kind], w: {} }); made.push(kind); }
+  return made;
+}
+/** An egg that is full but not marked hatched (water joined from two devices) hatches now. */
+function eggSettle() {
+  const out = [];
+  for (const e of eggList()) if (!e.h && eggFill(e) >= eggNeed(e)) { e.h = Date.now(); e.pet = petFor(e); out.push(e); }
+  return out;
+}
+/** A finished block fills the egg in the slot; what is left flows into the next egg. Returns the eggs that hatched. */
+function eggAfterSession(s, mins) {
+  const out = [...eggSettle()];
+  let left = mins, guard = 0;
+  while (left > 0 && guard++ < 4) {
+    ensureEgg();
+    const e = eggActive();
+    if (!e || (e.w && e.w[s.id] !== undefined)) break;   // this block already counted here (another device replayed it)
+    const amt = Math.min(left, Math.max(0, eggNeed(e) - eggFill(e)));
+    if (amt <= 0) break;
+    (e.w ||= {})[s.id] = amt;
+    left -= amt;
+    if (eggFill(e) >= eggNeed(e)) { e.h = Date.now(); e.pet = petFor(e); e.hs = s.id; out.push(e); } else break;
+  }
+  ensureEgg();
+  return out;
+}
+/** Owned pets, from hatched eggs: level = copies hatched (max 3). */
+function petsOwned() {
+  const m = {};
+  for (const e of eggList()) if (e.h && e.pet && PET_BY_ID[e.pet]) { const x = (m[e.pet] ||= { id: e.pet, pet: PET_BY_ID[e.pet], n: 0, at: e.h }); x.n++; x.at = Math.min(x.at, e.h); }
+  for (const x of Object.values(m)) x.level = Math.min(PET_LEVEL_MAX, x.n);
+  return Object.values(m).sort((a, b) => a.at - b.at);
+}
+const petSlots = () => PET_SLOTS_AT.filter(lv => garden().level >= lv).length;
+/** Pets out in the garden: each pet at most once, only owned ones, only the slots this level allows. */
+function petsOut() {
+  const own = Object.fromEntries(petsOwned().map(x => [x.id, x])), seen = new Set(), out = [];
+  for (let i = 1; i <= petSlots(); i++) { const p = (S.petPrefs || {})['p' + i], v = p && p.v; if (v && own[v] && !seen.has(v)) { seen.add(v); out.push({ slot: 'p' + i, ...own[v] }); } }
+  return out;
+}
+/** Combined boosts of the pets out, capped; a pet's level strengthens it (+25% per heart). */
+function petBoost() {
+  const b = { water: 0, mut: 0, wilt: 0, bonus: 0, weight: 0 };
+  for (const x of petsOut()) for (const [k, v] of Object.entries(x.pet.boost)) b[k] += v * (1 + .25 * (x.level - 1));
+  for (const k in b) b[k] = Math.min(BOOST_CAP[k], Math.round(b[k] * 1000) / 1000);
+  return b;
+}
+const petBoostText = (pet, level = 1) => Object.entries(pet.boost).map(([k, v]) => BOOST_TEXT[k](Math.round(v * (1 + .25 * (level - 1)) * 1000) / 1000)).join(' · ');
+function petEquip(petId) {
+  if (isPreview() || !petsOwned().some(x => x.id === petId)) return false;
+  const out = petsOut();
+  if (out.some(x => x.id === petId)) return true;
+  const n = petSlots(), free = Array.from({ length: n }, (_, i) => 'p' + (i + 1)).find(k => !out.some(x => x.slot === k));
+  if (!free) { toast(`Up to ${n} pet${n === 1 ? '' : 's'} out at a time${n < 3 ? ` — one more at garden level ${PET_SLOTS_AT[n]}` : ''}`); return false; }
+  (S.petPrefs ||= {})[free] = { v: petId, u: Date.now() };
+  GD = null;
+  save();
+  return true;
+}
+function petUnequip(petId) {
+  if (isPreview()) return false;
+  const x = petsOut().find(p => p.id === petId);
+  if (!x) return false;
+  S.petPrefs[x.slot] = { v: '', u: Date.now() };
+  GD = null;
+  save();
+  return true;
+}
+const petHearts = lv => '♥'.repeat(lv) + '<span class="dim">' + '♥'.repeat(Math.max(0, PET_LEVEL_MAX - lv)) + '</span>';
+/* Pet and egg art (30×24 like the visitors) */
+const PET_ART = {
+  bunny: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="15" cy="16" rx="9" ry="6.5" fill="#f3efe8"/><ellipse cx="10" cy="6" rx="2.2" ry="6" fill="#f3efe8"/><ellipse cx="10" cy="6" rx="1" ry="4" fill="#f4b6c2"/><ellipse cx="15" cy="7" rx="2.2" ry="6" fill="#f3efe8"/><ellipse cx="15" cy="7" rx="1" ry="4" fill="#f4b6c2"/><circle cx="12" cy="14" r="1" fill="#333"/><circle cx="17" cy="14" r="1" fill="#333"/><ellipse cx="14.5" cy="16.5" rx="1.2" ry=".8" fill="#e58aa0"/><circle cx="25" cy="18" r="2.4" fill="#fff"/></svg>',
+  hedgehog: '<svg viewBox="0 0 30 24" aria-hidden="true"><path d="M5 18q2-11 12-11 9 0 11 11Z" fill="#6b4a2e"/><path d="M7 16l2-6 2 5 2-7 2 6 2-7 2 6 2-6 2 6 2-5 1 6" stroke="#4a311c" stroke-width="1.6" fill="none" stroke-linecap="round"/><ellipse cx="9" cy="17" rx="6" ry="4" fill="#e9c9a8"/><circle cx="4.5" cy="17" r="1.2" fill="#333"/><circle cx="8" cy="15.5" r=".9" fill="#333"/></svg>',
+  frog: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="15" cy="16" rx="10" ry="6" fill="#5fb55a"/><circle cx="10" cy="9" r="3.2" fill="#5fb55a"/><circle cx="20" cy="9" r="3.2" fill="#5fb55a"/><circle cx="10" cy="9" r="1.4" fill="#222"/><circle cx="20" cy="9" r="1.4" fill="#222"/><path d="M10 17q5 3 10 0" stroke="#2e6b2a" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="7" cy="21" rx="3" ry="1.4" fill="#4a9a46"/><ellipse cx="23" cy="21" rx="3" ry="1.4" fill="#4a9a46"/></svg>',
+  turtle: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="15" cy="13" rx="10" ry="7" fill="#4f8a5a"/><path d="M8 13h14M11 8l2 10M17 8l2 10M9 10q6-3 12 0M9 16q6 3 12 0" stroke="#3a6b42" stroke-width="1.2" fill="none"/><ellipse cx="25" cy="16" rx="3.4" ry="2.6" fill="#7bb37a"/><circle cx="26.5" cy="15.5" r=".8" fill="#222"/><ellipse cx="8" cy="20" rx="2.6" ry="1.4" fill="#7bb37a"/><ellipse cx="21" cy="20" rx="2.6" ry="1.4" fill="#7bb37a"/></svg>',
+  bee: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="15" cy="14" rx="8" ry="5.5" fill="#f2c14e"/><path d="M11 10v8M15 9v10M19 10v8" stroke="#3a2a1a" stroke-width="2"/><ellipse cx="11" cy="7" rx="5" ry="3" fill="#fff" opacity=".8"/><ellipse cx="19" cy="7" rx="5" ry="3" fill="#fff" opacity=".8"/><circle cx="23" cy="13" r="1" fill="#3a2a1a"/></svg>',
+  owl: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="15" cy="14" rx="8.5" ry="9" fill="#8a6a4a"/><path d="M8 7l2-4 3 3M22 7l-2-4-3 3" fill="#8a6a4a"/><circle cx="11.5" cy="12" r="3.2" fill="#f7efd8"/><circle cx="18.5" cy="12" r="3.2" fill="#f7efd8"/><circle cx="11.5" cy="12" r="1.6" fill="#222"/><circle cx="18.5" cy="12" r="1.6" fill="#222"/><path d="M15 14l-1.5 2.5h3Z" fill="#f2b632"/><ellipse cx="15" cy="19" rx="4.5" ry="3" fill="#b89a78"/></svg>',
+  deer: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="13" cy="16" rx="8" ry="5" fill="#c99a6a"/><rect x="18" y="8" width="5" height="7" rx="2.5" fill="#c99a6a"/><circle cx="21" cy="7" r="3" fill="#c99a6a"/><path d="M20 4l-2-3M20 4l-1-4M22 4l2-3M22 4l1-4" stroke="#8a6a4a" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="22" cy="6.5" r=".8" fill="#222"/><path d="M8 20v3M11 20v3M15 20v3M18 20v3" stroke="#a8784a" stroke-width="1.6"/><circle cx="10" cy="14" r="1" fill="#fff" opacity=".7"/><circle cx="14" cy="13" r="1" fill="#fff" opacity=".7"/></svg>',
+  fox: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="14" cy="16" rx="8" ry="5" fill="#e8823a"/><path d="M22 18q6-2 5-8" stroke="#e8823a" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="26.3" cy="10.5" r="2" fill="#fff"/><path d="M6 15l0-7 4 3h3l4-3v7Z" fill="#e8823a"/><ellipse cx="9" cy="15" rx="4" ry="3" fill="#fff"/><circle cx="7.5" cy="13" r=".9" fill="#222"/><circle cx="11" cy="13" r=".9" fill="#222"/><circle cx="9" cy="16" r="1" fill="#333"/></svg>',
+  hummingbird: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="16" cy="13" rx="6" ry="4" fill="#3fb28a"/><circle cx="21" cy="10" r="3" fill="#2f9ad0"/><path d="M24 10l6-1" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><circle cx="22" cy="9.5" r=".8" fill="#222"/><g class="wing wl"><path d="M14 11q-4-9-10-6 2 6 10 6Z" fill="#6ad2a8" opacity=".85"/></g><g class="wing wr"><path d="M16 11q2-9 9-7-1 6-9 7Z" fill="#6ad2a8" opacity=".85"/></g><path d="M10 15l-6 4 7-1Z" fill="#2f9ad0"/></svg>',
+  snail: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="13" cy="19" rx="11" ry="3.5" fill="#e6c266"/><circle cx="17" cy="12" r="7" fill="#f2c14e"/><path d="M17 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0M17 12m-1.5 0a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0" stroke="#c9981e" stroke-width="1.3" fill="none"/><path d="M4 16q0-4 3-6M6 17q0-4 2-5" stroke="#c9981e" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="7" cy="9.5" r="1.1" fill="#333"/><circle cx="8.5" cy="11.5" r="1.1" fill="#333"/><path d="M2 20q6-2 12 0" stroke="#fff3b0" stroke-width="1.5" opacity=".8" fill="none"/></svg>',
+};
+const petArt = (id, size = 0) => PET_ART[id] ? (size ? PET_ART[id].replace('<svg ', `<svg width="${Math.round(size * 1.25)}" height="${size}" style="vertical-align:-3px" `) : PET_ART[id]) : '';
+const EGG_COLORS = { common: ['#f6efe0', '#d9c9a8'], rare: ['#d8ecff', '#7fb4e8'], legendary: ['#fff1c2', '#e8b93c'] };
+function eggArt(kind = 'common', pct = 0, size = 0) {
+  const [a, b] = EGG_COLORS[kind] || EGG_COLORS.common, crack = pct >= 100 ? '<path d="M15 4l2 5-3 4 3 4-2 4" stroke="#6b5a3a" stroke-width="1.3" fill="none" stroke-linecap="round"/>' : pct >= 60 ? '<path d="M15 4l2 5-3 4" stroke="#6b5a3a" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".7"/>' : '';
+  return `<svg viewBox="0 0 30 30" aria-hidden="true"${size ? ` width="${size}" height="${size}"` : ''}><ellipse cx="15" cy="16" rx="10" ry="12.5" fill="${a}" stroke="${b}" stroke-width="1.5"/><circle cx="11" cy="12" r="1.8" fill="${b}" opacity=".6"/><circle cx="19" cy="18" r="2.2" fill="${b}" opacity=".6"/><circle cx="13" cy="22" r="1.4" fill="${b}" opacity=".6"/>${crack}</svg>`;
+}
+/* The egg card in the garden head */
+function eggCardHTML(g) {
+  const e = eggActive(), out = petsOut(), waiting = eggsWaiting(), own = petsOwned();
+  const fill = e ? Math.min(eggFill(e), eggNeed(e)) : 0, need = e ? eggNeed(e) : 0, pct = e ? Math.min(100, Math.round(fill / need * 100)) : 0;
+  return `<div class="gd-egg card${e ? ' k-' + e.kind : ''}"><button type="button" class="gd-eggbtn" data-pets aria-label="Pets and eggs">${e ? eggArt(e.kind, pct) : out[0] ? petArt(out[0].id) : eggArt('common', 0)}</button>
+    <div class="gd-eggtxt"><div class="row between"><b>${e ? `${e.kind === 'common' ? '' : RARITY_LABEL[e.kind] + ' '}Egg` : 'Pets'}</b><span class="lbl">${petSlots()} slot${petSlots() === 1 ? '' : 's'}</span></div>
+      <div class="lbl">${e ? `${fmtNum(fill)} / ${need} min of focus${fill >= need ? ' — hatching' : ''}${waiting > 1 ? ` · ${waiting - 1} more waiting` : ''}` : 'Every finished block fills the egg'}</div>
+      <div class="xpbar mini" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Egg"><i data-fill="${pct}" data-fill-key="egg"></i></div>
+      <div class="lbl gd-petsline">${out.length ? out.map(x => `<span>${petArt(x.id, 16)} ${esc(x.pet.name)}</span>`).join(' ') : `<span>${own.length ? 'No pet out — choose one' : 'No pet yet — the first egg hatches after 5 hours of focus'}</span>`} <button class="linkbtn" data-pets>Pets</button></div></div></div>`;
+}
+/* Pets in the scene */
+const petsSceneHTML = () => `<div class="gd-pets">${petsOut().map((x, i) => `<button type="button" class="gd-pet pet-${x.id} n-${i}" data-pet="${x.id}" aria-label="${esc(x.pet.name)} — ${esc(petBoostText(x.pet, x.level))}">${petArt(x.id)}</button>`).join('')}</div>`;
+/* The Pets dialog: pets out, pets in the bag, the egg queue */
+function openPetsDlg() {
+  const own = petsOwned(), out = petsOut(), outIds = new Set(out.map(x => x.id)), n = petSlots(), eggs = eggList().filter(e => !e.h).sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
+  const card = x => `<div class="item gd-item pet-card r-${x.pet.rarity}${outIds.has(x.id) ? ' equipped' : ''}"><div class="pv">${petArt(x.id)}${outIds.has(x.id) ? `<span class="tag">${CHECK_SVG}Out</span>` : ''}</div>
+      <div class="nm">${esc(x.pet.name)} <span class="hearts" aria-label="Level ${x.level}">${petHearts(x.level)}</span></div><div class="ds">${esc(petBoostText(x.pet, x.level))}</div>
+      <div class="bi-src"><span class="rar">${RARITY_LABEL[x.pet.rarity]}</span><span>${x.n > 1 ? `×${x.n}` : ''}</span></div>
+      <div class="act">${outIds.has(x.id) ? `<button class="btn" data-petunequip="${x.id}">Bring in</button>` : `<button class="btn primary" data-petequip="${x.id}"${out.length >= n ? ' disabled' : ''}>Let out</button>`}</div></div>`;
+  const b = petBoost(), active = Object.entries(b).filter(([, v]) => v > 0);
+  gdDialog(`<h2 id="gdTitle">Pets</h2>
+    <p class="lbl">${out.length} of ${n} out${n < 3 ? ` · one more slot at garden level ${PET_SLOTS_AT[n]}` : ''}${active.length ? ` · now: ${active.map(([k, v]) => BOOST_TEXT[k](v)).join(', ')}` : ''}</p>
+    ${own.length ? `<div class="shopgrid gd-grid gd-petgrid">${own.map(card).join('')}</div>` : `<p class="muted">No pets yet. Your first egg hatches after 5 hours of finished focus.</p>`}
+    <h3 class="gd-eggq">Eggs</h3>
+    ${eggs.length ? `<ul class="gd-egglist">${eggs.map((e, i) => `<li><span class="eg">${eggArt(e.kind, Math.round(Math.min(eggFill(e), eggNeed(e)) / eggNeed(e) * 100), 28)}</span><span><b>${RARITY_LABEL[e.kind]} egg</b>${i === 0 ? ' · in the slot' : ' · waiting'}<br><span class="lbl">${fmtNum(Math.min(eggFill(e), eggNeed(e)))} / ${eggNeed(e)} min${e.src === 'focus' ? '' : e.src.startsWith('lv') ? ` · from garden level ${e.src.slice(2)}` : ' · questline reward'}</span></span></li>`).join('')}</ul>` : '<p class="lbl">No eggs waiting.</p>'}
+    <p class="lbl">Eggs come only from focus: every finished block fills the egg in the slot. Garden levels 4 and 8 and questline finals add rarer eggs. Boosts are capped (${Object.entries(BOOST_CAP).map(([k, v]) => BOOST_TEXT[k](v)).join('; ')}).</p>
+    <div class="btn-row"><button class="btn" data-gclose>Close</button></div>`);
+}
+/* The hatch reveal (queued after a focus block) */
+let hatchQueue = [];
+function showHatch(e) {
+  if (!userJustActed() && holdForFocus('reveal', 'egg:' + e.id, () => showHatch(e))) return;
+  const dlg = $('#eggDlg'), pet = PET_BY_ID[e.pet];
+  if (!dlg || !pet) return;
+  const lv = (petsOwned().find(x => x.id === e.pet) || { level: 1 }).level, dup = eggList().filter(x => x.h && x.pet === e.pet).length > 1;
+  dlg.className = 'egg-dlg k-' + e.kind + ' r-' + pet.rarity;
+  dlg.dataset.pet = e.pet;
+  $('#egEgg').innerHTML = eggArt(e.kind, 100);
+  $('#egPet').innerHTML = petArt(e.pet);
+  $('#egKicker').textContent = `${RARITY_LABEL[e.kind]} egg · ${eggNeed(e)} minutes of focus`;
+  $('#egTitle').textContent = dup ? `${pet.name} again — level ${lv}` : `A ${pet.name} hatched!`;
+  $('#egLine').innerHTML = `<span class="rar r-${pet.rarity}">${RARITY_LABEL[pet.rarity]}</span> · ${esc(petBoostText(pet, lv))}<br><span class="lbl">It ${esc(pet.line)}.</span>`;
+  const canOut = !petsOut().some(x => x.id === e.pet) && petsOut().length < petSlots();
+  $('#egOut').classList.toggle('hidden', !canOut);
+  dlg.classList.toggle('still', motion() === 'off');
+  if (!dlg.open) dlg.showModal();
+  dlg.classList.remove('cracked');
+  const reveal = () => { dlg.classList.add('cracked'); uiSound('reward', { always: true }); if (motion() !== 'off') burstParticles($('#egStage'), motion() === 'full' ? 22 : 8); haptic([10, 30, 10]); };
+  if (motion() === 'full') setTimeout(reveal, 1400); else reveal();
+  uiClaim();
+}
+$('#egOk').addEventListener('click', () => $('#eggDlg').close());
+$('#egOut').addEventListener('click', () => { const id = $('#eggDlg').dataset.pet; $('#eggDlg').close(); if (petEquip(id)) { toast(`${PET_BY_ID[id].name} is out in the garden`, 2000, true); if (S.ui.tab === 'garden') renderGarden(); } });
+/** After a session: announce hatched eggs (toast + inbox now, the reveal through the focus queue). */
+function announceHatched(list) {
+  for (const e of list) {
+    const pet = PET_BY_ID[e.pet];
+    if (!pet) continue;
+    inboxAdd({ type: 'event', key: 'egg:' + e.id, title: `🐣 A ${pet.name} hatched in your garden`, go: { tab: 'garden' }, read: true });
+    setTimeout(() => showHatch(e), 5200);
+  }
+}
+/* Bag cards for pets */
+function petBagCards(q = '') {
+  const out = petsOut(), outIds = new Set(out.map(x => x.id)), n = petSlots(), list = [];
+  for (const x of petsOwned()) {
+    if (q && !`${x.pet.name} pet garden`.toLowerCase().includes(q)) continue;
+    list.push(`<div class="item bag-item gd-item pet-card r-${x.pet.rarity}${outIds.has(x.id) ? ' equipped' : ''}" tabindex="0" aria-label="${esc(x.pet.name)} · Garden pet"><div class="pv">${petArt(x.id)}${outIds.has(x.id) ? `<span class="tag">${CHECK_SVG}Out</span>` : ''}</div>
+      <div class="nm">${esc(x.pet.name)} <span class="hearts">${petHearts(x.level)}</span></div><div class="ds">${esc(petBoostText(x.pet, x.level))}</div><div class="bi-src"><span class="rar">${RARITY_LABEL[x.pet.rarity]}</span><span>Hatched</span></div>
+      <div class="act">${outIds.has(x.id) ? `<button class="btn" data-petunequip="${x.id}">Bring in</button>` : `<button class="btn primary" data-petequip="${x.id}"${out.length >= n ? ' disabled' : ''}>Let out</button>`}</div></div>`);
+  }
+  const e = eggActive();
+  if (e && (!q || 'egg pet garden'.includes(q))) list.push(`<div class="item bag-item gd-item k-${e.kind}" tabindex="0" aria-label="${RARITY_LABEL[e.kind]} egg"><div class="pv">${eggArt(e.kind, Math.round(Math.min(eggFill(e), eggNeed(e)) / eggNeed(e) * 100))}</div>
+      <div class="nm">${RARITY_LABEL[e.kind]} egg</div><div class="ds">${fmtNum(Math.min(eggFill(e), eggNeed(e)))} / ${eggNeed(e)} min of focus${eggsWaiting() > 1 ? ` · ${eggsWaiting() - 1} more waiting` : ''}</div><div class="bi-src"><span class="rar">${RARITY_LABEL[e.kind]}</span><span>Hatches with focus</span></div>
+      <div class="act"><button class="btn" data-gotab="garden">Open the garden</button></div></div>`);
+  return list;
+}
+/* Pets in the almanac */
+function petsAlmanacHTML() {
+  const own = Object.fromEntries(petsOwned().map(x => [x.id, x]));
+  return `<h2 style="margin:18px 0 8px">Pets <span class="lbl">${Object.keys(own).length} of ${PETS.length}</span></h2><div class="shopgrid gd-grid gd-petgrid">${PETS.map(pet => { const x = own[pet.id]; return `<div class="item gd-item pet-card r-${pet.rarity}${x ? '' : ' silhouette'}"><div class="pv">${petArt(pet.id)}</div>
+      <div class="nm">${x ? esc(pet.name) + ` <span class="hearts">${petHearts(x.level)}</span>` : '???'}</div><div class="ds">${x ? esc(petBoostText(pet, x.level)) : esc(BOOST_TEXT[Object.keys(pet.boost)[0]](Object.values(pet.boost)[0])) + ' · hatch it from an egg'}</div>
+      <div class="bi-src"><span class="rar">${RARITY_LABEL[pet.rarity]}</span><span>${x ? `hatched ×${x.n}` : ''}</span></div></div>`; }).join('')}</div>`;
 }
 
 /* ---------- Actions: plant, focus, harvest, buy, place ---------- */
@@ -11011,6 +11300,8 @@ function gardenHarvest(id) {
   p.wt = waterOf(p);
   p.h = Date.now();
   p.y = yieldOf(p);
+  const bb = petBoost().bonus;   // a foraging pet: bonus produce, decided from the plant id (stored in y, so every device shows the same)
+  if (bb > 0 && hash01(p.id + ':bonus') < bb) { p.y += Math.max(1, Math.round(p.y * .5)); p.pb = 1; }
   p.plot = -1;
   p.fc = 0;
   delete p.w;
@@ -11148,7 +11439,8 @@ function gardenHeadHTML(g) {
     <div class="gd-title"><h1>Garden</h1><div class="lbl">${SEASON_TEXT[gardenSeason()]} · ${WX_TEXT[gardenWeather()]} · ${gardenTod() === 'night' ? 'night' : gardenTod()}</div></div>
     <div class="gd-level card"><div class="row between"><b>Garden level ${g.level}</b><span class="gd-produce" title="Produce — harvest plants to earn it">${PRODUCE_SVG}<span data-count="produce" data-val="${g.produce}">${fmtNum(g.produce)}</span></span></div>
       <div class="xpbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Garden XP"><i data-fill="${pct}" data-fill-key="gxp"></i></div>
-      <div class="lbl">${g.next ? `${fmtNum(g.into)} / ${fmtNum(g.need)} XP · next: ${esc(gardenNextUnlock(g))}` : `${fmtNum(g.xp)} XP · ${esc(gardenNextUnlock(g))}`}</div></div></div>
+      <div class="lbl">${g.next ? `${fmtNum(g.into)} / ${fmtNum(g.need)} XP · next: ${esc(gardenNextUnlock(g))}` : `${fmtNum(g.xp)} XP · ${esc(gardenNextUnlock(g))}`}</div></div>
+    ${eggCardHTML(g)}</div>
     <div class="seg gd-seg" id="gardenSeg" role="group" aria-label="Show">${[['garden', 'Garden'], ['seeds', 'Seeds'], ['decor', 'Decor'], ['almanac', 'Almanac']].map(([v, n]) => `<button data-gview="${v}" class="${gardenView() === v ? 'active' : ''}" aria-pressed="${gardenView() === v}">${n}</button>`).join('')}</div>`;
 }
 const gardenView = () => (['garden', 'seeds', 'decor', 'almanac'].includes(S.ui.gardenView) ? S.ui.gardenView : 'garden');
@@ -11181,6 +11473,7 @@ function sceneHTML(g) {
       <div class="gd-path" aria-hidden="true"></div>
       <button type="button" class="gd-pomeo" id="gdPomeo" aria-label="Pomeo">${pomeoOn() ? pomeoSVG({ state: pomeoState, ...pomeoOutfit() }) : ''}</button>
       <div class="gd-visitors">${vis}</div>
+      ${petsSceneHTML()}
     </div>
     <div class="gd-say hidden" id="gdSay" aria-live="polite"></div>
   </div>`;
@@ -11238,8 +11531,12 @@ function gardenGifts() {
   const lv = garden().level;
   const given = [];
   for (const [id, at, sp] of GARDEN_GIFTS) if (lv >= at && !S.gbuys.some(b => b && b.id === id)) { S.gbuys.push({ id, v: 1, item: 'seed_' + sp, price: 0, at: Date.now(), slot: '', src: 'gift' }); given.push(GSP_BY_ID[sp].name); }
-  if (given.length) { GD = null; save(); toast(`🎁 Garden level ${lv}: ${given.join(' and ')} seed${given.length > 1 ? 's' : ''} — plant ${given.length > 1 ? 'them' : 'it'} from an empty plot`, 3400, true, { type: 'garden' }); }
-  return given.length;
+  const newEggs = eggGifts(), first = ensureEgg(), settled = eggSettle();   // pets (v1.16): milestone eggs, the first egg, eggs filled on two devices
+  if (given.length || newEggs.length || first || settled.length) { GD = null; save(); }
+  if (given.length) toast(`🎁 Garden level ${lv}: ${given.join(' and ')} seed${given.length > 1 ? 's' : ''} — plant ${given.length > 1 ? 'them' : 'it'} from an empty plot`, 3400, true, { type: 'garden' });
+  if (newEggs.length) toast(`🥚 Garden level ${lv}: a ${newEggs.join(' and a ')} egg joined your garden’s queue`, 3400, true, { type: 'garden' });
+  if (settled.length) announceHatched(settled);
+  return given.length + newEggs.length + (first ? 1 : 0);
 }
 function seedCardHTML(g, sp, how = '') {
   const owned = (g.seeds[sp.id] || []).length, free = !sp.price && !how, rar = sp.rarity;
@@ -11307,6 +11604,9 @@ const GARDEN_ACH = [
   { id: 'g_lv5', name: 'Growing up', desc: 'Reach garden level 5', ok: g => g.level >= 5 },
   { id: 'g_plots', name: 'Full acre', desc: 'Unlock all 16 plots', ok: g => g.plots >= 16 },
   { id: 'g_decor', name: 'Decorator', desc: 'Place 5 decor items', ok: g => Object.keys(g.placed).length >= 5 },
+  { id: 'g_pet', name: 'Company', desc: 'Hatch your first pet', ok: () => petsOwned().length >= 1 },
+  { id: 'g_pets5', name: 'Menagerie', desc: 'Hatch 5 different pets', ok: () => petsOwned().length >= 5 },
+  { id: 'g_petlv', name: 'Best friends', desc: 'Raise a pet to level 3', ok: () => petsOwned().some(x => x.level >= 3) },
 ];
 function almanacHTML(g) {
   const stats = {};
@@ -11328,6 +11628,7 @@ function almanacHTML(g) {
   return `<div class="card gd-alm-head"><div class="row between" style="flex-wrap:wrap;gap:8px"><div><b>${g.discovered.size} of ${GSPECIES.length} species</b> discovered · ${pct}%</div><div class="gd-muts">${muts}</div></div>
     <div class="xpbar"><i data-fill="${pct}" data-fill-key="galm"></i></div></div>
     <div class="shopgrid gd-grid">${cards}</div>
+    ${petsAlmanacHTML()}
     <h2 style="margin:18px 0 8px">Garden achievements</h2><div class="achlist">${achs}</div>`;
 }
 let gdSeenAt = 0;
@@ -11426,7 +11727,7 @@ function harvestMoment(p, host) {
   }
   uiSound('harvest', { always: true });
   if (motion() === 'full') haptic(m ? [20, 40, 20] : 16);
-  toast(`${m ? '✨ ' + GMUT[m].name + ' ' : ''}${sp.name} harvested · +${p.y} produce`, 3000, true, { type: 'garden' });
+  toast(`${m ? '✨ ' + GMUT[m].name + ' ' : ''}${sp.name} harvested · +${p.y} produce${p.pb ? ' (bonus from your pet!)' : ''}`, 3000, true, { type: 'garden' });
   inboxAdd({ type: 'info', key: 'gh:' + p.id, title: `${m ? GMUT[m].name + ' ' : ''}${sp.name} harvested · +${p.y} produce`, go: { tab: 'garden' }, read: true });
   setTimeout(renderGarden, host && motion() !== 'off' ? 720 : 0);
 }
@@ -11448,6 +11749,8 @@ const GD_POMEO_LINES = ['Every focus block is a watering can 💧', 'I love it h
     const pl = t.closest('[data-gplace]'); if (pl) { openPlaceDlg(pl.dataset.gplace); return; }
     const rm = t.closest('[data-gremove]'); if (rm) { if (gardenRemove(rm.dataset.gremove)) { toast('Back in your bag', 1600, true); renderGarden(); } return; }
     const vis = t.closest('[data-visitor]'); if (vis) { restartClass(vis, 'poke', 700); uiSound('chirp'); gdSay(`The ${VISITOR_NAME[vis.dataset.visitor].toLowerCase()} ${VISITOR_SAY[vis.dataset.visitor]}`); return; }
+    const pet = t.closest('[data-pet]'); if (pet) { restartClass(pet, 'poke', 700); uiSound('chirp'); const P = PET_BY_ID[pet.dataset.pet]; if (P) gdSay(`${P.name} ${P.line}.`); return; }
+    if (t.closest('[data-pets]')) { uiSound('open'); openPetsDlg(); return; }
     if (t.closest('#gdPomeo')) { restartClass($('#gdPomeo'), 'poke', 700); uiSound('tap'); gdSay(pick(GD_POMEO_LINES)); return; }
     const spot = t.closest('[data-spot]'); if (spot) { openSpotDlg(spot.dataset.spot); return; }
     const plot = t.closest('[data-plot]');
@@ -11469,6 +11772,8 @@ const GD_POMEO_LINES = ['Every focus block is a watering can 💧', 'I love it h
     const hv = t.closest('[data-gharvest]'); if (hv) { dlg.close(); const h = gardenHarvest(hv.dataset.gharvest); if (h) harvestMoment(h, $(`.gd-plot[data-pid="${CSS.escape(h.id)}"]`)); return; }
     const at = t.closest('[data-gplaceat]'); if (at) { dlg.close(); if (gardenPlace(at.dataset.buy, at.dataset.gplaceat)) { toast('Placed', 1600, true); renderGarden(); if (S.ui.tab === 'bag') renderBag(); } return; }
     const rm = t.closest('[data-gremove]'); if (rm) { dlg.close(); if (gardenRemove(rm.dataset.gremove)) { toast('Back in your bag', 1600, true); renderGarden(); } return; }
+    const pe = t.closest('[data-petequip]'); if (pe) { if (petEquip(pe.dataset.petequip)) { uiSound('on'); openPetsDlg(); renderGarden(); } return; }
+    const pu = t.closest('[data-petunequip]'); if (pu) { if (petUnequip(pu.dataset.petunequip)) { uiSound('off'); openPetsDlg(); renderGarden(); } return; }
     if (t.closest('[data-gclose]')) { dlg.close(); if (v) renderGarden(); }
   });
 })();
@@ -14298,6 +14603,10 @@ function demoDocs() {
     decks: [{ id: 'demo_dk1', v: 1, name: 'Organic chemistry', subject: 'Chemistry', at: Date.now() - 9 * 864e5, u: Date.now() - 9 * 864e5 }, { id: 'demo_dk2', v: 1, name: 'Physics formulas', subject: 'Physics', at: Date.now() - 6 * 864e5, u: Date.now() - 6 * 864e5 }],
     cards: [['demo_dk1', 'Aldol condensation product', 'β-hydroxy aldehyde / ketone', '', 0], ['demo_dk1', 'Tollens’ test is positive for', 'Aldehydes (silver mirror)', '', 0], ['demo_dk1', 'Clemmensen reduction reagent', 'Zn–Hg / conc. HCl', dayKey(addDays(startOfDay(now), 3)), 3], ['demo_dk1', 'Cannizzaro reaction needs', 'An aldehyde with no α-hydrogen', dayKey(startOfDay(now)), 1], ['demo_dk1', 'Fehling’s solution colour change', 'Blue → brick-red Cu₂O', '', 0],
       ['demo_dk2', 'Kinetic energy', '½ m v²', dayKey(startOfDay(now)), 1], ['demo_dk2', 'Torque', 'τ = r × F', '', 0], ['demo_dk2', 'Snell’s law', 'n₁ sin θ₁ = n₂ sin θ₂', dayKey(addDays(startOfDay(now), 12)), 12], ['demo_dk2', 'Escape velocity', '√(2GM/R)', '', 0]].map(([deck, f, b, due, ivl], i) => ({ id: 'demo_cd' + i, v: 1, deck, f, b, due, ivl, ease: 2.5, reps: ivl ? 2 : 0, lapses: 0, at: Date.now() - (8 - i) * 864e5, u: Date.now() - 864e5 })),
+    eggs: [{ id: 'egg1', v: 1, kind: 'common', src: 'focus', at: Date.now() - 12 * 864e5, need: 300, w: Object.fromEntries(sessions.slice(-30, -18).map(s => [s.id, 25])), h: Date.now() - 9 * 864e5, pet: 'bunny', hs: sessions[sessions.length - 19].id, u: Date.now() - 9 * 864e5 },
+      { id: 'egg2', v: 1, kind: 'common', src: 'focus', at: Date.now() - 9 * 864e5, need: 300, w: Object.fromEntries(sessions.slice(-8, -3).map(s => [s.id, 25])), u: Date.now() - 864e5 },
+      { id: 'egg_lv4', v: 1, kind: 'rare', src: 'lv4', at: Date.now() - 8 * 864e5, need: 420, w: Object.fromEntries(sessions.slice(-18, -8).map(s => [s.id, 42])), h: Date.now() - 3 * 864e5, pet: 'fox', u: Date.now() - 3 * 864e5 }],
+    petPrefs: { p1: { v: 'bunny', u: Date.now() - 9 * 864e5 } },
     roomSets: [{ id: 'demo_rs1', v: 1, name: 'Study mode', slots: { wall: 'wall_sage', floor: 'floor_tiles', rug: 'rug_none', desk: 'desk_oak', lamp: 'lamp_desk', shelf: 'shelf_books', plant: 'plant_monstera', poster: 'poster_space', window: 'window_city', pet: 'pet_cat' }, u: Date.now() - 2 * 864e5 }],
     todos: [['Finish HC Verma ch. 7 problems', 0, 'high', 'Physics', [['Q1–10', true], ['Q11–20', false], ['Check answers', false]]], ['Revise organic named reactions', 1, 'med', 'Chemistry', []],
       ['Integration practice set', -1, 'high', 'Maths', []], ['Make biology flashcards', 3, 'low', 'Biology', []], ['Mock test review', null, 'med', 'JEE', []]]
@@ -14391,10 +14700,10 @@ const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
-  '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]',
+  '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
 const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
-  ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
+  ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
   $('#pvWhy').textContent = `This is a demo account, so nothing can be changed. Create your own free account to ${why}.`;
@@ -14568,6 +14877,10 @@ async function claimQuest(evId, qid) {
   S.game.claims.quests[key] = at;
   const items = qid === 'final' ? ev.final : [q.reward];
   grantItems(items, 'ev:' + ev.id, at);
+  if (qid === 'final' && evStart(ev) >= EGG_EVENT_FROM && !eggList().some(e => e.id === 'egg_ev_' + ev.id)) {   // a rare pet egg with the final (v1.16)
+    S.eggs.push({ id: 'egg_ev_' + ev.id, v: 1, kind: 'rare', src: 'ev:' + ev.id, at, need: EGG_NEED.rare, w: {} });
+    setTimeout(() => toast('🥚 A rare pet egg joined your garden’s queue — focus to hatch it', 3600, true, { go: { tab: 'garden' } }), 3000);
+  }
   save();
   showRewardReveal({ kicker: qid === 'final' ? `${ev.name} · final reward` : `${ev.name} · quest ${qid.slice(1)} of ${ev.quests.length}`,
     title: qid === 'final' ? 'Questline complete! 🏆' : q.title, items, pal: [ev.a, ev.b] });
@@ -14719,7 +15032,7 @@ const CAT_LABEL = { theme: 'Theme', avatar: 'Profile picture', pomhat: 'Pomeo ha
 const BAG_CATS = [
   ['theme', 'Themes', ['theme']], ['avatar', 'Profile pictures', ['avatar']], ['pomeo', 'Pomeo outfits', ['pomhat', 'pomacc', 'pomskin']], ['room', 'Room', ['room']], ['aura', 'Auras', ['aura']],
   ['color', 'Name colours', ['color']], ['title', 'Titles', ['title']], ['sound', 'Sounds', ['sound', 'ambient']], ['timer', 'Timer styles', ['ring', 'trail', 'extra']],
-  ['font', 'Fonts', ['font']], ['effect', 'Effects', ['effect']], ['stamp', 'Stamps', ['stamp']], ['card', 'Card styles', ['card']], ['frame', 'Badge frames', ['frame']], ['trophies', 'Boss trophies', []], ['garden', 'Garden', []], ['clan', 'Clan', []], ['event', 'Event items', []], ['consumables', 'Consumables', []],
+  ['font', 'Fonts', ['font']], ['effect', 'Effects', ['effect']], ['stamp', 'Stamps', ['stamp']], ['card', 'Card styles', ['card']], ['frame', 'Badge frames', ['frame']], ['trophies', 'Boss trophies', []], ['garden', 'Garden', []], ['pets', 'Pets', []], ['clan', 'Clan', []], ['event', 'Event items', []], ['consumables', 'Consumables', []],
 ];
 const BAG_FILTERS = [['all', 'All'], ['equipped', 'Equipped'], ['new', 'New'], ['shop', 'Shop'], ['boss', 'Bosses'], ['event', 'Events'], ['clan', 'Clan'], ['reward', 'Rewards']];
 const RARITY_LABEL = { common: 'Common', rare: 'Rare', epic: 'Epic', legendary: 'Legendary' };
@@ -14857,7 +15170,7 @@ function renderBag() {
   if (!el || !USER) return;
   clearInterval(bagTipTimer);
   const g = game(), all = bagItems(), trophies = trophyCards(), cons = consumableCards(g);
-  const total = all.length + trophies.length + cons.length + gardenBagCards('').length;   // garden seeds and decor count too (a bag with only those is not empty)
+  const total = all.length + trophies.length + cons.length + gardenBagCards('').length + petBagCards('').length;   // garden seeds, decor and pets count too (a bag with only those is not empty)
   const head = `<div class="bag-head"><div><h1 class="bag-title">Your bag</h1><div class="lbl">${total ? `${all.length} item${all.length === 1 ? '' : 's'}${trophies.length ? ` · ${trophies.length} trophies` : ''}` : 'Nothing here yet'}</div></div>
     ${total ? `<input type="search" id="bagSearch" placeholder="Search your bag" aria-label="Search your bag" value="${esc(bagQuery)}" autocomplete="off">` : ''}</div>`;
   if (!total) {
@@ -14898,11 +15211,12 @@ function renderBagList() {
   const inCat = (c, x) => c[0] === 'event' ? x.src.kind === 'event' : c[0] === 'clan' ? x.src.kind === 'clan' : x.src.kind !== 'clan' && c[2].includes(x.it.cat);
   const special = (f === 'all' || f === 'boss') && !q;
   const gcards = (f === 'all' || f === 'shop') ? gardenBagCards(q) : [];
+  const pcards = (f === 'all' || f === 'reward' || f === 'equipped') ? petBagCards(q).filter(c => f !== 'equipped' || /equipped/.test(c.slice(0, 80))) : [];
   const trophies = special || (q && 'boss trophies trophy'.includes(q)) ? trophyCards() : [];
   const cons = (f === 'all' || f === 'shop') && (!q || 'streak freeze consumable'.includes(q)) ? consumableCards(g) : [];
   const starters = ITEMS.filter(it => (it.cat === 'stamp' || it.cat === 'card') && it.price === 0).map(it => ({ it, src: { kind: 'reward', label: 'Free' }, at: 0 })).filter(match);
   const clanLocked = (f === 'all' || f === 'clan') && !q ? clanLockedCards(g) : [];
-  const counts = Object.fromEntries(BAG_CATS.map(c => [c[0], c[0] === 'trophies' ? trophies.length : c[0] === 'garden' ? gcards.length : c[0] === 'consumables' ? cons.length : [...starters, ...items].filter(x => inCat(c, x)).length + (c[0] === 'clan' ? clanLocked.length : 0)]));
+  const counts = Object.fromEntries(BAG_CATS.map(c => [c[0], c[0] === 'trophies' ? trophies.length : c[0] === 'garden' ? gcards.length : c[0] === 'pets' ? pcards.length : c[0] === 'consumables' ? cons.length : [...starters, ...items].filter(x => inCat(c, x)).length + (c[0] === 'clan' ? clanLocked.length : 0)]));
   const shown = BAG_CATS.filter(c => counts[c[0]] || c[0] === 'aura');
   if (cat !== 'all' && !shown.some(c => c[0] === cat)) cat = 'all';
   $('#bagCats').innerHTML = `<button data-bcat="all" class="${cat === 'all' ? 'active' : ''}">All</button>` + shown.map(c => `<button data-bcat="${c[0]}" class="${cat === c[0] ? 'active' : ''}">${c[1]} <span class="cnt">${counts[c[0]]}</span></button>`).join('');
@@ -14910,7 +15224,7 @@ function renderBagList() {
   const nNew = bagFresh.size, nb = $('#bagFilters [data-bfilter="new"]');
   if (nb) nb.textContent = nNew ? `New (${nNew})` : 'New';
   const section = c => {
-    let cards = c[0] === 'trophies' ? trophies : c[0] === 'garden' ? gcards : c[0] === 'consumables' ? cons : [...(c[0] === 'stamp' || c[0] === 'card' ? starters : []), ...items].filter(x => inCat(c, x)).sort((a, b) => c[0] === 'clan' ? CLAN_RARITY[itemRarity(b.it)] - CLAN_RARITY[itemRarity(a.it)] : 0).map(x => bagCard(x, g));
+    let cards = c[0] === 'trophies' ? trophies : c[0] === 'garden' ? gcards : c[0] === 'pets' ? pcards : c[0] === 'consumables' ? cons : [...(c[0] === 'stamp' || c[0] === 'card' ? starters : []), ...items].filter(x => inCat(c, x)).sort((a, b) => c[0] === 'clan' ? CLAN_RARITY[itemRarity(b.it)] - CLAN_RARITY[itemRarity(a.it)] : 0).map(x => bagCard(x, g));
     if (c[0] === 'clan') cards = [...cards, ...clanLocked];
     if (c[0] === 'aura' && (f === 'all' || (f === 'equipped' && !SPECIAL_AURAS[myAura()]))) {   // the automatic streak aura is always a choice
       const auto = ITEM_BY_ID.au_streak, on = !SPECIAL_AURAS[myAura()];
@@ -15010,6 +15324,8 @@ function deleteLoadout(id) {
     const tg = t.closest('[data-btoggle]'); if (tg) { toggleExtra(tg.dataset.btoggle); renderBag(); return; }
     const gp = t.closest('[data-gplace]'); if (gp) { openPlaceDlg(gp.dataset.gplace); return; }
     const gr = t.closest('[data-gremove]'); if (gr) { if (gardenRemove(gr.dataset.gremove)) { toast('Back in your bag', 1600, true); renderBag(); } return; }
+    const pe = t.closest('[data-petequip]'); if (pe) { if (petEquip(pe.dataset.petequip)) { uiSound('on'); toast(`${PET_BY_ID[pe.dataset.petequip].name} is out in the garden`, 1800, true); renderBag(); } return; }
+    const pu = t.closest('[data-petunequip]'); if (pu) { if (petUnequip(pu.dataset.petunequip)) { uiSound('off'); renderBag(); } return; }
     const rr = t.closest('[data-rremove]'); if (rr) { if (roomRemove(rr.dataset.rremove)) { toast('Back in your bag', 1600, true); renderBag(); } return; }
     const pv = t.closest('[data-preview]'); if (pv) { previewItem(pv.dataset.preview); return; }
     if (t.closest('#loNew')) { $('#loForm').classList.remove('hidden'); $('#loNew').classList.add('hidden'); $('#loName').focus(); return; }
@@ -15075,9 +15391,9 @@ function paintRipe(p) {
    which Firestore merges key by key on write — two devices never overwrite each other.
    Nothing here needs new security rules: it all lives in users/{uid}.
    ========================================================================== */
-const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan'];
+const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs'];
 /** Lists whose two copies of one item are combined rather than the newer one simply winning. */
-const LIST_MERGE = { plants: (win, lose) => mergePlant(win, lose) };
+const LIST_MERGE = { plants: (win, lose) => mergePlant(win, lose), eggs: (win, lose) => mergeEgg(win, lose) };
 const syncSnap = {};   // field -> Map(id -> the item as last saved or merged)
 const itemJSON = x => { const { u, ...rest } = x; return JSON.stringify(rest); };
 function snapLists() {
