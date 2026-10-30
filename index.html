@@ -63,8 +63,13 @@ h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacin
   padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
   background: var(--bg); border-bottom: 1px solid var(--line);
 }
-.brand { font-weight: 600; display: flex; align-items: center; gap: 8px; letter-spacing: .01em; }
-.brand i { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.brand { font-weight: 600; display: flex; align-items: center; gap: 8px; letter-spacing: .01em; background: none; border: 0; color: inherit; font: inherit; font-weight: 600; cursor: pointer; padding: 4px 8px 4px 4px; margin-left: -4px; border-radius: 12px; min-height: 36px; }
+.brand:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.brand .logo { width: 26px; height: 26px; display: inline-flex; flex: none; }   /* the Pomeo-style tomato (v1.17) */
+.brand .logo svg { width: 100%; height: 100%; display: block; }
+:root[data-motion="full"] .brand:active .logo { transform: scale(.92); }
+:root.nav-mini .top .brand span:not(.brand-deco) { display: none !important; }   /* the sidebar is collapsed to icons: the logo alone */
 .hdr-right { display: flex; align-items: center; gap: 8px; }
 .coinpill {
   display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px 5px 8px; border: 1px solid var(--line); border-radius: 999px;
@@ -339,6 +344,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .sesslist li { display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 6px 0; border-top: 1px solid var(--line); }
 .sesslist .t { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; min-width: 104px; }
 .sesslist .nm { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sesslist .early { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 6px; margin-left: 6px; vertical-align: 1px; }   /* finished early (v1.17) */
 .sesslist .d { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
 
 /* ==========================================================================
@@ -776,6 +782,19 @@ dialog::backdrop { background: rgba(10, 12, 12, .32); -webkit-backdrop-filter: b
 .ac-n { font-weight: 600; }
 .ac-c { margin-left: auto; padding-left: 8px; display: inline-flex; align-items: center; gap: 4px; font-size: 13px; color: var(--muted); white-space: nowrap; }
 
+/* ---------- Garden glance on the Timer tab (v1.17) ---------- */
+.garden-peek { cursor: pointer; }
+.garden-peek:hover { border-color: var(--accent); }
+.garden-peek:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gp-row { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.gp-row::-webkit-scrollbar { display: none; }
+.gp-plant { width: 46px; flex: none; text-align: center; }
+.gp-art { height: 44px; display: flex; align-items: flex-end; justify-content: center; }
+.gp-art svg, .gp-art .gd-plant { width: 40px; height: 40px; }
+.gp-bar { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.gp-bar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+.gp-plant.ready .gp-bar i { background: #e5654f; }
+.gp-line { margin-top: 8px; }
 /* ---------- Timer ---------- */
 .timer-card { overflow: hidden; isolation: isolate; }
 .timer-card::before {   /* very low-key drifting colour behind the timer */
@@ -3633,7 +3652,7 @@ body.first-load #todayBar { opacity: 0; }
 <header class="top">
   <div class="row hdr-left" style="gap:4px">
     <button class="iconbtn nav-burger" id="navBurger" type="button" aria-label="Menu" aria-controls="tabs" aria-expanded="false" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><i class="tbadge hidden" id="navBurgerDot" aria-label="Something new in the menu"></i></button>
-    <div class="brand"><i></i><span>Pomodorolist</span></div>
+    <button class="brand" id="brandBtn" type="button" aria-label="Pomodorolist — go to the Timer" title="Home (Timer)"><i class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="18.5" r="11.5" fill="#e5654f"/><path d="M16 8.2c-2.2-3.2-6.3-3.1-7.6-1.4 3.1-.1 5.4 1 7.6 1.4Zm0 0c2.2-3.2 6.3-3.1 7.6-1.4-3.1-.1-5.4 1-7.6 1.4Z" fill="#5c9b57"/><path d="M16 4.6v4" stroke="#4a7d46" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="11.6" cy="14.4" rx="2.3" ry="1.3" fill="#fff" opacity=".4"/><circle cx="12.6" cy="19.6" r="1.45" fill="#2b2118"/><circle cx="19.4" cy="19.6" r="1.45" fill="#2b2118"/><path d="M13.3 23q2.7 2.2 5.4 0" stroke="#2b2118" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></i><span>Pomodorolist</span></button>
     <span class="nav-cur" id="navCur" aria-hidden="true"></span>
     <span class="sync" id="syncStatus" title="Cloud sync status"><i></i><b>Synced</b></span>
   </div>
@@ -3648,7 +3667,7 @@ body.first-load #todayBar { opacity: 0; }
 </header>
 <div class="shell" id="shell">
 <nav class="sidenav" id="tabs" aria-label="Main">
-  <div class="nv-top"><div class="brand"><i></i><span>Pomodorolist</span></div><button class="iconbtn" id="navClose" type="button" aria-label="Close the menu">✕</button></div>
+  <div class="nv-top"><button class="brand" id="navBrandBtn" type="button" aria-label="Pomodorolist — go to the Timer" title="Home (Timer)"><i class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="18.5" r="11.5" fill="#e5654f"/><path d="M16 8.2c-2.2-3.2-6.3-3.1-7.6-1.4 3.1-.1 5.4 1 7.6 1.4Zm0 0c2.2-3.2 6.3-3.1 7.6-1.4-3.1-.1-5.4 1-7.6 1.4Z" fill="#5c9b57"/><path d="M16 4.6v4" stroke="#4a7d46" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="11.6" cy="14.4" rx="2.3" ry="1.3" fill="#fff" opacity=".4"/><circle cx="12.6" cy="19.6" r="1.45" fill="#2b2118"/><circle cx="19.4" cy="19.6" r="1.45" fill="#2b2118"/><path d="M13.3 23q2.7 2.2 5.4 0" stroke="#2b2118" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></i><span>Pomodorolist</span></button><button class="iconbtn" id="navClose" type="button" aria-label="Close the menu">✕</button></div>
   <div class="nv-grp" role="group" aria-labelledby="nvhFocus"><div class="nv-h" id="nvhFocus">Focus</div>
     <button type="button" title="Timer (1)" data-tab="timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4"/><path d="M12 14l3-3"/><circle cx="12" cy="14" r="8"/></svg><span class="nv-l">Timer</span></button>
     <button type="button" title="Reminders (2)" data-tab="reminders" id="remTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nv-l">Reminders</span></button>
@@ -3775,6 +3794,7 @@ body.first-load #todayBar { opacity: 0; }
           <div class="progress"><i id="todayBar" style="width:0%"></i></div>
           <div class="today-extra" id="todayExtra"></div>
         </div>
+        <div class="card garden-peek hidden" id="gardenPeek" role="button" tabindex="0" aria-label="Your garden — open the Garden tab"></div>
 
         <div class="card tip-card" id="tipCard">
           <h2><span class="tip-ic">💡</span>Tip of the day</h2>
@@ -5936,14 +5956,17 @@ function advancePhase() {
   }
 }
 
+const EARLY_MIN_MS = 5 * 60000;   // "Finish early" logs the minutes focused from 5 minutes on (v1.17)
 /**
  * End the current phase.
- * reason: 'complete' (timer ran out), 'skip', or 'reset'.
- * A focus block is logged only if >= 80% of its planned time was actually focused.
+ * reason: 'complete' (timer ran out), 'skip', 'early' (Finish early: log what was focused) or 'reset'.
+ * A focus block is logged if >= 80% of its planned time was actually focused, or on Finish early from 5 minutes.
  */
 function finishPhase(reason) {
   const t = S.timer;
   const wasFocus = t.phase === 'focus', endedAt = t.endAt;
+  let tooShort = false;
+  if (reason === 'early' && wasFocus && t.status !== 'idle' && t.planned - remainingMs() < EARLY_MIN_MS) { toast(`Under ${EARLY_MIN_MS / 60000} minutes — nothing logged`); reason = 'reset'; tooShort = true; }
   if (reason === 'complete') motionComplete(wasFocus);
 
   if (wasFocus && t.status !== 'idle') {
@@ -5951,15 +5974,15 @@ function finishPhase(reason) {
     const focused = t.planned - rem;
     // For natural completion use endAt, so the log is exact even if the tab was asleep.
     const end = reason === 'complete' ? t.endAt : Date.now();
-    if (focused >= 0.8 * t.planned) {
+    if (focused >= 0.8 * t.planned || (reason === 'early' && focused >= EARLY_MIN_MS)) {
       FG.ending = true;
-      try { logSession(focused, end); } finally { FG.ending = false; }
+      try { logSession(focused, end, reason === 'early' && focused < t.planned); } finally { FG.ending = false; }
       focusEnded();
       const fx = equippedId('effect');
       setTimeout(() => playEffect(fx), reason === 'complete' && motion() === 'full' ? 700 : 0);
     }
     else if (reason !== 'complete' && focused > 0) {
-      toast('Not logged — under 80% of the focus time');
+      if (!tooShort) toast('Not logged — under 80% of the focus time');
       if (focused >= 60000) {   // a wilted plant in the Tomato Garden
         S.abandoned.push({ id: 'a' + uid(), name: currentName(), start: t.focusStartedAt || end - focused, end, duration: Math.round(focused), planned: t.planned });
         if (S.abandoned.length > 300) S.abandoned = S.abandoned.slice(-300);
@@ -5968,6 +5991,7 @@ function finishPhase(reason) {
   }
 
   if (wasFocus) focusEnded();
+  if (reason === 'early') reason = 'skip';   // a shortened block still moves on to the break
   if (reason === 'reset') {
     // First reset: restart this phase. Reset again while idle: back to round 1.
     if (t.status === 'idle') { t.phase = 'focus'; t.round = 1; }
@@ -5990,7 +6014,7 @@ function finishPhase(reason) {
 }
 
 /** Record a completed focus block locally and in the cloud. */
-function logSession(focusedMs, end) {
+function logSession(focusedMs, end, early = false) {
   const t = S.timer;
   const name = currentName();
   ensureName(name);
@@ -6001,6 +6025,7 @@ function logSession(focusedMs, end) {
     end,
     duration: Math.round(focusedMs),
     planned: t.planned,
+    ...(early ? { early: 1 } : {}),   // finished early: the minutes focused count, the history shows the mark (v1.17)
     preset: activePreset().name,
     stamp: equippedId('stamp'),
     ...(t.live && (t.live.mode !== 'together' || (LIVE.blockMates && LIVE.blockMates.size)) ? { live: t.live.lid, clan: t.live.cid, stamp: 'stamp_together' } : t.live ? { live: t.live.lid, clan: t.live.cid } : {}),
@@ -6023,9 +6048,10 @@ function logSession(focusedMs, end) {
   else if (USER && !USER.guest) S.pendingSessions.push(s);
   G = null;
   const news = reconcileRewards('collect');
-  if (!S.settings.gamification) { toast(`Logged ${fmtMin(focusedMs / 60000)} · ${name}`); socialAfterSession(); return; }
+  const earlyText = early ? `Finished early · ${fmtMin(focusedMs / 60000)} of ${fmtMin(t.planned / 60000)}` : '';
+  if (!S.settings.gamification) { toast(early ? `${earlyText} · ${name}` : `Logged ${fmtMin(focusedMs / 60000)} · ${name}`); socialAfterSession(); return; }
   const goalDays = news.filter(n => n.type === 'goal').length;
-  toast(`+${xpForSession(s)} XP · +${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins${goalDays ? ' · daily goal reached' : ''}`);
+  toast(`${early ? earlyText + ' · ' : ''}+${xpForSession(s)} XP · +${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins${goalDays ? ' · daily goal reached' : ''}`);
   setTimeout(() => uiSound('coin'), 900);
   floatUp([[`+${xpForSession(s)} XP`], [`+${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins`, 'coin'], ...(victoryOf(dayKey(weekMonday()), bossView()) ? [] : [[`⚔️ −${Math.round(focusedMs / 60000)} HP`]]), ...(gw && gw.mins ? [[`🌱 +${gw.mins} min water`]] : [])]);
   if (gw && gw.ripe.length) setTimeout(() => toast(`${gw.ripe.length === 1 ? mutNames(gw.ripe[0]).map(n => n + ' ').join('') + speciesOf(gw.ripe[0]).name + ' is' : gw.ripe.length + ' plants are'} ready to harvest 🌱${gw.ripe.some(p => wmOf(p).length) && gw.ripe.length > 1 ? ' — with a focus-weather mutation' : ''}`, 3600, true, { go: { tab: 'garden' } }), 1500);
@@ -6175,6 +6201,10 @@ function renderTimer() {
 
   $('#ringSub').textContent = t.phase === 'focus' ? (currentName() === 'Untitled' ? p.name : currentName()) : p.name;
   setMainBtn(t.status === 'running' ? 'Pause' : t.status === 'paused' ? 'Resume' : (isBreak ? 'Start break' : 'Start'), t.status === 'running');
+  const early = !isBreak && t.status !== 'idle' && !(t.live && t.live.mode !== 'together');   // Finish early (v1.17): end now and log the minutes focused
+  $('#skipBtn').textContent = early ? 'Finish early' : 'Skip';
+  $('#skipBtn').title = early ? `End the block now and log the minutes focused (from ${EARLY_MIN_MS / 60000} minutes); Reset abandons it` : 'Skip this phase';
+  $('#skipBtn').classList.toggle('early', early);
   $('#muteBtn').innerHTML = S.settings.sound ? ICON_SOUND : ICON_MUTE;
   $('#muteBtn').title = S.settings.sound ? 'Sound on — click to mute' : 'Muted — click for sound';
   document.body.classList.toggle('zen', extraOn('x_zen') && t.status === 'running' && t.phase === 'focus');
@@ -6232,6 +6262,23 @@ function renderToday() {
   $('#todayPct').textContent = pct + '%';
   $('#todayBar').style.transform = `translateX(${pct - 100}%)`;
   renderTodayExtra();
+  renderGardenPeek();
+}
+/** A glance at the garden on the Timer tab: the growing plants, the one closest to harvest, what is ready (v1.17). */
+function renderGardenPeek() {
+  const el = $('#gardenPeek');
+  if (!el) return;
+  const on = !!USER && !minimal() && !!gardenMig();
+  el.classList.toggle('hidden', !on);
+  if (!on) return;
+  const g = garden(), grow = g.growing.slice().sort((a, b) => (needOf(b) ? waterOf(b) / needOf(b) : 0) - (needOf(a) ? waterOf(a) / needOf(a) : 0));
+  const ready = grow.filter(plantReady), next = grow.find(p => !plantReady(p));
+  const line = ready.length ? `${ready.length === 1 ? speciesOf(ready[0]).name + ' is' : ready.length + ' plants are'} ready to harvest 🧺`
+    : next ? `${speciesOf(next).name} is closest · ${fmtMin(needOf(next) - waterOf(next))} of focus to go`
+    : g.plots ? 'Nothing growing — plant a seed from your bag' : '';
+  el.innerHTML = `<div class="row between"><h2 style="margin:0">Your garden</h2><span class="lbl">Level ${g.level} · ${grow.length} growing →</span></div>` +
+    (grow.length ? `<div class="gp-row">${grow.slice(0, 8).map(p => `<div class="gp-plant${plantReady(p) ? ' ready' : ''}" title="${esc(speciesOf(p).name)} · ${Math.min(100, Math.round(waterOf(p) / needOf(p) * 100))}%"><div class="gp-art">${plantArtOf(p, false)}</div><div class="gp-bar"><i style="width:${Math.min(100, Math.round(waterOf(p) / needOf(p) * 100))}%"></i></div></div>`).join('')}</div>` : '') +
+    `<div class="lbl gp-line">${esc(line)}</div>`;
 }
 
 /* ==========================================================================
@@ -6468,7 +6515,7 @@ function renderStats() {
       ? `<ul class="sesslist">${daySessions.slice().reverse().map(s => `
           <li><span class="t">${fmtTime(s.start)}–${fmtTime(s.end)}</span>
             <span class="dot" style="background:${esc(colorFor(s.name))}"></span>
-            <span class="nm" title="${esc(s.preset || '')}">${esc(s.name)}${S.energy[s.id] ? `<span class="en" title="Focus: ${ENERGY[S.energy[s.id]].t}">${ENERGY[S.energy[s.id]].e}</span>` : ''}${S.notes[s.id] ? `<span class="note">“${esc(S.notes[s.id])}”</span>` : ''}${s.subtasks && s.subtasks.length ? `<details class="subdet"><summary>${s.subtasks.filter(x => x.d).length}/${s.subtasks.length} subtasks</summary><ul>${s.subtasks.map(x => `<li class="${x.d ? 'ok' : 'no'}">${esc(x.t)}</li>`).join('')}</ul></details>` : ''}</span>
+            <span class="nm" title="${esc(s.preset || '')}">${esc(s.name)}${s.early ? `<span class="early" title="Finished early · ${fmtMin(s.duration / 60000)} of ${fmtMin((s.planned || s.duration) / 60000)}">early</span>` : ''}${S.energy[s.id] ? `<span class="en" title="Focus: ${ENERGY[S.energy[s.id]].t}">${ENERGY[S.energy[s.id]].e}</span>` : ''}${S.notes[s.id] ? `<span class="note">“${esc(S.notes[s.id])}”</span>` : ''}${s.subtasks && s.subtasks.length ? `<details class="subdet"><summary>${s.subtasks.filter(x => x.d).length}/${s.subtasks.length} subtasks</summary><ul>${s.subtasks.map(x => `<li class="${x.d ? 'ok' : 'no'}">${esc(x.t)}</li>`).join('')}</ul></details>` : ''}</span>
             ${stampOn() ? `<span class="st-mini" title="Stamp: ${esc(ITEM_BY_ID[sessionStamp(s)].name)}">${stampSVG(sessionStamp(s), 22)}</span>` : ''}<span class="d">${fmtMin(s.duration / 60000)}</span>
             <button class="linkbtn" data-del="${esc(s.id)}" title="Delete this session" aria-label="Delete">✕</button></li>`).join('')}</ul>`
       : sceneEmpty('read', '', 'No focus blocks on this day.', 'margin-top:12px');
@@ -15830,6 +15877,10 @@ function deleteLoadout(id) {
   tab.addEventListener('focusin', e => { const card = e.target.closest && e.target.closest('.bag-item[data-bid]'); if (card) renderLook(card.dataset.bid); });
 })();
 $('#bagBtn').addEventListener('click', () => showTab(S.ui.tab === 'bag' ? 'timer' : 'bag'));
+// The logo goes home from anywhere; the garden glance opens the Garden tab (v1.17)
+for (const id of ['brandBtn', 'navBrandBtn']) $('#' + id).addEventListener('click', () => { navOpen(false); if (!USER) return; showTab('timer'); try { window.scrollTo({ top: 0, behavior: motion() === 'off' ? 'auto' : 'smooth' }); } catch (e) { window.scrollTo(0, 0); } });
+$('#gardenPeek').addEventListener('click', () => showTab('garden'));
+$('#gardenPeek').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); showTab('garden'); } });
 
 /* ==========================================================================
    FOCUS ATMOSPHERE + RIPENING RING
@@ -16176,7 +16227,7 @@ $('#mainBtn').addEventListener('click', () => {
   if (liveButton('main')) return;
   if (S.timer.status === 'running') pauseTimer(); else startTimer();
 });
-$('#skipBtn').addEventListener('click', () => { if (!liveButton('skip')) finishPhase('skip'); });
+$('#skipBtn').addEventListener('click', () => { if (!liveButton('skip')) finishPhase(S.timer.phase === 'focus' && S.timer.status !== 'idle' ? 'early' : 'skip'); });   // during a focus block the button is "Finish early" (v1.17)
 $('#resetBtn').addEventListener('click', () => { if (!liveButton('reset')) finishPhase('reset'); });
 $('#muteBtn').addEventListener('click', () => {
   S.settings.sound = !S.settings.sound;
