@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pomodorolist — promo</title>
+<script src="timeline.js"></script>
+<style>
+  /* Everything is positioned by seek(t): no CSS animations or transitions, so a frame is a pure function of t. */
+  :root {
+    --tomato: #e5654f; --tomato-deep: #c9452f; --leaf: #6fb162; --warm: #f2b45a; --mint: #5ec9b3;
+    --bg: #0f1216; --bg2: #171c23; --ink: #f4f1ec; --muted: #a9b0ba; --glass: rgba(255, 255, 255, .06); --line: rgba(255, 255, 255, .12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #000; overflow: hidden; }
+  body { font-family: "Inter", "Inter Display", system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); transform-origin: 0 0; }
+  body.portrait #stage { width: 1080px; height: 1920px; }
+  .layer { position: absolute; inset: 0; }
+  .abs { position: absolute; }
+  .hidden { display: none !important; }
+  /* background: soft colour blobs + grain */
+  .blob { position: absolute; width: 1100px; height: 1100px; border-radius: 50%; filter: blur(140px); opacity: .55; }
+  .blob.a { background: radial-gradient(circle, rgba(229, 101, 79, .55), rgba(229, 101, 79, 0) 70%); }
+  .blob.b { background: radial-gradient(circle, rgba(94, 201, 179, .40), rgba(94, 201, 179, 0) 70%); }
+  .blob.c { background: radial-gradient(circle, rgba(242, 180, 90, .32), rgba(242, 180, 90, 0) 70%); }
+  #grain { position: absolute; inset: -4%; opacity: .07; mix-blend-mode: overlay; pointer-events: none; z-index: 50; }
+  #vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, rgba(0, 0, 0, .55) 100%); z-index: 49; pointer-events: none; }
+  /* typography */
+  .h1 { font-family: "Inter Display", "Inter", system-ui, sans-serif; font-weight: 800; letter-spacing: -.035em; line-height: 1.02; }
+  .h2 { font-family: "Inter Display", "Inter", system-ui, sans-serif; font-weight: 750; letter-spacing: -.03em; line-height: 1.06; }
+  .sub { font-weight: 500; color: var(--muted); letter-spacing: -.01em; line-height: 1.25; }
+  .word { display: inline-block; white-space: pre; }
+  .accent { color: var(--tomato); }
+  .mint { color: var(--mint); }
+  /* glass cards and device frames */
+  .glass { background: linear-gradient(160deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .04)); border: 1px solid var(--line); border-radius: 28px; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .75), 0 0 0 1px rgba(0, 0, 0, .25) inset; backdrop-filter: blur(18px); overflow: hidden; }
+  .phone { border-radius: 58px; background: #0b0d10; border: 2px solid rgba(255, 255, 255, .16); box-shadow: 0 60px 120px -40px rgba(0, 0, 0, .85), 0 0 0 10px #15181d, 0 0 0 11px rgba(255, 255, 255, .08); overflow: hidden; }
+  .phone img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .phone .notch { position: absolute; top: 14px; left: 50%; width: 32%; height: 30px; transform: translateX(-50%); background: #0b0d10; border-radius: 20px; z-index: 3; }
+  .laptop { background: #0b0d10; border-radius: 22px; border: 2px solid rgba(255, 255, 255, .14); box-shadow: 0 60px 120px -40px rgba(0, 0, 0, .85), 0 0 0 10px #15181d, 0 0 0 11px rgba(255, 255, 255, .07); overflow: hidden; }
+  .laptop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+  .shot { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .img-abs { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .badge { position: absolute; display: flex; align-items: center; gap: 26px; padding: 30px 56px 30px 36px; border-radius: 999px; background: linear-gradient(160deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .05)); border: 1px solid var(--line); box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .8); font-family: "Inter Display", "Inter", sans-serif; font-weight: 750; font-size: 54px; letter-spacing: -.03em; white-space: nowrap; }
+  .badge .ic { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; font-size: 30px; background: var(--tomato); color: #fff; box-shadow: 0 10px 24px -8px rgba(229, 101, 79, .8); }
+  .badge.mint .ic { background: var(--mint); color: #08302a; }
+  .badge.warm .ic { background: var(--warm); color: #3a2706; }
+  .hp { position: absolute; height: 22px; border-radius: 999px; background: rgba(255, 255, 255, .10); border: 1px solid var(--line); overflow: hidden; }
+  .hp i { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, var(--tomato-deep), var(--tomato)); border-radius: 999px; transform-origin: left; }
+  .spark { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #fff2a8; box-shadow: 0 0 18px 6px rgba(255, 226, 122, .7); }
+  .ring { position: absolute; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .7); }
+  .mcard { position: absolute; width: 700px; height: 470px; border-radius: 30px; overflow: hidden; background: #12161c; border: 1px solid var(--line); box-shadow: 0 50px 100px -40px rgba(0, 0, 0, .9); }
+  .mcard img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .mcard .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 30px; font-family: "Inter Display", "Inter", sans-serif; font-weight: 750; font-size: 40px; letter-spacing: -.03em; background: linear-gradient(0deg, rgba(10, 12, 15, .96), rgba(10, 12, 15, 0)); }
+  .link { font-family: "Inter", sans-serif; font-weight: 600; color: var(--mint); letter-spacing: -.01em; }
+  .pill { display: inline-flex; align-items: center; gap: 12px; padding: 14px 26px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); font-weight: 600; color: var(--ink); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="bgLayer">
+    <div class="blob a" id="blobA"></div><div class="blob b" id="blobB"></div><div class="blob c" id="blobC"></div>
+  </div>
+  <!-- S1 hook -->
+  <div class="layer" id="sHook">
+    <div class="abs h1" id="hookA"></div>
+    <div class="abs h1" id="hookB"></div>
+    <img class="abs" id="hookPomeo" src="shots/pomeo-excited.png" alt="">
+  </div>
+  <!-- S2 timer -->
+  <div class="layer" id="sTimer">
+    <div class="abs h2" id="timerText"></div>
+    <div class="abs sub" id="timerSub">Start a block. Stay with it.</div>
+    <div class="abs phone" id="timerPhone"><div class="notch"></div><div id="ringFrames"></div></div>
+  </div>
+  <!-- S3 garden -->
+  <div class="layer" id="sGarden">
+    <div class="abs" id="gardenWrap">
+      <div class="abs" id="gardenImgs" style="inset:0"></div>
+    </div>
+    <div class="abs" id="gardenShade"></div>
+    <div class="abs" id="harvestPop"><div class="abs glass" id="harvestCard"><span>🧺</span><span id="harvestStars">★★★★</span><span class="mint">Sunflower</span></div><div class="abs" id="harvestBurst"></div></div>
+    <div class="abs" id="sparkles"></div>
+    <div class="abs glass" id="petCard"><img src="shots/d-pets-dialog.png" alt=""></div>
+    <div class="abs h2" id="gardenText"></div>
+  </div>
+  <!-- S4 boss -->
+  <div class="layer" id="sBoss">
+    <div class="abs glass" id="bossCard"><img class="img-abs" id="boss0" src="shots/d-boss-arena-0.png" alt=""><img class="img-abs" id="boss1" src="shots/d-boss-arena-1.png" alt=""><img class="img-abs" id="boss2" src="shots/d-boss-arena-2.png" alt=""><div class="abs" id="bossFlash"></div></div>
+    <div class="abs" id="bossHpWrap"><div class="abs" id="bossHpLabel"><b id="bossHpNum">342</b> / 480 HP</div><div class="hp" id="bossHp"><i id="bossHpFill"></i></div></div>
+    <div class="abs h2" id="bossText"></div>
+  </div>
+  <!-- S5 together -->
+  <div class="layer" id="sTogether">
+    <div class="abs glass" id="clanCard"><img class="shot" src="shots/d-clan-table-card.png" alt="" style="object-position: top"></div>
+    <div class="abs glass" id="boardCard"><img class="shot" src="shots/d-board-card.png" alt="" style="object-position: top"></div>
+    <div class="abs h2" id="togetherText"></div>
+  </div>
+  <!-- S6 montage -->
+  <div class="layer" id="sMontage"><div class="abs h2" id="montageHead">And more</div></div>
+  <!-- S7 promise -->
+  <div class="layer" id="sPromise">
+    <div class="badge" id="badge0"><span class="ic">∞</span><span>Free forever</span></div>
+    <div class="badge mint" id="badge1"><span class="ic">✕</span><span>No ads</span></div>
+    <div class="badge warm" id="badge2"><span class="ic">◎</span><span>No tracking</span></div>
+    <div class="abs sub" id="promiseSub">No subscription. No paywall.</div>
+  </div>
+  <!-- S8 end card -->
+  <div class="layer" id="sEnd">
+    <img class="abs" id="endLogo" src="shots/logo.svg" alt="">
+    <div class="abs h1" id="endName">Pomodorolist</div>
+    <div class="abs link" id="endLink">siverieg.github.io/Pomodorolist-V1.0</div>
+    <div class="abs" id="endCta"><span class="pill">Try the demo, no signup needed</span></div>
+    <img class="abs" id="endPomeo" src="shots/pomeo-happy.png" alt="">
+  </div>
+  <div id="vignette"></div>
+  <svg id="grain" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .8 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+</div>
+<script>
+/* ---------------- helpers: every value is a pure function of t ---------------- */
+const P = new URLSearchParams(location.search), PORTRAIT = P.get('fmt') === 'portrait';
+if (PORTRAIT) document.body.classList.add('portrait');
+const W = PORTRAIT ? 1080 : 1920, H = PORTRAIT ? 1920 : 1080;
+const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+// cubic-bezier(0.2, 0.8, 0.2, 1) solved numerically (the brief's easing), plus a few friends
+function bezier(x1, y1, x2, y2) { const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by; const sx = t => ((ax * t + bx) * t + cx) * t, sy = t => ((ay * t + by) * t + cy) * t, dx = t => (3 * ax * t + 2 * bx) * t + cx; return x => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x; for (let i = 0; i < 8; i++) { const d = dx(t); if (Math.abs(d) < 1e-6) break; t -= (sx(t) - x) / d; } return sy(clamp(t)); }; }
+const EASE = bezier(.2, .8, .2, 1), EASE_IN = bezier(.5, 0, .9, .4), EASE_OUT = bezier(.1, .7, .2, 1);
+const spring = x => { x = clamp(x); return 1 - Math.exp(-6.2 * x) * Math.cos(9.5 * x) * (1 - x * .35); };   // springy but restrained overshoot (~8%)
+const prog = (t, t0, t1) => clamp((t - t0) / Math.max(1e-6, t1 - t0));
+const tw = (t, t0, t1, a, b, e = EASE) => lerp(a, b, e(prog(t, t0, t1)));
+const fadeIn = (t, t0, d = .45) => EASE(prog(t, t0, t0 + d)), fadeOut = (t, t0, d = .45) => 1 - EASE_IN(prog(t, t0, t0 + d));
+const $ = s => document.querySelector(s);
+const style = (el, props) => { for (const k in props) el.style[k] = props[k]; };
+const show = (el, on) => el.classList.toggle('hidden', !on);
+const words = (el, text) => { el.innerHTML = text.split(' ').map(w => `<span class="word">${w} </span>`).join(''); return [...el.children]; };
+const sceneOn = (el, t, a, b) => { const on = t >= a - .6 && t <= b + .6; show(el, on); return on; };
+
+/* ---------------- layout (landscape | portrait) ---------------- */
+const L = PORTRAIT ? {
+  hook: { x: 80, y: 560, w: 920, size: 112, pomeo: { x: 700, y: 1160, s: 300 } },
+  timer: { tx: 80, ty: 250, tw: 920, size: 96, sub: 44, phone: { x: 270, y: 760, w: 540, h: 1100 } },
+  garden: { tx: 80, ty: 170, tw: 920, size: 88, img: { x: -380, y: 420, w: 1840, h: 1514 }, pet: { x: 120, y: 1360, w: 840, h: 420 } },
+  boss: { tx: 80, ty: 170, tw: 920, size: 84, card: { x: 90, y: 560, w: 900, h: 760 }, hp: { x: 120, y: 1390, w: 840 } },
+  together: { tx: 80, ty: 150, tw: 920, size: 84, clan: { x: 90, y: 520, w: 640, h: 724 }, board: { x: 160, y: 1180, w: 860, h: 520 } },
+  montage: { head: { x: 80, y: 180, size: 72 }, cx: 540, cy: 1100, cw: 880, ch: 640, dx: 0, dy: 110 },
+  promise: { x: 540, ys: [600, 860, 1120], sub: 1420, size: 66 },
+  end: { logo: { x: 440, y: 520, s: 200 }, name: { y: 760, size: 104 }, link: { y: 920, size: 42 }, cta: { y: 1040, size: 36 }, pomeo: { x: 410, y: 1230, s: 260 } },
+} : {
+  hook: { x: 180, y: 360, w: 1560, size: 128, pomeo: { x: 1440, y: 560, s: 300 } },
+  timer: { tx: 160, ty: 340, tw: 820, size: 96, sub: 40, phone: { x: 1180, y: 110, w: 440, h: 900 } },
+  garden: { tx: 120, ty: 790, tw: 1300, size: 80, img: { x: 0, y: -120, w: 1920, h: 1580 }, pet: { x: 1220, y: 150, w: 600, h: 420 } },
+  boss: { tx: 120, ty: 300, tw: 760, size: 84, card: { x: 940, y: 160, w: 840, h: 700 }, hp: { x: 940, y: 900, w: 840 } },
+  together: { tx: 120, ty: 280, tw: 700, size: 84, clan: { x: 820, y: 90, w: 560, h: 630 }, board: { x: 1060, y: 560, w: 780, h: 450 } },
+  montage: { head: { x: 160, y: 110, size: 64 }, cx: 1000, cy: 600, cw: 920, ch: 580, dx: 130, dy: 0 },
+  promise: { x: 960, ys: [250, 500, 750], sub: 960, size: 72 },
+  end: { logo: { x: 760, y: 240, s: 190 }, name: { y: 450, size: 112 }, link: { y: 610, size: 44 }, cta: { y: 700, size: 34 }, pomeo: { x: 1480, y: 700, s: 260 } },
+};
+
+/* ---------------- build the dynamic bits once ---------------- */
+const ringFrames = []; for (let i = 0; i <= 30; i++) { const im = document.createElement('img'); im.src = `shots/m-timer-ring-${String(i).padStart(2, '0')}.png`; im.alt = ''; $('#ringFrames').appendChild(im); ringFrames.push(im); }
+const gardenImgs = [0, 1, 2, 3, 4].map(i => { const im = document.createElement('img'); im.src = `shots/d-garden-stage-${i}.png`; im.className = 'img-abs'; im.alt = ''; $('#gardenImgs').appendChild(im); return im; });
+const bursts = []; for (let i = 0; i < 14; i++) { const s = document.createElement('i'); s.className = 'spark'; $('#harvestBurst').appendChild(s); bursts.push(s); }
+const sparks = []; for (let i = 0; i < 9; i++) { const s = document.createElement('i'); s.className = 'spark'; $('#sparkles').appendChild(s); sparks.push(s); }
+const MONTAGE_IMG = ['shots/m-harvests-tab.png', 'shots/d-pets-dialog.png', 'shots/d-profile-card.png', 'shots/d-cards-page.png', 'shots/m-reminders-page.png', 'shots/d-minimal-page.png'];
+const MONTAGE_POS = ['50% 56%', 'top', 'top', 'top', 'top', 'top'];   // where each capture is cropped (the Harvests tab shows its crops and stars)
+const mcards = TL.montage.items.map((label, i) => { const c = document.createElement('div'); c.className = 'mcard'; c.innerHTML = `<img src="${MONTAGE_IMG[i]}" alt="" style="object-position:${MONTAGE_POS[i]}"><div class="cap">${label}</div>`; $('#sMontage').appendChild(c); return c; });
+const hookAWords = 'Studying feels like a grind?', hookBWords = words($('#hookB'), 'Make focus feel like progress.');
+const timerWords = words($('#timerText'), 'A simple Pomodoro timer…');
+const gardenWords = words($('#gardenText'), '…that grows a garden every time you focus.');
+const bossWords = words($('#bossText'), 'Beat weekly bosses with your study time.');
+const togetherWords = words($('#togetherText'), 'Study with friends. Climb the leaderboard.');
+const rand = (i, k = 1) => { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };   // deterministic pseudo-random per element
+
+/* ---------------- the timeline ---------------- */
+function seek(t) {
+  t = clamp(t, 0, TL.total);
+  // background blobs drift slowly all the way through
+  style($('#blobA'), { left: `${lerp(-300, 200, (Math.sin(t * .21) + 1) / 2) + (PORTRAIT ? -200 : 0)}px`, top: `${lerp(-500, -100, (Math.cos(t * .17) + 1) / 2)}px` });
+  style($('#blobB'), { left: `${W - 700 + 120 * Math.sin(t * .19)}px`, top: `${H - 700 + 100 * Math.cos(t * .23)}px` });
+  style($('#blobC'), { left: `${W / 2 - 550 + 200 * Math.sin(t * .13)}px`, top: `${H - 400 + 60 * Math.sin(t * .29)}px` });
+  $('#grain').style.transform = `translate(${(Math.floor(t * 12) % 7) * 3}px, ${(Math.floor(t * 12) % 5) * 4}px)`;
+
+  // ---- S1 hook ----
+  { const s = TL.hook, on = sceneOn($('#sHook'), t, s.start, s.end);
+    if (on) {
+      const a = $('#hookA'), b = $('#hookB');
+      style(a, { left: L.hook.x + 'px', top: L.hook.y + 'px', width: L.hook.w + 'px', fontSize: L.hook.size + 'px' });
+      style(b, { left: L.hook.x + 'px', top: L.hook.y + 'px', width: L.hook.w + 'px', fontSize: L.hook.size + 'px' });
+      const typed = Math.floor(tw(t, .15, 1.35, 0, hookAWords.length, x => x));
+      const caret = t < s.snap && Math.floor(t * 3) % 2 === 0 ? '<span style="opacity:.6">|</span>' : '';
+      a.innerHTML = hookAWords.slice(0, typed) + (t < s.snap ? caret : '');
+      const snap = prog(t, s.snap, s.snap + .32);
+      style(a, { opacity: 1 - EASE(snap), transform: `translateY(${-30 * EASE_IN(snap)}px) scale(${1 - .06 * snap})`, filter: `blur(${8 * snap}px)`, color: 'var(--muted)' });
+      show(b, t >= s.snap); b.style.opacity = EASE(prog(t, s.snap + .06, s.snap + .3));   // B rises as A dissolves
+      hookBWords.forEach((w, i) => { const k = EASE(prog(t, s.snap + .08 + i * .07, s.snap + .5 + i * .07)); style(w, { opacity: k, transform: `translateY(${34 * (1 - k)}px)` }); if (i >= 3) w.classList.add('accent'); });
+      const pm = $('#hookPomeo'), k = spring(prog(t, s.pomeo, s.pomeo + .55));
+      style(pm, { left: L.hook.pomeo.x + 'px', top: L.hook.pomeo.y + 'px', width: L.hook.pomeo.s + 'px', opacity: clamp(k * 2), transform: `scale(${k}) rotate(${-10 + 10 * k}deg)`, transformOrigin: '50% 100%' });
+      $('#sHook').style.opacity = fadeOut(t, s.end - .3, .35);
+    }
+  }
+  // ---- S2 timer ----
+  { const s = TL.timer, on = sceneOn($('#sTimer'), t, s.start, s.end);
+    if (on) {
+      const ph = $('#timerPhone'), p = L.timer.phone, kin = EASE(prog(t, s.start, s.start + .9));
+      const zoom = prog(t, s.end - .5, s.end + .2);   // the phone grows into the garden
+      style(ph, { left: p.x + 'px', top: p.y + 'px', width: p.w + 'px', height: p.h + 'px', opacity: Math.min(kin * 1.6, 1 - zoom), transform: `perspective(2200px) translateY(${(1 - kin) * 160}px) rotateY(${lerp(-22, -6, kin) + 3 * Math.sin(t * .7)}deg) rotateX(${2 * Math.cos(t * .5)}deg) scale(${lerp(1, 2.4, EASE_IN(zoom))})`, transformOrigin: '50% 60%' });
+      const fi = Math.round(tw(t, s.start + .5, s.end - .4, 0, 30, x => x));
+      ringFrames.forEach((im, i) => im.style.opacity = i === fi ? 1 : 0);
+      style($('#timerText'), { left: L.timer.tx + 'px', top: L.timer.ty + 'px', width: L.timer.tw + 'px', fontSize: L.timer.size + 'px' });
+      timerWords.forEach((w, i) => { const k = EASE(prog(t, s.text + i * .08, s.text + .5 + i * .08)); style(w, { opacity: k, transform: `translateY(${30 * (1 - k)}px)` }); });
+      const sub = $('#timerSub'), ks = EASE(prog(t, s.text + .6, s.text + 1.1));
+      style(sub, { left: L.timer.tx + 'px', top: (L.timer.ty + L.timer.size * 2.3) + 'px', width: L.timer.tw + 'px', fontSize: L.timer.sub + 'px', opacity: ks, transform: `translateY(${20 * (1 - ks)}px)` });
+      $('#sTimer').style.opacity = fadeIn(t, s.start, .3) * fadeOut(t, s.end - .25, .35);
+    }
+  }
+  // ---- S3 garden ----
+  { const s = TL.garden, on = sceneOn($('#sGarden'), t, s.start, s.end);
+    if (on) {
+      const g = L.garden.img, zin = EASE(prog(t, s.start - .4, s.start + .9)), pan = prog(t, s.start, s.end);
+      const sc = lerp(1.35, 1.0, zin) * lerp(1.0, 1.08, pan);
+      style($('#gardenWrap'), { left: g.x + 'px', top: g.y + 'px', width: g.w + 'px', height: g.h + 'px', transform: `scale(${sc}) translate(${lerp(0, -14, pan)}px, ${lerp(0, -8, pan)}px)`, transformOrigin: '50% 48%', clipPath: `circle(${lerp(14, 140, EASE(prog(t, s.start - .35, s.start + .7)))}% at 50% 50%)` });
+      gardenImgs.forEach((im, i) => { const a = s.stages[i], b = s.stages[i + 1] || s.end + 1; const k = i === 0 ? 1 - EASE(prog(t, b, b + .35)) : EASE(prog(t, a, a + .35)) * (i === 4 ? 1 : 1 - EASE(prog(t, b, b + .35))); im.style.opacity = i === 0 ? 1 : k; im.style.zIndex = i; });
+      // a soft shade behind the headline
+      style($('#gardenShade'), { left: 0, top: PORTRAIT ? 0 : (H - 420) + 'px', width: W + 'px', height: PORTRAIT ? '560px' : '420px', background: PORTRAIT ? 'linear-gradient(180deg, rgba(10,12,15,.92) 55%, rgba(10,12,15,0))' : 'linear-gradient(0deg, rgba(10,12,15,.92) 40%, rgba(10,12,15,0))' });
+      style($('#gardenText'), { left: L.garden.tx + 'px', top: L.garden.ty + 'px', width: L.garden.tw + 'px', fontSize: L.garden.size + 'px' });
+      gardenWords.forEach((w, i) => { const k = EASE(prog(t, s.text + i * .06, s.text + .5 + i * .06)); style(w, { opacity: k, transform: `translateY(${30 * (1 - k)}px)` }); });
+      // the harvest pop over the ripe sunflower (plot 2, top row)
+      const hx = g.x + g.w * (PORTRAIT ? .46 : .455) + (sc - 1) * 0, hy = g.y + g.h * .40, hk = prog(t, s.harvest, s.harvest + .9);
+      const hp = $('#harvestPop'); show(hp, t >= s.harvest && t < s.harvest + 1.6);
+      style(hp, { left: hx + 'px', top: hy + 'px' });
+      const hc = $('#harvestCard'), hs = spring(prog(t, s.harvest, s.harvest + .5)), ho = 1 - EASE_IN(prog(t, s.harvest + 1.1, s.harvest + 1.5));
+      style(hc, { left: '-215px', top: `${-170 - 60 * EASE(hk)}px`, width: '430px', height: '92px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', fontSize: '36px', whiteSpace: 'nowrap', fontWeight: '750', opacity: Math.min(hs * 2, 1) * ho, transform: `scale(${hs})`, color: '#ffd166' });
+      bursts.forEach((b, i) => { const ang = i / bursts.length * Math.PI * 2, d = lerp(10, 170 + 60 * rand(i), EASE_OUT(hk)); style(b, { left: `${Math.cos(ang) * d - 7}px`, top: `${Math.sin(ang) * d * .7 - 7 - 40 * hk}px`, opacity: (1 - hk) * (t >= s.harvest ? 1 : 0), transform: `scale(${lerp(1.2, .3, hk)})`, background: i % 3 ? '#ffd166' : '#6fb162' }); });
+      // a rare mutation sparkles over the Moonlit basil (plot 5, second row left)
+      const sx = g.x + g.w * (PORTRAIT ? .35 : .345), sy = g.y + g.h * .56, sk = prog(t, s.sparkle, s.sparkle + 1.3);
+      const sp = $('#sparkles'); show(sp, t >= s.sparkle && t < s.sparkle + 1.4); style(sp, { left: sx + 'px', top: sy + 'px' });
+      sparks.forEach((b, i) => { const ph = (sk * 2.2 + rand(i, 2)) % 1, ang = rand(i, 3) * Math.PI * 2, d = 20 + 70 * rand(i, 4); style(b, { left: `${Math.cos(ang) * d}px`, top: `${Math.sin(ang) * d * .7 - 40 * ph}px`, opacity: Math.sin(ph * Math.PI) * (1 - EASE_IN(prog(t, s.sparkle + 1.0, s.sparkle + 1.35))), transform: `scale(${.5 + .9 * Math.sin(ph * Math.PI)}) rotate(45deg)`, borderRadius: '2px', background: '#dcd3ff', boxShadow: '0 0 16px 5px rgba(200,190,255,.7)' }); });
+      // a pet: the pets card slides in
+      const pc = $('#petCard'), pk = spring(prog(t, s.pet, s.pet + .6)), pcL = L.garden.pet;
+      style(pc, { left: pcL.x + 'px', top: pcL.y + 'px', width: pcL.w + 'px', height: pcL.h + 'px', opacity: clamp(pk * 1.5) * (1 - EASE_IN(prog(t, s.end - .2, s.end + .2))), transform: `translateY(${(1 - pk) * 60}px) scale(${lerp(.9, 1, pk)})`, transformOrigin: '50% 100%' });
+      style(pc.querySelector('img'), { position: 'absolute', width: '100%', left: 0, top: PORTRAIT ? '-250px' : '-180px', objectFit: 'cover' });
+      $('#sGarden').style.opacity = fadeIn(t, s.start - .2, .4) * fadeOut(t, s.end - .3, .4);
+    }
+  }
+  // ---- S4 boss ----
+  { const s = TL.boss, on = sceneOn($('#sBoss'), t, s.start, s.end);
+    if (on) {
+      const c = L.boss.card, kin = EASE(prog(t, s.start, s.start + .8)), hit = prog(t, s.hit, s.hit + .5);
+      const shake = hit > 0 && hit < 1 ? Math.sin(hit * 40) * 14 * (1 - hit) : 0;
+      style($('#bossCard'), { left: c.x + 'px', top: c.y + 'px', width: c.w + 'px', height: c.h + 'px', transform: `perspective(2000px) translate(${shake}px, ${(1 - kin) * 90}px) rotateY(${lerp(-18, -5, kin) + 2 * Math.sin(t * .8)}deg) scale(${lerp(.92, 1, kin) * (1 + .03 * Math.sin(Math.PI * hit))})`, opacity: kin, transformOrigin: '50% 50%' });
+      const k1 = t >= s.hit ? 1 - EASE_IN(prog(t, s.hit + .7, s.hit + 1.1)) : 0;   // the hit frame with the −25
+      $('#boss1').style.opacity = k1; $('#boss2').style.opacity = t >= s.hit + .7 ? 1 : 0; $('#boss0').style.opacity = 1;
+      style($('#bossFlash'), { inset: 0, background: '#fff', opacity: .55 * Math.max(0, 1 - hit * 3) * (t >= s.hit ? 1 : 0) });
+      const hpk = EASE(prog(t, s.hit + .15, s.hit + .9)), hpv = lerp(.71, .57, hpk), hpL = L.boss.hp;
+      style($('#bossHpWrap'), { left: hpL.x + 'px', top: hpL.y + 'px', width: hpL.w + 'px', opacity: kin });
+      style($('#bossHpLabel'), { left: 0, top: '-46px', fontSize: '30px', fontWeight: '600', color: 'var(--muted)' });
+      $('#bossHpNum').textContent = Math.round(lerp(342, 274, hpk)); $('#bossHpNum').style.color = 'var(--ink)';
+      style($('#bossHp'), { left: 0, top: 0, width: '100%' }); $('#bossHpFill').style.width = (hpv * 100) + '%';
+      style($('#bossText'), { left: L.boss.tx + 'px', top: L.boss.ty + 'px', width: L.boss.tw + 'px', fontSize: L.boss.size + 'px' });
+      bossWords.forEach((w, i) => { const k = EASE(prog(t, s.text + i * .07, s.text + .5 + i * .07)); style(w, { opacity: k, transform: `translateY(${30 * (1 - k)}px)` }); if (i === 2) w.classList.add('accent'); });
+      $('#sBoss').style.opacity = fadeIn(t, s.start, .35) * fadeOut(t, s.end - .3, .4);
+    }
+  }
+  // ---- S5 together ----
+  { const s = TL.together, on = sceneOn($('#sTogether'), t, s.start, s.end);
+    if (on) {
+      const cl = L.together.clan, bd = L.together.board, k1 = EASE(prog(t, s.start, s.start + .9)), k2 = spring(prog(t, s.podium, s.podium + .8));
+      style($('#clanCard'), { left: cl.x + 'px', top: cl.y + 'px', width: cl.w + 'px', height: cl.h + 'px', opacity: k1, transform: `perspective(2000px) translateX(${(1 - k1) * -120}px) rotateY(${lerp(14, 6, k1) + 2 * Math.sin(t * .6)}deg)`, transformOrigin: '0 50%' });
+      style($('#boardCard'), { left: bd.x + 'px', top: bd.y + 'px', width: bd.w + 'px', height: bd.h + 'px', opacity: clamp(k2 * 1.5), transform: `perspective(2000px) translateY(${(1 - k2) * 260}px) rotateY(${-6 + 2 * Math.cos(t * .7)}deg) rotateX(${(1 - k2) * 18}deg)`, transformOrigin: '50% 100%' });
+      $('#boardCard img').style.objectPosition = 'top';
+      style($('#togetherText'), { left: L.together.tx + 'px', top: L.together.ty + 'px', width: L.together.tw + 'px', fontSize: L.together.size + 'px' });
+      togetherWords.forEach((w, i) => { const k = EASE(prog(t, s.text + i * .07, s.text + .5 + i * .07)); style(w, { opacity: k, transform: `translateY(${30 * (1 - k)}px)` }); if (i >= 3) w.classList.add('mint'); });
+      $('#sTogether').style.opacity = fadeIn(t, s.start, .35) * fadeOut(t, s.end - .3, .4);
+    }
+  }
+  // ---- S6 montage ----
+  { const s = TL.montage, on = sceneOn($('#sMontage'), t, s.start, s.end);
+    if (on) {
+      const m = L.montage, hk = EASE(prog(t, s.start, s.start + .5));
+      style($('#montageHead'), { left: m.head.x + 'px', top: m.head.y + 'px', fontSize: m.head.size + 'px', opacity: hk * .9, transform: `translateY(${(1 - hk) * 20}px)`, color: 'var(--muted)' });
+      mcards.forEach((c, i) => {
+        const t0 = s.start + .25 + i * s.step, kin = EASE(prog(t, t0, t0 + .34)), age = (t - t0) / s.step;   // steps since this card arrived
+        const depth = [1, 2, 3].reduce((a, k) => a + EASE(prog(age, k, k + .5)), 0);   // recedes one notch each time a newer card lands
+        const visible = t >= t0 - .02 && depth < 2.98;
+        show(c, visible);
+        if (!visible) return;
+        style(c, { width: m.cw + 'px', height: m.ch + 'px', left: (m.cx - m.cw / 2 - m.dx * depth) + 'px', top: (m.cy - m.ch / 2 - m.dy * depth) + 'px', zIndex: 20 + i, opacity: Math.min(kin * 1.4, 1) * (1 - clamp(depth - 2)) * fadeOut(t, s.end - .25, .35), transform: `perspective(2000px) translateX(${(1 - kin) * (PORTRAIT ? 0 : 560)}px) translateY(${(1 - kin) * (PORTRAIT ? 600 : 0)}px) rotateY(${(1 - kin) * -18}deg) scale(${1 - .08 * depth})`, filter: `brightness(${1 - .22 * depth})`, transformOrigin: '50% 50%' });
+        c.querySelector('.cap').style.opacity = kin;
+      });
+    }
+  }
+  // ---- S7 promise ----
+  { const s = TL.promise, on = sceneOn($('#sPromise'), t, s.start, s.end);
+    if (on) {
+      [0, 1, 2].forEach(i => { const b = $('#badge' + i), k = spring(prog(t, s.badges[i], s.badges[i] + .6)); style(b, { left: '50%', top: L.promise.ys[i] + 'px', fontSize: L.promise.size + 'px', opacity: clamp(k * 1.6) * fadeOut(t, s.end - .25, .35), transform: `translate(-50%, 0) scale(${lerp(.6, 1, k)})`, transformOrigin: '50% 50%' }); });
+      const sub = $('#promiseSub'), k = EASE(prog(t, s.sub, s.sub + .35));
+      style(sub, { left: 0, top: L.promise.sub + 'px', width: W + 'px', textAlign: 'center', fontSize: (PORTRAIT ? 48 : 44) + 'px', opacity: k * fadeOut(t, s.end - .25, .35), transform: `translateY(${(1 - k) * 20}px)` });
+    }
+  }
+  // ---- S8 end card ----
+  { const s = TL.end, on = sceneOn($('#sEnd'), t, s.start, s.end);
+    if (on) {
+      const e = L.end, kl = spring(prog(t, s.logo, s.logo + .7)), kn = EASE(prog(t, s.logo + .15, s.logo + .7)), kk = EASE(prog(t, s.link, s.link + .5)), kc = EASE(prog(t, s.cta, s.cta + .5)), kp = spring(prog(t, s.cta + .1, s.cta + .7));
+      style($('#endLogo'), { left: (W / 2 - e.logo.s / 2) + 'px', top: e.logo.y + 'px', width: e.logo.s + 'px', opacity: clamp(kl * 1.5), transform: `scale(${lerp(.5, 1, kl)}) rotate(${(1 - kl) * -20}deg)`, transformOrigin: '50% 60%' });
+      style($('#endName'), { left: 0, top: e.name.y + 'px', width: W + 'px', textAlign: 'center', fontSize: e.name.size + 'px', opacity: kn, transform: `translateY(${(1 - kn) * 26}px)` });
+      style($('#endLink'), { left: 0, top: e.link.y + 'px', width: W + 'px', textAlign: 'center', fontSize: e.link.size + 'px', opacity: kk, transform: `translateY(${(1 - kk) * 20}px)` });
+      style($('#endCta'), { left: 0, top: e.cta.y + 'px', width: W + 'px', textAlign: 'center', fontSize: e.cta.size + 'px', opacity: kc, transform: `translateY(${(1 - kc) * 20}px)` });
+      const wave = Math.sin((t - s.cta) * 9) * 8 * (t > s.cta ? 1 : 0);
+      style($('#endPomeo'), { left: e.pomeo.x + 'px', top: e.pomeo.y + 'px', width: e.pomeo.s + 'px', opacity: clamp(kp * 1.5), transform: `scale(${kp}) rotate(${wave}deg)`, transformOrigin: '50% 100%' });
+      $('#sEnd').style.opacity = fadeIn(t, s.start, .3);
+    }
+  }
+}
+window.seek = seek;
+// readiness for the renderer: fonts and every image decoded
+window.ready = Promise.all([document.fonts.ready, ...[...document.images].map(im => im.complete ? Promise.resolve() : new Promise(r => { im.onload = r; im.onerror = r; }))]).then(() => { seek(+(P.get('t') || 0)); return true; });
+// a live preview in a browser: ?play=1
+if (P.get('play')) { const t0 = performance.now(); (function loop() { seek(((performance.now() - t0) / 1000) % TL.total); requestAnimationFrame(loop); })(); }
+if (P.get('fit')) { const k = Math.min(innerWidth / W, innerHeight / H); $('#stage').style.transform = `scale(${k})`; }
+</script>
+</body>
+</html>
