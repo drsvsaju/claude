@@ -785,6 +785,8 @@ dialog::backdrop { background: rgba(10, 12, 12, .32); -webkit-backdrop-filter: b
 .gd-plot .gd-xp { position: absolute; left: 14%; right: 14%; bottom: 7px; height: 4px; border-radius: 2px; background: rgba(0,0,0,.14); overflow: hidden; pointer-events: none; }   /* plant XP (v1.17) */
 .gd-plot .gd-xp i { display: block; height: 100%; background: #fff3a6; box-shadow: 0 0 0 1px rgba(0,0,0,.08) inset; border-radius: 2px; }
 .gd-plot.focus .gd-xp i { background: #9fd6ff; }
+.gd-boost { margin-top: 6px; font-size: 13px; color: var(--muted); }
+.gd-boost.on { color: var(--text); font-weight: 600; }
 .gd-seg .gd-n { font-size: 11px; background: var(--accent); color: #fff; border-radius: 999px; padding: 0 6px; margin-left: 4px; }
 .gd-crop .stars { color: #d9a52a; letter-spacing: 1px; }
 .gd-crop.fav { border-color: #e5654f; }
@@ -6811,7 +6813,7 @@ const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
 /* ---------- Shop catalogue (cosmetic only). price 0 = free default. lvl = minimum level. ---------- */
 const SHOP_CATS = [
   ['pomeo', 'Pomeo'], ['room', 'Pomeo’s room'], ['avatar', 'Profile pictures'], ['sound', 'Sounds'], ['ambient', 'Ambient'], ['theme', 'Themes'], ['ring', 'Timer ring'], ['trail', 'Ring trails'], ['font', 'Timer font'],
-  ['effect', 'Effects'], ['stamp', 'Stamps'], ['frame', 'Badge frame'], ['color', 'Name colour'], ['extra', 'Extras'], ['freeze', 'Streak freeze'],
+  ['effect', 'Effects'], ['stamp', 'Stamps'], ['frame', 'Badge frame'], ['color', 'Name colour'], ['extra', 'Extras'], ['freeze', 'Streak freeze'], ['boost', 'Plant XP boosts'],
 ];
 const ITEMS = [
   { id: 'av_default',       cat: 'avatar', name: 'Default',         desc: 'Your badge, or your initial',      price: 0 },
@@ -6902,6 +6904,9 @@ const ITEMS = [
   { id: 'col_rose',    cat: 'color', name: 'Rose',    desc: 'Soft pink',         price: 80 },
   { id: 'col_gold',    cat: 'color', name: 'Gold',    desc: 'For the dedicated', price: 300, lvl: 20 },
 
+  // Plant XP boosts (v1.17): coins only, never stacked past ×2 — a ×1.5 bought during a ×2 waits its turn
+  { id: 'gx_boost15', cat: 'boost', name: 'Plant XP ×1.5', desc: 'Your plants get half as much XP again from your next 8 focus blocks', price: 60, n: 8, mult: 1.5 },
+  { id: 'gx_boost2',  cat: 'boost', name: 'Plant XP ×2',   desc: 'Your plants get double XP from your next 8 focus blocks',             price: 110, n: 8, mult: 2 },
   { id: 'x_startcue', cat: 'extra', name: 'Start cue',     desc: 'A soft tone when a focus block begins',           price: 80 },
   { id: 'x_favicon',  cat: 'extra', name: 'Live tab icon', desc: 'The browser tab icon shows the timer’s progress', price: 120 },
   { id: 'x_zen',      cat: 'extra', name: 'Zen mode',      desc: 'Hides everything but the timer while you focus',  price: 150 },
@@ -7444,15 +7449,15 @@ function computeGame() {
     .filter(p => p.item)
     .sort((a, b) => (a.at - b.at) || (a.pid < b.pid ? -1 : 1));
   let spent = 0;
-  const owned = new Set(), freezeBuys = [], invalid = [];
+  const owned = new Set(), freezeBuys = [], boostBuys = [], invalid = [];
   for (const p of buys) {
     const item = ITEM_BY_ID[p.item], price = Math.max(0, Math.round(+p.price || 0));
-    const isFreeze = item && item.cat === 'freeze';
+    const isFreeze = item && item.cat === 'freeze', isBoost = item && item.cat === 'boost';
     const heldThen = freezeBuys.length - usedTimes.filter(t => t <= p.at).length;
-    const ok = item && item.price >= 0 && (isFreeze ? heldThen < MAX_FREEZES : !owned.has(p.item)) && earnedAt(p.at) - spent >= price;
+    const ok = item && item.price >= 0 && (isFreeze ? heldThen < MAX_FREEZES : isBoost ? boostBlocksAt(boostBuys, p.at).left + item.n <= BOOST_MAX_BLOCKS : !owned.has(p.item)) && earnedAt(p.at) - spent >= price;
     if (!ok) { invalid.push(p.pid); continue; }
     spent += price;
-    if (isFreeze) freezeBuys.push(p.at); else owned.add(p.item);
+    if (isFreeze) freezeBuys.push(p.at); else if (isBoost) boostBuys.push({ pid: p.pid, item: p.item, at: p.at, n: item.n, mult: item.mult }); else owned.add(p.item);
   }
   for (const id of Object.keys(S.game.grants)) if (ITEM_BY_ID[id]) owned.add(id);   // boss and questline rewards (free)
   for (const it of ITEMS) if ((it.clanLv || it.clanRaid) && clanOwns(it)) owned.add(it.id);   // clan cosmetics: while you're in the clan
@@ -7460,7 +7465,7 @@ function computeGame() {
   const earned = earnedAt(Infinity);
   return {
     idx, streak, xp, lv, tier: tierFor(lv.level), focusMs, earned, spent,
-    balance: Math.max(0, earned - spent), owned, invalid, freezeBuys,
+    balance: Math.max(0, earned - spent), owned, invalid, freezeBuys, boostBuys,
     ownedCount: [...owned].filter(id => ITEM_BY_ID[id].price > 0).length,
     freezesHeld: Math.max(0, freezeBuys.length - usedTimes.length),
   };
@@ -7598,18 +7603,18 @@ function buyItem(id) {
   if (!rewardsReady()) { toast('Still syncing — try again in a moment'); return; }
   const g = game();
   if (it.lvl && g.lv.level < it.lvl) { toast(`Unlocks at level ${it.lvl}`); return; }
-  if (it.cat === 'freeze' ? g.freezesHeld >= MAX_FREEZES : isOwned(id)) return;
+  if (it.cat === 'freeze' ? g.freezesHeld >= MAX_FREEZES : it.cat === 'boost' ? xpBoostAt().left + it.n > BOOST_MAX_BLOCKS : isOwned(id)) return;
   if (g.balance < it.price) { toast(`You need ${it.price - g.balance} more coins`); return; }
   if (!confirm(`Buy “${it.name}” for ${it.price} coins?`)) return;
   S.game.purchases['b' + uid()] = { item: id, price: it.price, at: Date.now() };
-  if (it.cat !== 'freeze') markEquipped(id);
+  if (it.cat !== 'freeze' && it.cat !== 'boost') markEquipped(id);
   if (it.cat === 'extra') eqSet(id, true);
   else if (it.cat === 'room') { G = null; roomPlace(id); }
-  else if (it.cat !== 'freeze') eqSet(it.cat, id);
-  G = null;
+  else if (it.cat !== 'freeze' && it.cat !== 'boost') eqSet(it.cat, id);
+  G = null; GD = null;
   save();
   applyCosmetics();
-  toast(it.cat === 'freeze' ? 'Streak Freeze added' : `${it.name} is yours`, 2600, true);
+  toast(it.cat === 'freeze' ? 'Streak Freeze added' : it.cat === 'boost' ? `${it.name} for your next ${it.n} focus blocks${xpBoostAt().id && xpBoostAt().id !== id ? ' — it starts when the stronger boost runs out' : ''}` : `${it.name} is yours`, 2600, true);
   announce(reconcileRewards('collect'), 'loud');
   renderShop();
   coinDrop(document.querySelector(`#shopView .item[data-id="${id}"] .pv`));
@@ -8309,12 +8314,14 @@ function previewFor(it, g) {
   return `<span class="pvicon">${iconSVG(ICONS[it.id] || ICONS[it.cat], 28)}</span>`;
 }
 function itemCard(it, g) {
-  const owned = isOwned(it.id), isExtra = it.cat === 'extra', isFreeze = it.cat === 'freeze';
-  const equipped = isExtra ? extraOn(it.id) : it.cat === 'room' ? roomSlot(roomSlotOf(it.id)) === it.id : !isFreeze && equippedId(it.cat) === it.id;
+  const isExtra = it.cat === 'extra', isFreeze = it.cat === 'freeze', isBoost = it.cat === 'boost', owned = !isBoost && isOwned(it.id);
+  const equipped = isExtra ? extraOn(it.id) : it.cat === 'room' ? roomSlot(roomSlotOf(it.id)) === it.id : !isFreeze && !isBoost && equippedId(it.cat) === it.id;
+  const bst = isBoost ? xpBoostAt() : null;
   const locked = !owned && it.lvl && g.lv.level < it.lvl;
   const buy = `<button class="btn buy" data-buy="${it.id}"${g.balance < it.price ? ' disabled title="Not enough coins yet"' : ''}>${COIN_SVG} ${fmtNum(it.price)}</button>`;
   let btn;
   if (isFreeze) btn = locked ? '' : g.freezesHeld >= MAX_FREEZES ? '<button class="btn" disabled>Holding the maximum</button>' : buy;
+  else if (isBoost) btn = bst.left + it.n > BOOST_MAX_BLOCKS ? `<button class="btn" disabled>Holding the maximum (${BOOST_MAX_BLOCKS} blocks)</button>` : buy;
   else if (equipped) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn off</button>` : it.cat === 'room' ? '<button class="btn" disabled>Placed</button>' : '<button class="btn" disabled>Equipped</button>';
   else if (owned) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn on</button>` : `<button class="btn" data-equip="${it.id}">${it.cat === 'room' ? 'Place' : 'Equip'}</button>`;
   else if (locked) btn = `<button class="btn" disabled>${LOCK_SVG} Level ${it.lvl}</button>`;
@@ -8326,7 +8333,7 @@ function itemCard(it, g) {
   return `<div class="item${equipped ? ' equipped' : ''}${locked ? ' locked' : ''}" data-id="${it.id}">
     <div class="pv">${previewFor(it, g)}${state ? `<span class="tag">${fresh ? CHECK_SVG : ''}${state}</span>` : ''}</div>
     <div class="nm">${esc(it.name)}</div>
-    <div class="ds">${esc(it.desc)}${isFreeze ? ` · You hold ${g.freezesHeld}/${MAX_FREEZES}` : ''}</div>
+    <div class="ds">${esc(it.desc)}${isFreeze ? ` · You hold ${g.freezesHeld}/${MAX_FREEZES}` : isBoost ? (bst.id === it.id ? ` · ⚡ Active: ${bst.blocks} block${bst.blocks === 1 ? '' : 's'} left` : bst.id ? ` · waits for your ${ITEM_BY_ID[bst.id].name} (${bst.blocks} left)` : ' · Blocks of 5 minutes or more count') : ''}</div>
     <div class="act">${play}${btn}</div></div>`;
 }
 function renderShop() {
@@ -11420,8 +11427,29 @@ function pourWater(plants, mins, mult = 1) {
  *  ready on this device, or before a plant planted elsewhere had synced here, is given now (v1.17). A plant remembers
  *  each block that has been to it (its water map, 0 included) and an egg too, so this never waters twice; a plant only
  *  drinks blocks that ended after it was planted, an egg only blocks after it was laid. Returns true when something changed. */
-/** The plant-XP boost in force at a moment (Phase 3B fills this in): { mult, left, id }. */
-function xpBoostAt(at) { return { mult: 1, left: 0, id: '' }; }
+/* ---------- PLANT XP BOOSTS (v1.17) ----------
+   Bought with coins in the Shop (×1.5 or ×2 for 8 focus blocks). Every logged focus block consumes one block of the
+   strongest boost bought by then that still has blocks, so a ×1.5 bought during a ×2 waits its turn — nothing stacks past
+   ×2 and nothing is lost. Derived from the coin ledger and the session log, so every device agrees. ---------- */
+const BOOST_MAX_BLOCKS = 24;
+/** Walk the blocks consumed up to `at`: which boost is in force then and how many blocks each has left. */
+function boostBlocksAt(buys, at) {
+  const left = buys.map(b => b.n);
+  if (buys.length) {
+    const first = Math.min(...buys.map(b => b.at));
+    const list = (S.sessions || []).filter(x => x && +x.end >= first && +x.end < at && (+x.duration || 0) >= 60000).sort((a, b) => a.end - b.end);
+    for (const x of list) { const i = pickBoost(buys, left, +x.end); if (i >= 0) left[i]--; }
+  }
+  const i = pickBoost(buys, left, at);
+  return { i, mult: i >= 0 ? buys[i].mult : 1, blocks: i >= 0 ? left[i] : 0, left: left.reduce((a, v) => a + Math.max(0, v), 0), id: i >= 0 ? buys[i].item : '' };
+}
+function pickBoost(buys, left, at) {
+  let best = -1;
+  buys.forEach((b, i) => { if (b.at <= at && left[i] > 0 && (best < 0 || b.mult > buys[best].mult || (b.mult === buys[best].mult && b.at < buys[best].at))) best = i; });
+  return best;
+}
+/** The boost in force at a moment: { mult, blocks (of this boost), left (all boosts), id }. */
+function xpBoostAt(at = Date.now()) { return boostBlocksAt(game().boostBuys || [], at); }
 function gardenReplay() {
   if (!USER || isPreview() || !gardenMig()) return false;
   const now = Date.now(), since = now - 7 * DAY_MS;   // a plant only drinks blocks after it was planted, an egg after it was laid: nothing older than the garden counts
@@ -11811,6 +11839,13 @@ function gardenRecords() {
   return { best, bySp };
 }
 const bigField = () => { const r = gardenRecords().best; return r && r.sp ? { big: `${r.sp}:${Math.round(r.kg * 100) / 100}` } : {}; };
+/** "⚡ Plant XP ×2 · 5 blocks left" in the garden head, or a quiet nudge to the Shop (v1.17). */
+function boostLineHTML() {
+  if (!rewardsReady() || isPreview() && !game().boostBuys.length) return '';
+  const b = xpBoostAt();
+  return b.id ? `<div class="gd-boost on">⚡ ${esc(ITEM_BY_ID[b.id].name)} · ${b.blocks} block${b.blocks === 1 ? '' : 's'} left${b.left > b.blocks ? ` (+${b.left - b.blocks} waiting)` : ''}</div>`
+    : `<div class="gd-boost"><button class="linkbtn" data-shopcat="boost">⚡ Plant XP boosts in the Shop</button></div>`;
+}
 /** The Harvests tab (v1.17): every crop not yet sold — art, mutation skins, weight, stars and value; sell one, sell in bulk, keep favourites. */
 function harvestsHTML(g) {
   const list = g.crops, fest = festivalOn(), worth = list.reduce((a, p) => a + cropValue(p), 0), rec = gardenRecords();
@@ -12048,7 +12083,8 @@ function gardenHeadHTML(g) {
     <div class="gd-title"><h1>Garden</h1><div class="lbl">${SEASON_TEXT[gardenSeason()]} · ${WX_TEXT[gardenWeather()]} · ${gardenTod() === 'night' ? 'night' : gardenTod()}</div></div>
     <div class="gd-level card"><div class="row between"><b>Garden level ${g.level}</b><span class="gd-produce" title="Produce — harvest plants to earn it">${PRODUCE_SVG}<span data-count="produce" data-val="${g.produce}">${fmtNum(g.produce)}</span></span></div>
       <div class="xpbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Garden XP"><i data-fill="${pct}" data-fill-key="gxp"></i></div>
-      <div class="lbl">${g.next ? `${fmtNum(g.into)} / ${fmtNum(g.need)} XP · next: ${esc(gardenNextUnlock(g))}` : `${fmtNum(g.xp)} XP · ${esc(gardenNextUnlock(g))}`}</div></div>
+      <div class="lbl">${g.next ? `${fmtNum(g.into)} / ${fmtNum(g.need)} XP · next: ${esc(gardenNextUnlock(g))}` : `${fmtNum(g.xp)} XP · ${esc(gardenNextUnlock(g))}`}</div>
+      ${boostLineHTML()}</div>
     ${eggCardHTML(g)}</div>
     <div class="seg gd-seg" id="gardenSeg" role="group" aria-label="Show">${[['garden', 'Garden'], ['harvests', `Harvests${g.crops.length ? ` <b class="gd-n">${g.crops.length}</b>` : ''}`], ['seeds', 'Seeds'], ['decor', 'Decor'], ['almanac', 'Almanac']].map(([v, n]) => `<button data-gview="${v}" class="${gardenView() === v ? 'active' : ''}" aria-pressed="${gardenView() === v}">${n}</button>`).join('')}</div>`;
 }
@@ -12388,6 +12424,7 @@ const GD_POMEO_LINES = ['Every focus block is a watering can 💧', 'I love it h
     const ge = t.closest('[data-gequip]'); if (ge) { if (isOwned(ge.dataset.gequip)) { equipItem(ge.dataset.gequip); uiSound('on'); renderGarden(); } return; }
     const pl = t.closest('[data-gplace]'); if (pl) { openPlaceDlg(pl.dataset.gplace); return; }
     const rm = t.closest('[data-gremove]'); if (rm) { if (gardenRemove(rm.dataset.gremove)) { toast('Back in your bag', 1600, true); renderGarden(); } return; }
+    const sc = t.closest('[data-shopcat]'); if (sc) { S.ui.shopCat = sc.dataset.shopcat; saveLocal(); showTab('shop'); return; }
     const sl = t.closest('[data-sell]'); if (sl) { const v = gardenSell(sl.dataset.sell, sl); if (v) { toast(`Sold · +${v} produce`, 1600, true); renderGarden(); } return; }
     const sa = t.closest('[data-sellall]'); if (sa) { const r = gardenSellAll(sa.dataset.sellall); if (r.n) { produceFly(sa, r.v); toast(`Sold ${r.n} crop${r.n === 1 ? '' : 's'} · +${r.v} produce`, 2200, true); renderGarden(); } return; }
     const fv = t.closest('[data-fav]'); if (fv) { gardenFav(fv.dataset.fav); uiSound('tap'); renderGarden(); return; }
@@ -15223,7 +15260,8 @@ function demoDocs() {
     for (let d = 30; d >= 1; d--) { const t = msDemo - d * 864e5; if (estAt(t) >= cum + 5) { at = t + i * 60e3; break; } }
     purchases['demo' + i] = { item: id, price, ...(gift ? { gift: true } : {}), at };
   });
-  for (const [id, it] of Object.values(purchases).map(p => [p.item, ITEM_BY_ID[p.item]])) if (!['theme', 'sound', 'room'].includes(it.cat)) equipped[it.cat] = id;
+  purchases.demo_boost = { item: 'gx_boost2', price: 110, at: msDemo - 2 * 3600e3 };   // a ×2 plant XP boost running (v1.17)
+  for (const [id, it] of Object.values(purchases).map(p => [p.item, ITEM_BY_ID[p.item]])) if (!['theme', 'sound', 'room', 'boost'].includes(it.cat)) equipped[it.cat] = id;
   const wkPast = k => dayKey(addDays(weekStartOf(now, 1), -7 * k));
   // Past bosses (the real rotation): a Solo win, a mastered week (Solo + Squad), a Squad win with rewards still to claim,
   // and this week's boss beaten 10 weeks ago (so its trophy already has a star).
