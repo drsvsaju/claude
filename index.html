@@ -827,6 +827,17 @@ dialog::backdrop { background: rgba(10, 12, 12, .32); -webkit-backdrop-filter: b
 .gt-body p { margin: 6px 0 12px; line-height: 1.5; }
 dialog.gt-dlg { margin-top: auto; margin-bottom: 12px; }
 dialog.gt-dlg::backdrop { background: rgba(0, 0, 0, .18); backdrop-filter: none; }
+/* mutated pets (v1.17) */
+.pm-golden .pet-svg, .pet-svg.pm-golden { filter: sepia(.9) saturate(2.4) hue-rotate(-12deg) brightness(1.08) drop-shadow(0 0 4px rgba(255, 196, 60, .7)); }
+.pm-shiny .pet-svg, .pet-svg.pm-shiny { filter: brightness(1.22) contrast(1.08) drop-shadow(0 0 5px rgba(255, 255, 255, .8)); }
+.pm-rainbow .pet-svg, .pet-svg.pm-rainbow { filter: saturate(1.6) drop-shadow(0 0 4px rgba(255, 120, 200, .6)); }
+:root[data-motion="full"] .pm-rainbow .pet-svg, :root[data-motion="full"] .pet-svg.pm-rainbow { animation: pm-hue 4s linear infinite; }
+@keyframes pm-hue { to { filter: hue-rotate(360deg) saturate(1.6); } }
+.pm-shadow .pet-svg, .pet-svg.pm-shadow { filter: brightness(.45) contrast(1.3) drop-shadow(0 0 6px rgba(120, 90, 200, .8)); }
+.pm-frost .pet-svg, .pet-svg.pm-frost { filter: hue-rotate(160deg) saturate(.8) brightness(1.15) drop-shadow(0 0 4px rgba(150, 220, 255, .8)); }
+.pm-ember .pet-svg, .pet-svg.pm-ember { filter: hue-rotate(-20deg) saturate(1.8) brightness(1.05) drop-shadow(0 0 6px rgba(255, 110, 40, .8)); }
+.pet-card.mutated { border-color: #d9a52a; }
+.pet-card .tag.pm { background: #d9a52a; color: #2b2118; }
 .gd-boost { margin-top: 6px; font-size: 13px; color: var(--muted); }
 .gd-boost.on { color: var(--text); font-weight: 600; }
 .gd-seg .gd-n { font-size: 11px; background: var(--accent); color: #fff; border-radius: 999px; padding: 0 6px; margin-left: 4px; }
@@ -11526,23 +11537,25 @@ function gardenReplay() {
    capped boosts; 1 / 2 / 3 can be out at garden level 1 / 5 / 8. A duplicate hatch raises that pet's level
    (hearts, up to 3), which strengthens its boost by 25% per heart. */
 const PETS = [
-  { id: 'bunny',       name: 'Bunny',        rarity: 'common',    boost: { water: .06 },                        line: 'nibbles the clover and hops after every block' },
-  { id: 'hedgehog',    name: 'Hedgehog',     rarity: 'common',    boost: { wilt: 1 },                           line: 'keeps the beds damp a day longer' },
-  { id: 'frog',        name: 'Frog',         rarity: 'common',    boost: { bonus: .06 },                        line: 'sometimes finds extra produce in the mud' },
-  { id: 'turtle',      name: 'Turtle',       rarity: 'common',    boost: { weight: .05 },                       line: 'slow and steady — the crops grow bigger' },
-  { id: 'bee',         name: 'Bee',          rarity: 'rare',      boost: { mut: .02 },                          line: 'pollinates the beds — mutations come more often' },
-  { id: 'owl',         name: 'Owl',          rarity: 'rare',      boost: { mut: .025, water: .03 },             line: 'watches over the night-time blocks' },
-  { id: 'deer',        name: 'Deer',         rarity: 'rare',      boost: { weight: .08, water: .04 },           line: 'grazes gently; the fruit swells' },
-  { id: 'fox',         name: 'Fox',          rarity: 'rare',      boost: { bonus: .10 },                        line: 'a clever forager — extra produce turns up' },
-  { id: 'hummingbird', name: 'Hummingbird',  rarity: 'legendary', boost: { water: .12, mut: .02 },              line: 'a blur of wings; every block waters more' },
-  { id: 'snail',       name: 'Golden snail', rarity: 'legendary', boost: { weight: .12, bonus: .08, mut: .02 }, line: 'leaves a golden trail — luck follows it' },
+  // v1.17 buffs (old → new): bunny water .06→.10 · hedgehog wilt 1→1.5 · frog bonus .06→.10 · turtle weight .05→.08 · bee mut .02→.03 ·
+  // owl mut .025→.035 + water .03→.05 · deer weight .08→.12 + water .04→.06 · fox bonus .10→.15 · hummingbird water .12→.18 + mut .02→.03 · snail weight .12→.18 + bonus .08→.12 + mut .02→.03
+  { id: 'bunny',       name: 'Bunny',        rarity: 'common',    boost: { water: .10 },                        line: 'nibbles the clover and hops after every block' },
+  { id: 'hedgehog',    name: 'Hedgehog',     rarity: 'common',    boost: { wilt: 1.5 },                         line: 'keeps the beds damp a day and a half longer' },
+  { id: 'frog',        name: 'Frog',         rarity: 'common',    boost: { bonus: .10 },                        line: 'sometimes finds extra produce in the mud' },
+  { id: 'turtle',      name: 'Turtle',       rarity: 'common',    boost: { weight: .08 },                       line: 'slow and steady — the crops grow bigger' },
+  { id: 'bee',         name: 'Bee',          rarity: 'rare',      boost: { mut: .03 },                          line: 'pollinates the beds — mutations come more often' },
+  { id: 'owl',         name: 'Owl',          rarity: 'rare',      boost: { mut: .035, water: .05 },             line: 'watches over the night-time blocks' },
+  { id: 'deer',        name: 'Deer',         rarity: 'rare',      boost: { weight: .12, water: .06 },           line: 'grazes gently; the fruit swells' },
+  { id: 'fox',         name: 'Fox',          rarity: 'rare',      boost: { bonus: .15 },                        line: 'a clever forager — extra produce turns up' },
+  { id: 'hummingbird', name: 'Hummingbird',  rarity: 'legendary', boost: { water: .18, mut: .03 },              line: 'a blur of wings; every block waters more' },
+  { id: 'snail',       name: 'Golden snail', rarity: 'legendary', boost: { weight: .18, bonus: .12, mut: .03 }, line: 'leaves a golden trail — luck follows it' },
 ];
 const PET_BY_ID = Object.fromEntries(PETS.map(p => [p.id, p]));
-const BOOST_CAP = { water: .25, mut: .08, wilt: 2, bonus: .20, weight: .25 };
+const BOOST_CAP = { water: .35, mut: .10, wilt: 3, bonus: .30, weight: .35 };   // v1.17: raised with the pets (was .25 / .08 / 2 / .20 / .25)
 const BOOST_TEXT = { water: v => `+${Math.round(v * 100)}% water from sessions`, mut: v => `+${(v * 100).toFixed(1).replace(/\.0$/, '')}% mutation chance`, wilt: v => `wilts ${v % 1 ? v.toFixed(1) : v} day${v === 1 ? '' : 's'} later`, bonus: v => `${Math.round(v * 100)}% chance of bonus produce`, weight: v => `+${Math.round(v * 100)}% crop weight` };
 const EGG_NEED = { common: 300, rare: 420, legendary: 600 };
 const EGG_ODDS = { common: [.70, .95], rare: [.20, .80], legendary: [0, .40] };   // cumulative: below [0] common, below [1] rare, else legendary
-const PET_LEVEL_MAX = 3, PET_SLOTS_AT = [1, 5, 8];
+const PET_LEVEL_MAX = 3, PET_SLOTS_AT = [1, 3, 6];   // v1.17: the third slot at level 6 (was 8), the second at 3 (was 5)
 const EGG_EVENT_FROM = Date.UTC(2026, 10, 1);   // questline finals from the November 2026 questline on add a rare egg
 /** Which pet an egg holds — from its id only, so every device gets the same answer. */
 function petFor(egg) {
@@ -11551,6 +11564,17 @@ function petFor(egg) {
   return pool[Math.floor(hash01(egg.id + ':sp') * pool.length) % pool.length].id;
 }
 const eggList = () => (S.eggs || []).filter(e => e && typeof e === 'object' && e.id && e.kind);
+/* ---------- PET MUTATIONS (v1.17): decided from the egg id, so every device agrees and nothing re-rolls; a mutated copy out
+   makes the pet's boosts ×1.25 (still capped). Chance by egg: common 8%, rare 12%, legendary 15%. ---------- */
+const PET_MUTS = { golden: { name: 'Golden', icon: '✨' }, shiny: { name: 'Shiny', icon: '💎' }, rainbow: { name: 'Rainbow', icon: '🌈' }, shadow: { name: 'Shadow', icon: '🌑' }, frost: { name: 'Frost', icon: '❄️' }, ember: { name: 'Ember', icon: '🔥' } };
+const PET_MUT_CHANCE = { common: .08, rare: .12, legendary: .15 }, PET_MUT_MULT = 1.25;
+function petMutOf(egg) {
+  if (!egg || !egg.id) return '';
+  if (hash01(egg.id + ':pm') >= (PET_MUT_CHANCE[egg.kind] || .08)) return '';
+  const keys = Object.keys(PET_MUTS);
+  return keys[Math.floor(hash01(egg.id + ':pmk') * keys.length) % keys.length];
+}
+const petMutName = (pet, pm) => (pm && PET_MUTS[pm] ? PET_MUTS[pm].name + ' ' : '') + pet.name;
 const eggFill = e => Object.values(e.w || {}).reduce((a, v) => a + (+v || 0), 0);
 const eggNeed = e => +e.need || EGG_NEED[e.kind] || EGG_NEED.common;
 const eggActive = () => eggList().filter(e => !e.h).sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1))[0] || null;
@@ -11622,10 +11646,18 @@ function eggSettle() {
 /** A finished block fills the egg in the slot; what is left flows into the next egg. Returns the eggs that hatched. */
 function eggAfterSession(s, mins) {
   const out = [...eggSettle()];
+  ensureEgg();
+  // v1.17: every egg waiting drinks the whole block at once (no sharing); the focus egg's leftover still flows into the next focus egg
+  for (const e of eggList().filter(x => !x.h && x.src !== 'focus')) {
+    if (e.w && e.w[s.id] !== undefined) continue;
+    const amt = Math.min(mins, Math.max(0, eggNeed(e) - eggFill(e)));
+    (e.w ||= {})[s.id] = amt;
+    if (eggFill(e) >= eggNeed(e)) { e.h = Date.now(); e.pet = petFor(e); e.hs = s.id; out.push(e); }
+  }
   let left = mins, guard = 0;
   while (left > 0 && guard++ < 4) {
     ensureEgg();
-    const e = eggActive();
+    const e = eggList().filter(x => !x.h && x.src === 'focus').sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1))[0];
     if (!e || (e.w && e.w[s.id] !== undefined)) break;   // this block already counted here (another device replayed it)
     const amt = Math.min(left, Math.max(0, eggNeed(e) - eggFill(e)));
     if (amt <= 0) break;
@@ -11640,7 +11672,8 @@ function eggAfterSession(s, mins) {
 function petsOwned() {
   const m = {};
   const f = eggFoldRec();   // copies hatched long ago live in the folded record
-  for (const e of eggList()) if (e.h && e.pet && PET_BY_ID[e.pet] && !eggFolded(e, f)) { const x = (m[e.pet] ||= { id: e.pet, pet: PET_BY_ID[e.pet], n: 0, at: e.h }); x.n++; x.at = Math.min(x.at, e.h); }
+  const rank = ['', ...Object.keys(PET_MUTS)];
+  for (const e of eggList()) if (e.h && e.pet && PET_BY_ID[e.pet] && !eggFolded(e, f)) { const x = (m[e.pet] ||= { id: e.pet, pet: PET_BY_ID[e.pet], n: 0, at: e.h, pm: '', pms: [] }); x.n++; x.at = Math.min(x.at, e.h); const pm = petMutOf(e); if (pm) { x.pms.push(pm); if (rank.indexOf(pm) > rank.indexOf(x.pm)) x.pm = pm; } }
   for (const [id, n] of Object.entries((f && f.pets) || {})) if (PET_BY_ID[id] && +n > 0) { const x = (m[id] ||= { id, pet: PET_BY_ID[id], n: 0, at: +f.at || 0 }); x.n += Math.round(+n); x.at = Math.min(x.at, +f.at || x.at); }
   for (const x of Object.values(m)) x.level = Math.min(PET_LEVEL_MAX, x.n);
   return Object.values(m).sort((a, b) => a.at - b.at);
@@ -11655,11 +11688,11 @@ function petsOut() {
 /** Combined boosts of the pets out, capped; a pet's level strengthens it (+25% per heart). */
 function petBoost() {
   const b = { water: 0, mut: 0, wilt: 0, bonus: 0, weight: 0 };
-  for (const x of petsOut()) for (const [k, v] of Object.entries(x.pet.boost)) b[k] += v * (1 + .25 * (x.level - 1));
+  for (const x of petsOut()) for (const [k, v] of Object.entries(x.pet.boost)) b[k] += v * (1 + .25 * (x.level - 1)) * (x.pm ? PET_MUT_MULT : 1);   // a mutated copy: ×1.25 (v1.17)
   for (const k in b) b[k] = Math.min(BOOST_CAP[k], Math.round(b[k] * 1000) / 1000);
   return b;
 }
-const petBoostText = (pet, level = 1) => Object.entries(pet.boost).map(([k, v]) => BOOST_TEXT[k](Math.round(v * (1 + .25 * (level - 1)) * 1000) / 1000)).join(' · ');
+const petBoostText = (pet, level = 1, pm = '') => Object.entries(pet.boost).map(([k, v]) => BOOST_TEXT[k](Math.round(v * (1 + .25 * (level - 1)) * (pm ? PET_MUT_MULT : 1) * 1000) / 1000)).join(' · ');
 function petEquip(petId) {
   if (isPreview() || !petsOwned().some(x => x.id === petId)) return false;
   const out = petsOut();
@@ -11694,7 +11727,7 @@ const PET_ART = {
   hummingbird: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="16" cy="13" rx="6" ry="4" fill="#3fb28a"/><circle cx="21" cy="10" r="3" fill="#2f9ad0"/><path d="M24 10l6-1" stroke="#333" stroke-width="1.4" stroke-linecap="round"/><circle cx="22" cy="9.5" r=".8" fill="#222"/><g class="wing wl"><path d="M14 11q-4-9-10-6 2 6 10 6Z" fill="#6ad2a8" opacity=".85"/></g><g class="wing wr"><path d="M16 11q2-9 9-7-1 6-9 7Z" fill="#6ad2a8" opacity=".85"/></g><path d="M10 15l-6 4 7-1Z" fill="#2f9ad0"/></svg>',
   snail: '<svg viewBox="0 0 30 24" aria-hidden="true"><ellipse cx="13" cy="19" rx="11" ry="3.5" fill="#e6c266"/><circle cx="17" cy="12" r="7" fill="#f2c14e"/><path d="M17 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0M17 12m-1.5 0a1.5 1.5 0 1 0 3 0a1.5 1.5 0 1 0-3 0" stroke="#c9981e" stroke-width="1.3" fill="none"/><path d="M4 16q0-4 3-6M6 17q0-4 2-5" stroke="#c9981e" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle cx="7" cy="9.5" r="1.1" fill="#333"/><circle cx="8.5" cy="11.5" r="1.1" fill="#333"/><path d="M2 20q6-2 12 0" stroke="#fff3b0" stroke-width="1.5" opacity=".8" fill="none"/></svg>',
 };
-const petArt = (id, size = 0) => PET_ART[id] ? (size ? PET_ART[id].replace('<svg ', `<svg width="${Math.round(size * 1.25)}" height="${size}" style="vertical-align:-3px" `) : PET_ART[id]) : '';
+const petArt = (id, size = 0, pm = '') => PET_ART[id] ? (size ? PET_ART[id].replace('<svg ', `<svg width="${Math.round(size * 1.25)}" height="${size}" style="vertical-align:-3px" `) : PET_ART[id]).replace('<svg ', `<svg class="pet-svg${pm ? ' pm-' + pm : ''}" `) : '';
 const EGG_COLORS = { common: ['#f6efe0', '#d9c9a8'], rare: ['#d8ecff', '#7fb4e8'], legendary: ['#fff1c2', '#e8b93c'] };
 function eggArt(kind = 'common', pct = 0, size = 0) {
   const [a, b] = EGG_COLORS[kind] || EGG_COLORS.common, crack = pct >= 100 ? '<path d="M15 4l2 5-3 4 3 4-2 4" stroke="#6b5a3a" stroke-width="1.3" fill="none" stroke-linecap="round"/>' : pct >= 60 ? '<path d="M15 4l2 5-3 4" stroke="#6b5a3a" stroke-width="1.2" fill="none" stroke-linecap="round" opacity=".7"/>' : '';
@@ -11706,17 +11739,17 @@ function eggCardHTML(g) {
   const fill = e ? Math.min(eggFill(e), eggNeed(e)) : 0, need = e ? eggNeed(e) : 0, pct = e ? Math.min(100, Math.round(fill / need * 100)) : 0;
   return `<div class="gd-egg card${e ? ' k-' + e.kind : ''}"><button type="button" class="gd-eggbtn" data-pets aria-label="Pets and eggs">${e ? eggArt(e.kind, pct) : out[0] ? petArt(out[0].id) : eggArt('common', 0)}</button>
     <div class="gd-eggtxt"><div class="row between"><b>${e ? `${e.kind === 'common' ? '' : RARITY_LABEL[e.kind] + ' '}Egg` : 'Pets'}</b><span class="lbl">${petSlots()} slot${petSlots() === 1 ? '' : 's'}</span></div>
-      <div class="lbl">${e ? `${fmtNum(fill)} / ${need} min of focus${fill >= need ? ' — hatching' : ''}${waiting > 1 ? ` · ${waiting - 1} more waiting` : ''}` : 'Every finished block fills the egg'}</div>
+      <div class="lbl">${e ? `${fmtNum(fill)} / ${need} min of focus${fill >= need ? ' — hatching' : ''}${waiting > 1 ? ` · ${waiting - 1} more filling too` : ''}` : 'Every finished block fills the egg'}</div>
       <div class="xpbar mini" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Egg"><i data-fill="${pct}" data-fill-key="egg"></i></div>
-      <div class="lbl gd-petsline">${out.length ? out.map(x => `<span>${petArt(x.id, 16)} ${esc(x.pet.name)}</span>`).join(' ') : `<span>${own.length ? 'No pet out — choose one' : 'No pet yet — the first egg hatches after 5 hours of focus'}</span>`} <button class="linkbtn" data-pets>Pets</button></div></div></div>`;
+      <div class="lbl gd-petsline">${out.length ? out.map(x => `<span>${petArt(x.id, 16, x.pm)} ${esc(petMutName(x.pet, x.pm))}</span>`).join(' ') : `<span>${own.length ? 'No pet out — choose one' : 'No pet yet — the first egg hatches after 5 hours of focus'}</span>`} <button class="linkbtn" data-pets>Pets</button></div></div></div>`;
 }
 /* Pets in the scene */
-const petsSceneHTML = () => `<div class="gd-pets">${petsOut().map((x, i) => `<button type="button" class="gd-pet pet-${x.id} n-${i}" data-pet="${x.id}" aria-label="${esc(x.pet.name)} — ${esc(petBoostText(x.pet, x.level))}">${petArt(x.id)}</button>`).join('')}</div>`;
+const petsSceneHTML = () => `<div class="gd-pets">${petsOut().map((x, i) => `<button type="button" class="gd-pet pet-${x.id} n-${i}${x.pm ? ' pm-' + x.pm : ''}" data-pet="${x.id}" aria-label="${esc(petMutName(x.pet, x.pm))} — ${esc(petBoostText(x.pet, x.level, x.pm))}">${petArt(x.id, 0, x.pm)}</button>`).join('')}</div>`;
 /* The Pets dialog: pets out, pets in the bag, the egg queue */
 function openPetsDlg() {
   const own = petsOwned(), out = petsOut(), outIds = new Set(out.map(x => x.id)), n = petSlots(), eggs = eggList().filter(e => !e.h).sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
-  const card = x => `<div class="item gd-item pet-card r-${x.pet.rarity}${outIds.has(x.id) ? ' equipped' : ''}"><div class="pv">${petArt(x.id)}${outIds.has(x.id) ? `<span class="tag">${CHECK_SVG}Out</span>` : ''}</div>
-      <div class="nm">${esc(x.pet.name)} <span class="hearts" aria-label="Level ${x.level}">${petHearts(x.level)}</span></div><div class="ds">${esc(petBoostText(x.pet, x.level))}</div>
+  const card = x => `<div class="item gd-item pet-card r-${x.pet.rarity}${outIds.has(x.id) ? ' equipped' : ''}${x.pm ? ' mutated' : ''}"><div class="pv">${petArt(x.id, 0, x.pm)}${outIds.has(x.id) ? `<span class="tag">${CHECK_SVG}Out</span>` : x.pm ? `<span class="tag pm">${PET_MUTS[x.pm].icon} ${PET_MUTS[x.pm].name}</span>` : ''}</div>
+      <div class="nm">${esc(petMutName(x.pet, x.pm))} <span class="hearts" aria-label="Level ${x.level}">${petHearts(x.level)}</span></div><div class="ds">${esc(petBoostText(x.pet, x.level, x.pm))}</div>
       <div class="bi-src"><span class="rar">${RARITY_LABEL[x.pet.rarity]}</span><span>${x.n > 1 ? `×${x.n}` : ''}</span></div>
       <div class="act">${outIds.has(x.id) ? `<button class="btn" data-petunequip="${x.id}">Bring in</button>` : `<button class="btn primary" data-petequip="${x.id}"${out.length >= n ? ' disabled' : ''}>Let out</button>`}</div></div>`;
   const b = petBoost(), active = Object.entries(b).filter(([, v]) => v > 0);
@@ -11739,10 +11772,11 @@ function showHatch(e) {
   dlg.className = 'egg-dlg k-' + e.kind + ' r-' + pet.rarity;
   dlg.dataset.pet = e.pet;
   $('#egEgg').innerHTML = eggArt(e.kind, 100);
-  $('#egPet').innerHTML = petArt(e.pet);
+  const pm = petMutOf(e);
+  $('#egPet').innerHTML = petArt(e.pet, 0, pm);
   $('#egKicker').textContent = `${RARITY_LABEL[e.kind]} egg · ${eggNeed(e)} minutes of focus`;
-  $('#egTitle').textContent = dup ? `${pet.name} again — level ${lv}` : `A ${pet.name} hatched!`;
-  $('#egLine').innerHTML = `<span class="rar r-${pet.rarity}">${RARITY_LABEL[pet.rarity]}</span> · ${esc(petBoostText(pet, lv))}<br><span class="lbl">It ${esc(pet.line)}.</span>`;
+  $('#egTitle').textContent = pm ? `${PET_MUTS[pm].icon} A ${petMutName(pet, pm)}!` : dup ? `${pet.name} again — level ${lv}` : `A ${pet.name} hatched!`;
+  $('#egLine').innerHTML = `<span class="rar r-${pet.rarity}">${RARITY_LABEL[pet.rarity]}</span>${pm ? ` · <b>${PET_MUTS[pm].name} mutation</b> (×${PET_MUT_MULT} boosts)` : ''} · ${esc(petBoostText(pet, lv, pm))}<br><span class="lbl">It ${esc(pet.line)}.</span>`;
   const canOut = !petsOut().some(x => x.id === e.pet) && petsOut().length < petSlots();
   $('#egOut').classList.toggle('hidden', !canOut);
   dlg.classList.toggle('still', motion() === 'off');
@@ -11769,8 +11803,8 @@ function petBagCards(q = '') {
   const out = petsOut(), outIds = new Set(out.map(x => x.id)), n = petSlots(), list = [];
   for (const x of petsOwned()) {
     if (q && !`${x.pet.name} pet garden`.toLowerCase().includes(q)) continue;
-    list.push(`<div class="item bag-item gd-item pet-card r-${x.pet.rarity}${outIds.has(x.id) ? ' equipped' : ''}" tabindex="0" aria-label="${esc(x.pet.name)} · Garden pet"><div class="pv">${petArt(x.id)}${outIds.has(x.id) ? `<span class="tag">${CHECK_SVG}Out</span>` : ''}</div>
-      <div class="nm">${esc(x.pet.name)} <span class="hearts">${petHearts(x.level)}</span></div><div class="ds">${esc(petBoostText(x.pet, x.level))}</div><div class="bi-src"><span class="rar">${RARITY_LABEL[x.pet.rarity]}</span><span>Hatched</span></div>
+    list.push(`<div class="item bag-item gd-item pet-card r-${x.pet.rarity}${outIds.has(x.id) ? ' equipped' : ''}${x.pm ? ' mutated' : ''}" tabindex="0" aria-label="${esc(petMutName(x.pet, x.pm))} · Garden pet"><div class="pv">${petArt(x.id, 0, x.pm)}${outIds.has(x.id) ? `<span class="tag">${CHECK_SVG}Out</span>` : ''}</div>
+      <div class="nm">${esc(petMutName(x.pet, x.pm))} <span class="hearts">${petHearts(x.level)}</span></div><div class="ds">${esc(petBoostText(x.pet, x.level, x.pm))}</div><div class="bi-src"><span class="rar">${RARITY_LABEL[x.pet.rarity]}</span><span>${x.pm ? PET_MUTS[x.pm].icon + ' ' + PET_MUTS[x.pm].name : 'Hatched'}</span></div>
       <div class="act">${outIds.has(x.id) ? `<button class="btn" data-petunequip="${x.id}">Bring in</button>` : `<button class="btn primary" data-petequip="${x.id}"${out.length >= n ? ' disabled' : ''}>Let out</button>`}</div></div>`);
   }
   const e = eggActive();
@@ -11782,8 +11816,9 @@ function petBagCards(q = '') {
 /* Pets in the almanac */
 function petsAlmanacHTML() {
   const own = Object.fromEntries(petsOwned().map(x => [x.id, x]));
-  return `<h2 style="margin:18px 0 8px">Pets <span class="lbl">${Object.keys(own).length} of ${PETS.length}</span></h2><div class="shopgrid gd-grid gd-petgrid">${PETS.map(pet => { const x = own[pet.id]; return `<div class="item gd-item pet-card r-${pet.rarity}${x ? '' : ' silhouette'}"><div class="pv">${petArt(pet.id)}</div>
-      <div class="nm">${x ? esc(pet.name) + ` <span class="hearts">${petHearts(x.level)}</span>` : '???'}</div><div class="ds">${x ? esc(petBoostText(pet, x.level)) : esc(BOOST_TEXT[Object.keys(pet.boost)[0]](Object.values(pet.boost)[0])) + ' · hatch it from an egg'}</div>
+  const seenMuts = [...new Set(Object.values(own).flatMap(x => x.pms || []))];
+  return `<h2 style="margin:18px 0 8px">Pets <span class="lbl">${Object.keys(own).length} of ${PETS.length}${seenMuts.length ? ` · mutations: ${seenMuts.map(k => PET_MUTS[k].icon + ' ' + PET_MUTS[k].name).join(', ')}` : ''}</span></h2><div class="shopgrid gd-grid gd-petgrid">${PETS.map(pet => { const x = own[pet.id]; return `<div class="item gd-item pet-card r-${pet.rarity}${x ? '' : ' silhouette'}"><div class="pv">${petArt(pet.id)}</div>
+      <div class="nm">${x ? esc(petMutName(pet, x.pm)) + ` <span class="hearts">${petHearts(x.level)}</span>` : '???'}</div><div class="ds">${x ? esc(petBoostText(pet, x.level, x.pm)) : esc(BOOST_TEXT[Object.keys(pet.boost)[0]](Object.values(pet.boost)[0])) + ' · hatch it from an egg'}</div>
       <div class="bi-src"><span class="rar">${RARITY_LABEL[pet.rarity]}</span><span>${x ? `hatched ×${x.n}` : ''}</span></div></div>`; }).join('')}</div>`;
 }
 
@@ -15360,7 +15395,7 @@ function demoGarden(sessions) {
   const plants = [
     { id: 'mig1', v: 1, sum: 1, at: d(20), grown: 96, golden: 7, ripe: 40, wilted: 3, y: 420, xp: 40, hv: d(9) },   // y covers the garden look bought below (v1.16) and today's rare seed whatever it costs (v1.17)
     { id: 'demo_pl1', v: 1, sp: 'tomato', plot: 0, seed: 'st1', at: d(6), sk: 20, w: water([25, 20], 0), u: d(1) },         // leafy
-    { id: 'demo_pl2', v: 1, sp: 'sunflower', plot: 1, seed: 'st3', at: d(5), sk: 21, w: water([25, 35], 3), u: d(1) },      // flowering
+    { id: 'demo_pl2', v: 1, sp: 'sunflower', plot: 1, seed: 'st3', at: d(5), sk: 21, w: water([25, 20], 3), u: d(1) },      // flowering (45 of 60 XP; v1.17 needs are lower)
     { id: 'demo_pl3', v: 1, sp: 'strawberry', plot: 2, seed: 'demo_gb1', at: d(4), sk: 22, w: water([12], 5), u: d(1) },     // sprout
     { id: 'demo_pl4', v: 1, sp: 'lavender', plot: 3, seed: 'demo_gb2', at: d(9), sk: 17, w: water([25, 35, 25, 35], 6), u: d(1) },   // leafy
     { id: 'demo_pl5', v: 1, sp: 'basil', plot: 4, seed: 'demo_gb3', at: d(3), sk: 23, w: water([30, 30], 14), fin: ids[15], fd: 30, m: '', wm: ['moonlit'], u: d(0) },   // ready, Moonlit
