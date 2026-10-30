@@ -5094,6 +5094,7 @@ function defaultState() {
     abandoned: [],  // focus blocks stopped before 80% (wilted plants), last 300
     squad: [],      // boss squad: [{ uid, name }], up to 5 friends
     todos: [],      // to-do list (see TO-DO LIST)
+    goalLog: [],    // daily-goal changes: { id: 'g' + day, d: day, g: new goal, p: the goal before } — a past day is judged by the goal of its day (v1.17)
     plants: [],     // garden plants + the migration summary (see GARDEN)
     gbuys: [],      // garden seed and decor purchases (produce, not coins)
     clanRem: {},    // clan session reminders you switched on: { sessionId: { on, before, done, snooze, u } }
@@ -5129,7 +5130,7 @@ function hydrate(obj) {
   const out = { ...def, ...obj };
   for (const k of ['settings', 'timer', 'ui']) out[k] = { ...def[k], ...(obj[k] || {}) };
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
-  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs']) if (!Array.isArray(out[k])) out[k] = [];
+  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'goalLog', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
@@ -5253,6 +5254,7 @@ function profileFromState() {
     subTemplates: S.subTemplates.slice(0, 20),
     loadouts: S.loadouts.slice(0, 8),
     todos: S.todos.slice(0, TODO_MAX),
+    goalLog: S.goalLog.slice(-120),
     plants: gardenPlantsForProfile(),
     gbuys: S.gbuys.slice(-1500),
     cardPrefs: S.cardPrefs,
@@ -5403,6 +5405,7 @@ function applyProfile(d) {
   S.timer.round = Math.min(S.timer.round, activePreset().rounds);
   lastProfileJSON = JSON.stringify(profileFromState());
   if (ahead || mg.ahead) { lastProfileJSON = ''; scheduleProfilePush(); }   // the cloud is missing some of ours: upload the merged copy
+  if (firstLoadDone && gardenReplay()) lastProfileJSON = '';   // a plant from another device drinks the blocks it missed here (v1.17)
   saveLocal();
   applyCosmetics();
   syncNameInputs();
@@ -5420,7 +5423,7 @@ function attachListeners() {
     }
     if (profileLoaded && (snap.metadata.hasPendingWrites || localEditPending)) {
       // our own edit is on its way (it wins for settings), but another device's list changes are merged now, not lost
-      if (!snap.metadata.hasPendingWrites) { mergeSyncFrom(snap.data()); if (SYNC.changed) { saveLocal(); renderAll(); } }
+      if (!snap.metadata.hasPendingWrites) { mergeSyncFrom(snap.data()); if (SYNC.changed) { gardenReplay(); saveLocal(); renderAll(); } }
       renderSync();
       return;
     }
@@ -6090,14 +6093,32 @@ function buildIndex() {
   }
   return idx;
 }
+/** The daily goal in effect on a day: the latest change on or before it; before the first recorded change, the goal
+ *  that change replaced; with no history, today's goal (v1.17 — changing the goal never re-judges past days). */
+function goalFor(k) {
+  const log = (S.goalLog || []).filter(x => x && x.d && +x.g > 0).sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+  if (!log.length) return S.settings.goalMin;
+  let g = +log[0].p > 0 ? +log[0].p : +log[0].g;
+  for (const x of log) if (x.d <= k) g = +x.g;
+  return g;
+}
+/** Did a day reach its goal? Its own goal (or `floor`, if higher), or the goal bonus was already claimed for it. */
+const goalMetDay = (idx, k, floor = 0) => ((idx[k] || {}).total || 0) >= Math.max(goalFor(k), floor) || !!(S.game && S.game.claims && S.game.claims.goalDays && S.game.claims.goalDays[k]);
+/** Record a goal change so the days before keep being judged by the old goal. */
+function setDailyGoal(v) {
+  const g = clamp(Math.round(+v) || 60, 5, 1440), old = S.settings.goalMin;
+  if (g === old) return;
+  const k = dayKey(new Date()), cur = S.goalLog.find(x => x && x.d === k);
+  if (cur) cur.g = g; else S.goalLog.push({ id: 'g' + k, d: k, g, p: old });
+  S.settings.goalMin = g;
+}
 /**
  * Current streak: consecutive goal-met days ending today — or ending yesterday
  * if today's goal isn't met yet (today is still in progress). Frozen days bridge gaps.
  */
 function computeStreaks(idx) {
-  const goal = S.settings.goalMin;
   const frozen = (S.game && S.game.freezesUsed) || {};
-  const met = d => ((idx[dayKey(d)] || {}).total || 0) >= goal;
+  const met = d => goalMetDay(idx, dayKey(d));
   // A day protected by a Streak Freeze keeps the streak alive but doesn't add to it.
   const kept = d => met(d) || !!frozen[dayKey(d)];
   const today = startOfDay(new Date());
@@ -7329,7 +7350,7 @@ function earnedAt(t) {
     perWeek[wk] = (perWeek[wk] || 0) + 1;
     if (perWeek[wk] <= SOCIAL_COIN_WEEKLY_MAX) c += SOCIAL_COIN;
   }
-  for (const [cid, ts] of Object.entries(cl.challenges)) if (ts <= t) c += (CHALLENGES[cid.split('_')[1]] || {}).coins || 0;
+  for (const [key, ts] of Object.entries(challengeRewards(cl))) if (ts <= t) c += (CHALLENGES[key.split('_')[1]] || {}).coins || 0;
   for (const v of Object.values(subtaskCoinsByDay(t))) c += Math.min(SUB_COIN_DAY, v);   // +1 per finished subtask, max 10 a day
   const lc = loginCycle();
   for (const [k, ts] of Object.entries(cl.login)) if (ts <= t) c += LOGIN_COINS[(lc[k] || 1) - 1];
@@ -7427,6 +7448,7 @@ function reconcileRewards(mode = 'quiet') {
   if (!rewardsReady()) return [];
   gardenMigrate();   // once per account: the old session-derived garden becomes history + starting produce (see GARDEN)
   gardenGifts();   // after the migration: exclusive seeds at garden levels 6, 8 and 9, the first egg, milestone eggs (v1.16)
+  gardenReplay();   // blocks of the last week that a plant or an egg has not had yet (v1.17)
   const now = Date.now(), cl = S.game.claims, news = [];
   if (!S.game.tierFrom) { S.game.tierFrom = dayKey(addDays(weekMonday(), 7)); save(); }   // fixed boss HP from next Monday
   G = null;
@@ -7435,7 +7457,7 @@ function reconcileRewards(mode = 'quiet') {
   if (froze) news.push({ type: 'freeze', n: froze });
   const goalMin = Math.max(S.settings.goalMin, GOAL_BONUS_MIN);
   for (const [k, d] of Object.entries(g0.idx)) {
-    if (d.total >= goalMin && !cl.goalDays[k]) { cl.goalDays[k] = now; news.push({ type: 'goal', key: k }); }
+    if (d.total >= Math.max(goalFor(k), GOAL_BONUS_MIN) && !cl.goalDays[k]) { cl.goalDays[k] = now; news.push({ type: 'goal', key: k }); }
   }
   const streak = computeStreaks(g0.idx);
   for (const m of Object.keys(STREAK_BONUS)) {
@@ -7487,7 +7509,7 @@ function useStreakFreezes(g, now) {
   const idx = g.idx, used = S.game.freezesUsed, goal = S.settings.goalMin;
   const first = Object.keys(idx).sort()[0];
   if (!first) return 0;
-  const kept = d => ((idx[dayKey(d)] || {}).total || 0) >= goal || !!used[dayKey(d)];
+  const kept = d => goalMetDay(idx, dayKey(d)) || !!used[dayKey(d)];
   const today = startOfDay(new Date());
   const gap = [];
   let d = addDays(today, -1);
@@ -8305,6 +8327,19 @@ const REACTIONS = ['🔥', '👏', '💪', '⭐'];
 const MAX_FRIENDS = 100;
 const CACHE_MS = 3 * 60 * 1000;
 const SOCIAL_COIN = 10, SOCIAL_COIN_WEEKLY_MAX = 5;   // +10 per new friend, at most 5 per week
+/** The challenge completions that pay coins: one per challenge type per week — joining the same challenge through several
+ *  friends pays once (v1.17). Weeks before the 1.17 release keep every claim, so nothing bought with them is invalidated.
+ *  Returns { '<week>_<preset>': earliest claim time }. */
+const CH_ONE_PER_WEEK_FROM = '2026-11-02';
+function challengeRewards(cl) {
+  const out = {};
+  for (const [cid, ts] of Object.entries(cl.challenges || {})) {
+    const [wk, preset] = cid.split('_');
+    const key = wk >= CH_ONE_PER_WEEK_FROM ? wk + '_' + preset : cid;
+    if (!(key in out) || ts < out[key]) out[key] = ts;
+  }
+  return out;
+}
 const CHALLENGES = {
   h5:  { name: 'Focus 5 hours this week',         goal: 300, unit: 'min',      coins: 30 },
   h10: { name: 'Focus 10 hours this week',        goal: 600, unit: 'min',      coins: 60 },
@@ -8520,7 +8555,7 @@ function activityDoc() {
   for (let i = 0; i < 84; i++) {
     const k = dayKey(addDays(today, -i)), m = Math.round((idx[k] || {}).total || 0);
     if (m) days[k] = m;
-    if (m && m >= s.goalMin) goalDays.push(k);
+    if (m && m >= goalFor(k)) goalDays.push(k);
   }
   const recent = S.sessions.slice(-20).reverse().map(x => ({
     id: x.id, t: Math.min(x.start, Date.now()), min: Math.min(240, Math.round(x.duration / 60000)),
@@ -8779,7 +8814,7 @@ function challengeProgress(preset, weekKey) {
   if (CHALLENGES[preset].unit === 'min') return Math.min(10080, Math.round(list.reduce((a, s) => a + s.duration, 0) / 60000));
   const idx = buildIndex(), goal = Math.max(S.settings.goalMin, GOAL_BONUS_MIN);
   let n = 0;
-  for (let i = 0; i < 7; i++) if (((idx[dayKey(addDays(new Date(from), i))] || {}).total || 0) >= goal) n++;
+  for (let i = 0; i < 7; i++) if (goalMetDay(idx, dayKey(addDays(new Date(from), i)), GOAL_BONUS_MIN)) n++;
   return n;
 }
 async function loadChallenges(force) {
@@ -8801,7 +8836,7 @@ async function loadChallenges(force) {
 /** Push my progress to challenges I've joined, and claim the bonus when I complete one. */
 async function syncChallengeProgress() {
   if (!SOC.challenges) return;
-  let claimed = 0;
+  let claimed = 0, done = 0;
   for (const c of SOC.challenges) {
     if (!c.members.includes(USER.uid) || c.weekKey !== monWeekKey()) continue;
     const v = challengeProgress(c.preset, c.weekKey);
@@ -8810,12 +8845,15 @@ async function syncChallengeProgress() {
       trackWrite(FB.updateDoc(FB.doc(FB.db, 'challenges', c.id), { ['progress.' + USER.uid]: v }));
     }
     if (v >= CHALLENGES[c.preset].goal && !S.game.claims.challenges[c.id]) {
+      const paid = challengePaid(c.weekKey, c.preset);   // the same challenge type already paid this week (another friend's copy): done, no second reward (v1.17)
       S.game.claims.challenges[c.id] = Date.now();
-      claimed += CHALLENGES[c.preset].coins;
+      if (!paid) claimed += CHALLENGES[c.preset].coins; else done++;
     }
   }
-  if (claimed) { save(); if (S.settings.gamification) toast(`Challenge complete · +${claimed} coins`, 3500, false, { type: 'challenge', go: { tab: 'friends', view: 'challenges' } }); }
+  if (claimed || done) { save(); if (S.settings.gamification) toast(claimed ? `Challenge complete · +${claimed} coins` : 'Challenge complete — the same challenge type already paid this week', 3500, false, { type: 'challenge', go: { tab: 'friends', view: 'challenges' } }); }
 }
+/** Has a challenge of this type already paid coins this week (from the 1.17 release week on)? */
+const challengePaid = (wk, preset) => wk >= CH_ONE_PER_WEEK_FROM && Object.keys(S.game.claims.challenges).some(id => id.startsWith(wk + '_' + preset + '_'));
 async function startChallenge(preset) {
   const wk = monWeekKey(), id = `${wk}_${preset}_${USER.uid}`;
   try {
@@ -9128,7 +9166,7 @@ async function openFriend(uid) {
 function friendStreak(act) {
   if (!act || act.denied || !act.goalDays) return 0;
   const theirs = new Set(act.goalDays), idx = game().idx, goal = S.settings.goalMin;
-  const both = d => ((idx[dayKey(d)] || {}).total || 0) >= goal && theirs.has(dayKey(d));
+  const both = d => goalMetDay(idx, dayKey(d)) && theirs.has(dayKey(d));
   let d = startOfDay(new Date()), n = 0;
   if (!both(d)) d = addDays(d, -1);
   while (n < 84 && both(d)) { n++; d = addDays(d, -1); }
@@ -11246,7 +11284,11 @@ function gardenPlantsForProfile() {
 /** Two copies of the same plant (one per device): the newer wins, water maps are joined, a harvest is final. */
 function mergePlant(win, lose) {
   if (!lose || lose === win) return win;
-  if (lose.sum || win.sum) return lose.sum && win.sum && (+lose.grown || 0) + (+lose.xp || 0) > (+win.grown || 0) + (+win.xp || 0) ? lose : win;
+  if (lose.sum || win.sum) {   // summaries: the richer record wins; on a tie the older one (a device that migrated again keeps the original, v1.17)
+    if (!(lose.sum && win.sum)) return win;
+    const a = (+lose.grown || 0) + (+lose.xp || 0), b = (+win.grown || 0) + (+win.xp || 0);
+    return a > b || (a === b && (+lose.at || 0) < (+win.at || 0)) ? lose : win;
+  }
   if (!win.h && lose.h) return lose;
   if (win.h) return win;
   if (!win.fin && lose.fin) [win, lose] = [lose, win];   // the copy that ripened keeps fin / fd / m / wm (v1.16)
@@ -11263,24 +11305,12 @@ function gardenAfterSession(s) {
   const mins = Math.floor(raw * (1 + petBoost().water));   // pets out add a little water (capped at +25%)
   const g = garden(), alive = g.growing.filter(p => !plantReady(p) && !(p.w && p.w[s.id] !== undefined));   // a block waters each plant once, whatever device replays it
   if (!alive.length) { GD = null; save(); return { watered: 0, mins: 0, stagesUp: [], ripe: [], hatched, egg: raw }; }
-  const give = {}, room = p => needOf(p) - waterOf(p) - (give[p.id] || 0);
-  let left = mins;
-  const pour = targets => {
-    let ts = targets.filter(p => room(p) > 0);
-    while (left > 0 && ts.length) {
-      const share = Math.max(1, Math.floor(left / ts.length));
-      for (const p of ts) { if (left <= 0) break; const amt = Math.min(share, room(p), left); if (amt > 0) { give[p.id] = (give[p.id] || 0) + amt; left -= amt; } }
-      ts = ts.filter(p => room(p) > 0);
-    }
-  };
-  const focused = alive.find(p => p.fc);
-  if (focused) pour([focused]);   // one plant first, the rest shares what is left
-  pour(alive);
+  const give = pourWater(alive, mins);
   const stagesUp = [], ripe = [], before = Object.fromEntries(alive.map(p => [p.id, plantStage(p)]));
   for (const p of alive) {
-    const amt = give[p.id];
+    const amt = give[p.id] || 0;
+    (p.w ||= {})[s.id] = amt;   // 0 too: this block has been to this plant (so a replay never waters it twice)
     if (!amt) continue;
-    (p.w ||= {})[s.id] = amt;
     (p.b ||= {})[s.id] = raw;   // the block's own length, unboosted and unsplit: crop size and Giants read this (v1.16)
     if (plantReady(p) && !p.fin) { p.fin = s.id; p.fd = raw; p.m = mutationOf(p); const wm = weatherMutations(p, s, computeStreaks(buildIndex()).cur); if (wm.length) p.wm = wm; p.fc = 0; ripe.push(p); }
     if (plantStage(p) > before[p.id]) stagesUp.push(p);
@@ -11288,7 +11318,45 @@ function gardenAfterSession(s) {
   GD = null;
   save();
   updateGardenDot();
-  return { watered: Object.keys(give).length, mins: mins - left, stagesUp, ripe, hatched, egg: raw };
+  return { watered: Object.values(give).filter(Boolean).length, mins: Object.values(give).reduce((a, v) => a + v, 0), stagesUp, ripe, hatched, egg: raw };
+}
+/** Share a block's minutes between plants: the "water first" plant counts double, nobody is starved (v1.17 — it used to
+ *  take the whole block first, so the others got nothing until it was full). Minutes a plant cannot hold flow on. */
+function pourWater(plants, mins) {
+  const give = {}, room = p => needOf(p) - waterOf(p) - (give[p.id] || 0);
+  let left = mins, ts = plants.filter(p => room(p) > 0);
+  while (left > 0 && ts.length) {
+    const weight = ts.reduce((a, p) => a + (p.fc ? 2 : 1), 0), pool = left;
+    for (const p of ts) { if (left <= 0) break; const amt = Math.min(Math.max(1, Math.floor(pool * (p.fc ? 2 : 1) / weight)), room(p), left); if (amt > 0) { give[p.id] = (give[p.id] || 0) + amt; left -= amt; } }
+    ts = ts.filter(p => room(p) > 0);
+  }
+  return give;
+}
+/** Every block of the last 7 days reaches every plant and egg it should have: a block logged before the garden was
+ *  ready on this device, or before a plant planted elsewhere had synced here, is given now (v1.17). A plant remembers
+ *  each block that has been to it (its water map, 0 included) and an egg too, so this never waters twice; a plant only
+ *  drinks blocks that ended after it was planted, an egg only blocks after it was laid. Returns true when something changed. */
+function gardenReplay() {
+  if (!USER || isPreview() || !gardenMig()) return false;
+  const now = Date.now(), since = now - 7 * DAY_MS;   // a plant only drinks blocks after it was planted, an egg after it was laid: nothing older than the garden counts
+  const recent = (S.sessions || []).filter(x => x && x.id && +x.end > since && +x.end <= now + 5 * 60000);
+  if (!recent.length) return false;
+  let changed = false;
+  for (const x of recent) {
+    const raw = Math.floor((+x.duration || 0) / 60000);
+    if (raw < 1) continue;
+    const late = garden().growing.filter(p => !plantReady(p) && +p.at <= +x.end && !(p.w && p.w[x.id] !== undefined));
+    if (late.length) {
+      const served = garden().growing.filter(p => p.w && p.w[x.id] !== undefined).length;   // the plants this block already went to: a late plant gets the share it would have had
+      const give = pourWater(late, Math.max(late.length, Math.floor(raw * late.length / (served + late.length))));
+      for (const p of late) { (p.w ||= {})[x.id] = give[p.id] || 0; if (give[p.id] && plantReady(p) && !p.fin) { p.fin = x.id; p.fd = raw; p.m = mutationOf(p); const wm = weatherMutations(p, x, computeStreaks(buildIndex()).cur); if (wm.length) p.wm = wm; p.fc = 0; } }
+      changed = true;
+    }
+    const egg = eggActive();
+    if (egg && +x.end > +egg.at && !eggList().some(e => e.w && e.w[x.id] !== undefined)) { const h = eggAfterSession(x, raw); if (h.length) announceHatched(h); changed = true; }
+  }
+  if (changed) { GD = null; save(); updateGardenDot(); }
+  return changed;
 }
 
 /* ---------- GARDEN PETS (v1.16) ----------
@@ -14492,7 +14560,7 @@ function applyTutStep() {
   }
   if (TUT.i === 2) {
     const custom = +(($('#tutGoal') || {}).value || 0);
-    S.settings.goalMin = clamp(Math.round(custom || TUT.goal || 60), 5, 1440);
+    setDailyGoal(custom || TUT.goal || 60);
     save(); renderAll();
   }
 }
@@ -14910,7 +14978,7 @@ function demoGarden(sessions) {
   const now = Date.now(), d = n => now - n * 864e5, ids = sessions.slice(-40).map(s => s.id);
   const water = (mins, from) => Object.fromEntries(mins.map((m, i) => [ids[from + i] || 'demo_w' + (from + i), m]));
   const plants = [
-    { id: 'mig1', v: 1, sum: 1, at: d(20), grown: 96, golden: 7, ripe: 40, wilted: 3, y: 255, xp: 40 },   // y covers the garden look bought below (v1.16)
+    { id: 'mig1', v: 1, sum: 1, at: d(20), grown: 96, golden: 7, ripe: 40, wilted: 3, y: 420, xp: 40 },   // y covers the garden look bought below (v1.16) and today's rare seed whatever it costs (v1.17)
     { id: 'demo_pl1', v: 1, sp: 'tomato', plot: 0, seed: 'st1', at: d(6), sk: 20, w: water([25, 20], 0), u: d(1) },         // leafy
     { id: 'demo_pl2', v: 1, sp: 'sunflower', plot: 1, seed: 'st3', at: d(5), sk: 21, w: water([25, 35], 3), u: d(1) },      // flowering
     { id: 'demo_pl3', v: 1, sp: 'strawberry', plot: 2, seed: 'demo_gb1', at: d(4), sk: 22, w: water([12], 5), u: d(1) },     // sprout
@@ -15247,7 +15315,7 @@ function eventMetrics(ev) {
   }
   let streak = 0, run = 0, goalDays = 0;
   for (let d = new Date(from); d.getTime() < to && d <= new Date(); d = addDays(d, 1)) {
-    const k = dayKey(d), ok = ((idx[k] || {}).total || 0) >= goal;
+    const k = dayKey(d), ok = goalMetDay(idx, k);
     if (ok) goalDays++;
     run = ok || S.game.freezesUsed[k] ? run + 1 : 0;
     streak = Math.max(streak, run);
@@ -15810,7 +15878,7 @@ function paintRipe(p) {
    which Firestore merges key by key on write — two devices never overwrite each other.
    Nothing here needs new security rules: it all lives in users/{uid}.
    ========================================================================== */
-const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs'];
+const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'goalLog', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs'];
 /** Lists whose two copies of one item are combined rather than the newer one simply winning. */
 const LIST_MERGE = { plants: (win, lose) => mergePlant(win, lose), eggs: (win, lose) => mergeEgg(win, lose) };
 const syncSnap = {};   // field -> Map(id -> the item as last saved or merged)
@@ -16191,7 +16259,7 @@ $('#statsBody').addEventListener('click', e => {
 
 // Settings
 $('#setGoal').addEventListener('change', e => {
-  S.settings.goalMin = clamp(Math.round(+e.target.value) || 60, 5, 1440);
+  setDailyGoal(+e.target.value);
   e.target.value = S.settings.goalMin;
   save(); renderToday();
   reconcileRewards('quiet');
@@ -16704,14 +16772,32 @@ const FREE_BANNERS = {
   bn_dawn: { name: 'Dawn', l: ['#ffe2bf', '#f4978e'], d: ['#4a2a2a', '#b5594f'] },
   bn_dusk: { name: 'Dusk', l: ['#c7c9f5', '#c98bb4'], d: ['#26284f', '#6b4a7c'] },
   bn_ink:  { name: 'Ink',  l: ['#dfe4ea', '#8796a8'], d: ['#151a22', '#3a4656'] },
+  bn_parchment: { name: 'Parchment', l: ['#f3e8d2', '#c7a76a'], d: ['#3b3022', '#8c6c3c'] },   // v1.17: starting banners that sit with the Scholar, Champion and Frost styles
+  bn_slate: { name: 'Slate', l: ['#dde3ea', '#6f8196'], d: ['#1b2330', '#4a5d74'] },
+  bn_moss:  { name: 'Moss',  l: ['#dcebcc', '#6f9c52'], d: ['#1f2d1a', '#4f7c3b'] },
 };
+/** Mix two hex colours (t = how far from a toward b). */
+function mixHex(a, b, t) {
+  const pa = /^#?([0-9a-f]{6})$/i.exec(a || ''), pb = /^#?([0-9a-f]{6})$/i.exec(b || '');
+  if (!pa || !pb) return a;
+  const x = parseInt(pa[1], 16), y = parseInt(pb[1], 16), ch = sh => Math.round(((x >> sh) & 255) + (((y >> sh) & 255) - ((x >> sh) & 255)) * t);
+  return '#' + [16, 8, 0].map(sh => ch(sh).toString(16).padStart(2, '0')).join('');
+}
+/** A free banner's two colours, pulled part-way toward the card style's palette so every starting banner sits with every
+ *  style (the Scholar's parchment and gold, the Gamer's neon, the Frost's blues…); Minimal keeps the banner as it is (v1.17). */
+function bannerTint([a, b], style, dark) {
+  const st = CARD_STYLES[style];
+  if (!st) return [a, b];
+  const pal = (dark && st.d) || st.l;
+  return [mixHex(a, pal.tile || pal.bg, .5), mixHex(b, pal.acc2 || pal.acc, .55)];
+}
 const WAVES = '<path d="M0 92q50-22 100 0t100 0 100 0 100 0V120H0Z" fill="#fff" opacity=".18"/><path d="M0 104q50-16 100 0t100 0 100 0 100 0V120H0Z" fill="#fff" opacity=".14"/>';
 /** A banner's two layers: bg stretches across the whole banner, art sits on the right at its own shape. */
 const bannerLayers = bn => `<svg class="pc-bbg" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">${bn.bg || ''}</svg><svg class="pc-bart" viewBox="0 0 400 120" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">${bn.art}</svg>`;
 /** { a, b, art, name } for a banner id; null if the id isn't a banner. Art is drawn in a 400×120 box anchored right. */
-function bannerLook(id, dark = pageDark()) {
+function bannerLook(id, dark = pageDark(), style = '') {
   const [k, x] = String(id || '').split(':');
-  if (FREE_BANNERS[k] && !x) { const f = FREE_BANNERS[k]; const [a, b] = dark ? f.d : f.l; return { a, b, bg: WAVES, art: '<circle cx="330" cy="40" r="22" fill="#fff" opacity=".3"/><circle cx="372" cy="88" r="10" fill="#fff" opacity=".2"/>', name: f.name }; }
+  if (FREE_BANNERS[k] && !x) { const f = FREE_BANNERS[k]; const [a, b] = bannerTint(dark ? f.d : f.l, style, dark); return { a, b, bg: WAVES, art: '<circle cx="330" cy="40" r="22" fill="#fff" opacity=".3"/><circle cx="372" cy="88" r="10" fill="#fff" opacity=".2"/>', name: f.name }; }
   if (k === 'th' && ITEM_BY_ID[x] && ITEM_BY_ID[x].cat === 'theme') {
     const sk = SKINS[x] || DEFAULT_SKIN, v = (sk.force || dark ? sk.dark || sk.light : sk.light) || DEFAULT_SKIN.light;
     const stars = x === 'th_starfield' ? Array.from({ length: 18 }, (_, i) => `<circle cx="${(i * 97) % 400}" cy="${(i * 53) % 110 + 5}" r="${i % 3 ? 1.2 : 2}" fill="#fff" opacity="${i % 2 ? .5 : .85}"/>`).join('') : '';
@@ -16886,7 +16972,7 @@ function cardHTML(d, ctx = 'own') {
   const mini = !!d.m, style = mini ? 'card_minimal' : d.st || 'card_minimal', pal = cardPal(style), tier = mini ? null : tierById(d.tr);
   const vars = `--pc-bg:${pal.bg};--pc-fg:${pal.fg};--pc-mut:${pal.mut};--pc-acc:${pal.acc};--pc-acc2:${pal.acc2};--pc-tile:${pal.tile};--pc-line:${pal.line};--pc-font:${pal.font.replace(/"/g, "'")}`;
   const name = d.n ? '@' + esc(d.n) : ctx === 'own' && USER && USER.guest ? 'You' : 'Pomodorolist user';
-  const bn = !mini && bannerLook(d.bn);
+  const bn = !mini && bannerLook(d.bn, pageDark(), d.st);
   const banner = mini ? '<div class="pc-banner pc-plain"></div>'
     : `<div class="pc-banner" style="background:linear-gradient(120deg,${bn.a},${bn.b})">${bannerLayers(bn)}${CARD_DECO[style] ? `<svg class="pc-deco" viewBox="0 0 64 64" aria-hidden="true">${CARD_DECO[style]}</svg>` : ''}</div>`;
   const pic = mini ? (d.av && hasAvatar(d.av) ? avatarSVG(d.av, 72) : `<span class="avatar big pc-init">${esc((d.n || '?')[0]).toUpperCase()}</span>`)
@@ -16948,7 +17034,7 @@ const AURA_GLOW = { soft: ['#ffffff', '#d0d0d0'], green: ['#4cbe6e', '#9be3b0'],
 /** SVG of the whole image. size: 'square' (1080×1080) or 'story' (1080×1920). */
 function cardImageSVG(d, size = 'square') {
   const story = size === 'story', W = 1080, H = story ? 1920 : 1080, mini = !!d.m, style = mini ? 'card_minimal' : d.st || 'card_minimal';
-  const p = cardPal(style, true), dark = pageDark(), bn = !mini && bannerLook(d.bn, dark), tier = mini ? null : tierById(d.tr);
+  const p = cardPal(style, true), dark = pageDark(), bn = !mini && bannerLook(d.bn, dark, style), tier = mini ? null : tierById(d.tr);
   const F = p.font.replace(/"/g, "'"), X = 54, CW = W - 2 * X, IN = 42, x0 = X + IN, iw = CW - 2 * IN;
   const T = (x, y, s, txt, o = '') => `<text x="${x}" y="${y}" font-size="${s}" font-family="${F}" ${o}>${txt}</text>`;
   let o = '', y;
@@ -17104,7 +17190,7 @@ function renderCardDlg() {
       <span class="cd-sw" style="background:${p ? p.bg : 'var(--surface)'};color:${p ? p.acc : 'var(--accent)'};border-color:${p ? p.line : 'var(--line)'}">${CARD_DECO[it.id] ? `<svg viewBox="0 0 64 64">${CARD_DECO[it.id]}</svg>` : 'Aa'}</span>
       <span class="cd-n">${esc(it.name)}</span><span class="lbl">${own ? RARITY_LABEL[itemRarity(it)] : `${LOCK_SVG} ${esc(it.how || '')}`}</span></button>`;
   }).join('');
-  const banners = bannerOptions().map(id => { const b = bannerLook(id); return `<button class="cd-bn${id === bn ? ' sel' : ''}" data-cdbn="${esc(id)}" aria-pressed="${id === bn}" title="${esc(b.name)}" style="background:linear-gradient(120deg,${b.a},${b.b})">${bannerLayers(b)}<span>${esc(b.name)}</span></button>`; }).join('');
+  const banners = bannerOptions().map(id => { const b = bannerLook(id, pageDark(), equippedId('card')); return `<button class="cd-bn${id === bn ? ' sel' : ''}" data-cdbn="${esc(id)}" aria-pressed="${id === bn}" title="${esc(b.name)}" style="background:linear-gradient(120deg,${b.a},${b.b})">${bannerLayers(b)}<span>${esc(b.name)}</span></button>`; }).join('');
   const feats = opts.length ? opts.map(f => { const fi = featureInfo(f), on = fts.includes(f); return `<label class="cd-feat${on ? ' on' : ''}"><input type="checkbox" data-cdfeat="${esc(f)}"${on ? ' checked' : ''}${!on && fts.length >= 3 ? ' disabled' : ''}><span class="pc-fi">${fi.icon(22)}</span><span><b>${esc(fi.label)}</b><span class="lbl">${esc(fi.sub)}</span></span></label>`; }).join('')
     : '<p class="lbl">Master a boss, reach a streak milestone, earn an achievement or an event reward to feature it here.</p>';
   const priv = CARD_PRIV.filter(([, , game]) => !game || !mini).map(([k, label]) => `<label class="cd-tg"><span>${label}</span><input type="checkbox" class="switch" data-cdpriv="${k}"${cardPref('p_' + k) ? ' checked' : ''}></label>`).join('');
