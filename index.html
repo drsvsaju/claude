@@ -1265,6 +1265,8 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .aura-tiers .at.locked { opacity: .45; }
 .track7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 10px 0 4px; }
 .track7 .d { border: 1px solid var(--line); border-radius: 12px; padding: 8px 2px 6px; text-align: center; font-size: 11px; color: var(--muted); background: var(--surface); position: relative; }
+.track7 .d .n { display: block; white-space: nowrap; overflow: hidden; text-overflow: clip; font-size: 10.5px; letter-spacing: -.1px; }
+@media (max-width: 420px) { .track7 { gap: 4px; } .track7 .d { padding: 7px 0 5px; } .track7 .d .n { font-size: 9.5px; letter-spacing: -.2px; } }
 .track7 .d .c { display: block; font-size: 15px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
 .track7 .d .c .coin { width: 12px; height: 12px; vertical-align: -1px; }
 .track7 .d.got { background: var(--accent-soft); border-color: transparent; }
@@ -4409,7 +4411,7 @@ body.first-load #todayBar { opacity: 0; }
 <dialog id="loginDlg" class="login-dlg">
   <div class="ld-pomeo" id="loginPomeo"></div>
   <h3 id="loginTitle">Daily reward</h3>
-  <p class="muted" style="margin:0;font-size:13.5px">Open Pomodorolist every day — the rewards grow for 7 days.</p>
+  <p class="muted" style="margin:0;font-size:13.5px">Open Pomodorolist every day — the day count keeps climbing, and every 7th day brings a gift.</p>
   <div id="loginTrack"></div>
   <div class="gift" id="loginGift"></div>
   <div class="btn-row" style="justify-content:center;margin-top:10px"><button class="btn" id="loginLater">Later</button><button class="btn primary" id="loginClaim">Claim</button></div>
@@ -4643,7 +4645,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    26. SMALL EXTRAS — tip of the day, session notes, today summary
    27. QUESTS — a weekly boss (Monday–Sunday, local time) in a fixed 10-week cycle,
    28. AURA — a glow around the badge. Automatic from the current streak, unless a
-   29. DAILY LOGIN REWARDS — a 7-day cycle; a missed day starts it again.
+   29. DAILY LOGIN REWARDS — the day count keeps climbing; a missed day starts it again.
    30. SPACED REVISION — topics come back after 1, 3, 7, 21, 45 days (editable).
    31. EXAM COUNTDOWN — S.exams [{ id, name, date 'YYYY-MM-DD', added }]
    32. DISTRACTION PARKING LOT — jot a thought without stopping the timer.
@@ -7480,7 +7482,7 @@ function earnedAt(t) {
   for (const [key, ts] of Object.entries(challengeRewards(cl))) if (ts <= t) c += (CHALLENGES[key.split('_')[1]] || {}).coins || 0;
   for (const v of Object.values(subtaskCoinsByDay(t))) c += Math.min(SUB_COIN_DAY, v);   // +1 per finished subtask, max 10 a day
   const lc = loginCycle();
-  for (const [k, ts] of Object.entries(cl.login)) if (ts <= t) c += LOGIN_COINS[(lc[k] || 1) - 1];
+  for (const [k, ts] of Object.entries(cl.login)) if (ts <= t) c += loginCoinsFor(lc[k] || 1, k);
   for (const [wk, ts] of Object.entries(cl.bosses)) if (ts <= t) c += Math.min(120, Math.max(0, +((S.game.trophies[wk] || {}).coins) || 0));
   return c;
 }
@@ -10795,20 +10797,32 @@ function auraCard() {
 }
 
 /* ==========================================================================
-   DAILY LOGIN REWARDS — a 7-day cycle; a missed day starts it again.
-   Claims live in game.claims.login { 'YYYY-MM-DD': time } in users/{uid}, so
-   a day can only be claimed once on any device. Signed in, the day is taken
-   from the Firestore server clock (written to users/{uid}/meta/clock).
+   DAILY LOGIN REWARDS — the day number keeps climbing (Day 8, Day 9, …) as
+   long as the run is unbroken; a missed day starts it again at Day 1 (v1.17,
+   it used to cycle 1–7). Every 7th day is the gift day. Claims live in
+   game.claims.login { 'YYYY-MM-DD': time } in users/{uid}, so a day can only
+   be claimed once on any device; the run and the day's coins are derived from
+   the claim dates, so nothing is stored and every device agrees. Signed in,
+   the day is taken from the Firestore server clock (users/{uid}/meta/clock).
    ========================================================================== */
-const LOGIN_COINS = [2, 3, 3, 4, 5, 6, 12];   // ≈ 35 coins a week: a bonus, not a substitute for sessions
+const LOGIN_COINS = [2, 3, 3, 4, 5, 6, 12];   // the first week ≈ 35 coins: a bonus, not a substitute for sessions
+const LOGIN_GROW_FROM = '2026-11-02', LOGIN_GROW_CAP = 4, LOGIN_GIFT_GROW = 2, LOGIN_GIFT_CAP = 8;   // v1.17: from the release day, long runs pay a little more (capped)
 const LOGIN_LATER_KEY = 'pomodorolist-login-later';
-/** Cycle day (1–7) of every claimed date. */
+/** Coins for day n of a run (n ≥ 1): the week-1 table, +1 a day per completed week (cap +4, so from day 29) and +2 more on every
+ *  gift day (cap +8): week 1 pays 35, a run past a month pays 67 a week. Claims dated before 1.17 pay the week-1 table only. */
+function loginCoinsFor(n, key) {
+  const pos = (n - 1) % 7, week = Math.floor((n - 1) / 7), base = LOGIN_COINS[pos];
+  if (key && key < LOGIN_GROW_FROM) return base;
+  return base + (pos === 6 ? Math.min(LOGIN_GIFT_CAP, week * LOGIN_GIFT_GROW) : Math.min(LOGIN_GROW_CAP, week));
+}
+const loginGiftDay = n => n % 7 === 0;
+/** Run day (1, 2, 3, …) of every claimed date: consecutive dates count up, a gap starts again at 1. */
 function loginCycle() {
   const keys = Object.keys(S.game.claims.login).sort(), out = {};
   let prev = null, run = 0;
   for (const k of keys) {
     run = prev && dayKey(addDays(parseDay(prev), 1)) === k ? run + 1 : 1;
-    out[k] = ((run - 1) % 7) + 1;
+    out[k] = run;
     prev = k;
   }
   return out;
@@ -10817,14 +10831,15 @@ function loginToday() {
   const k = dayKey(new Date()), cyc = loginCycle(), cl = S.game.claims.login;
   if (cl[k]) return { claimed: true, day: cyc[k], key: k };
   const y = dayKey(addDays(startOfDay(new Date()), -1));
-  return { claimed: false, day: cl[y] ? (cyc[y] % 7) + 1 : 1, key: k };
+  return { claimed: false, day: cl[y] ? cyc[y] + 1 : 1, key: k };
 }
 const loginOn = () => !!USER && S.settings.gamification && rewardsReady();
+/** The current week of the run (days 1–7, 8–14, …) with each day's coins; the gift day carries the 🎁. */
 function loginTrackHTML(info) {
-  const start = addDays(startOfDay(new Date()), -(info.day - 1));
+  const first = Math.floor((info.day - 1) / 7) * 7 + 1, start = addDays(startOfDay(new Date()), -(info.day - first));
   return `<div class="track7">${LOGIN_COINS.map((c, i) => {
-    const k = dayKey(addDays(start, i)), got = !!S.game.claims.login[k] && i < info.day, today = i === info.day - 1;
-    return `<div class="d${got ? ' got' : ''}${today ? ' today' : ''}${today && !info.claimed ? ' ready' : ''}">Day ${i + 1}<span class="c">${i === 6 ? '🎁' : ''}${c}</span></div>`;
+    const n = first + i, k = dayKey(addDays(start, i)), got = !!S.game.claims.login[k] && n <= info.day, today = n === info.day;
+    return `<div class="d${got ? ' got' : ''}${today ? ' today' : ''}${today && !info.claimed ? ' ready' : ''}"><span class="n">Day ${n}</span><span class="c">${loginGiftDay(n) ? '🎁' : ''}${loginCoinsFor(n, k)}</span></div>`;
   }).join('')}</div>`;
 }
 function loginCard() {
@@ -10832,7 +10847,7 @@ function loginCard() {
   return `<div class="card" id="loginCard"><div class="row between"><h2 style="margin:0">Daily reward</h2>
       ${info.claimed ? '<span class="lbl">Claimed today ✓</span>' : `<button class="btn primary small" data-claimlogin>Claim day ${info.day}</button>`}</div>
     ${loginTrackHTML(info)}
-    <p class="lbl" style="margin:6px 0 0">Open the app each day: coins grow over 7 days, with a surprise cosmetic on day 7. Missing a day starts again at day 1 — your focus streak is separate.</p></div>`;
+    <p class="lbl" style="margin:6px 0 0">Open the app each day: the day count keeps climbing, every 7th day brings a bigger gift with a surprise cosmetic, and long runs earn a little more (up to +4 coins a day). Missing a day starts again at day 1 — your focus streak is separate.</p></div>`;
 }
 function updateLoginDot() {
   const show = loginOn() && !loginToday().claimed;
@@ -10853,8 +10868,8 @@ function openLoginDlg() {
   $('#loginTitle').textContent = info.claimed ? 'See you tomorrow!' : `Day ${info.day} reward`;
   $('#loginPomeo').innerHTML = pomeoOn() ? pomeoSVG({ state: 'excited', ...pomeoOutfit() }) : '';
   $('#loginTrack').innerHTML = loginTrackHTML(info);
-  $('#loginGift').textContent = info.day === 7 && !info.claimed ? 'Day 7: coins plus a surprise cosmetic 🎁' : '';
-  $('#loginClaim').textContent = info.claimed ? 'Done' : `Claim +${LOGIN_COINS[info.day - 1]} coins`;
+  $('#loginGift').textContent = loginGiftDay(info.day) && !info.claimed ? `Day ${info.day}: coins plus a surprise cosmetic 🎁` : '';
+  $('#loginClaim').textContent = info.claimed ? 'Done' : `Claim +${loginCoinsFor(info.day, info.key)} coins`;
   $('#loginClaim').disabled = false;
   $('#loginDlg').showModal();
 }
@@ -10886,11 +10901,11 @@ async function claimLogin() {
   const now = srv || Date.now();
   S.game.claims.login[info.key] = now;
   let gift = null;
-  if (info.day === 7) gift = pickLoginGift(now);
+  if (loginGiftDay(info.day)) gift = pickLoginGift(now, info.key);
   G = null;
   save();
   applyCosmetics();
-  const coins = LOGIN_COINS[info.day - 1];
+  const coins = loginCoinsFor(info.day, info.key);
   uiClaim(); uiSound('reward', { always: true });
   toast(`Day ${info.day}: +${coins} coins${gift ? ` · 🎁 ${gift.name}!` : ''}`, 3600, true);
   ibMarkKey('login:' + info.key);
@@ -10902,11 +10917,11 @@ async function claimLogin() {
   updateLoginDot();
   if (S.ui.tab === 'profile') renderProfile();
 }
-/** Day 7: a random cheap cosmetic you don't own yet (recorded as a free purchase), else a Streak Freeze if there's room. */
-function pickLoginGift(at) {
+/** Every 7th day: a cheap cosmetic you don't own yet, picked from the date (recorded as a free purchase, so it syncs), else a Streak Freeze if there's room. */
+function pickLoginGift(at, key) {
   const g = game();
   const pool = ITEMS.filter(i => i.price > 0 && i.price <= 80 && !['freeze', 'extra'].includes(i.cat) && !(i.lvl > g.lv.level) && !isOwned(i.id));
-  let it = pool.length ? pool[Math.floor(Math.random() * pool.length)] : g.freezesHeld < MAX_FREEZES ? ITEM_BY_ID.freeze : null;
+  let it = pool.length ? pool[Math.floor(hash01('gift:' + (USER && USER.uid || '') + ':' + (key || dayKey(new Date(at)))) * pool.length)] : g.freezesHeld < MAX_FREEZES ? ITEM_BY_ID.freeze : null;
   if (!it) return null;
   S.game.purchases['g' + uid()] = { item: it.id, price: 0, at, gift: true };
   return it;
@@ -14250,7 +14265,7 @@ function ibRefresh() {
   }
   if (loginOn()) {
     const li = loginToday();
-    if (!li.claimed) inboxAdd({ type: 'login', key: 'login:' + li.key, title: `Your day ${li.day} reward is ready`, body: 'Open the app every day — rewards grow for 7 days', go: { action: 'login' } });
+    if (!li.claimed) inboxAdd({ type: 'login', key: 'login:' + li.key, title: `Your day ${li.day} reward is ready`, body: 'Open the app every day — the count keeps climbing, every 7th day is a gift', go: { action: 'login' } });
     else ibMarkKey('login:' + li.key);
   }
   if (S.settings.gamification) {
@@ -15485,7 +15500,7 @@ function demoDocs() {
     recent: [{ name: 'Physics', presetId: 'p-deep', ts: Date.now() - 3600e3 }, { name: 'Maths', presetId: 'p-classic', ts: Date.now() - 7200e3 }, { name: 'Chemistry', presetId: 'p-deep', ts: Date.now() - 864e5 }],
     pinned: [{ name: 'Physics', presetId: 'p-deep' }],
     game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb' },
-      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: { 3: Date.now() - 20 * 864e5, 7: Date.now() - 16 * 864e5 } }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
+      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: { 3: Date.now() - 20 * 864e5, 7: Date.now() - 16 * 864e5 }, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])) }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
     cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:7', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
     loadouts: [{ id: 'demo_lo1', name: 'Exam mode', look: { theme: 'th_ocean', avatar: 'av_owl', frame: 'frame_double', color: 'col_teal', aura: 'au_streak', pomhat: 'hat_grad', pomacc: 'acc_glasses', pomskin: 'skin_none', title: 'ti_none' } },
       { id: 'demo_lo2', name: 'Spooky', look: { avatar: 'av_bat', frame: 'frame_cobweb', aura: 'au_streak', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none' } }],
@@ -16018,7 +16033,7 @@ function previewTheme(id) {
 
 /* ---------- Rendering ---------- */
 const BAG_TIPS = ['Finish focus sessions to earn coins for the Shop', 'Beat this week’s boss for a free theme', 'Complete the monthly questline for event rewards',
-  'Win a boss with your squad for a gradient name colour', 'Claim your daily reward — day 7 hides a surprise'];
+  'Win a boss with your squad for a gradient name colour', 'Claim your daily reward — every 7th day hides a surprise'];
 let bagTipTimer = 0;
 function rewardPreview(it, g = game()) {
   if (it.cat === 'aura') return withAura(badgeSVG(g.tier, { size: 34, frame: equippedId('frame'), avatar: myAvatar() }), g.streak.cur, it.id === 'au_streak' ? '' : it.id);
