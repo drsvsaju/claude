@@ -802,6 +802,7 @@ dialog::backdrop { background: rgba(10, 12, 12, .32); -webkit-backdrop-filter: b
 .gd-life { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
 .gd-firefly { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #ffe27a; box-shadow: 0 0 8px 2px rgba(255, 226, 122, .7); left: calc(10% + var(--i) * 12%); top: calc(42% + (var(--i) * 7%) ); opacity: 0; animation: gd-firefly 5.5s ease-in-out infinite; animation-delay: calc(var(--i) * -.9s); }
 .gd-firefly.b { animation-duration: 7s; }
+.gd-firefly, .gd-leaf { will-change: transform, opacity; }   /* own compositor layers: the scene life never repaints the scene (v1.17) */
 @keyframes gd-firefly { 0%, 100% { opacity: 0; transform: translate(0, 0); } 20% { opacity: .9; } 50% { opacity: .5; transform: translate(14px, -18px); } 80% { opacity: .9; transform: translate(-10px, -6px); } }
 .gd-leaf { position: absolute; width: 8px; height: 8px; border-radius: 60% 0 60% 0; left: calc(4% + var(--i) * 16%); top: -10px; opacity: .85; animation: gd-fall 9s linear infinite; animation-delay: calc(var(--i) * -1.6s); }
 .gd-leaf.spring { background: #f7b6c9; }
