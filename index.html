@@ -1364,7 +1364,7 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .gd-spot:focus-visible, .gd-vis:focus-visible, .gd-pomeo:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 8px; }
 .sp-1 { grid-area: s1; } .sp-2 { grid-area: s2; } .sp-3 { grid-area: s3; } .sp-4 { grid-area: s4; } .sp-5 { grid-area: s5; } .sp-6 { grid-area: s6; }
 .gd-scene[data-tod="night"] .dc_lantern .lamp { filter: drop-shadow(0 0 8px #ffd77a); }
-:root[data-motion="full"] .dc_pond .ripple { animation: gd-ripple 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+:root[data-motion="full"] .dc_pond .pond-ripple { animation: gd-ripple 3s ease-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes gd-ripple { from { transform: scale(.4); opacity: .9; } to { transform: scale(1.6); opacity: 0; } }
 :root[data-motion="full"] .dc_fountain .jet { animation: gd-jet 1.2s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
 @keyframes gd-jet { to { transform: scaleY(.85); } }
@@ -1412,7 +1412,7 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 @keyframes gd-tail { 50% { transform: rotate(-22deg); } }
 :root[data-motion="full"] .v-bird { animation: gd-peck 5s ease-in-out infinite; }
 @keyframes gd-peck { 0%, 86%, 100% { transform: none; } 90% { transform: translateY(3px) rotate(8deg); } 95% { transform: none; } }
-:root:not([data-motion="off"]) .gd-vis.poke, :root:not([data-motion="off"]) .gd-pomeo.poke { animation: gd-poke .6s var(--spring) !important; }
+:root[data-motion="full"] .gd-vis.poke > *, :root[data-motion="full"] .gd-pomeo.poke > * { animation: gd-poke .6s var(--spring); }   /* on the art inside: the flutter outside carries on (v1.17) */
 @keyframes gd-poke { 30% { transform: translateY(-10px) scale(1.1); } }
 .gd-say { position: absolute; left: 14px; bottom: 74px; z-index: 6; max-width: 260px; background: var(--surface); color: var(--text); padding: 6px 10px; border-radius: 12px; font-size: 12.5px; box-shadow: 0 8px 18px -10px rgba(0, 0, 0, .4); border: 1px solid var(--line); }
 .gd-info { margin-top: 12px; }
@@ -1482,7 +1482,7 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 :root[data-motion="full"] .gd-pet.n-1 { animation-delay: -1.1s; } :root[data-motion="full"] .gd-pet.n-2 { animation-delay: -2.2s; }
 @keyframes gd-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 :root[data-motion="full"] .gd-pet .wing { animation: gd-flap .25s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 100% 100%; }
-.gd-pet.poke { animation: gd-poke .7s ease-out; }
+:root[data-motion="full"] .gd-pet.poke > * { animation: gd-poke .7s ease-out; }
 .hearts { color: #e2576b; font-size: 12px; letter-spacing: 1px; } .hearts .dim { opacity: .3; }
 .pet-card .pv svg { height: 64px; }
 .gd-petgrid { margin-bottom: 12px; }
@@ -1866,7 +1866,7 @@ kbd { display: inline-block; min-width: 26px; padding: 3px 7px; border-radius: 7
 .trophy, .tier, .wr-sum { transition: transform .35s var(--spring-soft); }
 .item.fx-tilt, .trophy.fx-tilt, .tier.fx-tilt, .wr-sum.fx-tilt { transition: transform .12s linear, border-color .25s var(--ease); will-change: transform; }
 /* Magnetic primary buttons (the pull itself is the separate `translate` property, so hover/press transforms still work) */
-:root[data-motion="full"] .btn.primary { transition: translate .35s var(--spring-soft), transform .22s var(--spring), box-shadow .22s var(--ease), border-color .15s, background-color .15s, color .15s; }
+:root[data-motion="full"] .btn.primary { transition: translate .14s linear, transform .22s var(--spring), box-shadow .22s var(--ease), border-color .15s, background-color .15s, color .15s; }
 /* Soft, visible focus rings for keyboard users */
 :where(button, a[href], [role="button"], summary, .plant):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 :root:not([data-motion="off"]) :where(button, a[href], [role="button"], summary):focus-visible { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 18%, transparent); }
@@ -2529,7 +2529,7 @@ body.sp-handoff #mascot { opacity: 0; }
 .boss-art.angry .bf-angry { display: inline; }
 .boss-art.defeated svg { filter: grayscale(1) opacity(.5); transform: rotate(-8deg) scale(.9); }
 :root[data-motion="full"] .boss-art.idle svg { animation: bossIdle 3.6s ease-in-out infinite; transform-origin: 50% 90%; }
-:root[data-motion="full"] .boss-art.idle.angry svg { animation: bossIdle 1.8s ease-in-out infinite; }
+:root[data-motion="full"] .boss-art.idle.angry:not(.hit):not(.almost) svg { animation: bossIdle 1.8s ease-in-out infinite; }   /* the hit and the tremble win (v1.17) */
 :root[data-motion="full"] .boss-art.almost svg { animation: bossTremble .28s linear infinite; }
 @keyframes bossIdle { 50% { transform: translateY(-5px) scale(1.025); } }
 @keyframes bossTremble { 25% { transform: translate(-1.5px, .5px) rotate(-1deg); } 75% { transform: translate(1.5px, -.5px) rotate(1deg); } }
@@ -4904,7 +4904,8 @@ function setTimeDigits(str) {
     n.className = 'dc in';
     n.textContent = c;
     slot.appendChild(n);
-    setTimeout(() => cur.remove(), 330);
+    let gone = false; const bye = () => { if (!gone) { gone = true; cur.remove(); } };
+    cur.addEventListener('animationend', bye, { once: true }); setTimeout(bye, 450);
   });
 }
 let ringRAF = 0, lastFinal = null;
@@ -5433,6 +5434,12 @@ function applyProfile(d) {
   if (S.ui.tab === 'settings') renderSettings();
 }
 
+/** Is this cloud document exactly what this device last uploaded? (Key order, empty maps and the server timestamp aside.) */
+function profileEcho(d) {
+  if (!lastProfileJSON || !d) return false;
+  const strip = o => { const r = { ...o }; delete r.updatedAt; for (const k of Object.keys(r)) if (r[k] && typeof r[k] === 'object' && !Array.isArray(r[k]) && !Object.keys(r[k]).length) delete r[k]; return r; };
+  try { return canonJSON(strip(d)) === canonJSON(strip(JSON.parse(lastProfileJSON))); } catch (e) { return false; }
+}
 /** Live listeners: any change on another device shows up here within a second or two. */
 function attachListeners() {
   unsubs.push(FB.onSnapshot(userRef(), { includeMetadataChanges: true }, snap => {
@@ -5447,6 +5454,7 @@ function attachListeners() {
       renderSync();
       return;
     }
+    if (profileLoaded && profileEcho(snap.data())) { renderSync(); return; }   // our own upload coming back: nothing to apply, nothing to redraw (v1.17 — a full redraw restarted every animation)
     applyProfile(snap.data());
     profileLoaded = true;
     renderSync();
@@ -6254,8 +6262,12 @@ function renderToday() {
   $('#todayDate').textContent = today.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' });
   const grew = lastStreak !== null && cur > lastStreak;
   lastStreak = cur;
-  $('#curStreak').innerHTML = `<span class="flame${cur ? ' lit' : ''}${grew ? ' flare' : ''}">${iconSVG(ICONS.flame, 22)}</span>` +
-    `<span class="sn${grew ? ' roll' : ''}">${cur}</span><small>${cur === 1 ? 'day' : 'days'}</small>`;
+  const cs = $('#curStreak');
+  if (grew || cs.dataset.n !== String(cur)) {   // rebuilt only on a change, so the flare / roll animation runs to its end (v1.17)
+    cs.innerHTML = `<span class="flame${cur ? ' lit' : ''}${grew ? ' flare' : ''}">${iconSVG(ICONS.flame, 22)}</span>` +
+      `<span class="sn${grew ? ' roll' : ''}">${cur}</span><small>${cur === 1 ? 'day' : 'days'}</small>`;
+    cs.dataset.n = cur;
+  }
   $('#bestStreak').innerHTML = `${longest}<small>${longest === 1 ? 'day' : 'days'}</small>`;
   $('#todayText').textContent = `${fmtMin(mins)} of ${fmtMin(goal)}${mins >= goal ? ' · goal met ✓' : ''}`;
   const pct = Math.min(100, Math.round(mins / goal * 100));
@@ -11894,7 +11906,7 @@ const DECOR_ART = {
   dc_bench: '<svg viewBox="0 0 60 40" aria-hidden="true"><rect x="6" y="14" width="48" height="6" rx="2" fill="#b07a4a"/><rect x="6" y="6" width="48" height="5" rx="2" fill="#b07a4a"/><path d="M10 20v14M50 20v14M10 11v3M50 11v3" stroke="#6b4a2e" stroke-width="2.6"/></svg>',
   dc_gnome: '<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M20 4 32 30H8Z" fill="#d6452f"/><circle cx="20" cy="33" r="6" fill="#f3c9a4"/><path d="M12 36q8 10 16 0v18H12Z" fill="#fff"/><path d="M12 40q8 8 16 0" stroke="#4a76b8" stroke-width="5" fill="none"/><circle cx="18" cy="32" r="1" fill="#333"/><circle cx="22" cy="32" r="1" fill="#333"/></svg>',
   dc_scarecrow: '<svg viewBox="0 0 50 70" aria-hidden="true"><path d="M25 68V22M6 30h38" stroke="#8a6238" stroke-width="2.8"/><circle cx="25" cy="16" r="8" fill="#e8c88a"/><path d="M13 12h24l-4-6H17Z" fill="#b07a4a"/><rect x="15" y="24" width="20" height="22" rx="3" fill="#4a76b8"/><path d="M18 46v14M32 46v14" stroke="#b07a4a" stroke-width="4"/></svg>',
-  dc_pond: '<svg viewBox="0 0 80 50" aria-hidden="true"><ellipse cx="40" cy="28" rx="36" ry="16" fill="#8fb7c7"/><ellipse cx="40" cy="28" rx="30" ry="12" fill="#5aa0c2"/><ellipse class="ripple" cx="34" cy="26" rx="8" ry="3.5" fill="none" stroke="#dff3ff" stroke-width="1.2" opacity=".8"/><ellipse cx="52" cy="32" rx="6" ry="3" fill="#4f9a5a"/><ellipse cx="24" cy="34" rx="5" ry="2.4" fill="#4f9a5a"/><circle cx="52" cy="30" r="2" fill="#f7a8c4"/></svg>',
+  dc_pond: '<svg viewBox="0 0 80 50" aria-hidden="true"><ellipse cx="40" cy="28" rx="36" ry="16" fill="#8fb7c7"/><ellipse cx="40" cy="28" rx="30" ry="12" fill="#5aa0c2"/><ellipse class="pond-ripple" cx="34" cy="26" rx="8" ry="3.5" fill="none" stroke="#dff3ff" stroke-width="1.2" opacity=".8"/><ellipse cx="52" cy="32" rx="6" ry="3" fill="#4f9a5a"/><ellipse cx="24" cy="34" rx="5" ry="2.4" fill="#4f9a5a"/><circle cx="52" cy="30" r="2" fill="#f7a8c4"/></svg>',
   dc_arch: '<svg viewBox="0 0 60 70" aria-hidden="true"><path d="M8 68V30q0-22 22-22t22 22v38" stroke="#8a6238" stroke-width="3" fill="none"/><path d="M14 68V30q0-16 16-16t16 16v38" stroke="#4e8a4a" stroke-width="2" fill="none" opacity=".7"/>' + [[12, 40], [48, 40], [20, 18], [40, 18], [30, 10], [10, 58], [50, 58]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.4" fill="#d6456b"/>`).join('') + '</svg>',
   dc_fountain: '<svg viewBox="0 0 70 70" aria-hidden="true"><ellipse cx="35" cy="56" rx="32" ry="11" fill="#9aa6ad"/><ellipse cx="35" cy="54" rx="26" ry="8" fill="#5aa0c2"/><rect x="31" y="26" width="8" height="28" fill="#b8c2c8"/><ellipse cx="35" cy="26" rx="14" ry="4.5" fill="#9aa6ad"/><ellipse cx="35" cy="25" rx="11" ry="3" fill="#5aa0c2"/><path class="jet" d="M35 24V8" stroke="#dff3ff" stroke-width="2.4" stroke-linecap="round"/><path class="jet" d="M35 12q-8 6-12 14M35 12q8 6 12 14" stroke="#dff3ff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".8"/></svg>',
   dc_greenhouse: '<svg viewBox="0 0 90 70" aria-hidden="true"><path d="M8 30 45 8l37 22v38H8Z" fill="#cfe9f2" opacity=".85"/><path d="M8 30 45 8l37 22v38H8Z" stroke="#7aa0ac" stroke-width="2" fill="none"/><path d="M8 30h74M27 30v38M63 30v38M45 8v60" stroke="#7aa0ac" stroke-width="1.6"/><path d="M14 60q6-10 10-2 2-10 8-4" stroke="#4f9a5a" stroke-width="2.4" fill="none"/><path d="M66 60q6-10 10-2" stroke="#4f9a5a" stroke-width="2.4" fill="none"/><circle cx="24" cy="54" r="2.4" fill="#e5654f"/><circle cx="72" cy="56" r="2.4" fill="#e5654f"/></svg>',
@@ -13645,7 +13657,7 @@ function uiPreview() {
    animations only; touch and Reduced/Off never see them), small sparkles,
    and soft fades on sideways-scrolling rows.
    ========================================================================== */
-const FX = { raf: 0, x: 0, y: 0, t: null, glow: null, tilt: null, mag: new Set() };
+const FX = { raf: 0, x: 0, y: 0, t: null, glow: null, tilt: null, magOff: new WeakMap(), tiltRect: null, mag: new Set() };
 const fxOn = () => motion() === 'full' && finePointer.matches;
 document.addEventListener('pointermove', e => {
   if (e.pointerType !== 'mouse') return;
@@ -13670,24 +13682,31 @@ function fxFrame() {
   if (g) { const r = g.getBoundingClientRect(); g.style.setProperty('--mx', (FX.x - r.left).toFixed(0) + 'px'); g.style.setProperty('--my', (FX.y - r.top).toFixed(0) + 'px'); }
   // A slight 3D tilt toward the cursor
   const k = t && t.closest('.item, .trophy, .tier, .wr-sum');
-  if (k !== FX.tilt) { if (FX.tilt) { FX.tilt.classList.remove('fx-tilt'); FX.tilt.style.transform = ''; } FX.tilt = k; if (k) k.classList.add('fx-tilt'); }
+  if (k !== FX.tilt) { if (FX.tilt) { FX.tilt.classList.remove('fx-tilt'); FX.tilt.style.transform = ''; } FX.tilt = k; FX.tiltRect = null; if (k) k.classList.add('fx-tilt'); }
+  // Every read first, then every write (v1.17: reads and writes used to alternate, a style recalc per button)
+  if (k && !(FX.tiltRect && FX.tiltRect.el === k)) FX.tiltRect = { el: k, r: k.getBoundingClientRect() };   // measured once per hover: the lean must not feed back into the next lean
+  const btns = [];
+  for (const b of document.querySelectorAll('.tab.active .btn.primary, dialog[open] .btn.primary')) {
+    if (b.disabled || !b.offsetWidth) continue;
+    const r = b.getBoundingClientRect(), off = FX.magOff.get(b) || [0, 0];   // the box without the button's own lean
+    btns.push({ b, left: r.left - off[0], right: r.right - off[0], top: r.top - off[1], bottom: r.bottom - off[1], width: r.width, height: r.height });
+  }
   if (k) {
-    const r = k.getBoundingClientRect(), dx = (FX.x - r.left) / r.width - 0.5, dy = (FX.y - r.top) / r.height - 0.5, m = k.classList.contains('wr-sum') ? 4 : 7;
+    const r = FX.tiltRect.r, dx = (FX.x - r.left) / r.width - 0.5, dy = (FX.y - r.top) / r.height - 0.5, m = k.classList.contains('wr-sum') ? 4 : 7;
     k.style.transform = `perspective(700px) rotateX(${(-dy * m).toFixed(2)}deg) rotateY(${(dx * m).toFixed(2)}deg) translateY(-2px)`;
   }
   // Magnetic primary buttons: lean a few pixels toward a nearby cursor
   const near = new Set();
-  for (const b of document.querySelectorAll('.tab.active .btn.primary, dialog[open] .btn.primary')) {
-    if (b.disabled || !b.offsetWidth) continue;
-    const r = b.getBoundingClientRect();
-    const ox = Math.max(r.left - FX.x, 0, FX.x - r.right), oy = Math.max(r.top - FX.y, 0, FX.y - r.bottom), d = Math.hypot(ox, oy);
+  for (const { b, left, right, top, bottom, width, height } of btns) {
+    const ox = Math.max(left - FX.x, 0, FX.x - right), oy = Math.max(top - FX.y, 0, FX.y - bottom), d = Math.hypot(ox, oy);
     if (d > 56) continue;
-    const s = 1 - d / 56, cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const tx = clamp((FX.x - cx) / (r.width / 2), -1.4, 1.4) * 4 * s, ty = clamp((FX.y - cy) / (r.height / 2), -1.4, 1.4) * 3 * s;
+    const s = 1 - d / 56, cx = left + width / 2, cy = top + height / 2;
+    const tx = clamp((FX.x - cx) / (width / 2), -1.4, 1.4) * 4 * s, ty = clamp((FX.y - cy) / (height / 2), -1.4, 1.4) * 3 * s;
     b.style.translate = `${tx.toFixed(2)}px ${ty.toFixed(2)}px`;
+    FX.magOff.set(b, [tx, ty]);
     near.add(b);
   }
-  for (const b of FX.mag) if (!near.has(b)) b.style.translate = '';
+  for (const b of FX.mag) if (!near.has(b)) { b.style.translate = ''; FX.magOff.delete(b); }
   FX.mag = near;
 }
 /** A tiny sparkle for small wins. */
@@ -18880,7 +18899,7 @@ function renderLiveClock() {
   const st = liveState(d);
   el.textContent = st.done ? '0:00' : fmtClock(st.left);
 }
-function renderLive() { if (S.ui.tab === 'clan') renderClan(); renderClanBits(); }
+function renderLive() { renderClanBits(); }   // renderClanBits draws the clan screen when it is open (once, v1.17)
 function liveSummaryHTML() {
   const s = LIVE.summary;
   return `<div class="card lv-sum">
