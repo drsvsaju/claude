@@ -21,7 +21,9 @@
     { "collectionGroup": "clans", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "weekKey", "order": "ASCENDING" }, { "fieldPath": "weekMin", "order": "DESCENDING" } ] },
     { "collectionGroup": "clans", "queryScope": "COLLECTION", "fields": [
-      { "fieldPath": "weekKey", "order": "ASCENDING" }, { "fieldPath": "weekMin", "order": "ASCENDING" } ] }
+      { "fieldPath": "weekKey", "order": "ASCENDING" }, { "fieldPath": "weekMin", "order": "ASCENDING" } ] },
+    { "collectionGroup": "studySessions", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "lobby", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] }
   ],
   "fieldOverrides": []
 }
