@@ -474,6 +474,29 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 .ring.rs-thin .track, .ring.rs-thin .prog { stroke-width: 2.5; }
 .ring.rs-grad .prog { stroke: url(#ringGrad); }
 .ring.rs-orbit .track { stroke-dasharray: 1.5 7; stroke-linecap: round; opacity: .9; }   /* v1.18 Orbit */
+.ring.rs-flame .track { stroke: color-mix(in srgb, #f07a2a 18%, var(--line)); }   /* v1.18 Flame ring (100-day streak) */
+.ring.rs-flame .prog { stroke: #f07a2a; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(240,122,42,.55)); }
+:root[data-motion="full"] .ring.rs-flame .prog, :root[data-motion="full"] .pv-flame { animation: ringFlick 1.8s ease-in-out infinite; }
+@keyframes ringFlick { 0%, 100% { filter: drop-shadow(0 0 4px rgba(240,122,42,.5)); } 40% { filter: drop-shadow(0 0 9px rgba(255,150,60,.8)); } 70% { filter: drop-shadow(0 0 6px rgba(230,90,40,.6)); } }
+.fr-blaze { transform-box: view-box; transform-origin: 12px 12px; }
+:root[data-motion="full"] .fr-blaze { animation: frBlaze 2.4s ease-in-out infinite; }
+@keyframes frBlaze { 0%, 100% { opacity: .85; transform: scale(1) rotate(0); } 50% { opacity: 1; transform: scale(1.05) rotate(6deg); } }
+/* Streak milestones (v1.18): the Timer line and the profile card */
+.streak-next { margin: -6px 0 14px; padding: 9px 11px; border-radius: 12px; background: color-mix(in srgb, #f28c28 8%, var(--surface)); border: 1px solid color-mix(in srgb, #f28c28 22%, var(--line)); }
+.streak-next .sn-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-size: 13.5px; flex-wrap: wrap; }
+.sn-bar { height: 5px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 6px 0 4px; }
+.sn-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #f2a65a, #e5654f); border-radius: inherit; transition: transform .6s var(--ease, ease); }
+.sn-gift { font-size: 12px; overflow-wrap: anywhere; }
+.sm-list { display: grid; gap: 6px; margin-top: 10px; }
+.sm-row { display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 12px; border: 1px solid var(--line); }
+.sm-row .sm-d { flex: 0 0 auto; min-width: 38px; height: 30px; padding: 0 6px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; font-size: 13px; background: var(--bg); color: var(--muted); }
+.sm-row.done .sm-d { background: linear-gradient(135deg, #f2a65a, #e5654f); color: #fff; }
+.sm-row.next { border-color: color-mix(in srgb, #f28c28 45%, var(--line)); background: color-mix(in srgb, #f28c28 6%, transparent); }
+.sm-row .sm-main { flex: 1; min-width: 0; } .sm-row .sm-n { font-weight: 650; font-size: 13.5px; } .sm-row .lbl { overflow-wrap: anywhere; }
+.sm-row .sm-st { flex: 0 0 auto; font-weight: 700; font-size: 13px; color: var(--muted); } .sm-row.done .sm-st { color: #e5654f; }
+.sm-card .sm-bar i { background: linear-gradient(90deg, #f2a65a, #e5654f); }
+.rw-note { margin: 6px 0 0; }
+.rw-coins { --rc: #c9a227; } .rw-coins .coin { color: #c9a227; }
 .ring.rs-orbit .prog { stroke-linecap: round; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 45%, transparent)); }
 .ring.rs-glow .prog { filter: drop-shadow(0 0 5px var(--accent)); }
 .ring.rs-none svg { visibility: hidden; }
@@ -3879,6 +3902,7 @@ body.first-load #todayBar { opacity: 0; }
             <div><div class="big" id="curStreak">0<small>days</small></div><div class="lbl">Current streak</div></div>
             <div><div class="big" id="bestStreak">0<small>days</small></div><div class="lbl">Longest streak</div></div>
           </div>
+          <div class="streak-next hidden" id="streakNext"></div>
           <div class="row between"><span id="todayText">0m of 1h</span><span class="lbl" id="todayPct">0%</span></div>
           <div class="progress"><i id="todayBar" style="width:0%"></i></div>
           <div class="today-extra" id="todayExtra"></div>
@@ -4426,7 +4450,8 @@ body.first-load #todayBar { opacity: 0; }
   <div class="rw-kicker" id="rwKicker"></div>
   <h3 id="rwTitle"></h3>
   <div class="rw-items" id="rwItems"></div>
-  <p class="lbl" style="margin:4px 0 0">Added to your bag 🎒</p>
+  <p class="lbl" id="rwBagNote" style="margin:4px 0 0">Added to your bag 🎒</p>
+  <p class="lbl rw-note hidden" id="rwNote"></p>
   <div class="btn-row"><button class="btn" id="rwBag">Open bag</button><button class="btn primary" id="rwOk">Nice!</button></div>
 </dialog>
 
@@ -6403,6 +6428,7 @@ function renderToday() {
     cs.dataset.n = cur;
   }
   $('#bestStreak').innerHTML = `${longest}<small>${longest === 1 ? 'day' : 'days'}</small>`;
+  renderStreakNext(cur);
   $('#todayText').textContent = `${fmtMin(mins)} of ${fmtMin(goal)}${mins >= goal ? ' · goal met ✓' : ''}`;
   const pct = Math.min(100, Math.round(mins / goal * 100));
   $('#todayPct').textContent = pct + '%';
@@ -6791,7 +6817,10 @@ function fillPresetForm(p) {
 const COINS_PER_SESSION = 5;
 const GOAL_BONUS = 10;
 const GOAL_BONUS_MIN = 25;   // a day only earns the goal bonus with at least 25 min, whatever the goal setting
-const STREAK_BONUS = { 3: 15, 7: 40, 30: 200, 100: 750 };
+const STREAK_BONUS = { 3: 15, 7: 40, 14: 60, 30: 200, 50: 300, 100: 750, 200: 900, 365: 1500 };   // 14 / 50 / 200 / 365 since v1.18
+// v1.18 — what each streak milestone gives besides coins (reward-only items: price -1, given once, repaired if missing)
+const STREAK_REWARDS = { 7: ['ti_s_roll'], 14: ['ti_s_unbreak'], 30: ['th_s_ember'], 50: ['av_s_flame'], 100: ['shelf_s_trophy', 'ring_s_flame'], 200: ['frame_s_blaze'], 365: ['au_s_eternal', 'plant_s_golden'] };
+const STREAK_MILES = Object.keys(STREAK_BONUS).map(Number).sort((a, b) => a - b);
 const MAX_FREEZES = 2;
 const REDUCED = () => motion() !== 'full';
 const fmtNum = n => Math.round(n).toLocaleString();
@@ -6806,7 +6835,7 @@ function normalizeGame(g) {
     eqAt: map(g.eqAt),               // category/extraId -> when it last changed (the newest choice wins across devices)
     claims: {                        // one-time rewards, value = time claimed
       goalDays: map(c.goalDays),     // 'YYYY-MM-DD' -> ts
-      milestones: map(c.milestones), // '3' | '7' | '30' | '100' -> ts
+      milestones: map(c.milestones), // '3' | '7' | '14' | '30' | '50' | '100' | '200' | '365' -> ts (judged on the longest streak; never paid twice)
       achievements: map(c.achievements),
       social: map(c.social),           // 'f_<uid>' -> ts (new friend bonus)
       challenges: map(c.challenges),   // challengeId -> ts (weekly challenge completed)
@@ -6859,6 +6888,7 @@ const tierFor = level => TIERS.filter(t => level >= t.min).pop();
 const FRAMES = {
   frame_none: '',
   frame_g_link: '<circle cx="9.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/><circle cx="14.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/>',   // v1.18
+  frame_s_blaze: '<circle cx="12" cy="12" r="11.1" stroke-width="1" opacity=".5"/><g class="fr-blaze" stroke="none">' + [0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => `<path d="M12 -.5c1.1 1.2 1.7 2.2 1.2 3.2-.3.6-.8.9-1.2.9s-.9-.3-1.2-.9c-.5-1 .1-2 1.2-3.2Z" fill="${i % 2 ? '#e5654f' : '#f28c28'}" transform="rotate(${a} 12 12)"/>`).join('') + '</g>',   // v1.18 streak
   frame_g_banner: '<circle cx="12" cy="12" r="11.2" stroke-width="1.1" opacity=".7"/><path d="M3.2 5.4l2.6 1.2-1.9 2Z M20.8 5.4l-2.6 1.2 1.9 2Z M12 .4l1.4 2.2h-2.8Z" fill="currentColor" stroke="none" opacity=".8"/>',
   frame_ring: '<circle cx="12" cy="12" r="11.2" stroke-width="1" opacity=".6"/>',
   frame_double: '<circle cx="12" cy="12" r="11.3" stroke-width="1" opacity=".55"/><circle cx="12" cy="12" r="9.9" stroke-width=".7" opacity=".35"/>',
@@ -7680,6 +7710,16 @@ ITEMS.push(
   { id: 'stamp_g_table', cat: 'stamp', name: 'Full table stamp', desc: 'Four seats, all taken', price: -1, rarity: 'rare', how: 'Focus at a table of 4 or more' },
   { id: 'stamp_g_owl', cat: 'stamp', name: 'Night shift stamp', desc: 'An owl for late study', price: -1, rarity: 'rare', how: 'Focus with someone after 10 PM' },
   { id: 'stamp_clan', cat: 'stamp', name: 'Clan crest stamp', desc: 'Your clan’s seal', price: -1, rarity: 'epic', how: '15 hours in clan sessions' },
+  // v1.18 streak milestones (see STREAK_REWARDS)
+  { id: 'ti_s_roll', cat: 'title', name: 'On a Roll', desc: 'Seven days in a row', price: -1, rarity: 'rare', how: 'Reach a 7-day streak' },
+  { id: 'ti_s_unbreak', cat: 'title', name: 'Unbreakable', desc: 'Two weeks without a miss', price: -1, rarity: 'epic', how: 'Reach a 14-day streak' },
+  { id: 'th_s_ember', cat: 'theme', name: 'Ember', desc: 'Warm charcoal and a glowing orange · light and dark', price: -1, rarity: 'epic', how: 'Reach a 30-day streak' },
+  { id: 'av_s_flame', cat: 'avatar', name: 'Flame Pomeo', desc: 'Pomeo, fired up', price: -1, rarity: 'epic', how: 'Reach a 50-day streak' },
+  { id: 'shelf_s_trophy', cat: 'room', name: 'Hundred-day trophy', desc: 'A golden cup with a flame, on its own shelf', price: -1, rarity: 'legendary', how: 'Reach a 100-day streak' },
+  { id: 'ring_s_flame', cat: 'ring', name: 'Flame ring', desc: 'A timer ring that burns warm · flickers', price: -1, rarity: 'legendary', how: 'Reach a 100-day streak' },
+  { id: 'frame_s_blaze', cat: 'frame', name: 'Blaze frame', desc: 'Flames dance around your badge · animated', price: -1, rarity: 'legendary', how: 'Reach a 200-day streak' },
+  { id: 'au_s_eternal', cat: 'aura', name: 'Eternal flame aura', desc: 'A year of days, burning bright · animated', price: -1, rarity: 'legendary', how: 'Reach a 365-day streak' },
+  { id: 'plant_s_golden', cat: 'room', name: 'Golden Pomeo statue', desc: 'A gilded Pomeo for the corner', price: -1, rarity: 'legendary', how: 'Reach a 365-day streak' },
 );
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const DEFAULTS = { avatar: 'av_default', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none', sound: 'snd_chime', ambient: 'amb_none', theme: 'th_default', ring: 'ring_classic', font: 'font_system', effect: 'fx_none', frame: 'frame_none', color: 'col_default', aura: 'au_streak', title: 'ti_none', stamp: 'stamp_classic', card: 'card_minimal', trail: 'trail_none' };
@@ -7827,6 +7867,8 @@ function reconcileRewards(mode = 'quiet') {
   }
   let given = false;   // rewards of claimed achievements (v1.18): given once, repaired if a device missed them
   for (const a of ACHIEVEMENTS) if (a.reward && cl.achievements[a.id] && giveAchReward(a, cl.achievements[a.id])) given = true;
+  if (!isPreview()) for (const [m, ids] of Object.entries(STREAK_REWARDS)) if (cl.milestones[m]) for (const id of ids)   // streak milestone items (v1.18)
+    if (ITEM_BY_ID[id] && !S.game.grants[id]) { S.game.grants[id] = { src: 'streak:' + m, at: cl.milestones[m] }; given = true; G = null; }
   if (given && !news.length) save();
   G = null;
   if (news.length) save();
@@ -7853,10 +7895,12 @@ function announce(news, mode) {
     }
     writeLS(key, '1');
   }
+  const miles = news.filter(n => n.type === 'streak').map(n => n.m);
+  if (miles.length && (mode === 'loud' || mode === 'initial')) showStreakMilestones(miles);   // one skippable celebration (v1.18)
   for (const n of news) {
     if (n.type === 'freeze') toast(`Streak Freeze used for ${n.n === 1 ? 'a missed day' : n.n + ' missed days'} — your streak is safe`, 4000);
     else if (mode !== 'loud') continue;
-    else if (n.type === 'streak') toast(`${n.m}-day streak · +${STREAK_BONUS[n.m]} coins`, 2600, false, { type: 'streak', go: { tab: 'profile' } });
+    else if (n.type === 'streak') continue;
     else if (n.type === 'ach') showAchCard(n.a);
   }
 }
@@ -8213,6 +8257,10 @@ Object.assign(SKINS, {   // garden looks (v1.16)
     light: { bg: '#f3f5ea', surface: '#fbfcf6', text: '#22301f', muted: '#5f6e58', line: '#dfe5d2', accent: '#5a8f3c', heat0: '#e7ecdc', 'accent-soft': 'rgba(90,143,60,.12)' },
     dark:  { bg: '#121a10', surface: '#192218', text: '#e6ecdf', muted: '#93a28b', line: '#27322a', accent: '#8ec46d', heat0: '#20291f', 'on-accent': '#121a10' },
   },
+  th_s_ember: {   // v1.18 30-day streak
+    light: { bg: '#fbf3ec', surface: '#fffaf5', text: '#2e1f17', muted: '#7a6253', line: '#efdccd', accent: '#d9602a', heat0: '#f3e4d7', 'accent-soft': 'rgba(217,96,42,.12)' },
+    dark:  { bg: '#17110e', surface: '#211814', text: '#f3e7de', muted: '#b29a8a', line: '#33251e', accent: '#ff8a3d', heat0: '#2a1f19', 'on-accent': '#17110e' },
+  },
   th_moonlit: {
     light: { bg: '#f1f0fa', surface: '#faf9ff', text: '#23223a', muted: '#636282', line: '#dedcf0', accent: '#5b63c9', heat0: '#e5e3f3', 'accent-soft': 'rgba(91,99,201,.12)' },
     dark:  { bg: '#0f1024', surface: '#171833', text: '#e7e6f7', muted: '#9c9cc0', line: '#272848', accent: '#a9b4ff', heat0: '#1f2040', 'on-accent': '#0f1024' },
@@ -8246,7 +8294,7 @@ function applyTheme(themeArg) {
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (USER) applyTheme(); });
 
-const RING_CLASSES = { ring_g_orbit: 'rs-orbit', ring_thin: 'rs-thin', ring_dots: 'rs-dots', ring_grad: 'rs-grad', ring_glow: 'rs-glow', ring_number: 'rs-none' };
+const RING_CLASSES = { ring_s_flame: 'rs-flame', ring_g_orbit: 'rs-orbit', ring_thin: 'rs-thin', ring_dots: 'rs-dots', ring_grad: 'rs-grad', ring_glow: 'rs-glow', ring_number: 'rs-none' };
 let lastDots = -1;
 function applyRingStyle() {
   const ring = $('#ring');
@@ -8576,6 +8624,7 @@ function renderProgress() {
           ${tile(`${g.freezesHeld}/${MAX_FREEZES}`, 'Streak freezes')}
         </div>
         ${loginCard()}
+        ${streakMilesCard(g)}
         <div class="card"><h2>Badges</h2><div class="tiergrid">${tiers}</div></div>
         ${auraCard()}
         ${groupCard}
@@ -8606,6 +8655,7 @@ function ringPreview(id) {
       return `<circle cx="${(30 + 22 * Math.cos(a)).toFixed(1)}" cy="${(30 + 22 * Math.sin(a)).toFixed(1)}" r="1.8" style="fill:${i < 24 * p ? 'var(--accent)' : 'var(--line)'}"/>`;
     }).join('') + '</svg>';
   }
+  if (id === 'ring_s_flame') return svg + `<circle cx="30" cy="30" r="22" fill="none" style="stroke:color-mix(in srgb, #f07a2a 20%, var(--line))" stroke-width="4"/><circle class="pv-flame" cx="30" cy="30" r="22" fill="none" style="stroke:#f07a2a;filter:drop-shadow(0 0 3px rgba(240,122,42,.7))" stroke-width="4" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - p)).toFixed(1)}"/></svg>`;
   const w = id === 'ring_thin' ? 1.5 : 4;
   if (id === 'ring_grad') svg += '<defs><linearGradient id="pvGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.25"/></linearGradient></defs>';
   const stroke = id === 'ring_grad' ? 'url(#pvGrad)' : 'var(--accent)';
@@ -10829,17 +10879,65 @@ async function claimBossRewards(id, mode) {
   if (S.ui.tab === 'quests') renderQuests();
 }
 
-/* ---------- Reward reveal (boss and questline claims) ---------- */
+/* ---------- Streak milestones (v1.18) ----------
+   3 · 7 · 14 · 30 · 50 · 100 · 200 · 365 days, judged on the longest streak (computeStreaks follows the per-day goal
+   history, so changing the goal never re-awards one). Claims live in the add-only S.game.claims.milestones, so a broken
+   and rebuilt streak never pays a milestone again. Several reached at once (an update, an import) share one celebration. */
+const streakRewardText = m => [`${fmtNum(STREAK_BONUS[m])} coins`, ...(STREAK_REWARDS[m] || []).filter(id => ITEM_BY_ID[id]).map(id => ITEM_BY_ID[id].name)].join(' · ');
+/** The next milestone not yet claimed, with the current streak towards it (null when every one is claimed). */
+function streakNext(cur) {
+  const cl = S.game.claims.milestones || {}, m = STREAK_MILES.find(x => !cl[x]);
+  return m ? { m, cur: Math.min(cur, m), left: Math.max(0, m - cur) } : null;
+}
+function showStreakMilestones(ms) {
+  ms = [...new Set(ms.map(Number))].filter(m => STREAK_BONUS[m]).sort((a, b) => a - b);
+  if (!ms.length || isPreview()) return;
+  const top = ms[ms.length - 1], coins = ms.reduce((t, m) => t + STREAK_BONUS[m], 0);
+  const items = ms.flatMap(m => STREAK_REWARDS[m] || []).filter(id => ITEM_BY_ID[id]);
+  inboxAdd({ type: 'streak', key: 'sm:' + ms.join(','), title: `🔥 ${top}-day streak${ms.length > 1 ? ` · ${ms.length} milestones` : ''}`, body: `+${fmtNum(coins)} coins${items.length ? ' · ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : ''}`, go: { tab: 'profile' }, read: true });
+  const nx = streakNext(game().streak.cur);
+  showRewardReveal({ kicker: ms.length > 1 ? `Streak milestones · ${ms.join(' · ')} days` : 'Streak milestone', title: `${top}-day streak!`, items, coins, pal: ['#f28c28', '#e5654f'],
+    note: nx ? `Next: ${nx.m} days · ${streakRewardText(nx.m)}` : 'Every streak milestone reached. Legendary.', key: 'sm:' + ms.join(',') });
+}
+/** The profile card: every milestone, what it gives, the next one's progress. */
+function streakMilesCard(g = game()) {
+  if (!S.settings.gamification) return '';
+  const cl = S.game.claims.milestones || {}, nx = streakNext(g.streak.cur), n = STREAK_MILES.filter(m => cl[m]).length;
+  const rows = STREAK_MILES.map(m => {
+    const got = cl[m], isNext = nx && nx.m === m;
+    return `<div class="sm-row${got ? ' done' : ''}${isNext ? ' next' : ''}" data-mile="${m}"><span class="sm-d">${m}</span><div class="sm-main"><div class="sm-n">${m}-day streak</div><div class="lbl">${esc(streakRewardText(m))}</div></div><span class="sm-st">${got ? '✓' : isNext ? `${nx.cur}/${m}` : LOCK_SVG}</span></div>`;
+  }).join('');
+  const bar = nx ? `<div class="xpbar sm-bar" style="margin:8px 0 4px"><i data-fill="${(nx.cur / nx.m * 100).toFixed(1)}" data-fill-key="smile"></i></div><div class="lbl">${nx.cur} / ${nx.m} days · ${nx.left} to go for the ${nx.m}-day milestone</div>`
+    : '<p class="lbl" style="margin:6px 0 0">Every streak milestone reached. Legendary.</p>';
+  return `<div class="card sm-card" id="streakMiles"><div class="row between"><h2 style="margin:0">Streak milestones</h2><span class="lbl">${n} / ${STREAK_MILES.length}</span></div>${bar}
+    <div class="sm-list">${rows}</div><p class="lbl" style="margin:8px 0 0">Judged on your longest streak. Each milestone pays once, even if a streak breaks and is rebuilt.</p></div>`;
+}
+/** Under the streak on the Timer: the next milestone and how far along it is. */
+function renderStreakNext(cur) {
+  const el = $('#streakNext');
+  if (!el) return;
+  const nx = USER && S.settings.gamification ? streakNext(cur) : null;
+  el.classList.toggle('hidden', !nx);
+  if (!nx) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="sn-top"><span>Next milestone: <b>${nx.m} days</b></span><span class="lbl">${nx.left === 1 ? '1 day to go' : nx.left + ' days to go'}</span></div>
+    <div class="sn-bar"><i style="transform:translateX(${(nx.cur / nx.m * 100 - 100).toFixed(1)}%)"></i></div><div class="lbl sn-gift">${esc(streakRewardText(nx.m))}</div>`;
+}
+
+/* ---------- Reward reveal (boss and questline claims, streak milestones) ---------- */
 function showRewardReveal(opt) {
-  if (!userJustActed() && holdForFocus('reveal', 'rv:' + opt.title, () => showRewardReveal(opt))) return;
-  const { kicker, title, items, pal = [] } = opt;
+  if (!userJustActed() && holdForFocus('reveal', opt.key || 'rv:' + opt.title, () => showRewardReveal(opt))) return;
+  const { kicker, title, items, pal = [], coins = 0, note = '' } = opt;
   const dlg = $('#rewardDlg'), g = game();
   if (pal[0]) dlg.style.setProperty('--rw1', pal[0]); else dlg.style.removeProperty('--rw1');
   if (pal[1]) dlg.style.setProperty('--rw2', pal[1]); else dlg.style.removeProperty('--rw2');
   $('#rwKicker').textContent = kicker;
   $('#rwTitle').textContent = title;
   $('#rwPomeo').innerHTML = pomeoOn() ? pomeoSVG({ state: 'excited', ...pomeoOutfit() }) : '';
-  $('#rwItems').innerHTML = items.map((id, i) => { const it = ITEM_BY_ID[id]; return `<div class="rw-item r-${itemRarity(it)}" style="--i:${i}"><div class="rw-pv">${rewardPreview(it, g)}</div><div class="rw-n">${esc(it.name)}</div><div class="lbl">${esc(CAT_LABEL[it.cat] || it.cat)}</div></div>`; }).join('');
+  $('#rwItems').innerHTML = (coins ? `<div class="rw-item rw-coins" style="--i:0"><div class="rw-pv">${COIN_SVG.replace('width="14" height="14"', 'width="40" height="40"')}</div><div class="rw-n">+${fmtNum(coins)} coins</div><div class="lbl">Coins</div></div>` : '')
+    + items.map((id, i) => { const it = ITEM_BY_ID[id]; return `<div class="rw-item r-${itemRarity(it)}" style="--i:${i + (coins ? 1 : 0)}"><div class="rw-pv">${rewardPreview(it, g)}</div><div class="rw-n">${esc(it.name)}</div><div class="lbl">${esc(CAT_LABEL[it.cat] || it.cat)}</div></div>`; }).join('');
+  $('#rwBagNote').classList.toggle('hidden', !items.length);
+  $('#rwBag').classList.toggle('hidden', !items.length);
+  $('#rwNote').textContent = note; $('#rwNote').classList.toggle('hidden', !note);
   if (!dlg.open) dlg.showModal();
   if (motion() !== 'off') setTimeout(() => burstParticles($('#rwItems'), motion() === 'full' ? 24 : 8), 120);
   uiClaim(); uiSound('reward', { always: true });
@@ -13078,6 +13176,8 @@ function rmFloor(id) {
   return `<rect x="0" y="168" width="400" height="82" fill="${a}"/>${pat}`;
 }
 const RM_ART = {
+  shelf_s_trophy: '<rect x="300" y="118" width="80" height="5" rx="1" fill="#8a6238"/><rect x="332" y="112" width="16" height="6" rx="1" fill="#8a6238"/><rect x="338" y="104" width="4" height="8" fill="#c9a227"/><path d="M329 86h22v6q0 11-11 12-11-1-11-12Z" fill="#e3b341"/><path d="M329 89q-7 0-6 6t7 5M351 89q7 0 6 6t-7 5" stroke="#c9a227" stroke-width="2" fill="none"/><path d="M340 88c1.8 1.8 3 3.4 2.3 5.2-.4 1.1-1.3 1.6-2.3 1.6s-1.9-.5-2.3-1.6c-.7-1.8.5-3.4 2.3-5.2Z" fill="#f28c28"/><text x="340" y="101.5" font-size="5.5" font-weight="800" text-anchor="middle" fill="#8a6238" font-family="system-ui,sans-serif">100</text><path d="M362 96l.9 1.9 1.9.9-1.9.9-.9 1.9-.9-1.9-1.9-.9 1.9-.9Z" fill="#ffd166"/>',
+  plant_s_golden: '<rect x="350" y="206" width="34" height="20" rx="2" fill="#d9c7a3"/><rect x="347" y="202" width="40" height="5" rx="1.5" fill="#cbb48a"/><ellipse cx="367" cy="189" rx="13" ry="12" fill="#e3b341"/><ellipse cx="367" cy="196" rx="9" ry="4" fill="#b8871a" opacity=".35"/><ellipse cx="361.5" cy="183" rx="3.4" ry="2" fill="#fff3c4" opacity=".75"/><path d="M367 177v-3.6" stroke="#b8871a" stroke-width="1.6" stroke-linecap="round"/><path d="M367.4 174.4c1.2-3 4.4-3.8 7-2.6-1.2 2.6-4.4 3.8-7 2.6Z" fill="#c99a22"/><circle cx="363.4" cy="189" r="1.15" fill="#7a5a10"/><circle cx="370.6" cy="189" r="1.15" fill="#7a5a10"/><path d="M366 192q1 .8 2 0" stroke="#7a5a10" stroke-width="1" stroke-linecap="round" fill="none"/><path d="M384 170l1 2.1 2.1 1-2.1 1-1 2.1-1-2.1-2.1-1 2.1-1Z" fill="#fff3c4"/>',
   poster_g_together: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fff6e8" stroke="#c9a66b" stroke-width="3"/><circle cx="278" cy="68" r="12" fill="#e5654f"/><circle cx="302" cy="68" r="12" fill="#f28c6b"/><path d="M278 55l-3-4 3 1 3-1Z M302 55l-3-4 3 1 3-1Z" fill="#4e8a4a"/><text x="290" y="92" font-size="9" font-weight="800" fill="#8a6238" text-anchor="middle" font-family="system-ui, sans-serif">100 h together</text>',
   rug_round: '<ellipse cx="200" cy="228" rx="100" ry="17" fill="#d98c6b"/><ellipse cx="200" cy="228" rx="78" ry="12" fill="none" stroke="#f2c9b3" stroke-width="3"/>',
   rug_stripe: '<rect x="100" y="212" width="200" height="30" rx="4" fill="#5b8db8"/><path d="M100 220h200M100 228h200M100 236h200" stroke="#dbe9f5" stroke-width="2"/>',
@@ -14997,6 +15097,7 @@ const EYE = (x, y, r = .9) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#2a1d1
 const TOMATO = (c, leaf = '#5c9b57') => `<ellipse cx="12" cy="13.6" rx="7.4" ry="6.6" fill="${c}"/><ellipse cx="9.2" cy="11.2" rx="1.8" ry="1" fill="#fff" opacity=".28" transform="rotate(-28 9.2 11.2)"/><path d="M12 7.6 9.9 6.4l.7 1.7-2 .5 2.1.5 1.3-.3 1.3.3 2.1-.5-2-.5.7-1.7Z" fill="${leaf}"/>${EYE(9.8, 13.6, .85)}${EYE(14.2, 13.6, .85)}<path d="M10.9 15.9q1.1.9 2.2 0" stroke="#2a1d18" stroke-width=".8" stroke-linecap="round" fill="none"/><circle cx="8.3" cy="15.4" r="1" fill="#ff9d8c" opacity=".55"/><circle cx="15.7" cy="15.4" r="1" fill="#ff9d8c" opacity=".55"/>`;
 const AVATAR_ART = {
   av_g_duo: { bg: '#fde3dc', art: '<ellipse cx="8.4" cy="14" rx="5.4" ry="4.9" fill="#e5654f"/><ellipse cx="15.8" cy="14.6" rx="5" ry="4.5" fill="#f28c6b"/><path d="M8.4 9.2l-1.6-1.8 1.6.5 1.6-.5ZM15.8 10.1l-1.5-1.7 1.5.5 1.5-.5Z" fill="#4e8a4a"/><circle cx="7" cy="13.6" r=".7" fill="#3a2a2a"/><circle cx="9.8" cy="13.6" r=".7" fill="#3a2a2a"/><circle cx="14.6" cy="14.2" r=".7" fill="#3a2a2a"/><circle cx="17.2" cy="14.2" r=".7" fill="#3a2a2a"/><rect x="4" y="19" width="16" height="1.6" rx=".8" fill="#c98b4a"/>' },
+  av_s_flame: { bg: '#ffe6cf', art: '<path d="M12 1.6c2.6 2.6 5.4 4.8 5.4 8.4 0 .6-.1 1.1-.2 1.6H6.8c-.1-.5-.2-1-.2-1.6 0-1.9.9-3.3 2-4.2.3 1.4 1.1 2.3 1.9 2.6-.4-2.4.1-4.7 1.5-6.8Z" fill="#f28c28"/><path d="M12 4.6c1.4 1.5 2.8 2.8 2.8 4.8 0 .4 0 .7-.1 1H9.3c-.1-.3-.1-.6-.1-1 0-1 .5-1.8 1.1-2.3.2.8.6 1.3 1 1.4-.2-1.3.1-2.6.7-3.9Z" fill="#ffd166"/>' + TOMATO('#e5654f') },   // v1.18 50-day streak
   av_g_star: { bg: '#fff3cf', art: TOMATO('#e5654f') + '<path d="M12 6.2l1.1 2.2 2.4.3-1.8 1.6.5 2.4L12 11.6l-2.2 1.1.5-2.4-1.8-1.6 2.4-.3Z" fill="#ffd166" stroke="#c9a12a" stroke-width=".4"/>' },
   av_tomato: { bg: '#fde3dc', art: TOMATO('#e5654f') },
   av_book: { bg: '#e2ecf9', art: '<path d="M4.5 7.8q3.7-1.6 7.5 0v10q-3.8-1.6-7.5 0Z" fill="#fff" stroke="#5b7fd6" stroke-width=".9" stroke-linejoin="round"/><path d="M19.5 7.8q-3.7-1.6-7.5 0v10q3.8-1.6 7.5 0Z" fill="#fff" stroke="#5b7fd6" stroke-width=".9" stroke-linejoin="round"/><path d="M6.4 10.4h3.6M6.4 12.6h3.6M14 10.4h3.6M14 12.6h2.6" stroke="#a9bde8" stroke-width=".8" stroke-linecap="round"/>' },
@@ -15149,6 +15250,7 @@ const SPECIAL_AURAS = {
   au_clan: { cols: ['#2f8f83', '#e3b341', '#5fb3a5'], name: 'Clan guard aura', lv: 4, spin: true },
   au_g_storm: { cols: ['#5b7fd6', '#9b7be0', '#7ec8e3'], name: 'Storm aura', lv: 5, spin: true, shim: true },
   au_g_bloom: { cols: ['#f28ab0', '#6fb162', '#ffd166'], name: 'Bloom aura', lv: 5, spin: true, shim: true },
+  au_s_eternal: { cols: ['#ffb347', '#f2552c', '#ffd166'], name: 'Eternal flame aura', lv: 6, spin: true, shim: true, flare: true },   // v1.18 365-day streak
 };
 for (const b of BOSSES) {
   // 1 one colour · 2 two colours · 3 a stronger pulse · 4 spinning · 5 + shimmer · 6 + a flare (Squad = one step up)
@@ -15175,7 +15277,7 @@ for (const r of RAID_BOSSES) SPECIAL_AURAS['au_cr_' + r.id] = { cols: [r.a, r.b,
 
 // ---- Titles and session-complete effects ----
 const TITLE_TEXT = Object.fromEntries(EV_ITEMS.filter(x => x[1] === 'title').map(x => [x[0], x[2]]));
-for (const it of ITEMS) if (it.cat === 'title' && /^ti_(host|table_host|study_buddy|social_scholar|campus_legend|clan_scholar|five_star|market)$/.test(it.id)) TITLE_TEXT[it.id] = it.name;   // v1.18
+for (const it of ITEMS) if (it.cat === 'title' && /^ti_(host|table_host|study_buddy|social_scholar|campus_legend|clan_scholar|five_star|market|s_roll|s_unbreak)$/.test(it.id)) TITLE_TEXT[it.id] = it.name;   // v1.18 (group, clan, garden and streak titles)
 Object.assign(TITLE_TEXT, { ti_gardener: 'Gardener', ti_greenthumb: 'Green Thumb', ti_harvestmoon: 'Harvest Moon' });   // garden looks (v1.16)
 const EV_FX = Object.fromEntries(EVENTS.filter(ev => EV_LOOK[ev.id].fx).map(ev => ['fx_ev_' + ev.id, EV_LOOK[ev.id].fx]));
 
