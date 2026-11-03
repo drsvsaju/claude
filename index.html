@@ -499,6 +499,7 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 /* v1.18 long-term: the quest board, the monthly track, Pomeo's stage, the collection log */
 .wq-list { display: grid; gap: 8px; margin-top: 10px; }
 .wq-row { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; }
+.wq-row.na { opacity: .6; }
 .wq-row.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--accent-soft); }
 .wq-main { flex: 1; min-width: 0; } .wq-t { font-weight: 650; font-size: 14px; overflow-wrap: anywhere; }
 .wq-bar, .sn-bar.evo-bar { height: 5px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 6px 0 4px; }
@@ -7010,17 +7011,18 @@ function groupStats() {
   const g = { min: 0, clanMin: 0, blocks: 0, people: new Set(), hosted: new Set(), sessions: new Set(), days: new Set(), night: 0, early: 0, weekend: 0, longest: 0, sync3: 0, table: 0, run: 0, coins: [] };
   const newPerDay = {}, clanPerDay = {};
   for (const s of list.filter(x => x && x.live).sort((a, b) => a.end - b.end)) {
-    if (s.hs) g.hosted.add(s.live);
     const m = matesOf(s);
-    if (!m.length) continue;
+    if (!m.length) continue;   // a table where nobody else focused earns nothing, hosting included
+    if (s.hs) g.hosted.add(s.live);
     const min = (+s.duration || 0) / 60000, d = new Date(s.end), day = dayKey(d), h = new Date(s.start).getHours();
     g.min += min; g.blocks++; g.sessions.add(s.live); g.days.add(day); g.longest = Math.max(g.longest, min); g.table = Math.max(g.table, m.length + 1);
     if (h >= 22 || h < 4) g.night++;
     if (h >= 4 && h < 7) g.early++;
     if (d.getDay() === 0 || d.getDay() === 6) g.weekend++;
     if (s.syf) g.sync3++;
-    if (s.clan) { g.clanMin += min; clanPerDay[day] = (clanPerDay[day] || 0) + CLAN_BLOCK_COINS; if (clanPerDay[day] <= CLAN_BLOCK_DAY_MAX) g.coins.push([s.end, CLAN_BLOCK_COINS]); }
-    for (const u of m) if (!g.people.has(u)) { g.people.add(u); newPerDay[day] = (newPerDay[day] || 0) + 1; if (newPerDay[day] <= GROUP_PARTNER_DAY_MAX) g.coins.push([s.end, GROUP_PARTNER_COINS]); }
+    const cd = d.toISOString().slice(0, 10);   // the coin caps count per UTC day: every device agrees, whatever its time zone
+    if (s.clan) { g.clanMin += min; clanPerDay[cd] = (clanPerDay[cd] || 0) + CLAN_BLOCK_COINS; if (clanPerDay[cd] <= CLAN_BLOCK_DAY_MAX) g.coins.push([s.end, CLAN_BLOCK_COINS]); }
+    for (const u of m) if (!g.people.has(u)) { g.people.add(u); newPerDay[cd] = (newPerDay[cd] || 0) + 1; if (newPerDay[cd] <= GROUP_PARTNER_DAY_MAX) g.coins.push([s.end, GROUP_PARTNER_COINS]); }
   }
   let run = 0, prev = '';
   for (const k of [...g.days].sort()) { run = prev && dayKey(addDays(parseDay(prev), 1)) === k ? run + 1 : 1; g.run = Math.max(g.run, run); prev = k; }
@@ -7894,7 +7896,7 @@ function reconcileRewards(mode = 'quiet') {
   if (!isPreview()) {   // v1.18: the weekly quest board (this week and last), the monthly track (this month and last), Pomeo's stages
     for (const mon of [weekMonday(), addDays(weekMonday(), -7)]) for (const q of wqBoard(mon)) {
       const k = dayKey(mon) + ':' + q.id;
-      if (!cl.wq[k] && wqVal(q, mon) >= q.n) { cl.wq[k] = Math.min(now, +addDays(mon, 7) - 1); wqGive(q, k, cl.wq[k]); news.push({ type: 'wq', q }); }
+      if (!cl.wq[k] && wqVal(q, mon) >= q.n) { cl.wq[k] = Math.min(now, +addDays(mon, 7) - 1); wqGive(q, k, cl.wq[k]); news.push({ type: 'wq', q, k }); }
     }
     for (const mk of [monthKey(now), monthKey(+new Date(new Date().getFullYear(), new Date().getMonth(), 0))]) {
       const h = trackHours(mk);
@@ -9904,7 +9906,7 @@ function renderPomeo() {
   const host = $('#pomeoHost');
   if (!host || !USER) return;
   host.classList.toggle('hidden', !pomeoOn());
-  const o = pomeoCostume || pomeoOutfit(), key = o.hat + o.acc + o.skin;   // a festive costume for the greeting
+  const o = pomeoCostume || pomeoOutfit(), key = o.hat + o.acc + o.skin + ':' + pomeoEvo();   // a festive costume for the greeting; a new stage redraws him
   if (key !== pomeoKey || !$('#mascot')) {
     pomeoKey = key;
     const st = $('#mascot') ? $('#mascot').dataset.state : 'idle';
@@ -10952,9 +10954,11 @@ const WQ_POOL = [
 const WQ_BY_ID = Object.fromEntries(WQ_POOL.map(q => [q.id, q]));
 const WQ_SEEDS = ['lavender', 'blueberry', 'rose', 'pumpkin'];
 const wqSeedOf = key => WQ_SEEDS[h32(key) % WQ_SEEDS.length];
-/** This week's three quests: the same for everyone (seeded by the week); guests skip "with someone", True Minimalist skips the garden ones. */
+/** This week's three quests: the same for everyone and on every device (seeded by the week only, so the set of quests that
+ *  can pay in a week never changes). A quest that can't apply (a guest and "with someone") is shown as not available. */
+const wqNA = q => (q.cloud && (!USER || USER.guest)) ? 'Needs an account (study sessions)' : '';
 function wqBoard(mon = weekMonday()) {
-  const pool = WQ_POOL.filter(q => !(q.cloud && (!USER || USER.guest)) && !(q.garden && minimal()));
+  const pool = WQ_POOL;
   const r = h32('wq' + dayKey(mon)), out = [], idx = pool.map((_, i) => i);
   for (let i = 0; i < 3 && idx.length; i++) out.push(pool[idx.splice((r >>> (i * 5)) % idx.length, 1)[0]]);
   return out;
@@ -11015,8 +11019,8 @@ function trackCoinsAt(t) {
 }
 function announceQuest(n) {
   if (isPreview()) return;
-  const text = n.type === 'wq' ? `Weekly quest done: ${n.q.t(n.q.n)} · ${wqRewardText(n.q)}` : `${monthName(n.mk)} track: ${n.t.h} h reached · ${trackText(n.t, n.mk)}`;
-  inboxAdd({ type: 'boss', key: n.type + ':' + (n.type === 'wq' ? n.q.id + dayKey(weekMonday()) : n.mk + n.t.h), title: '📋 ' + text, go: { tab: 'quests' }, read: true });
+  const text = n.type === 'wq' ? `Weekly quest done: ${n.q.t(n.q.n)} · ${wqRewardText(n.q, n.k)}` : `${monthName(n.mk)} track: ${n.t.h} h reached · ${trackText(n.t, n.mk)}`;
+  inboxAdd({ type: 'boss', key: n.type + ':' + (n.type === 'wq' ? n.k : n.mk + ':' + n.t.h), title: '📋 ' + text, go: { tab: 'quests' }, read: true });
   if (!holdForFocus('toast', 'qt:' + text, () => toast('📋 ' + text, 3200, true, { log: false }))) toast('📋 ' + text, 3200, true, { log: false });
 }
 const monthName = mk => { const [y, m] = mk.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString([], { month: 'long' }); };
@@ -11026,7 +11030,8 @@ function renderBoardView(host) {
   const rows = wqBoard(mon).map(q => {
     const k = wk + ':' + q.id, v = wqVal(q, mon), got = !!cl.wq[k], pct = Math.min(1, v / q.n);
     const shown = q.unit === 'h' ? (Math.floor(Math.min(v, q.n) * 10) / 10) : Math.min(Math.floor(v), q.n);
-    return `<div class="wq-row${got ? ' done' : ''}" data-wq="${q.id}"><div class="wq-main"><div class="wq-t">${esc(q.t(q.n))}</div>
+    const na = !got && wqNA(q);
+    return `<div class="wq-row${got ? ' done' : ''}${na ? ' na' : ''}" data-wq="${q.id}"><div class="wq-main"><div class="wq-t">${esc(q.t(q.n))}${na ? ` <span class="lbl">· ${esc(na)}</span>` : ''}</div>
       <div class="wq-bar"><i style="transform:translateX(${(pct * 100 - 100).toFixed(1)}%)"></i></div>
       <div class="lbl">${got ? '✓ Done · ' : `${shown} / ${q.n}${q.unit && q.unit !== 'days' ? ' ' + q.unit : ''} · `}${esc(wqRewardText(q, k))}</div></div><span class="wq-st">${got ? '✓' : Math.round(pct * 100) + '%'}</span></div>`;
   }).join('');
@@ -18815,7 +18820,8 @@ async function clanBonusFlush(items) {
       const [ms, cs] = [await tx.get(mref), await tx.get(cref)];
       if (!ms.exists() || !cs.exists()) return 0;
       const m = ms.data(), c = cs.data(), had = m.bday === today ? (+m.bcp || 0) : 0, add = Math.min(add0, CLAN_BONUS_DAY_MAX - had);
-      if (add <= 0) return 0;
+      const joined = m.joinedAt && m.joinedAt.toMillis ? m.joinedAt.toMillis() : +m.joinedAt || 0;
+      if (add <= 0 || Date.now() - joined < 864e5 + 60000) return 0;   // no bonus in the first day of membership (the rules check it: leaving and rejoining can't refill a day)
       tx.update(mref, { bday: today, bcp: had + add, updatedAt: FB.serverTimestamp() });
       tx.update(cref, { bonus: (+c.bonus || 0) + add, updatedAt: FB.serverTimestamp() });
       if (CLAN.doc) CLAN.doc.bonus = (+c.bonus || 0) + add;

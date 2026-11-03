@@ -539,6 +539,7 @@ service cloud.firestore {
         && request.resource.data.members == 1 && request.resource.data.xp == 0 && request.resource.data.spent == 0
         && request.resource.data.owned.size() == 0 && request.resource.data.tq == 0 && request.resource.data.tr == 0
         && request.resource.data.quests.size() == 0 && request.resource.data.raids.size() == 0                       // nothing won yet
+        && request.resource.data.get('bonus', 0) == 0                                                                 // no bonus Clan Points yet (v1.18)
         && request.resource.data.weekMin == 0 && request.resource.data.monthMin == 0 && request.resource.data.weekGroups == 0 && request.resource.data.gstreak == 0
         && dayKeyOk(request.resource.data.weekKey) && monthKeyOk(request.resource.data.monthKey) && request.resource.data.raidHP == raidHPFor(request.resource.data.monthKey, 1)
         && request.resource.data.createdAt == request.time;
@@ -791,8 +792,11 @@ service cloud.firestore {
       let n = request.resource.data;
       let o = resource.data;
       let had = n.bday == o.get('bday', '') ? o.get('bcp', 0) : 0;
+      let y = request.time - duration.value(1, 'd');
       return uid == me() && isMember(cid) && changed(['bday', 'bcp', 'updatedAt'])
         && dayKeyOk(n.bday) && n.bday >= o.get('bday', '') && n.bcp is int && n.bcp > had && n.bcp <= 6
+        && int(n.bday[0:4]) * 10000 + int(n.bday[5:7]) * 100 + int(n.bday[8:10]) >= y.year() * 10000 + y.month() * 100 + y.day()   // today or yesterday only
+        && o.joinedAt < request.time - duration.value(1, 'd')                                                        // not in the first day of membership
         && getAfter(clanPath(cid)).data.get('bonus', 0) - get(clanPath(cid)).data.get('bonus', 0) == n.bcp - had
         && n.updatedAt == request.time;
     }
