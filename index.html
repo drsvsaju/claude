@@ -8991,13 +8991,14 @@ function writePublic(col, data) {
       return;
     }
     // Rules from before 1.19 refuse the season / streak fields: publish without them for a while, then try again.
-    if (e.code === 'permission-denied' && (('seasonKey' in data) || ('streak' in data)) && !SOC.v19Rejected && (col === 'publicProfiles' || (SOC.statRetries || 0) >= 2)) {
-      SOC.v19Rejected = true;
-      console.warn('Firestore rules do not accept the v1.19 rank / streak fields yet — publishing without them. Publish the v1.19 rules.');
-      delete lastPub.publicProfiles; delete lastPub.publicStats;
-      setTimeout(() => { publishPublic(); setTimeout(() => { SOC.v19Rejected = false; }, 10 * 60000); }, 300);
+    if (e.code === 'permission-denied' && col === 'publicProfiles' && 'seasonKey' in data && !SOC.v19ProfRejected) {
+      SOC.v19ProfRejected = true;   // rules from before 1.19: the profile goes without its season for a while
+      console.warn('Firestore rules do not accept the profile season fields yet — publish the v1.19 rules.');
+      delete lastPub.publicProfiles;
+      setTimeout(() => { publishPublic(); setTimeout(() => { SOC.v19ProfRejected = false; }, 10 * 60000); }, 300);
       return;
     }
+    if (col === 'rankStats') return;   // handled by publishRank
     // Rules from before clans (or a clan you just left) refuse "clanTag": publish without it.
     if (e.code === 'permission-denied' && 'clanTag' in data && !SOC.clanTagRejected) {
       SOC.clanTagRejected = true;
@@ -9054,31 +9055,9 @@ function myPeriodStats() {
   };
 }
 /** Keep within what the security rules allow (e.g. after importing a big history, totals catch up over a few sessions). */
-/** v1.19: the profile carries the same season numbers as the published stats (badges on friend rows, tables, clans). */
-function profileSeason() {
-  if (SOC.v19Rejected || SOC.v19ProfRejected) return {};
-  const st = SOC.myStats, f = clampStats({ ...myPeriodStats(), ...seasonFields() }, st);
-  return 'seasonKey' in f ? { seasonKey: f.seasonKey, seasonMin: f.seasonMin, prevPeak: f.prevPeak } : {};
-}
-function clampStats(n, o) {
-  const cap = { dayMin: 1440, weekMin: 10080, weekMinSun: 10080, monthMin: 44640 };
-  // the garden totals (v1.16): never below what is published, growth bounded like the rules (2 produce per minute,
-  // a harvest per 30 minutes); a document from before 1.16 takes the whole total once
-  const gcap = { produce: 10000000, harvests: 1000000 };
+/** v1.19: rankStats as the rules will accept it, given what was published last (o, with o.at = when). */
+function clampRank(n, o) {
   const allow = o ? Math.floor(Math.max(0, (Date.now() - o.at) / 60000 - 1)) + 239 : 0;
-  for (const k of ['produce', 'harvests']) {
-    const room = k === 'produce' ? allow * 2 : Math.floor(allow / 30) + 2;
-    n[k] = !o || o[k] === undefined || o[k] === null ? Math.min(Math.max(0, Math.round(+n[k] || 0)), gcap[k]) : Math.max(+o[k], Math.min(Math.round(+n[k] || 0), +o[k] + room));
-  }
-  if (!o) { for (const k in cap) n[k] = Math.min(n[k], cap[k]); n.lifeMin = Math.min(n.lifeMin, 3600000); }
-  else {
-    for (const [kf, mf] of [['dayKey', 'dayMin'], ['weekKey', 'weekMin'], ['weekKeySun', 'weekMinSun'], ['monthKey', 'monthMin']]) {
-      n[mf] = n[kf] === o[kf] ? Math.max(o[mf], Math.min(n[mf], o[mf] + allow)) : Math.min(n[mf], allow, cap[mf]);
-    }
-    n.lifeMin = Math.max(o.lifeMin, Math.min(n.lifeMin, o.lifeMin + allow));
-  }
-  n.weekMin = Math.min(n.weekMin, n.lifeMin); n.weekMinSun = Math.min(n.weekMinSun, n.lifeMin); n.monthMin = Math.min(n.monthMin, n.lifeMin);
-  n.dayMin = Math.min(n.dayMin, n.weekMin, n.weekMinSun, n.monthMin);
   // v1.19 season (mirrors the rules): within a season never down and at most the real time since the last write + 4 h;
   // a new season starts from that bound; last season's peak is fixed for the season and never above what was published
   if ('seasonKey' in n) {
@@ -9100,6 +9079,33 @@ function clampStats(n, o) {
       n.streak = Math.min(n.streak, (+o.streak || 0) + room, n.bestStreak);
     }
   }
+  return n;
+}
+/** v1.19: the profile carries the same season numbers as the published stats (badges on friend rows, tables, clans). */
+function profileSeason() {
+  if (SOC.v19Rejected || SOC.v19ProfRejected) return {};
+  const f = clampRank({ ...seasonFields() }, SOC.myRank);
+  return 'seasonKey' in f ? { seasonKey: f.seasonKey, seasonMin: f.seasonMin, prevPeak: f.prevPeak } : {};
+}
+function clampStats(n, o) {
+  const cap = { dayMin: 1440, weekMin: 10080, weekMinSun: 10080, monthMin: 44640 };
+  // the garden totals (v1.16): never below what is published, growth bounded like the rules (2 produce per minute,
+  // a harvest per 30 minutes); a document from before 1.16 takes the whole total once
+  const gcap = { produce: 10000000, harvests: 1000000 };
+  const allow = o ? Math.floor(Math.max(0, (Date.now() - o.at) / 60000 - 1)) + 239 : 0;
+  for (const k of ['produce', 'harvests']) {
+    const room = k === 'produce' ? allow * 2 : Math.floor(allow / 30) + 2;
+    n[k] = !o || o[k] === undefined || o[k] === null ? Math.min(Math.max(0, Math.round(+n[k] || 0)), gcap[k]) : Math.max(+o[k], Math.min(Math.round(+n[k] || 0), +o[k] + room));
+  }
+  if (!o) { for (const k in cap) n[k] = Math.min(n[k], cap[k]); n.lifeMin = Math.min(n.lifeMin, 3600000); }
+  else {
+    for (const [kf, mf] of [['dayKey', 'dayMin'], ['weekKey', 'weekMin'], ['weekKeySun', 'weekMinSun'], ['monthKey', 'monthMin']]) {
+      n[mf] = n[kf] === o[kf] ? Math.max(o[mf], Math.min(n[mf], o[mf] + allow)) : Math.min(n[mf], allow, cap[mf]);
+    }
+    n.lifeMin = Math.max(o.lifeMin, Math.min(n.lifeMin, o.lifeMin + allow));
+  }
+  n.weekMin = Math.min(n.weekMin, n.lifeMin); n.weekMinSun = Math.min(n.weekMinSun, n.lifeMin); n.monthMin = Math.min(n.monthMin, n.lifeMin);
+  n.dayMin = Math.min(n.dayMin, n.weekMin, n.weekMinSun, n.monthMin);
   return n;
 }
 /** v1.19: this season's counted minutes and last season's peak (as published, see clampStats). */
@@ -9126,7 +9132,7 @@ function publishPublic(first) {
     joined: user && user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : Date.now() - 3600e3,
     ...profileSeason(),
   });
-  const stats = clampStats({ username: USER.username, ...flair, ...(SOC.auraOk ? aura : {}), global: !!s.globalBoard, ...myPeriodStats(), ...seasonFields(), ...streakFields() }, SOC.myStats);
+  const stats = clampStats({ username: USER.username, ...flair, ...(SOC.auraOk ? aura : {}), global: !!s.globalBoard, ...myPeriodStats() }, SOC.myStats);
   if (SOC.gardenStatsRejected) { delete stats.produce; delete stats.harvests; }
   const p = writePublic('publicStats', stats), probing = !!SOC.gardenProbe && !('produce' in stats);   // this very write is the probe (without the fields)
   if (p) p.then(() => {
@@ -9142,10 +9148,29 @@ function publishPublic(first) {
     }
   });
   writePublic('activity', activityDoc());
+  publishRank(flair, aura);   // v1.19
   SOC.lb = {};  // my own numbers changed
+}
+/** v1.19: rankStats/{uid} — the Ranks and Streaks boards (my look, this season, last season's peak, the streaks). */
+function publishRank(flair, aura) {
+  if (SOC.v19Rejected || isPreview()) return;
+  const look = { username: USER.username, level: flair.level, tier: flair.tier, frame: flair.frame, color: flair.color, ...(flair.avatar ? { avatar: flair.avatar } : {}), ...(SOC.auraOk ? aura : {}) };
+  const doc = clampRank({ ...look, global: !!S.settings.globalBoard, ...seasonFields(), ...streakFields() }, SOC.myRank);
+  const p = writePublic('rankStats', doc);
+  if (p) p.then(() => { SOC.myRank = { ...doc, at: Date.now() }; SOC.rankRetries = 0; }, e => {
+    if (e.code !== 'permission-denied') return;
+    if ((SOC.rankRetries = (SOC.rankRetries || 0) + 1) <= 2) { delete lastPub.rankStats; refreshMyRank().then(schedulePublish); return; }   // another device wrote newer numbers: re-read, try again
+    SOC.v19Rejected = true; SOC.rankRetries = 0;   // rules from before 1.19: leave the boards alone for a while
+    console.warn('Firestore rules do not accept rankStats yet — publish the v1.19 rules for the Ranks and Streaks boards.');
+    setTimeout(() => { SOC.v19Rejected = false; delete lastPub.rankStats; }, 10 * 60000);
+  });
+}
+async function refreshMyRank() {
+  try { const st = await FB.getDoc(FB.doc(FB.db, 'rankStats', USER.uid)); SOC.myRank = st.exists() ? { ...st.data(), at: st.data().updatedAt.toMillis() } : null; } catch (e) { /* offline */ }
 }
 async function refreshMyStats() {
   try { const st = await FB.getDoc(FB.doc(FB.db, 'publicStats', USER.uid)); SOC.myStats = st.exists() ? { ...st.data(), at: st.data().updatedAt.toMillis() } : null; } catch (e) { /* offline */ }
+  if (!SOC.myRankRead) { SOC.myRankRead = true; await refreshMyRank(); }   // v1.19
 }
 /** What friends may see. If sharing is off, nothing but "private" is written. */
 function activityDoc() {
@@ -9394,22 +9419,23 @@ async function loadLeaderboard(scope, period, force) {
   const ck = `${scope}|${period}|${periodKey(period)}|${S.settings.weekStart}`;
   const c = SOC.lb[ck];
   if (c && !force && Date.now() - c.at < CACHE_MS) return c;
-  const me = { uid: USER.uid, ...JSON.parse(lastPub.publicStats || '{}'), username: USER.username };
-  const mine = minutesFor(clampStats({ ...myPeriodStats(), ...seasonFields(), ...streakFields() }, null), period);
+  const me = { uid: USER.uid, ...JSON.parse(lastPub.publicStats || '{}'), ...JSON.parse(lastPub.rankStats || '{}'), username: USER.username };
+  const mine = minutesFor({ ...myPeriodStats(), ...clampRank({ ...seasonFields(), ...streakFields() }, null) }, period);
   let rows = [], myRow = null, error = '';
   try {
+    const statCol = boardKindOf(period) === 'rank' || boardKindOf(period) === 'streak' ? 'rankStats' : 'publicStats';   // v1.19
     if (scope === 'friends') {
       const ids = friendsList().map(otherUid);
-      const docs = await Promise.all(ids.map(id => getPublic('publicStats', id, force ? 0 : CACHE_MS)));
+      const docs = await Promise.all(ids.map(id => getPublic(statCol, id, force ? 0 : CACHE_MS)));
       rows = docs.map((d, i) => d && !d.denied ? { uid: ids[i], ...d, minutes: minutesFor(d, period) } : null).filter(Boolean);
       if (boardKindOf(period) === 'garden') rows = rows.filter(r => r[periodField(period).min] !== undefined);   // friends on an app before 1.16 have no garden totals yet
       rows.push({ ...me, minutes: mine });
     } else {
-      const f = periodField(period), col = FB.collection(FB.db, 'publicStats');
+      const f = periodField(period), col = FB.collection(FB.db, statCol);
       const cons = [FB.where('global', '==', true)];
       if (f.key) cons.push(FB.where(f.key, '==', periodKey(period)));
       const qs = await FB.getDocs(FB.query(col, ...cons, FB.orderBy(f.min, 'desc'), FB.limit(50)));
-      rows = qs.docs.map(d => ({ uid: d.id, ...d.data(), minutes: d.data()[f.min] || 0 }));
+      rows = qs.docs.map(d => ({ uid: d.id, ...d.data(), minutes: minutesFor(d.data(), period) }));   // (minutesFor drops a stale streak — v1.19)
       if (S.settings.globalBoard && !rows.some(r => r.uid === USER.uid) && mine > 0) {
         const cnt = await FB.getCountFromServer(FB.query(col, ...cons, FB.where(f.min, '>', mine)));
         myRow = { ...me, minutes: mine, rank: cnt.data().count + 1 };
@@ -9419,7 +9445,7 @@ async function loadLeaderboard(scope, period, force) {
     console.warn('leaderboard', e);
     error = /index/i.test(e.message) ? 'This leaderboard needs a Firestore index — see the setup notes (the browser console has a one-click link).' : 'Couldn’t load the leaderboard. Check your connection.';
   }
-  if (period === 'streak' || period === 'season') rows = rows.filter(r => r.minutes > 0 || r.uid === USER.uid);   // stale streaks and last season's hours drop off
+  if (period === 'streak' || period === 'season') rows = rows.filter(r => r.minutes > 0);   // stale streaks and last season's hours drop off (my own number stays in the line below the board)
   rows.sort((a, b) => b.minutes - a.minutes || (a.username < b.username ? -1 : 1));
   rows.forEach((r, i) => { r.rank = i + 1; });
   // Errors are cached briefly too (retry after ~20 s) so a failing query can't loop.
@@ -11336,7 +11362,7 @@ function announceRank(n, mode) {
   // a rank-up: a small toast right away (even during a block), the celebration once the block ends
   const R = RANK_MAJORS[rankMajor(n.idx)], r = myRank();
   inboxAdd({ type: 'level', key: 'rk:' + seasonKeyNow() + ':' + n.idx, title: `⬆️ Rank up: ${rankName(n.idx)}`, body: items.length ? 'New: ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : `${fmtH(r.min)} this season`, go: { tab: 'profile' }, read: true });
-  if (guardOn()) toast(`⬆️ Rank up: ${rankName(n.idx)}`, 2400, true, { log: false });
+  if (guardOn()) toast(`⬆️ Rank up: ${rankName(n.idx)}`, 2400, true, { log: false, now: true });   // the small one may show during the block
   showRewardReveal({ kicker: 'Rank up', title: rankName(n.idx), items, pal: [R.col, R.col2], key: 'rk:' + seasonKeyNow() + ':' + n.idx,
     note: r.next !== null ? `${fmtH(r.min)} this season · ${rankName(r.next)} in ${fmtH(r.left)}` : `${fmtH(r.min)} this season · the top rank` });
 }
@@ -16483,8 +16509,15 @@ function demoDocs() {
   DEMO_FRIENDS.forEach((f, i) => {
     const weekMin = Math.max(30, weekOf[i]), dayMin = Math.round(Math.min(weekMin, 35 + i * 20));
     const pub = { username: f.name, level: f.level, tier: f.tier, frame: ITEM_BY_ID[f.frame] ? f.frame : 'frame_none', color: ITEM_BY_ID[f.color] ? f.color : 'col_default', avatar: f.avatar };
-    docs['publicProfiles/' + f.uid] = { ...pub, streak: f.streak, longest: f.streak + 6, hours: Math.round(f.life / 6) / 10, joined: Date.now() - (120 + i * 30) * 864e5, updatedAt: ts(Date.now()) };
+    // v1.19 sample: this season's counted minutes (plausible for the day of the month), last season's peak, streaks
+    // (Justin's streak ended days ago, so it drops off the Current streak board)
+    const dayCap = new Date().getUTCDate() * RANK_DAY_CAP, firstSeason = seasonPrev(seasonKeyNow()) < RANK_FROM;
+    const season = { seasonKey: seasonKeyNow(), seasonMin: Math.min(dayCap, [1900, 640, 260, 2400, 1180][i]), prevPeak: firstSeason ? 0 : [10, 9, 2, 13, 6][i] };
+    const joined = Date.now() - (120 + i * 30) * 864e5, sday = i === 2 ? dayKey(addDays(startOfDay(now), -5)) : dayKey(addDays(startOfDay(now), i % 2 ? -1 : 0));
+    const streaks = { streak: f.streak, bestStreak: f.streak + 6 + i * 3, streakDay: sday, joined };
+    docs['publicProfiles/' + f.uid] = { ...pub, streak: f.streak, longest: f.streak + 6, hours: Math.round(f.life / 6) / 10, joined, ...season, updatedAt: ts(Date.now()) };
     docs['publicStats/' + f.uid] = { ...pub, global: true, dayKey: dayKey(now), dayMin, weekKey: wk, weekMin, weekKeySun: wkSun, weekMinSun: weekMin, monthKey: monthKeyOf(now), monthMin: weekMin * 3, lifeMin: f.life, lastWeekKey: dayKey(addDays(mon, -7)), lastWeekMin: weekMin + 40, ...(f.produce ? { produce: f.produce, harvests: f.harvests } : {}), updatedAt: ts(Date.now()) };   // Justin has no garden totals yet (an older app), so he is off the garden boards
+    docs['rankStats/' + f.uid] = { ...pub, global: true, ...season, ...streaks, updatedAt: ts(Date.now()) };   // v1.19 boards
     const days = {}, goalDays = [];
     for (let k = 0; k < 28; k++) { if ((k * 7 + i) % 5 === 4) continue; const m = 60 + ((k * 37 + i * 11) % 120); days[dayKey(addDays(startOfDay(now), -k))] = m; if (m >= 120) goalDays.push(dayKey(addDays(startOfDay(now), -k))); }
     docs['activity/' + f.uid] = { visible: true, shareNames: true, days, goalDays, streak: f.streak, longest: f.streak + 6, updatedAt: ts(Date.now()),
@@ -21184,7 +21217,7 @@ function personLook(uid, name = '', extra = null) {
       streak: g.streak.cur, tier: g.tier.id, level: g.lv.level, clanTag: clanTagOn() ? CLAN.doc.tag : '', rank: seasonKeyNow() >= RANK_FROM ? myRank().idx : null };
   }
   const ok = d => d && typeof d === 'object' && !d.denied;
-  const pub = [cached('publicProfiles', uid), cached('publicStats', uid), extra && 'username' in extra ? extra : null].filter(ok).sort((a, b) => tsOf(b) - tsOf(a));
+  const pub = [cached('publicProfiles', uid), cached('publicStats', uid), cached('rankStats', uid), extra && 'username' in extra ? extra : null].filter(ok).sort((a, b) => tsOf(b) - tsOf(a));
   const src = pub[0] || (ok(extra) ? extra : {});
   const any = k => { for (const d of [...pub, extra]) if (ok(d) && d[k] !== undefined && d[k] !== '') return d[k]; return undefined; };
   const tier = TIERS.some(t => t.id === src.tier) ? src.tier : TIERS.some(t => t.id === any('tier')) ? any('tier') : TIERS[0].id;

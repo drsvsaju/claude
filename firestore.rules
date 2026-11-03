@@ -104,18 +104,19 @@ service cloud.firestore {
     match /publicStats/{uid} {
       allow get: if signedIn() && (me() == uid || ((resource.data.global == true || isFriend(uid)) && !blockedBy(uid)));
       allow list: if signedIn() && resource.data.global == true;   // global leaderboard queries
-      allow create: if signedIn() && me() == uid && validStats() && createLimits() && request.resource.data.get('prevPeak', 0) == 0;
+      allow create: if signedIn() && me() == uid && validStats() && createLimits();
       allow update: if signedIn() && me() == uid && validStats() && updateLimits();
       allow delete: if signedIn() && me() == uid;
     }
     function validStats() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'clanTag', 'global',
+      // (on an update only the changed keys are checked: the stored document passed this check when it was written,
+      //  and checking every key against the list costs too many of the 1,000 expressions a request may use — v1.19)
+      return (resource == null ? d.keys() : d.diff(resource.data).affectedKeys()).hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'clanTag', 'global',
                                'dayKey', 'dayMin', 'weekKey', 'weekMin', 'weekKeySun', 'weekMinSun',
-                               'monthKey', 'monthMin', 'lifeMin', 'lastWeekKey', 'lastWeekMin', 'produce', 'harvests',
-                               'seasonKey', 'seasonMin', 'prevPeak', 'streak', 'bestStreak', 'streakDay', 'joined', 'updatedAt'])
+                               'monthKey', 'monthMin', 'lifeMin', 'lastWeekKey', 'lastWeekMin', 'produce', 'harvests', 'updatedAt'])
         && d.username == myName()
-        && validAvatar(d) && validAura(d) && validClanTag(d) && validGardenTotals(d) && validSeason(d) && validStreak(d)
+        && validAvatar(d) && validAura(d) && validClanTag(d) && validGardenTotals(d)
         && d.global is bool
         && d.level is int && d.level >= 1 && d.level <= 1000
         && d.tier is string && d.tier.size() <= 20 && d.frame is string && d.frame.size() <= 30 && d.color is string && d.color.size() <= 30
@@ -142,29 +143,55 @@ service cloud.firestore {
     // may take any value under its ceiling; while it stays on the document it never goes down and grows at most
     // perMin per minute since the last write (plus one 4-hour session), plus slack. Like lifeMin's first upload,
     // this is a self-reported stat: dropping and re-adding the field resets the bound (accepted; see the notes).
-    function growsTotal(f, perMin, slack) {
-      let n = request.resource.data;
-      let o = resource.data;
-      return !(f in n) || !(f in o) || (n[f] >= o[f] && n[f] - o[f] <= (elapsedMin() + 240) * perMin + slack);
+    function growsTotal(n, o, f, perMin, slack, room) {
+      return !(f in n) || !(f in o) || (n[f] >= o[f] && n[f] - o[f] <= room * perMin + slack);
     }
     function createLimits() { return true; }                  // first upload may include past history
     // Minutes since this document was last written (server clock).
     function elapsedMin() { return (request.time.toMillis() - resource.data.updatedAt.toMillis()) / 60000; }
     // Within the same period a total can't go down, and can't grow by more than the real time
     // that has passed since the last write plus one 4-hour session. A new period starts from 0.
-    function grows(keyField, minField) {
-      let n = request.resource.data;
-      let o = resource.data;
-      return (n[keyField] == o[keyField] && n[minField] >= o[minField] && n[minField] - o[minField] <= elapsedMin() + 240)
-          || (n[keyField] != o[keyField] && n[minField] <= elapsedMin() + 240);
+    // (n, o and room — minutes since the last write + one 4-hour session — are computed once per request: the rules
+    // engine allows 1,000 expressions per request, and recomputing them in every check went over it in v1.19)
+    function grows(n, o, keyField, minField, room) {
+      return (n[keyField] == o[keyField] && n[minField] >= o[minField] && n[minField] - o[minField] <= room)
+          || (n[keyField] != o[keyField] && n[minField] <= room);
     }
     function updateLimits() {
       let n = request.resource.data;
       let o = resource.data;
-      return grows('dayKey', 'dayMin') && grows('weekKey', 'weekMin') && grows('weekKeySun', 'weekMinSun') && grows('monthKey', 'monthMin')
-        && n.lifeMin >= o.lifeMin && n.lifeMin - o.lifeMin <= elapsedMin() + 240
-        && growsTotal('produce', 2.0, 0) && growsTotal('harvests', 0.034, 2)   // ≤ 2 produce per minute of focus; a harvest per ~30 minutes (v1.16)
-        && seasonGrows() && streakGrows();                                      // v1.19
+      let room = elapsedMin() + 240;
+      return grows(n, o, 'dayKey', 'dayMin', room) && grows(n, o, 'weekKey', 'weekMin', room) && grows(n, o, 'weekKeySun', 'weekMinSun', room) && grows(n, o, 'monthKey', 'monthMin', room)
+        && n.lifeMin >= o.lifeMin && n.lifeMin - o.lifeMin <= room
+        && growsTotal(n, o, 'produce', 2.0, 0, room) && growsTotal(n, o, 'harvests', 0.034, 2, room);   // ≤ 2 produce per minute of focus; a harvest per ~30 minutes (v1.16)
+    }
+
+    // ---------------- v1.19: ranks and streaks (a document of their own) ----------------
+    // rankStats/{uid}: the look shown on the boards, the global flag, this season's counted minutes and last season's
+    // peak, the current and best streak with the last day the goal was met, and the account's creation time. Kept out
+    // of publicStats so neither document's checks come near the rules engine's 1,000-expression budget per request.
+    match /rankStats/{uid} {
+      allow get: if signedIn() && (me() == uid || ((resource.data.global == true || isFriend(uid)) && !blockedBy(uid)));
+      allow list: if signedIn() && resource.data.global == true;   // the global Ranks and Streaks boards
+      allow create: if signedIn() && me() == uid && validRankStats() && request.resource.data.prevPeak == 0;
+      allow update: if signedIn() && me() == uid && validRankStats() && rankGrows();
+      allow delete: if signedIn() && me() == uid;
+    }
+    function validRankStats() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'global',
+                               'seasonKey', 'seasonMin', 'prevPeak', 'streak', 'bestStreak', 'streakDay', 'joined', 'updatedAt'])
+        && d.username == myName() && d.global is bool && validAvatar(d) && validAura(d)
+        && d.level is int && d.level >= 1 && d.level <= 1000
+        && d.tier is string && d.tier.size() <= 20 && d.frame is string && d.frame.size() <= 30 && d.color is string && d.color.size() <= 30
+        && validSeason(d) && 'seasonKey' in d && validStreak(d) && 'streak' in d
+        && d.updatedAt == request.time;
+    }
+    function rankGrows() {
+      let n = request.resource.data;
+      let o = resource.data;
+      let room = (request.time.toMillis() - o.updatedAt.toMillis()) / 60000 + 240;
+      return seasonGrows(n, o, room) && streakGrows(n, o, room);
     }
 
     // ---------------- v1.19: seasons (ranks) and streaks ----------------
@@ -185,13 +212,11 @@ service cloud.firestore {
         || (d.seasonKey == seasonKeyNow() && d.seasonMin is int && d.seasonMin >= 0 && d.seasonMin <= request.time.day() * 840
             && d.prevPeak is int && d.prevPeak >= 0 && d.prevPeak <= 16);
     }
-    function seasonGrows() {
-      let n = request.resource.data;
-      let o = resource.data;
+    function seasonGrows(n, o, room) {
       return !('seasonKey' in n)
         || (!('seasonKey' in o) && n.prevPeak == 0)
-        || (n.seasonKey == o.seasonKey && n.seasonMin >= o.seasonMin && n.seasonMin - o.seasonMin <= elapsedMin() + 240 && n.prevPeak == o.prevPeak)
-        || (n.seasonKey != o.seasonKey && n.seasonMin <= elapsedMin() + 240 && n.prevPeak <= rankOf(o.seasonMin));
+        || (n.seasonKey == o.seasonKey && n.seasonMin >= o.seasonMin && n.seasonMin - o.seasonMin <= room && n.prevPeak == o.prevPeak)
+        || (n.seasonKey != o.seasonKey && n.seasonMin <= room && n.prevPeak <= rankOf(o.seasonMin));
     }
     // Streaks: whole numbers, best ≥ current, best no longer than the account is old (joined = the account's creation
     // time; it never changes once published); the best never goes down and both grow by at most the elapsed days + 2.
@@ -203,12 +228,10 @@ service cloud.firestore {
             && d.bestStreak <= (request.time.toMillis() - d.joined) / 86400000 + 2
             && d.streakDay is string && (d.streakDay == '' || dayKeyOk(d.streakDay)));
     }
-    function streakGrows() {
-      let n = request.resource.data;
-      let o = resource.data;
+    function streakGrows(n, o, room) {
+      let days = (room - 240) / 1440 + 2;
       return !('streak' in n) || !('streak' in o)
-        || (n.joined == o.joined && n.bestStreak >= o.bestStreak
-            && n.bestStreak - o.bestStreak <= elapsedMin() / 1440 + 2 && n.streak - o.streak <= elapsedMin() / 1440 + 2);
+        || (n.joined == o.joined && n.bestStreak >= o.bestStreak && n.bestStreak - o.bestStreak <= days && n.streak - o.streak <= days);
     }
 
     // ---------------- Friend-visible activity + "focusing now" ----------------
