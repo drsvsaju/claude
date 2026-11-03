@@ -9425,7 +9425,9 @@ function socialAfterSession() {
 function renderFriends(fromLoad) {
   const body = $('#friendsBody');
   const gameOn = S.settings.gamification;
-  $('#friendsSeg').classList.toggle('hidden', !!SOC.friend || !USER || USER.guest);
+  // (the force argument must be a real boolean: USER.guest is undefined for accounts, and toggle(…, undefined) flips the
+  //  class on every render — the v1.17 "can't get back from Challenges" bug)
+  $('#friendsSeg').classList.toggle('hidden', !!(SOC.friend || !USER || USER.guest));
   $$('#friendsSeg [data-view=challenges]').forEach(b => b.classList.toggle('hidden', !gameOn));
   if (!USER || USER.guest) {
     body.innerHTML = `<div class="card empty-card">${pomeoScene('wave') || `<div class="big-icon">${iconSVG(ICONS.names, 30)}</div>`}<h3>Focus with friends</h3>
