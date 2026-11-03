@@ -496,6 +496,14 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 .sm-row .sm-st { flex: 0 0 auto; font-weight: 700; font-size: 13px; color: var(--muted); } .sm-row.done .sm-st { color: #e5654f; }
 .sm-card .sm-bar i { background: linear-gradient(90deg, #f2a65a, #e5654f); }
 .rw-note { margin: 6px 0 0; }
+/* landing cards (v1.18): a mini session lobby and the streak milestones */
+.fx-sess { display: grid; gap: 6px; width: 100%; max-width: 240px; }
+.fx-srow { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 12px; text-align: left; }
+.fx-srow > span:nth-child(2) { flex: 1; min-width: 0; display: grid; } .fx-srow b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .fx-srow small { color: var(--muted); }
+.fx-srow .fx-av { display: flex; } .fx-srow .fx-av svg + svg { margin-left: -6px; }
+.fx-srow i { font-style: normal; font-weight: 700; color: var(--accent); }
+.fx-miles { display: flex; gap: 8px; } .fx-miles span { width: 46px; height: 52px; border-radius: 12px; display: grid; place-items: center; align-content: center; border: 1px solid var(--line); background: var(--surface); }
+.fx-miles span.ok { background: linear-gradient(135deg, #f2a65a, #e5654f); color: #fff; border-color: transparent; } .fx-miles b { font-size: 16px; } .fx-miles small { font-size: 10px; opacity: .85; }
 /* v1.18 long-term: the quest board, the monthly track, Pomeo's stage, the collection log */
 .wq-list { display: grid; gap: 8px; margin-top: 10px; }
 .wq-row { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; }
@@ -3736,7 +3744,7 @@ body.first-load #todayBar { opacity: 0; }
             </div>
           </div>
         </div>
-        <ul class="pk-chips" aria-hidden="true"><li>⏱️ Focus timer</li><li>📊 Stats &amp; streaks</li><li>🌱 Tomato garden</li><li>⚔️ Boss battles</li><li>🛡️ Clans</li><li>🔔 Reminders</li></ul>
+        <ul class="pk-chips" aria-hidden="true"><li>⏱️ Focus timer</li><li>📊 Stats &amp; streaks</li><li>🌱 Tomato garden</li><li>⚔️ Boss battles</li><li>👥 Study sessions</li><li>🛡️ Clans</li><li>🔥 Streak rewards</li><li>🔔 Reminders</li></ul>
       </div>
       <div class="lp-look" aria-label="Try a look">
           <span class="lbl">Try a look</span>
@@ -7943,7 +7951,8 @@ function announce(news, mode) {
   if (evo.length && (mode === 'loud' || mode === 'initial')) announceEvo(Math.max(...evo));
   for (const n of news) if ((n.type === 'wq' || n.type === 'track') && (mode === 'loud' || mode === 'initial')) announceQuest(n);
   const miles = news.filter(n => n.type === 'streak').map(n => n.m);
-  if (miles.length && (mode === 'loud' || mode === 'initial')) showStreakMilestones(miles);   // one skippable celebration (v1.18)
+  if (miles.length && mode === 'loud') showStreakMilestones(miles);   // one skippable celebration (v1.18)
+  else if (miles.length && mode === 'initial') showStreakMilestones(miles, true);   // first load (an update, an import): a notice, not a dialog over the app
   for (const n of news) {
     if (n.type === 'freeze') toast(`Streak Freeze used for ${n.n === 1 ? 'a missed day' : n.n + ' missed days'} — your streak is safe`, 4000);
     else if (mode !== 'loud') continue;
@@ -11131,12 +11140,13 @@ function streakNext(cur) {
   const cl = S.game.claims.milestones || {}, m = STREAK_MILES.find(x => !cl[x]);
   return m ? { m, cur: Math.min(cur, m), left: Math.max(0, m - cur) } : null;
 }
-function showStreakMilestones(ms) {
+function showStreakMilestones(ms, quiet = false) {
   ms = [...new Set(ms.map(Number))].filter(m => STREAK_BONUS[m]).sort((a, b) => a - b);
   if (!ms.length || isPreview()) return;
   const top = ms[ms.length - 1], coins = ms.reduce((t, m) => t + STREAK_BONUS[m], 0);
   const items = ms.flatMap(m => STREAK_REWARDS[m] || []).filter(id => ITEM_BY_ID[id]);
-  inboxAdd({ type: 'streak', key: 'sm:' + ms.join(','), title: `🔥 ${top}-day streak${ms.length > 1 ? ` · ${ms.length} milestones` : ''}`, body: `+${fmtNum(coins)} coins${items.length ? ' · ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : ''}`, go: { tab: 'profile' }, read: true });
+  inboxAdd({ type: 'streak', key: 'sm:' + ms.join(','), title: `🔥 ${top}-day streak${ms.length > 1 ? ` · ${ms.length} milestones` : ''}`, body: `+${fmtNum(coins)} coins${items.length ? ' · ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : ''}`, go: { tab: 'profile' }, read: !quiet });
+  if (quiet) { const t = `🔥 Streak milestones unlocked: ${ms.join(' · ')} days · +${fmtNum(coins)} coins${items.length ? ' and ' + items.length + ' reward' + (items.length > 1 ? 's' : '') : ''}`; if (!holdForFocus('toast', 'smq', () => toast(t, 4200, true, { type: 'streak', go: { tab: 'profile' }, log: false }))) toast(t, 4200, true, { type: 'streak', go: { tab: 'profile' }, log: false }); return; }
   const nx = streakNext(game().streak.cur);
   showRewardReveal({ kicker: ms.length > 1 ? `Streak milestones · ${ms.join(' · ')} days` : 'Streak milestone', title: `${top}-day streak!`, items, coins, pal: ['#f28c28', '#e5654f'],
     note: nx ? `Next: ${nx.m} days · ${streakRewardText(nx.m)}` : 'Every streak milestone reached. Legendary.', key: 'sm:' + ms.join(',') });
@@ -15901,7 +15911,11 @@ function initLanding() {
       `<div class="fx-garden">${plants.map((k, i) => `<span style="display:contents">${plantSVG(k).replace('<svg', `<svg style="animation-delay:${i * .5}s"`)}</span>`).join('')}</div>`],
     ['Boss battles with friends', 'A new boss every week. Every focus minute is a hit — fight solo or team up in a squad with friends.',
       `<div class="fx-boss"><div class="bsv">${bossSVG(boss.id)}</div><div class="fx-hp"><i></i></div></div>`],
-    ['Pomeo & reminders', 'Pomeo cheers you on and pops up when it’s time for your next study block. Add reminders to your calendar too.',
+    ['Study sessions with friends', 'Host a public, friends-only or invite-link session — no clan needed. Friends ask to join, you let them in, and studying together earns rewards.',
+      `<div class="fx-sess"><div class="fx-srow"><span class="fx-av">${avatarSVG('av_fox', 22)}${avatarSVG('av_robot', 22)}</span><span><b>Organic chemistry sprint</b><small>2 focusing · public</small></span><i>Join</i></div><div class="fx-srow"><span class="fx-av">${avatarSVG('av_panda', 22)}</span><span><b>Mock test marathon</b><small>friends only</small></span><i>Ask</i></div></div>`],
+    ['Streak milestones', 'Rewards at 3, 7, 14, 30, 50, 100, 200 and 365 days: titles, a theme, a flame Pomeo, a trophy, an animated frame and aura.',
+      `<div class="fx-miles">${[[7, 1], [14, 1], [30, 0], [50, 0]].map(([m, ok], i) => `<span class="${ok ? 'ok' : ''}" style="animation-delay:${i * .15}s"><b>${m}</b><small>${ok ? '✓' : 'days'}</small></span>`).join('')}</div>`],
+    ['Pomeo & reminders', 'Pomeo cheers you on, grows with your focus hours and pops up when it’s time for your next study block. Add reminders to your calendar too.',
       `<div class="fx-pomeo">${pomeoSVG({ state: 'happy' })}<span class="fx-bub">Physics at 6 PM? ⏰</span></div>`],
     ['True Minimalist mode', 'Prefer it plain? One switch hides levels, coins, the shop and quests for a calm, clean timer. Nothing is lost.',
       `<div class="fx-min"><div class="busy"><span>Lv 12 · +25 XP</span><b>25:00</b><span>🔥 23 days</span></div><div class="calm">25:00</div></div>`],
@@ -16068,6 +16082,13 @@ function demoSessions() {
       const s = { id: `demo${d}_${k++}`, name, start: +st, end, duration: len * 6e4, planned: len * 6e4, preset: len >= 45 ? 'Deep Work 50/10' : 'Classic 25/5',
         stamp: ['stamp_pixel', 'stamp_tomato', 'stamp_pixel', 'stamp_classic', 'stamp_pixel'][(d + k) % 5] };
       if (d < 6 && rnd() < .5) s.subtasks = TASKS[name].map((t, i) => ({ t, d: i < 2 || rnd() < .5 }));
+      // v1.18 sample: blocks at a table where friends were focusing too — the clan table most evenings, a few
+      // public study sessions, some hosted by the demo — so "Studying together", the clan-session milestones and
+      // the new achievements have something to show (fake uids of the demo friends only)
+      if (d <= 26 && k % 2 === 0) {
+        const mates = [['demo_f1', 'demo_f4'], ['demo_f5'], ['demo_f1', 'demo_f2', 'demo_f5'], ['demo_f4']][(d + k) % 4];
+        Object.assign(s, { live: 'demo_t' + d + '_' + k, mates, stamp: 'stamp_together' }, (d + k) % 3 ? { clan: 'demo_clan' } : { lt: ['Organic chemistry sprint', 'Mock test marathon'][d % 2] }, d % 5 === 0 ? { hs: 1 } : {});
+      }
       out.push(s);
       mins += len;
       h += len >= 45 ? 2 : 1 + Math.floor(rnd() * 2);
@@ -16139,7 +16160,7 @@ function demoDocs() {
   // achievements and the two streak milestones below), so the coin replay never refunds a demo item. The three
   // newest cosmetics are gifts.
   const sessEnds = sessions.map(s => +s.end).sort((a, b) => a - b), msDemo = Date.now();
-  const estAt = t => sessEnds.filter(e => e <= t).length * COINS_PER_SESSION + (t >= msDemo - 20 * 864e5 ? STREAK_BONUS[3] || 0 : 0) + (t >= msDemo - 16 * 864e5 ? STREAK_BONUS[7] || 0 : 0)
+  const estAt = t => sessEnds.filter(e => e <= t).length * COINS_PER_SESSION + (t >= msDemo - 20 * 864e5 ? STREAK_BONUS[3] || 0 : 0) + (t >= msDemo - 16 * 864e5 ? STREAK_BONUS[7] || 0 : 0) + (t >= msDemo - 9 * 864e5 ? STREAK_BONUS[14] || 0 : 0)
     + Object.values(claimed.goalDays).filter(x => x <= t).length * GOAL_BONUS + Object.entries(claimed.achievements).filter(([, x]) => x <= t).reduce((a, [id]) => a + (ACH_BY_ID[id] ? ACH_BY_ID[id].coins : 0), 0);
   let cum = 0;
   own('', ['th_ocean', 'ring_grad', 'frame_double', 'hat_grad', 'acc_glasses', 'snd_digital', 'av_owl', 'col_teal', 'stamp_tomato', 'stamp_pixel', 'wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat', 'floor_tiles', 'trail_petals', 'stamp_leaf', 'th_mint']).forEach(([id, it], i) => {
@@ -16167,6 +16188,9 @@ function demoDocs() {
   grants.frame_cobweb = { src: 'ev:hw26', at: quests['hw26:q8'] };
   for (const t of Object.values(trophies)) grants['stamp_b_' + t.boss] = { src: `boss:${t.boss}:emblem`, at: t.at + 90e3 };   // boss emblem stamps
   grants.card_champion = { src: 'boss:mastered', at: Date.now() - 12 * 864e5 };   // the mastered week
+  const miles = { 3: Date.now() - 20 * 864e5, 7: Date.now() - 16 * 864e5, 14: Date.now() - 9 * 864e5 };   // v1.18: a 23-day streak → 3, 7, 14; next 30
+  for (const [m, at] of Object.entries(miles)) for (const id of STREAK_REWARDS[m] || []) if (ITEM_BY_ID[id]) grants[id] = { src: 'streak:' + m, at };
+  for (const [aid, at] of Object.entries(claimed.achievements)) { const a = ACH_BY_ID[aid]; for (const id of (a && a.reward && a.reward.items) || []) if (ITEM_BY_ID[id] && !grants[id]) grants[id] = { src: 'ach:' + aid, at }; }   // achievement rewards (titles, auras, frames …)
   const mastered = trophies[wkPast(2) + '|solo'].boss, cardAt = Date.now() - 864e5;
   const rec = sessions.slice(-30), energy = {};
   rec.forEach((s, i) => { energy[s.id] = new Date(s.start).getHours() < 12 ? (i % 5 ? 4 : 3) : (i % 3 ? 3 : 2); });
@@ -16178,9 +16202,9 @@ function demoDocs() {
     names: [['Physics', '#3f9fbf', 'JEE'], ['Chemistry', '#d0843d', 'JEE'], ['Maths', '#8b6cc8', 'JEE'], ['Biology', '#4f9a5a', 'Boards']].map(([name, color, tag]) => ({ name, color, tag })),
     recent: [{ name: 'Physics', presetId: 'p-deep', ts: Date.now() - 3600e3 }, { name: 'Maths', presetId: 'p-classic', ts: Date.now() - 7200e3 }, { name: 'Chemistry', presetId: 'p-deep', ts: Date.now() - 864e5 }],
     pinned: [{ name: 'Physics', presetId: 'p-deep' }],
-    game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb' },
-      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: { 3: Date.now() - 20 * 864e5, 7: Date.now() - 16 * 864e5 }, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])) }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
-    cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:7', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
+    game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb', title: 'ti_s_unbreak' },
+      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])) }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
+    cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:14', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
     loadouts: [{ id: 'demo_lo1', name: 'Exam mode', look: { theme: 'th_ocean', avatar: 'av_owl', frame: 'frame_double', color: 'col_teal', aura: 'au_streak', pomhat: 'hat_grad', pomacc: 'acc_glasses', pomskin: 'skin_none', title: 'ti_none' } },
       { id: 'demo_lo2', name: 'Spooky', look: { avatar: 'av_bat', frame: 'frame_cobweb', aura: 'au_streak', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none' } }],
     reminders: [
@@ -16233,6 +16257,8 @@ function demoDocs() {
   docs['inbox/demo/items/k1'] = { from: 'demo_f1', fromName: 'James', type: 'kudos', emoji: '🔥', target: 'st_' + dayKey(now), createdAt: ts(Date.now() - 1800e3) };
   // v1.18: two study sessions in the lobby — James hosts a public table, Ava a friends-only one
   docs['studySessions/demo_sess1'] = { title: 'Organic chemistry sprint', host: 'demo_f1', hostName: 'James', pattern: { focus: 25, short: 5, rounds: 4 }, mode: 'together', startAt: ts(Date.now() - 20 * 60000), pausedAt: 0, pauseTotal: 0, shift: 0, open: true, counted: false, vis: 'public', lobby: 'public', max: 6, members: ['demo_f1', 'demo_f2'], invited: [], plan: 0, code: 'DEMO2K26', hostAt: ts(Date.now() - 20 * 60000), createdAt: ts(Date.now() - 20 * 60000), endedAt: 0, updatedAt: ts(Date.now() - 60000) };
+  for (const [uid, name, av, st, min] of [['demo_f1', 'James', 'av_fox', 'focus', 25], ['demo_f2', 'siverieg', 'av_robot', 'focus', 25]])
+    docs[`studySessions/demo_sess1/people/${uid}`] = { name, avatar: av, color: '', aura: '', state: st, sname: 'Organic chemistry', min, beat: ts(Date.now() - 20e3), joinedAt: Date.now() - 20 * 60000, endAt: Date.now() + 5 * 60000, left: 0 };
   docs['studySessions/demo_sess2'] = { title: 'Mock test marathon', host: 'demo_f4', hostName: 'Princess_cupcake', pattern: { focus: 50, short: 10, rounds: 3 }, mode: 'synced', startAt: ts(Date.now() - 5 * 60000), pausedAt: 0, pauseTotal: 0, shift: 0, open: true, counted: false, vis: 'friends', lobby: 'friends', max: 4, members: ['demo_f4'], invited: ['demo'], plan: 0, code: '', hostAt: ts(Date.now() - 5 * 60000), createdAt: ts(Date.now() - 5 * 60000), endedAt: 0, updatedAt: ts(Date.now() - 60000) };
   docs['challenges/demo_c1'] = { preset: 'h10', weekKey: wk, creator: 'demo_f4', members: ['demo_f4', 'demo', 'demo_f1'], invited: ['demo'], names: { demo_f4: 'Princess_cupcake', demo: 'demo_scholar', demo_f1: 'James' },
     progress: { demo_f4: 410, demo: Math.round(myWeek), demo_f1: 280 }, createdAt: ts(Date.now() - 2 * 864e5) };
@@ -19904,6 +19930,7 @@ async function sessLoad(force) {
   SESS.mine = SESS.lobby.filter(l => (l.members || []).includes(USER.uid));
   SESS.at = Date.now();
   prefetchLooks(SESS.lobby.map(l => l.host), () => renderSessionBits());
+  renderSessionBits();   // the friend rows' "Studying now" and the lobby show as soon as it has loaded
   return SESS.lobby;
 }
 function sessExpire(sid) { if (!cloudReady() || isPreview()) return; FB.updateDoc(sessRef(sid), { open: false, lobby: 'none', invited: [], endedAt: Date.now(), updatedAt: FB.serverTimestamp() }).catch(() => {}); }
@@ -20876,7 +20903,7 @@ function demoClanDocs(ts, wk) {
   const docs = {
     'clanOf/demo': { clan: cid, at: ts(now - 40 * 864e5) },
     ['clans/' + cid]: { name: 'Night Owls', nameLower: 'night owls', tag: 'OWLS', desc: 'jee', emblem: 'ce_owl', banner: 'cb_galaxy', theme: 'ct_royal', frame: 'cf_silver', joinMode: 'approval', members: 5,
-      xp, level: clanLevelFor(xp), weekKey: wk, weekMin: 1310, monthKey: mk, monthMin: Math.round(raidHPFor(mk, 5) * .62), raidHP: raidHPFor(mk, 5), weekGroups: 2, lastLive: 'demo_live', spent, owned, lastBuy: 'cf_silver', tq: 3, tr: 1,
+      xp, level: clanLevelFor(xp), weekKey: wk, weekMin: 1310, monthKey: mk, monthMin: Math.round(raidHPFor(mk, 5) * .62), raidHP: raidHPFor(mk, 5), weekGroups: 2, lastLive: 'demo_live', spent, owned, lastBuy: 'cf_silver', tq: 3, tr: 1, bonus: 46,
       quests: {}, raids: { [prev]: 'leviathan' }, gday: dayKey(today), gstreak: 4, createdAt: ts(now - 60 * 864e5), updatedAt: ts(now) },
     [`clans/${cid}/private/info`]: { leader: 'demo_f1', code: 'OWLS2K26', officerShop: true, memberSchedule: true },
   };
