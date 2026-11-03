@@ -465,7 +465,7 @@ service cloud.firestore {
       return lv is int && lv >= 1 && lv <= 30 && xp >= T[lv - 1] && (lv == 30 || xp < T[lv]);
     }
     // Clan Points: earned from clan XP, levels, weekly quests and raids (never real money or personal coins)
-    function earned(d) { return math.floor(d.xp / 30) + (d.level - 1) * 25 + d.tq * 100 + d.tr * 300; }
+    function earned(d) { return math.floor(d.xp / 30) + (d.level - 1) * 25 + d.tq * 100 + d.tr * 300 + d.get('bonus', 0); }   // + bonus points from clan sessions (v1.18)
     // Clan shop: item -> [price in Clan Points, clan level needed]
     function shopItem(k) {
       return {
@@ -501,7 +501,7 @@ service cloud.firestore {
     function validClanDoc(d) {
       return d.keys().hasOnly(['name', 'nameLower', 'tag', 'desc', 'emblem', 'banner', 'theme', 'frame', 'joinMode', 'members',
                                'xp', 'level', 'weekKey', 'weekMin', 'monthKey', 'monthMin', 'raidHP', 'weekGroups', 'lastLive',
-                               'spent', 'owned', 'lastBuy', 'tq', 'tr', 'quests', 'raids', 'gday', 'gstreak', 'lastMember', 'createdAt', 'updatedAt'])
+                               'spent', 'owned', 'lastBuy', 'tq', 'tr', 'quests', 'raids', 'gday', 'gstreak', 'lastMember', 'bonus', 'createdAt', 'updatedAt'])
         && validClanName(d.name) && d.nameLower == d.name.lower() && validTag(d.tag)
         && d.desc in ['jee', 'neet', 'boards', 'college', 'coding', 'language', 'chill', 'upsc', 'school', 'work']
         && d.joinMode in ['approval', 'open']
@@ -574,7 +574,7 @@ service cloud.firestore {
                 && !existsAfter(/databases/$(database)/documents/clans/$(cid)/requests/$(uid))
                 && request.resource.data.name == get(/databases/$(database)/documents/clans/$(cid)/requests/$(uid)).data.name)
           );
-        allow update: if signedIn() && (memberFocus(cid, uid) || memberLook(cid, uid) || memberRole(cid, uid));
+        allow update: if signedIn() && (memberFocus(cid, uid) || memberLook(cid, uid) || memberRole(cid, uid) || memberBonus(cid, uid));
         // leave, be removed (officers remove members; the leader removes anyone), or disband
         allow delete: if signedIn() && (uid == me() || isLeader(cid) || (isOfficer(cid) && resource.data.role == 'member'));
       }
@@ -679,7 +679,15 @@ service cloud.firestore {
           || (k.hasOnly(['quests', 'tq', 'updatedAt']) && clanQuest(cid, n, o))
           || (k.hasOnly(['raids', 'tr', 'updatedAt']) && clanRaid(cid, n, o))
           || (k.hasOnly(['weekGroups', 'weekKey', 'weekMin', 'gday', 'gstreak', 'lastLive', 'updatedAt']) && clanGroup(cid, n, o))
+          || (k.hasOnly(['bonus', 'updatedAt']) && clanBonus(cid, n, o))
         );
+    }
+    // Bonus Clan Points (v1.18): exactly what my member row adds to today's count (at most 6 a day, see memberBonus).
+    function clanBonus(cid, n, o) {
+      let mo = get(memberPath(cid, me())).data;
+      let mn = getAfter(memberPath(cid, me())).data;
+      let had = mn.bday == mo.get('bday', '') ? mo.get('bcp', 0) : 0;
+      return isMember(cid) && n.bonus is int && n.bonus - o.get('bonus', 0) == mn.bcp - had && n.bonus > o.get('bonus', 0);
     }
     // A member's completed focus adds to the clan, exactly as much as to their own contribution.
     function clanFocus(cid, n, o) {
@@ -775,6 +783,17 @@ service cloud.firestore {
         && ((n.weekKey == o.weekKey && n.weekMin == o.weekMin + (n.contrib - o.contrib)) || (n.weekKey > o.weekKey && n.weekMin == n.contrib - o.contrib))
         && n.lastIds is list && n.lastIds.size() <= 12
         && n.lastAt is int && n.lastAt <= request.time.toMillis() + 600000      // device clocks can be a little ahead
+        && n.updatedAt == request.time;
+    }
+    // Today's bonus Clan Points from clan sessions (v1.18): the day can't run ahead of the calendar or go back, the count
+    // only grows within a day and stays at most 6, and the clan's bonus total grows by exactly the same amount.
+    function memberBonus(cid, uid) {
+      let n = request.resource.data;
+      let o = resource.data;
+      let had = n.bday == o.get('bday', '') ? o.get('bcp', 0) : 0;
+      return uid == me() && isMember(cid) && changed(['bday', 'bcp', 'updatedAt'])
+        && dayKeyOk(n.bday) && n.bday >= o.get('bday', '') && n.bcp is int && n.bcp > had && n.bcp <= 6
+        && getAfter(clanPath(cid)).data.get('bonus', 0) - get(clanPath(cid)).data.get('bonus', 0) == n.bcp - had
         && n.updatedAt == request.time;
     }
     // My look in the member list (picture, name colour, aura, level) and whether others see my session names.

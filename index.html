@@ -295,6 +295,16 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .chip.pinned .pin { color: var(--accent); }
 .chip.current { background: var(--accent-soft); }   /* the chip that is loaded right now (v1.18) */
 .sess-row .btn { flex: none; }
+.ach-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.seg.seg-wrap { flex-wrap: wrap; }
+.ach-sort select { margin-left: 6px; }
+.ach .ach-cat { font-size: 11px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; margin-left: 4px; vertical-align: 1px; }
+.ach .ach-gift { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.mile-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.mile-list li { display: flex; gap: 10px; align-items: baseline; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; }
+.mile-list li b { min-width: 52px; }
+.mile-list li.done { background: var(--accent-soft); border-color: transparent; }
+.mile-list li.done b::after { content: " ✓"; color: var(--accent); }
 .person.hosting .sub.now { font-weight: 600; }
 .sess-tools details summary { cursor: pointer; }
 .sess-tools .plist { margin-top: 6px; }
@@ -463,6 +473,8 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 .ring.rs-dots .ringdots { display: inline; }
 .ring.rs-thin .track, .ring.rs-thin .prog { stroke-width: 2.5; }
 .ring.rs-grad .prog { stroke: url(#ringGrad); }
+.ring.rs-orbit .track { stroke-dasharray: 1.5 7; stroke-linecap: round; opacity: .9; }   /* v1.18 Orbit */
+.ring.rs-orbit .prog { stroke-linecap: round; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 45%, transparent)); }
 .ring.rs-glow .prog { filter: drop-shadow(0 0 5px var(--accent)); }
 .ring.rs-none svg { visibility: hidden; }
 .ring.rs-none .time { font-size: clamp(68px, 21vw, 108px); }
@@ -5823,6 +5835,10 @@ function mergeData(obj) {
       preset: String(s.preset || ''),
       ...(Array.isArray(s.subtasks) && s.subtasks.length ? { subtasks: s.subtasks.slice(0, 10).map(x => ({ t: String(x.t || '').slice(0, 80), d: !!x.d })) } : {}),
       ...(s.early ? { early: 1 } : {}),   // finished early (v1.17)
+      ...(s.live ? { live: String(s.live).slice(0, 80), clan: String(s.clan || '').slice(0, 40) } : {}),   // a block at a study table (v1.18)
+      ...(Array.isArray(s.mates) && s.mates.length ? { mates: s.mates.filter(x => typeof x === 'string').slice(0, 12).map(x => x.slice(0, 40)) } : {}),
+      ...(s.lt ? { lt: String(s.lt).slice(0, 40) } : {}), ...(s.hs ? { hs: 1 } : {}), ...(s.syf ? { syf: 1 } : {}),
+      ...(s.stamp ? { stamp: String(s.stamp).slice(0, 40) } : {}),
     });
   }
   S.sessions.push(...add);
@@ -6117,7 +6133,9 @@ function logSession(focusedMs, end, early = false) {
     stamp: equippedId('stamp'),
     ...(t.live && (t.live.mode !== 'together' || (LIVE.blockMates && LIVE.blockMates.size)) ? { live: t.live.lid, clan: t.live.cid, stamp: 'stamp_together' } : t.live ? { live: t.live.lid, clan: t.live.cid } : {}),
     ...(t.live ? { mates: liveMatesNow().slice(0, 12) } : {}),
-    ...(t.live && !t.live.cid ? { lt: String(t.live.title || '').slice(0, 40) } : {}),   // v1.18: who focused at the same time (verified by their presence beats), for the group rewards
+    ...(t.live && !t.live.cid ? { lt: String(t.live.title || '').slice(0, 40) } : {}),
+    ...(t.live && LIVE.doc && LIVE.doc.host === USER.uid ? { hs: 1 } : {}),   // I hosted this table (v1.18)
+    ...(t.live && t.live.mode !== 'together' && LIVE.doc && LIVE.doc.pattern && !early && t.round >= LIVE.doc.pattern.rounds && livePeople().length >= 3 ? { syf: 1 } : {}),   // the last round of a Synced session with 3+ people   // v1.18: who focused at the same time (verified by their presence beats), for the group rewards
   };
   const subRec = takeSubtasks();
   if (subRec) s.subtasks = subRec;
@@ -6840,6 +6858,8 @@ const tierFor = level => TIERS.filter(t => level >= t.min).pop();
 // Profile flair: frames drawn around the badge.
 const FRAMES = {
   frame_none: '',
+  frame_g_link: '<circle cx="9.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/><circle cx="14.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/>',   // v1.18
+  frame_g_banner: '<circle cx="12" cy="12" r="11.2" stroke-width="1.1" opacity=".7"/><path d="M3.2 5.4l2.6 1.2-1.9 2Z M20.8 5.4l-2.6 1.2 1.9 2Z M12 .4l1.4 2.2h-2.8Z" fill="currentColor" stroke="none" opacity=".8"/>',
   frame_ring: '<circle cx="12" cy="12" r="11.2" stroke-width="1" opacity=".6"/>',
   frame_double: '<circle cx="12" cy="12" r="11.3" stroke-width="1" opacity=".55"/><circle cx="12" cy="12" r="9.9" stroke-width=".7" opacity=".35"/>',
   frame_hex: '<path d="M12 .7 21.8 6.35v11.3L12 23.3 2.2 17.65V6.35Z" stroke-width="1" opacity=".6"/>',
@@ -6913,7 +6933,139 @@ const ACHIEVEMENTS = [
   { id: 'comeback',  name: 'Comeback',         desc: 'Return after a break of a week or more', icon: 'ret',       coins: 20,  goal: 1,    val: s => s.comeback },
   { id: 'collector', name: 'Collector',        desc: 'Own 5 items from the shop',              icon: 'gem',       coins: 40,  goal: 5,    val: s => s.owned },
 ];
+/* ==========================================================================
+   STUDYING TOGETHER + LONG-TERM ACHIEVEMENTS (v1.18)
+   A block counts as "together" when someone else's presence at the same table said "focus" while I focused
+   (s.mates, written by the live engine from the presence heartbeats; a solo "group" session has no mates and earns
+   nothing here). Everything is derived from the synced session log and the garden, so every device agrees and
+   nothing extra is stored. Caps: a new study partner pays 10 coins, at most 3 new people a day; a block in a clan
+   session with someone pays 2 coins, at most 10 a day.
+   ========================================================================== */
+const GROUP_PARTNER_COINS = 10, GROUP_PARTNER_DAY_MAX = 3, CLAN_BLOCK_COINS = 2, CLAN_BLOCK_DAY_MAX = 10;
+const CLAN_MILES = [5, 15, 40, 100, 250];   // hours of clan-session focus with someone
+const matesOf = s => (Array.isArray(s && s.mates) ? s.mates.filter(x => typeof x === 'string' && x && (!USER || x !== USER.uid)) : []);
+let GS = null, GSkey = '';
+function groupStats() {
+  const list = S.sessions || [], last = list[list.length - 1], key = list.length + ':' + (last ? last.id + ':' + last.end : '');
+  if (GS && GSkey === key) return GS;
+  const g = { min: 0, clanMin: 0, blocks: 0, people: new Set(), hosted: new Set(), sessions: new Set(), days: new Set(), night: 0, early: 0, weekend: 0, longest: 0, sync3: 0, table: 0, run: 0, coins: [] };
+  const newPerDay = {}, clanPerDay = {};
+  for (const s of list.filter(x => x && x.live).sort((a, b) => a.end - b.end)) {
+    if (s.hs) g.hosted.add(s.live);
+    const m = matesOf(s);
+    if (!m.length) continue;
+    const min = (+s.duration || 0) / 60000, d = new Date(s.end), day = dayKey(d), h = new Date(s.start).getHours();
+    g.min += min; g.blocks++; g.sessions.add(s.live); g.days.add(day); g.longest = Math.max(g.longest, min); g.table = Math.max(g.table, m.length + 1);
+    if (h >= 22 || h < 4) g.night++;
+    if (h >= 4 && h < 7) g.early++;
+    if (d.getDay() === 0 || d.getDay() === 6) g.weekend++;
+    if (s.syf) g.sync3++;
+    if (s.clan) { g.clanMin += min; clanPerDay[day] = (clanPerDay[day] || 0) + CLAN_BLOCK_COINS; if (clanPerDay[day] <= CLAN_BLOCK_DAY_MAX) g.coins.push([s.end, CLAN_BLOCK_COINS]); }
+    for (const u of m) if (!g.people.has(u)) { g.people.add(u); newPerDay[day] = (newPerDay[day] || 0) + 1; if (newPerDay[day] <= GROUP_PARTNER_DAY_MAX) g.coins.push([s.end, GROUP_PARTNER_COINS]); }
+  }
+  let run = 0, prev = '';
+  for (const k of [...g.days].sort()) { run = prev && dayKey(addDays(parseDay(prev), 1)) === k ? run + 1 : 1; g.run = Math.max(g.run, run); prev = k; }
+  g.hours = g.min / 60; g.clanHours = g.clanMin / 60;
+  GS = g; GSkey = key;
+  return g;
+}
+const groupCoinsAt = t => groupStats().coins.reduce((a, [at, c]) => a + (at <= t ? c : 0), 0);
+/** Garden numbers for the long-term achievements (the harvests still stored; folded old history counts in the almanac only). */
+function gardenAchStats() {
+  const z = { giant: 0, common: 0, rare: 0, legend: 0, star5: 0, star2: 0, starKinds: 0, weather: 0, festSales: 0, festWeeks: 0, petsOut: 0, seasons: 0 };
+  try {
+    if (!gardenMig()) return z;
+    const g = garden(), hv = (g.harvested || []).filter(p => p && !p.sum && p.sp), grown = new Set(hv.map(p => p.sp)), kinds = new Set(), wm = new Set(), weeks = new Set();
+    const all = r => GSPECIES.filter(sp => sp.rarity === r && sp.shop !== 'reward');
+    for (const p of hv) {
+      const st = cropStars(p); kinds.add(st);
+      if (st >= 5) z.star5++;
+      if (st >= 2) z.star2++;
+      if (p.giant) z.giant++;
+      for (const w of wmOf(p)) wm.add(w);
+      if (+p.sold && festivalOn(new Date(+p.sold))) { z.festSales++; weeks.add(dayKey(weekStartOf(new Date(+p.sold), 1))); }
+    }
+    z.common = all('common').every(sp => grown.has(sp.id)) ? 1 : 0;
+    z.rare = all('rare').every(sp => grown.has(sp.id)) ? 1 : 0;
+    z.legend = all('legendary').every(sp => grown.has(sp.id)) ? 1 : 0;
+    z.starKinds = kinds.size; z.weather = wm.size; z.festWeeks = weeks.size;
+    z.petsOut = petsOut().length;
+    z.seasons = new Set((S.sessions || []).map(x => gardenSeason(new Date(x.end)))).size;
+  } catch (e) { /* the garden isn't ready yet */ }
+  return z;
+}
+for (const a of ACHIEVEMENTS) a.cat ||= /^st/.test(a.id) ? 'streak' : a.id === 'collector' ? 'shop' : 'focus';
+ACHIEVEMENTS.push(
+  // --- studying together (only blocks where someone else was focusing at the same table) ---
+  { id: 'g_first',  cat: 'group', name: 'Better together',  desc: 'Finish a block while someone else focuses at your table', icon: 'names', coins: 20, goal: 1, val: s => s.g.blocks },
+  { id: 'g_host',   cat: 'group', name: 'Host',             desc: 'Host your first study session',                         icon: 'names', coins: 10, goal: 1, val: s => s.g.hosted.size, reward: { items: ['ti_host'] } },
+  { id: 'g_h1',     cat: 'group', name: 'An hour together', desc: '1 hour of focus with others',                           icon: 'clock', coins: 0, goal: 1, val: s => s.g.hours, unit: 'h', reward: { items: ['au_g_kindred'] } },
+  { id: 'g_h10',    cat: 'group', name: 'Study circle',     desc: '10 hours of focus with others',                         icon: 'clock', coins: 0, goal: 10, val: s => s.g.hours, unit: 'h', reward: { items: ['frame_g_link'] } },
+  { id: 'g_h50',    cat: 'group', name: 'Inseparable',      desc: '50 hours of focus with others',                         icon: 'clock', coins: 0, goal: 50, val: s => s.g.hours, unit: 'h', reward: { items: ['av_g_duo'] } },
+  { id: 'g_h100',   cat: 'group', name: 'Hundred together', desc: '100 hours of focus with others',                        icon: 'clock', coins: 0, goal: 100, val: s => s.g.hours, unit: 'h', reward: { items: ['poster_g_together'] } },
+  { id: 'g_p5',     cat: 'group', name: 'Study Buddy',      desc: 'Study with 5 different people',                         icon: 'names', coins: 0, goal: 5, val: s => s.g.people.size, reward: { items: ['ti_study_buddy'], decor: ['dc_g_picnic'] } },
+  { id: 'g_p15',    cat: 'group', name: 'Social Scholar',   desc: 'Study with 15 different people',                        icon: 'names', coins: 0, goal: 15, val: s => s.g.people.size, reward: { items: ['ti_social_scholar'], decor: ['dc_g_lights'] } },
+  { id: 'g_p30',    cat: 'group', name: 'Campus Legend',    desc: 'Study with 30 different people',                        icon: 'names', coins: 0, goal: 30, val: s => s.g.people.size, reward: { items: ['ti_campus_legend'], decor: ['dc_g_sundial'] } },
+  { id: 'g_sync3',  cat: 'group', name: 'In sync',          desc: 'Finish every round of a Synced session with 3+ people', icon: 'target', coins: 0, goal: 1, val: s => s.g.sync3, reward: { items: ['ring_g_orbit'] } },
+  { id: 'g_table4', cat: 'group', name: 'Full table',       desc: 'Focus at a table of 4 or more',                         icon: 'names', coins: 0, goal: 4, val: s => s.g.table, unit: 'people', reward: { items: ['stamp_g_table'] } },
+  { id: 'g_night',  cat: 'group', name: 'Night shift',      desc: 'Focus with someone after 10 PM',                        icon: 'moon', coins: 0, goal: 1, val: s => s.g.night, reward: { items: ['stamp_g_owl'] } },
+  { id: 'g_early',  cat: 'group', name: 'Sunrise crew',     desc: 'Focus with someone before 7 AM',                        icon: 'sunrise', coins: 0, goal: 1, val: s => s.g.early, reward: { produce: 20 } },
+  { id: 'g_long',   cat: 'group', name: 'In the zone',      desc: 'A 50-minute block with someone',                        icon: 'hourglass', coins: 30, goal: 50, val: s => s.g.longest, unit: 'min' },
+  { id: 'g_wknd5',  cat: 'group', name: 'Weekend club',     desc: '5 weekend blocks with others',                          icon: 'calendar', coins: 0, goal: 5, val: s => s.g.weekend, reward: { produce: 40 } },
+  { id: 'g_days7',  cat: 'group', name: 'Regulars',         desc: 'Study with others on 7 different days',                 icon: 'calendar', coins: 0, goal: 7, val: s => s.g.days.size, reward: { seeds: { lavender: 2 } } },
+  { id: 'g_run3',   cat: 'group', name: 'Three in a row',   desc: 'Study with others 3 days in a row',                     icon: 'flame', coins: 40, goal: 3, val: s => s.g.run, unit: 'days' },
+  { id: 'g_host5',  cat: 'group', name: 'Regular host',     desc: 'Host 5 study sessions',                                 icon: 'names', coins: 0, goal: 5, val: s => s.g.hosted.size, reward: { egg: 'rare' } },
+  { id: 'g_host20', cat: 'group', name: 'Table Host',       desc: 'Host 20 study sessions',                                icon: 'names', coins: 0, goal: 20, val: s => s.g.hosted.size, reward: { items: ['ti_table_host'] } },
+  { id: 'g_sess10', cat: 'group', name: 'Session hopper',   desc: 'Focus with others in 10 different sessions',            icon: 'sessions', coins: 0, goal: 10, val: s => s.g.sessions.size, reward: { produce: 50 } },
+  { id: 'g_b50',    cat: 'group', name: 'Fifty together',   desc: '50 blocks with others',                                 icon: 'sessions', coins: 0, goal: 50, val: s => s.g.blocks, reward: { produce: 80, egg: 'legendary' } },
+  // --- clan-session milestones (hours of focus in clan sessions with someone; clan-exclusive rewards) ---
+  { id: 'c_m5',     cat: 'clan', name: 'Clan regular',      desc: '5 hours in clan sessions with clanmates',   icon: 'clock', coins: 25, goal: 5, val: s => s.g.clanHours, unit: 'h', reward: { seeds: { clanclover: 2 } } },
+  { id: 'c_m15',    cat: 'clan', name: 'Clan crest',        desc: '15 hours in clan sessions with clanmates',  icon: 'clock', coins: 0, goal: 15, val: s => s.g.clanHours, unit: 'h', reward: { items: ['stamp_clan'] } },
+  { id: 'c_m40',    cat: 'clan', name: 'Banner bearer',     desc: '40 hours in clan sessions with clanmates',  icon: 'clock', coins: 0, goal: 40, val: s => s.g.clanHours, unit: 'h', reward: { items: ['frame_g_banner'] } },
+  { id: 'c_m100',   cat: 'clan', name: 'Clan guard',        desc: '100 hours in clan sessions with clanmates', icon: 'clock', coins: 0, goal: 100, val: s => s.g.clanHours, unit: 'h', reward: { items: ['au_clan'] } },
+  { id: 'c_m250',   cat: 'clan', name: 'Clan Scholar',      desc: '250 hours in clan sessions with clanmates', icon: 'clock', coins: 0, goal: 250, val: s => s.g.clanHours, unit: 'h', reward: { items: ['ti_clan_scholar'], seeds: { clanrose: 2 } } },
+  // --- the garden, for the long run ---
+  { id: 'gd_giant',  cat: 'garden', name: 'Giant!',          desc: 'Harvest your first Giant',                        icon: 'gem', coins: 0, goal: 1, val: s => s.gd.giant, reward: { produce: 25 } },
+  { id: 'gd_common', cat: 'garden', name: 'Kitchen gardener', desc: 'Harvest every common species',                   icon: 'gem', coins: 0, goal: 1, val: s => s.gd.common, reward: { produce: 40 } },
+  { id: 'gd_rare',   cat: 'garden', name: 'Rare collector',  desc: 'Harvest every rare species',                      icon: 'gem', coins: 0, goal: 1, val: s => s.gd.rare, reward: { seeds: { lotus: 1 }, decor: ['dc_g_windmill'] } },
+  { id: 'gd_legend', cat: 'garden', name: 'Legendary garden', desc: 'Harvest every legendary species',              icon: 'gem', coins: 0, goal: 1, val: s => s.gd.legend, reward: { items: ['au_g_bloom'] } },
+  { id: 'gd_pets3',  cat: 'garden', name: 'Full house',      desc: 'Have three pets out at once',                     icon: 'names', coins: 0, goal: 3, val: s => s.gd.petsOut, unit: 'pets', reward: { egg: 'rare' } },
+  { id: 'gd_star5',  cat: 'garden', name: 'Five stars',      desc: 'Harvest a 5★ crop',                               icon: 'gem', coins: 0, goal: 1, val: s => s.gd.star5, reward: { items: ['ti_five_star'] } },
+  { id: 'gd_stars',  cat: 'garden', name: 'Star collector',  desc: 'Harvest a crop of every star rating, 1★ to 5★',   icon: 'gem', coins: 0, goal: 5, val: s => s.gd.starKinds, unit: 'ratings', reward: { items: ['av_g_star'] } },
+  { id: 'gd_star2',  cat: 'garden', name: 'Quality harvest', desc: '25 crops of 2★ or better',                        icon: 'gem', coins: 0, goal: 25, val: s => s.gd.star2, reward: { produce: 60 } },
+  { id: 'gd_star5x', cat: 'garden', name: 'Showcase',        desc: 'Five 5★ crops',                                   icon: 'gem', coins: 0, goal: 5, val: s => s.gd.star5, reward: { decor: ['dc_g_trophy'] } },
+  { id: 'gd_weather', cat: 'garden', name: 'Every weather',  desc: 'Harvest a crop with each weather mutation',       icon: 'wave', coins: 0, goal: 7, val: s => s.gd.weather, unit: 'kinds', reward: { items: ['au_g_storm'] } },
+  { id: 'gd_seasons', cat: 'garden', name: 'All seasons',    desc: 'Focus in every season of the year',               icon: 'calendar', coins: 0, goal: 4, val: s => s.gd.seasons, unit: 'seasons', reward: { seeds: { sunflower: 2, tomato: 2 } } },
+  { id: 'gd_fest',   cat: 'garden', name: 'Market day',      desc: 'Sell 5 crops at the weekend festival',            icon: 'calendar', coins: 0, goal: 5, val: s => s.gd.festSales, reward: { produce: 30 } },
+  { id: 'gd_fest4',  cat: 'garden', name: 'Market Regular',  desc: 'Sell at the festival on 4 different weekends',    icon: 'calendar', coins: 0, goal: 4, val: s => s.gd.festWeeks, unit: 'weekends', reward: { items: ['ti_market'] } },
+);
+const ACH_CATS = { focus: 'Focus', streak: 'Streaks', group: 'Together', clan: 'Clan', garden: 'Garden', shop: 'Shop' };
 const ACH_BY_ID = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
+/** Give an achievement's non-coin reward once (idempotent: every reward has a fixed id; two devices give the same ids). */
+function giveAchReward(a, at) {
+  const r = a.reward;
+  if (!r || isPreview()) return false;
+  let changed = false;
+  const has = id => (S.gbuys || []).some(b => b && b.id === id);
+  for (const id of r.items || []) if (ITEM_BY_ID[id] && !S.game.grants[id]) { S.game.grants[id] = { src: 'ach:' + a.id, at }; changed = true; }
+  if (r.produce && !has('ach_' + a.id)) { S.gbuys.push({ id: 'ach_' + a.id, v: 1, item: 'ach', price: 0, bonus: r.produce, at, slot: '', src: 'ach' }); changed = true; }
+  for (const [sp, n] of Object.entries(r.seeds || {})) for (let i = 0; i < n; i++) { const id = `ach_${a.id}_${sp}${i}`; if (GSP_BY_ID[sp] && !has(id)) { S.gbuys.push({ id, v: 1, item: 'seed_' + sp, price: 0, at, slot: '', src: 'gift' }); changed = true; } }
+  for (const d of r.decor || []) { const id = `ach_${a.id}_${d}`; if (GDECOR_BY_ID[d] && !has(id)) { S.gbuys.push({ id, v: 1, item: d, price: 0, at, slot: '', src: 'gift' }); changed = true; } }
+  if (r.egg && !(S.eggs || []).some(e => e && e.id === 'egg_ach_' + a.id)) { (S.eggs ||= []).push({ id: 'egg_ach_' + a.id, v: 1, kind: r.egg, src: 'gift', at, need: EGG_NEED[r.egg], w: {} }); changed = true; }
+  if (changed) { G = null; GD = null; }
+  return changed;
+}
+/** What an achievement gives, in words. */
+function achRewardText(a) {
+  const r = a.reward || {}, out = [];
+  if (a.coins) out.push(`${a.coins} coins`);
+  for (const id of r.items || []) if (ITEM_BY_ID[id]) out.push(ITEM_BY_ID[id].name);
+  if (r.produce) out.push(`${r.produce} produce`);
+  for (const [sp, n] of Object.entries(r.seeds || {})) if (GSP_BY_ID[sp]) out.push(`${n}× ${GSP_BY_ID[sp].name} seed`);
+  for (const d of r.decor || []) if (GDECOR_BY_ID[d]) out.push(GDECOR_BY_ID[d].name);
+  if (r.egg) out.push(`a ${r.egg} egg`);
+  return out.join(' · ');
+}
 
 /* ---------- Shop catalogue (cosmetic only). price 0 = free default. lvl = minimum level. ---------- */
 const SHOP_CATS = [
@@ -7505,6 +7657,30 @@ ITEMS.push(
   { id: 'rug_grass',        cat: 'room',   name: 'Grass rug',      desc: 'A patch of lawn indoors',                price: -1, gprice: 95,  glvl: 3, rarity: 'rare' },
 );
 const GARDEN_LOOKS = ITEMS.filter(i => i.gprice);
+// v1.18 — rewards for studying together, clan-session milestones and the garden achievements (reward-only: price -1)
+ITEMS.push(
+  { id: 'ti_host', cat: 'title', name: 'Host', desc: 'You hosted a study session', price: -1, rarity: 'rare', how: 'Host your first study session' },
+  { id: 'ti_table_host', cat: 'title', name: 'Table Host', desc: 'Twenty sessions hosted', price: -1, rarity: 'epic', how: 'Host 20 study sessions' },
+  { id: 'ti_study_buddy', cat: 'title', name: 'Study Buddy', desc: 'Five study partners', price: -1, rarity: 'rare', how: 'Study with 5 different people' },
+  { id: 'ti_social_scholar', cat: 'title', name: 'Social Scholar', desc: 'Fifteen study partners', price: -1, rarity: 'epic', how: 'Study with 15 different people' },
+  { id: 'ti_campus_legend', cat: 'title', name: 'Campus Legend', desc: 'Thirty study partners', price: -1, rarity: 'legendary', how: 'Study with 30 different people' },
+  { id: 'ti_clan_scholar', cat: 'title', name: 'Clan Scholar', desc: '250 hours with your clan', price: -1, rarity: 'legendary', how: '250 hours in clan sessions' },
+  { id: 'ti_five_star', cat: 'title', name: 'Five-Star Farmer', desc: 'A perfect crop', price: -1, rarity: 'rare', how: 'Harvest a 5★ crop' },
+  { id: 'ti_market', cat: 'title', name: 'Market Regular', desc: 'A festival favourite', price: -1, rarity: 'rare', how: 'Sell at the festival on 4 weekends' },
+  { id: 'au_g_kindred', cat: 'aura', name: 'Kindred aura', desc: 'A warm glow from studying together', price: -1, rarity: 'rare', how: '1 hour of focus with others' },
+  { id: 'au_clan', cat: 'aura', name: 'Clan guard aura', desc: 'Teal and gold, turning slowly', price: -1, rarity: 'legendary', how: '100 hours in clan sessions' },
+  { id: 'au_g_storm', cat: 'aura', name: 'Storm aura', desc: 'Every weather, all at once', price: -1, rarity: 'epic', how: 'Harvest a crop with each weather mutation' },
+  { id: 'au_g_bloom', cat: 'aura', name: 'Bloom aura', desc: 'Petals and leaves', price: -1, rarity: 'legendary', how: 'Harvest every legendary species' },
+  { id: 'frame_g_link', cat: 'frame', name: 'Linked frame', desc: 'Two rings, one table', price: -1, rarity: 'epic', how: '10 hours of focus with others' },
+  { id: 'frame_g_banner', cat: 'frame', name: 'Clan banner frame', desc: 'Pennants for the faithful', price: -1, rarity: 'epic', how: '40 hours in clan sessions' },
+  { id: 'av_g_duo', cat: 'avatar', name: 'Study duo', desc: 'Two tomatoes, one desk', price: -1, rarity: 'epic', how: '50 hours of focus with others' },
+  { id: 'av_g_star', cat: 'avatar', name: 'Star crop', desc: 'Every rating, one star', price: -1, rarity: 'rare', how: 'Harvest a crop of every star rating' },
+  { id: 'poster_g_together', cat: 'room', name: 'Together poster', desc: 'A hundred hours, framed', price: -1, rarity: 'legendary', how: '100 hours of focus with others' },
+  { id: 'ring_g_orbit', cat: 'ring', name: 'Orbit', desc: 'A ring with a companion track', price: -1, rarity: 'epic', how: 'Finish a Synced session with 3+ people' },
+  { id: 'stamp_g_table', cat: 'stamp', name: 'Full table stamp', desc: 'Four seats, all taken', price: -1, rarity: 'rare', how: 'Focus at a table of 4 or more' },
+  { id: 'stamp_g_owl', cat: 'stamp', name: 'Night shift stamp', desc: 'An owl for late study', price: -1, rarity: 'rare', how: 'Focus with someone after 10 PM' },
+  { id: 'stamp_clan', cat: 'stamp', name: 'Clan crest stamp', desc: 'Your clan’s seal', price: -1, rarity: 'epic', how: '15 hours in clan sessions' },
+);
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const DEFAULTS = { avatar: 'av_default', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none', sound: 'snd_chime', ambient: 'amb_none', theme: 'th_default', ring: 'ring_classic', font: 'font_system', effect: 'fx_none', frame: 'frame_none', color: 'col_default', aura: 'au_streak', title: 'ti_none', stamp: 'stamp_classic', card: 'card_minimal', trail: 'trail_none' };
 const NAME_COLORS = { col_teal: '#2f9e8f', col_sky: '#4a90c2', col_coral: '#e07a5f', col_violet: '#8a6fd1', col_rose: '#c95c84', col_gold: '#c9a227', col_moss: '#5a8f3c', col_marigold: '#e08a1e' };   // moss + marigold: garden looks (v1.16)
@@ -7534,6 +7710,7 @@ function earnedAt(t) {
   const lc = loginCycle();
   for (const [k, ts] of Object.entries(cl.login)) if (ts <= t) c += loginCoinsFor(lc[k] || 1, k);
   for (const [wk, ts] of Object.entries(cl.bosses)) if (ts <= t) c += Math.min(120, Math.max(0, +((S.game.trophies[wk] || {}).coins) || 0));
+  c += groupCoinsAt(t);   // new study partners and clan-session blocks with someone (v1.18, capped per day)
   return c;
 }
 
@@ -7602,6 +7779,7 @@ function computeStats(idx, streak, ownedCount) {
     sessions: S.sessions.length, hours: focusMs / 3.6e6, streak: streak.longest, maxMin, early, night,
     names: names.size, goalDays: Object.keys(S.game.claims.goalDays).length, weekend, maxDay, deep,
     presets: presets.size, owned: ownedCount, comeback,
+    g: groupStats(), gd: gardenAchStats(),   // v1.18: studying together, the long-term garden
   };
 }
 
@@ -7647,6 +7825,9 @@ function reconcileRewards(mode = 'quiet') {
   for (const a of ACHIEVEMENTS) {
     if (!cl.achievements[a.id] && a.val(stats) >= a.goal) { cl.achievements[a.id] = now; news.push({ type: 'ach', a }); }
   }
+  let given = false;   // rewards of claimed achievements (v1.18): given once, repaired if a device missed them
+  for (const a of ACHIEVEMENTS) if (a.reward && cl.achievements[a.id] && giveAchReward(a, cl.achievements[a.id])) given = true;
+  if (given && !news.length) save();
   G = null;
   if (news.length) save();
   // A purchase made on another device that the coins couldn't cover gets refunded.
@@ -8065,7 +8246,7 @@ function applyTheme(themeArg) {
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (USER) applyTheme(); });
 
-const RING_CLASSES = { ring_thin: 'rs-thin', ring_dots: 'rs-dots', ring_grad: 'rs-grad', ring_glow: 'rs-glow', ring_number: 'rs-none' };
+const RING_CLASSES = { ring_g_orbit: 'rs-orbit', ring_thin: 'rs-thin', ring_dots: 'rs-dots', ring_grad: 'rs-grad', ring_glow: 'rs-glow', ring_number: 'rs-none' };
 let lastDots = -1;
 function applyRingStyle() {
   const ring = $('#ring');
@@ -8318,6 +8499,47 @@ function pomeoCard() {
     ${!pomeoOn() ? '<button class="btn" id="pomeoShow">Show Pomeo</button>' : S.settings.gamification ? '<span class="btn-row"><button class="btn" id="pomeoRoom">His room</button><button class="btn" id="pomeoOutfit">Change outfit</button></span>' : ''}</div>`;
 }
 
+/* The achievements list (v1.18): filter by category, sort by category / completed first / closest to done, a progress
+   bar on every unfinished one, and what each gives. */
+function achListHTML(stats, claimed) {
+  const cat = ACH_CATS[S.ui.achCat] ? S.ui.achCat : 'all', sort = ['cat', 'done', 'close'].includes(S.ui.achSort) ? S.ui.achSort : 'cat';
+  const catOrder = Object.keys(ACH_CATS);
+  const rows = ACHIEVEMENTS.filter(a => cat === 'all' || a.cat === cat).map((a, i) => {
+    const got = claimed[a.id], raw = +a.val(stats) || 0, v = Math.min(raw, a.goal);
+    return { a, i, got, v, pct: got ? 1 : v / a.goal };
+  });
+  if (sort === 'done') rows.sort((x, y) => (!!y.got - !!x.got) || (y.got || 0) - (x.got || 0) || x.i - y.i);
+  else if (sort === 'close') rows.sort((x, y) => (!!x.got - !!y.got) || (y.pct - x.pct) || x.i - y.i);
+  else rows.sort((x, y) => catOrder.indexOf(x.a.cat) - catOrder.indexOf(y.a.cat) || x.i - y.i);
+  const counts = Object.fromEntries(catOrder.map(c => [c, ACHIEVEMENTS.filter(a => a.cat === c)]));
+  const seg = `<div class="ach-tools"><div class="seg seg-wrap" id="achCats" role="tablist" aria-label="Achievement categories">${[['all', 'All'], ...catOrder.filter(c => counts[c].length).map(c => [c, ACH_CATS[c]])].map(([k, n]) => `<button data-achcat="${k}" class="${cat === k ? 'active' : ''}">${n}</button>`).join('')}</div>
+    <label class="lbl ach-sort">Sort <select id="achSort"><option value="cat"${sort === 'cat' ? ' selected' : ''}>By category</option><option value="close"${sort === 'close' ? ' selected' : ''}>Closest to done</option><option value="done"${sort === 'done' ? ' selected' : ''}>Completed first</option></select></label></div>`;
+  return seg + rows.map(({ a, got, v }) => {
+    const prog = !got ? `<div class="ap"><i style="width:${(v / a.goal * 100).toFixed(1)}%"></i></div><div class="lbl">${fmtNum(Math.floor(v * 10) / 10)} / ${fmtNum(a.goal)}${a.unit ? ' ' + a.unit : ''}</div>` : '';
+    const gift = achRewardText({ ...a, coins: 0 });
+    return `<div class="ach${got ? ' done' : ''}" data-ach="${a.id}"><div class="ic">${iconSVG(ICONS[a.icon] || ICONS.target)}</div>
+      <div><div class="an">${esc(a.name)} <span class="ach-cat">${ACH_CATS[a.cat] || ''}</span></div><div class="ad">${esc(a.desc)}${got ? ' · ' + new Date(got).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</div>${gift ? `<div class="ach-gift">🎁 ${esc(gift)}</div>` : ''}${prog}</div>
+      <div class="ac">${got ? '✓' : ''}${a.coins ? ` ${COIN_SVG} ${a.coins}` : ''}</div></div>`;
+  }).join('');
+}
+$('#progressView').addEventListener('click', e => {
+  const b = e.target.closest('[data-achcat]');
+  if (!b) return;
+  S.ui.achCat = b.dataset.achcat; saveLocal(); renderProgress();
+});
+$('#progressView').addEventListener('change', e => { if (e.target.id === 'achSort') { S.ui.achSort = e.target.value; saveLocal(); renderProgress(); } });
+/** Studying together + the clan-session milestones, for the profile and the clan page. */
+function groupCardHTML(where = 'profile') {
+  if (minimal()) return '';
+  const g = groupStats(), claimed = S.game.claims.achievements || {};
+  const miles = ACHIEVEMENTS.filter(a => a.cat === 'clan'), next = miles.find(a => !claimed[a.id]);
+  const steps = miles.map(a => `<li class="${claimed[a.id] ? 'done' : ''}"><b>${a.goal} h</b><span class="lbl">${esc(achRewardText(a))}</span></li>`).join('');
+  const bar = next ? `<div class="xpbar" style="margin:8px 0 4px"><i data-fill="${Math.min(100, g.clanHours / next.goal * 100).toFixed(1)}" data-fill-key="clanmile"></i></div><div class="lbl">${fmtNum(Math.floor(g.clanHours * 10) / 10)} / ${next.goal} h in clan sessions with clanmates · next: ${esc(achRewardText(next))}</div>` : '<p class="lbl" style="margin:6px 0 0">Every clan-session milestone reached — thank you for studying together.</p>';
+  const together = where === 'profile' ? `<div class="tiles" style="margin:8px 0 12px">${[[fmtNum(Math.floor(g.hours * 10) / 10) + ' h', 'focused with others'], [g.people.size, 'study partners'], [g.hosted.size, 'sessions hosted']].map(([v, l]) => `<div class="tile"><div class="v">${v}</div><div class="s">${l}</div></div>`).join('')}</div>` : '';
+  return `<div class="card group-card"><h2 style="margin:0 0 4px">${where === 'profile' ? 'Studying together' : 'Clan session milestones'}</h2>${together}
+    ${where === 'profile' ? '<h3 style="margin:4px 0 0">Clan session milestones</h3>' : '<p class="lbl" style="margin:0">Hours you focus in clan sessions while a clanmate focuses too. Clan-only rewards: clan seeds, a crest stamp, a banner frame, an aura and the Clan Scholar title.</p>'}
+    ${bar}<ul class="mile-list">${steps}</ul></div>`;
+}
 function renderProgress() {
   const g = game(), lv = g.lv, frame = equippedId('frame');
   const next = TIERS.find(t => t.min > lv.level);
@@ -8332,14 +8554,8 @@ function renderProgress() {
       ${badgeSVG(t, { size: 40, locked, frame: cur ? frame : 'frame_none' })}
       <div class="tn">${t.name}</div><div class="lbl">${locked ? LOCK_SVG + ' Level ' + t.min : range}</div></div>`;
   }).join('');
-  const achs = ACHIEVEMENTS.map(a => {
-    const got = claimed[a.id], v = Math.min(a.val(stats), a.goal);
-    const prog = !got && a.goal > 1
-      ? `<div class="ap"><i style="width:${(v / a.goal * 100).toFixed(1)}%"></i></div><div class="lbl">${fmtNum(Math.floor(v))} / ${fmtNum(a.goal)}${a.unit ? ' ' + a.unit : ''}</div>` : '';
-    return `<div class="ach${got ? ' done' : ''}"><div class="ic">${iconSVG(ICONS[a.icon])}</div>
-      <div><div class="an">${esc(a.name)}</div><div class="ad">${esc(a.desc)}${got ? ' · ' + new Date(got).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</div>${prog}</div>
-      <div class="ac">${got ? '✓' : ''} ${COIN_SVG} ${a.coins}</div></div>`;
-  }).join('');
+  const achs = achListHTML(stats, claimed);
+  const groupCard = groupCardHTML('profile');
   $('#progressView').innerHTML = `
     <div class="grid-2">
       <div class="stack">
@@ -8362,6 +8578,7 @@ function renderProgress() {
         ${loginCard()}
         <div class="card"><h2>Badges</h2><div class="tiergrid">${tiers}</div></div>
         ${auraCard()}
+        ${groupCard}
       </div>
       <div class="card">
         <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Achievements</h2><span class="lbl">${done} / ${ACHIEVEMENTS.length}</span></div>
@@ -11290,6 +11507,13 @@ const GDECOR = [
   { id: 'dc_fountain',    name: 'Fountain',      kind: 'spot',   rarity: 'epic',      price: 90,  lvl: 5, desc: 'Water that never stops' },
   { id: 'dc_greenhouse',  name: 'Greenhouse',    kind: 'spot',   rarity: 'legendary', price: 160, lvl: 7, desc: 'Glass walls, warm inside' },
 ];
+GDECOR.push(   // v1.18 — reward-only decor (achievements): never in the decor shop
+  { id: 'dc_g_picnic',   name: 'Picnic blanket', kind: 'spot', rarity: 'rare',      price: 0, lvl: 1, reward: 1, desc: 'Room for a study buddy', how: 'Study with 5 different people' },
+  { id: 'dc_g_lights',   name: 'String lights',  kind: 'spot', rarity: 'epic',      price: 0, lvl: 1, reward: 1, desc: 'Warm little bulbs on a line', how: 'Study with 15 different people' },
+  { id: 'dc_g_sundial',  name: 'Sundial',        kind: 'spot', rarity: 'legendary', price: 0, lvl: 1, reward: 1, desc: 'Time well spent, together', how: 'Study with 30 different people' },
+  { id: 'dc_g_trophy',   name: 'Harvest trophy', kind: 'spot', rarity: 'epic',      price: 0, lvl: 1, reward: 1, desc: 'For five 5★ crops', how: 'Harvest five 5★ crops' },
+  { id: 'dc_g_windmill', name: 'Windmill',       kind: 'spot', rarity: 'epic',      price: 0, lvl: 1, reward: 1, desc: 'Turns slowly in the breeze', how: 'Harvest every rare species' },
+);
 const GDECOR_BY_ID = Object.fromEntries(GDECOR.map(d => [d.id, d]));
 const GSPOTS = 6;   // decor spots around the beds
 const GSTAGES = ['Seed', 'Sprout', 'Leafy', 'Flowering', 'Fruiting'];
@@ -11376,11 +11600,11 @@ function computeGarden() {
   // than the folded history — keeps the verdict it had)
   const hv = sum ? +sum.hv || 0 : 0;   // when the Harvests inventory arrived on this account (v1.17): older harvests paid at once
   const soldAt = p => (+p.sold || +p.cp || (hv && +p.h < hv ? +p.h : Infinity)), soldVal = p => (p.sv !== undefined && p.sv !== null ? +p.sv : +p.y || 0);
-  const bonuses = (S.gbuys || []).filter(b => b && b.id && b.src === 'task' && +b.bonus > 0);   // daily garden tasks pay produce (v1.17)
+  const bonuses = (S.gbuys || []).filter(b => b && b.id && (b.src === 'task' || b.src === 'ach') && +b.bonus > 0);   // daily garden tasks (v1.17) and achievements (v1.18) pay produce
   const earnedAt = t => sums.reduce((a, x) => a + (x.at <= t ? (+x.y || 0) - (+x.spent || 0) : 0), 0) + harvested.filter(p => { const sa = soldAt(p); return !+p.cp && sa < Infinity && sa <= t; }).reduce((a, p) => a + soldVal(p), 0)   // a composted crop pays nothing
-    + bonuses.filter(b => +b.at <= t).reduce((a, b) => a + Math.min(20, Math.round(+b.bonus)), 0);
+    + bonuses.filter(b => +b.at <= t).reduce((a, b) => a + Math.min(b.src === 'ach' ? 100 : 20, Math.round(+b.bonus)), 0);
   const crops = harvested.filter(p => soldAt(p) === Infinity).sort((a, b) => b.h - a.h);   // the Harvests inventory: harvested, not yet sold or composted
-  const buys = (S.gbuys || []).filter(b => b && b.id && b.item && b.src !== 'task').slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
+  const buys = (S.gbuys || []).filter(b => b && b.id && b.item && b.src !== 'task' && b.src !== 'ach').slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
   const used = new Set(plants.map(p => p.seed));   // a seed a plant grew from is settled whatever the clocks said
   let spent = 0;
   const valid = [], invalid = [];
@@ -12222,6 +12446,7 @@ function gardenBuy(item, how = '') {
   if (look) return gardenBuyLook(look);
   const it = sp || dc;
   if (!it || gardenBusy()) return false;
+  if ((sp && sp.shop === 'reward') || (dc && dc.reward)) { toast(`${it.name} is earned through achievements, not bought`); return false; }   // v1.18
   if (how && (!sp || (how === 'feat' && !featuredSeeds().some(x => x.id === sp.id)) || (how === 'daily' && dailySeed().id !== sp.id))) { toast('The shop has restocked — that seed has moved on'); renderGarden(); return false; }
   if (sp && sp.shop && !how) { toast(`${sp.name} seeds only come round in the Featured and Rare-seed-of-the-day slots`); return false; }
   if (g.level < it.lvl - (how ? 1 : 0)) { toast(`Unlocks at garden level ${it.lvl - (how ? 1 : 0)}`); return false; }
@@ -12328,6 +12553,11 @@ const plantArtOf = (p, badge = true) => { const ripe = plantStage(p) === 4 || !!
 
 /* ---------- Decor and visitor art ---------- */
 const DECOR_ART = {
+  dc_g_picnic: '<svg viewBox="0 0 60 40" aria-hidden="true"><path d="M6 28 30 18l24 10-24 10Z" fill="#e5654f"/><path d="M14 24.7l24 10M22 21.3l24 10M18 31.3l24-10M10 28l24-10" stroke="#fff" stroke-width="1.6" opacity=".8"/><rect x="26" y="20" width="9" height="7" rx="2" fill="#c98b4a"/></svg>',
+  dc_g_lights: '<svg viewBox="0 0 60 40" aria-hidden="true"><path d="M4 8V38M56 8V38" stroke="#6b4a2e" stroke-width="2.4"/><path d="M4 10Q30 26 56 10" stroke="#3a3a3a" stroke-width="1.2" fill="none"/>' + [[12, 15], [22, 19], [30, 20], [38, 19], [48, 15]].map(([x, y], i) => `<circle class="lamp" cx="${x}" cy="${y + 3}" r="2.6" fill="${['#ffd166', '#f28ab0', '#7ec8e3', '#ffd166', '#a8e6a1'][i]}"/>`).join('') + '</svg>',
+  dc_g_sundial: '<svg viewBox="0 0 40 60" aria-hidden="true"><rect x="12" y="34" width="16" height="24" rx="2" fill="#bdb6a8"/><ellipse cx="20" cy="33" rx="15" ry="5" fill="#d8d2c4"/><path d="M20 33V20l7 13Z" fill="#8a7f6a"/></svg>',
+  dc_g_trophy: '<svg viewBox="0 0 40 60" aria-hidden="true"><rect x="12" y="48" width="16" height="8" rx="2" fill="#8a6238"/><path d="M16 48h8v-6h-8Z" fill="#c9a12a"/><path d="M10 18h20v8a10 10 0 0 1-20 0Z" fill="#e3b341"/><path d="M10 20H5q0 8 6 9M30 20h5q0 8-6 9" stroke="#e3b341" stroke-width="2.4" fill="none"/><text x="20" y="31" font-size="8" fill="#fff" text-anchor="middle">★</text></svg>',
+  dc_g_windmill: '<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M14 58l3-30h6l3 30Z" fill="#d9a066"/><g transform="translate(20 26)"><path d="M0 0L-3-18h6Z M0 0L18-3v6Z M0 0L3 18h-6Z M0 0L-18 3v-6Z" fill="#fff6e8" stroke="#8a6238" stroke-width=".8"/></g><circle cx="20" cy="26" r="2" fill="#8a6238"/></svg>',
   dc_lantern: '<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M20 58V22" stroke="#4a4a4a" stroke-width="2.4"/><rect x="12" y="8" width="16" height="18" rx="3" fill="#2b2b2b"/><rect x="14.5" y="10.5" width="11" height="13" rx="2" class="lamp" fill="#ffd77a"/><path d="M16 8l4-5 4 5" stroke="#2b2b2b" stroke-width="2" fill="none"/></svg>',
   dc_birdhouse: '<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M20 58V30" stroke="#8a6238" stroke-width="2.6"/><path d="M8 20 20 8l12 12v14H8Z" fill="#d9a066"/><path d="M6 21 20 6l14 15" stroke="#8a4a2a" stroke-width="2.4" fill="none"/><circle cx="20" cy="24" r="3.4" fill="#4a2e1a"/></svg>',
   dc_bench: '<svg viewBox="0 0 60 40" aria-hidden="true"><rect x="6" y="14" width="48" height="6" rx="2" fill="#b07a4a"/><rect x="6" y="6" width="48" height="5" rx="2" fill="#b07a4a"/><path d="M10 20v14M50 20v14M10 11v3M50 11v3" stroke="#6b4a2e" stroke-width="2.6"/></svg>',
@@ -12434,7 +12664,7 @@ const seedExclusives = () => GSPECIES.filter(sp => sp.shop === 'rotating');
 /** The four paid seeds of this 4-hour slot, in hash order (every device agrees); at least one rare or better. */
 function featuredSeeds(now = Date.now()) {
   const slot = seedSlot(now), h = sp => hash01('feat:' + slot + ':' + sp.id);
-  const pool = GSPECIES.filter(sp => sp.price > 0).sort((a, b) => h(a) - h(b));
+  const pool = GSPECIES.filter(sp => sp.price > 0 && sp.shop !== 'reward').sort((a, b) => h(a) - h(b));
   const pick = pool.slice(0, SEED_FEATURED);
   if (!pick.some(sp => sp.rarity !== 'common')) pick[SEED_FEATURED - 1] = pool.find(sp => sp.rarity !== 'common') || pick[SEED_FEATURED - 1];
   return pick;
@@ -12505,7 +12735,7 @@ function seedShopTick() {
 }
 setInterval(seedShopTick, 1000);
 function decorShopHTML(g) {
-  return `<div class="shopgrid gd-grid">${GDECOR.map(it => {
+  return `<div class="shopgrid gd-grid">${GDECOR.filter(it => !it.reward || g.decor.some(d => d.it.id === it.id)).map(it => {   // reward decor (v1.18): shown once won, never sold
     const own = g.decor.find(d => d.it.id === it.id), locked = g.level < it.lvl, rar = it.rarity;
     const btn = locked ? `<button class="btn" disabled>${LOCK_SVG} Level ${it.lvl}</button>`
       : own && own.buy.slot ? `<button class="btn" data-gremove="${esc(own.buy.id)}">Remove</button>`
@@ -12848,6 +13078,7 @@ function rmFloor(id) {
   return `<rect x="0" y="168" width="400" height="82" fill="${a}"/>${pat}`;
 }
 const RM_ART = {
+  poster_g_together: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fff6e8" stroke="#c9a66b" stroke-width="3"/><circle cx="278" cy="68" r="12" fill="#e5654f"/><circle cx="302" cy="68" r="12" fill="#f28c6b"/><path d="M278 55l-3-4 3 1 3-1Z M302 55l-3-4 3 1 3-1Z" fill="#4e8a4a"/><text x="290" y="92" font-size="9" font-weight="800" fill="#8a6238" text-anchor="middle" font-family="system-ui, sans-serif">100 h together</text>',
   rug_round: '<ellipse cx="200" cy="228" rx="100" ry="17" fill="#d98c6b"/><ellipse cx="200" cy="228" rx="78" ry="12" fill="none" stroke="#f2c9b3" stroke-width="3"/>',
   rug_stripe: '<rect x="100" y="212" width="200" height="30" rx="4" fill="#5b8db8"/><path d="M100 220h200M100 228h200M100 236h200" stroke="#dbe9f5" stroke-width="2"/>',
   rug_star: '<ellipse cx="200" cy="228" rx="104" ry="18" fill="#2f3f6b"/><g fill="#f6d44a">' + [[150, 228], [200, 222], [250, 230], [175, 236], [225, 236]].map(([x, y]) => `<path d="M${x} ${y - 4}l1.2 2.6 2.8.3-2.1 1.9.6 2.8-2.5-1.5-2.5 1.5.6-2.8-2.1-1.9 2.8-.3Z"/>`).join('') + '</g>',
@@ -14765,6 +14996,8 @@ setInterval(() => { if (USER) ibRefresh(); }, 60000);
 const EYE = (x, y, r = .9) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#2a1d18"/>`;
 const TOMATO = (c, leaf = '#5c9b57') => `<ellipse cx="12" cy="13.6" rx="7.4" ry="6.6" fill="${c}"/><ellipse cx="9.2" cy="11.2" rx="1.8" ry="1" fill="#fff" opacity=".28" transform="rotate(-28 9.2 11.2)"/><path d="M12 7.6 9.9 6.4l.7 1.7-2 .5 2.1.5 1.3-.3 1.3.3 2.1-.5-2-.5.7-1.7Z" fill="${leaf}"/>${EYE(9.8, 13.6, .85)}${EYE(14.2, 13.6, .85)}<path d="M10.9 15.9q1.1.9 2.2 0" stroke="#2a1d18" stroke-width=".8" stroke-linecap="round" fill="none"/><circle cx="8.3" cy="15.4" r="1" fill="#ff9d8c" opacity=".55"/><circle cx="15.7" cy="15.4" r="1" fill="#ff9d8c" opacity=".55"/>`;
 const AVATAR_ART = {
+  av_g_duo: { bg: '#fde3dc', art: '<ellipse cx="8.4" cy="14" rx="5.4" ry="4.9" fill="#e5654f"/><ellipse cx="15.8" cy="14.6" rx="5" ry="4.5" fill="#f28c6b"/><path d="M8.4 9.2l-1.6-1.8 1.6.5 1.6-.5ZM15.8 10.1l-1.5-1.7 1.5.5 1.5-.5Z" fill="#4e8a4a"/><circle cx="7" cy="13.6" r=".7" fill="#3a2a2a"/><circle cx="9.8" cy="13.6" r=".7" fill="#3a2a2a"/><circle cx="14.6" cy="14.2" r=".7" fill="#3a2a2a"/><circle cx="17.2" cy="14.2" r=".7" fill="#3a2a2a"/><rect x="4" y="19" width="16" height="1.6" rx=".8" fill="#c98b4a"/>' },
+  av_g_star: { bg: '#fff3cf', art: TOMATO('#e5654f') + '<path d="M12 6.2l1.1 2.2 2.4.3-1.8 1.6.5 2.4L12 11.6l-2.2 1.1.5-2.4-1.8-1.6 2.4-.3Z" fill="#ffd166" stroke="#c9a12a" stroke-width=".4"/>' },
   av_tomato: { bg: '#fde3dc', art: TOMATO('#e5654f') },
   av_book: { bg: '#e2ecf9', art: '<path d="M4.5 7.8q3.7-1.6 7.5 0v10q-3.8-1.6-7.5 0Z" fill="#fff" stroke="#5b7fd6" stroke-width=".9" stroke-linejoin="round"/><path d="M19.5 7.8q-3.7-1.6-7.5 0v10q3.8-1.6 7.5 0Z" fill="#fff" stroke="#5b7fd6" stroke-width=".9" stroke-linejoin="round"/><path d="M6.4 10.4h3.6M6.4 12.6h3.6M14 10.4h3.6M14 12.6h2.6" stroke="#a9bde8" stroke-width=".8" stroke-linecap="round"/>' },
   av_cat: { bg: '#fbe9d0', art: '<path d="M6.2 9.6 6.6 4.8l3.4 2.6ZM17.8 9.6l-.4-4.8L14 7.4Z" fill="#e8934a"/><circle cx="12" cy="13" r="6.6" fill="#f2a65a"/><path d="M7.4 6.6l1.6 1.4M16.6 6.6 15 8" stroke="#ffd7b3" stroke-width=".8" stroke-linecap="round"/>' + EYE(9.6, 12.4) + EYE(14.4, 12.4) + '<path d="M11.3 14.4h1.4l-.7.8Z" fill="#e5737f"/><path d="M12 15.2q-.8 1-1.8.5M12 15.2q.8 1 1.8.5M5.6 14l2.6.4M5.8 15.8l2.4-.4M18.4 14l-2.6.4M18.2 15.8l-2.4-.4" stroke="#7a4a22" stroke-width=".6" stroke-linecap="round" fill="none"/>' },
@@ -14911,7 +15144,12 @@ function nameAttrs(colId, cls = '') {
 }
 
 // ---- Special auras: replace the automatic streak aura when chosen (and friends see them) ----
-const SPECIAL_AURAS = {};
+const SPECIAL_AURAS = {
+  au_g_kindred: { cols: ['#f2a65a', '#e5654f'], name: 'Kindred aura', lv: 2 },   // v1.18 rewards
+  au_clan: { cols: ['#2f8f83', '#e3b341', '#5fb3a5'], name: 'Clan guard aura', lv: 4, spin: true },
+  au_g_storm: { cols: ['#5b7fd6', '#9b7be0', '#7ec8e3'], name: 'Storm aura', lv: 5, spin: true, shim: true },
+  au_g_bloom: { cols: ['#f28ab0', '#6fb162', '#ffd166'], name: 'Bloom aura', lv: 5, spin: true, shim: true },
+};
 for (const b of BOSSES) {
   // 1 one colour · 2 two colours · 3 a stronger pulse · 4 spinning · 5 + shimmer · 6 + a flare (Squad = one step up)
   for (const [id, lv, name] of [['au_b_' + b.id, rewardLevel(b.id, 'solo'), `${b.short} aura`], ['au_b_' + b.id + '_sq', rewardLevel(b.id, 'squad'), `${b.short} squad aura`]])
@@ -14937,6 +15175,7 @@ for (const r of RAID_BOSSES) SPECIAL_AURAS['au_cr_' + r.id] = { cols: [r.a, r.b,
 
 // ---- Titles and session-complete effects ----
 const TITLE_TEXT = Object.fromEntries(EV_ITEMS.filter(x => x[1] === 'title').map(x => [x[0], x[2]]));
+for (const it of ITEMS) if (it.cat === 'title' && /^ti_(host|table_host|study_buddy|social_scholar|campus_legend|clan_scholar|five_star|market)$/.test(it.id)) TITLE_TEXT[it.id] = it.name;   // v1.18
 Object.assign(TITLE_TEXT, { ti_gardener: 'Gardener', ti_greenthumb: 'Green Thumb', ti_harvestmoon: 'Harvest Moon' });   // garden looks (v1.16)
 const EV_FX = Object.fromEntries(EVENTS.filter(ev => EV_LOOK[ev.id].fx).map(ev => ['fx_ev_' + ev.id, EV_LOOK[ev.id].fx]));
 
@@ -17096,6 +17335,9 @@ if (window.__spSet) window.__spSet(.4);   // app script loaded
 const PIXEL_STAR = ['....#....', '....#....', '...###...', '#########', '.#######.', '..#####..', '..##.##..', '.##...##.', '.#.....#.'];
 const STAMP_FLAME = '<path d="M0-7c2.4 2.8 4.6 4.8 4.6 8.2a4.6 4.6 0 0 1-9.2 0c0-1.8.8-3.2 1.9-4.1.3 1.4 1 2.3 1.9 2.6-.5-2.3-.1-4.6.8-6.7Z"/>';
 const STAMP_ART = {
+  stamp_g_table: '<circle cx="32" cy="32" r="27" fill="none" stroke="#2f8f83" stroke-width="3"/><rect x="20" y="28" width="24" height="8" rx="3" fill="#2f8f83"/><circle cx="22" cy="20" r="5" fill="#e5654f"/><circle cx="42" cy="20" r="5" fill="#e5654f"/><circle cx="22" cy="44" r="5" fill="#e5654f"/><circle cx="42" cy="44" r="5" fill="#e5654f"/>',
+  stamp_g_owl: '<circle cx="32" cy="32" r="27" fill="none" stroke="#5b4a8b" stroke-width="3"/><path d="M20 42V28q0-10 12-10t12 10v14q-6 4-12 4t-12-4Z" fill="#7a68b0"/><circle cx="26.5" cy="30" r="5" fill="#fff"/><circle cx="37.5" cy="30" r="5" fill="#fff"/><circle cx="26.5" cy="30" r="2.2" fill="#2b2140"/><circle cx="37.5" cy="30" r="2.2" fill="#2b2140"/><path d="M32 34l-2 3h4Z" fill="#f2b45a"/><path d="M46 14a6 6 0 1 0 4 10 7 7 0 0 1-4-10Z" fill="#f2d16b"/>',
+  stamp_clan: '<path d="M32 6l20 7v15c0 14-9 24-20 30-11-6-20-16-20-30V13Z" fill="none" stroke="#2f8f83" stroke-width="3.2" stroke-linejoin="round"/><path d="M32 14l13 5v10c0 9-6 16-13 20-7-4-13-11-13-20V19Z" fill="#e3b341"/><text x="32" y="38" font-size="13" font-weight="900" fill="#2f8f83" text-anchor="middle" font-family="system-ui, sans-serif">✦</text>',
   stamp_classic: '<circle cx="32" cy="32" r="27" fill="none" stroke="#2f8f83" stroke-width="3.2"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#2f8f83" stroke-width="1.3" stroke-dasharray="2.4 2.2"/><path d="M21 33.5l7.5 7.5L44 25" fill="none" stroke="#2f8f83" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>',
   stamp_tomato: '<circle cx="32" cy="34" r="22" fill="none" stroke="#d6452f" stroke-width="3.4"/><path d="M32 13l-5-3 2 4.2-5 1.4 5.2 1 2.8-.8 2.8.8 5.2-1-5-1.4 2-4.2Z" fill="#4e8a4a"/><text x="32" y="39.5" font-size="12.5" font-weight="900" letter-spacing="1" fill="#d6452f" text-anchor="middle" font-family="system-ui, sans-serif">DONE</text><path d="M18 46q14 6 28 0" fill="none" stroke="#d6452f" stroke-width="1.6" stroke-linecap="round"/>',
   stamp_wax: '<path d="M32 4c4.4 0 6.6 3.6 10.2 4.8s8.4.4 10.2 4.8-1.2 7.6-.6 11.4 5.6 6.4 4.4 10.2-6.6 3-8.6 6.4-1.6 8.8-6 10.2-7.4-2.2-11.2-1.4-7 5.4-11 4.2-2.8-6.6-6.2-8.6-9.4-1.4-10.4-6 3.4-7.4 2.4-11.2-5.4-6.8-3.6-10.4 6.6-2.6 8.8-6 2.2-8.6 6.6-9.6 7.6 2 11.4 1.2Z" fill="#b8323a"/><circle cx="32" cy="32" r="16" fill="#a3282f"/><circle cx="32" cy="32" r="16" fill="none" stroke="#dc6066" stroke-width="1.3"/><ellipse cx="32" cy="35" rx="7.5" ry="6.5" fill="none" stroke="#ea8d91" stroke-width="2.2"/><path d="M32 23.5v5M27.6 26.2l4.4 3 4.4-3" stroke="#ea8d91" stroke-width="2.2" stroke-linecap="round" fill="none"/>',
@@ -18213,7 +18455,28 @@ function clanLevelInfo(xp) {
   return { lv, into: xp - from, need: to - from, max: lv >= 30 };
 }
 /** Clan Points: from clan XP, levels, weekly quests and raids (no money, no personal coins). Same formula as the rules. */
-const clanEarned = d => Math.floor((d.xp || 0) / 30) + ((d.level || 1) - 1) * 25 + (d.tq || 0) * 100 + (d.tr || 0) * 300;
+const clanEarned = d => Math.floor((d.xp || 0) / 30) + ((d.level || 1) - 1) * 25 + (d.tq || 0) * 100 + (d.tr || 0) * 300 + (+d.bonus || 0);   // + bonus points from clan sessions (v1.18)
+/* Bonus Clan Points (v1.18): a block in a clan session with a clanmate gives 1 point per 25 minutes (at least 1 for a
+   block of 15+ minutes), at most CLAN_BONUS_DAY_MAX a day per member. The member row keeps the day's count (bday, bcp)
+   and the rules tie it to the clan's bonus total, so the cap holds on the server. */
+const CLAN_BONUS_DAY_MAX = 6;
+async function clanBonusFlush(items) {
+  const add0 = (items || []).reduce((a, x) => a + (x.min >= 15 ? Math.max(1, Math.floor(x.min / 25)) : 0), 0);
+  if (!add0 || !inClan() || isPreview() || !cloudReady()) return 0;
+  const id = CLAN.id, mref = cDoc(id, 'members', USER.uid), cref = cDoc(id), today = dayKey(new Date());
+  try {
+    return await FB.runTransaction(FB.db, async tx => {
+      const [ms, cs] = [await tx.get(mref), await tx.get(cref)];
+      if (!ms.exists() || !cs.exists()) return 0;
+      const m = ms.data(), c = cs.data(), had = m.bday === today ? (+m.bcp || 0) : 0, add = Math.min(add0, CLAN_BONUS_DAY_MAX - had);
+      if (add <= 0) return 0;
+      tx.update(mref, { bday: today, bcp: had + add, updatedAt: FB.serverTimestamp() });
+      tx.update(cref, { bonus: (+c.bonus || 0) + add, updatedAt: FB.serverTimestamp() });
+      if (CLAN.doc) CLAN.doc.bonus = (+c.bonus || 0) + add;
+      return add;
+    });
+  } catch (e) { console.warn('clan bonus', e && e.code); return 0; }
+}
 const clanPoints = d => Math.max(0, clanEarned(d) - (d.spent || 0));
 const CLAN_TITLES = ['Group study', 'Silent study hour', 'Exam prep sprint', 'Homework hour', 'Revision session', 'Problem solving', 'Reading session', 'Mock test', 'Early birds', 'Night owls'];
 const CLAN_PATTERNS = [
@@ -18686,7 +18949,7 @@ function clanAfterSession(s) {
   if (min < 1) return;
   const q = readJSON(clanQKey(), []);
   if (q.some(x => x.id === s.id)) return;
-  q.push({ id: s.id, min, clan: CLAN.id, at: Date.now() });
+  q.push({ id: s.id, min, clan: CLAN.id, at: Date.now(), ...(s.clan === CLAN.id && matesOf(s).length ? { grp: 1 } : {}) });   // grp: a clan-session block with a clanmate (v1.18 bonus)
   writeLS(clanQKey(), q.slice(-50));
   setTimeout(flushContrib, 400);
 }
@@ -18752,6 +19015,7 @@ async function flushContrib() {
     CLAN.doc.weekMin = (CLAN.doc.weekMin || 0) + res.d;
     if (CLAN.me) { CLAN.me.contrib = (CLAN.me.contrib || 0) + res.d; CLAN.me.weekMin = (CLAN.me.weekKey === wkNow ? CLAN.me.weekMin || 0 : 0) + res.d; CLAN.me.weekKey = wkNow; }
     for (const it of res.items || []) if (it.min >= 25) clanFeed('focus', it.min);
+    clanBonusFlush((res.items || []).filter(x => x.grp));   // bonus Clan Points for studying together (v1.18)
     if (res.level > res.levelFrom) {
       clanFeed('level', res.level);
       inboxAdd({ type: 'clan', key: 'clanlv:' + id + ':' + res.level, title: `${CLAN.doc.name} reached level ${res.level}! 🎉`, body: 'New clan cosmetics may be unlocked in your bag', go: { tab: 'clan' } });
@@ -19607,12 +19871,12 @@ function renderClan() {
   if (!body || !USER) return;
   if (USER.guest) { body.innerHTML = `<div class="card empty-card"><div class="big-icon">${SHIELD_SVG.replace('<svg', '<svg width="30" height="30"')}</div><h3>Study together in a clan</h3><p class="muted">Log in to create or join a clan, plan group sessions and study live with friends.</p><button class="btn primary" id="guestLogin">Log in</button></div>`; return; }
   if (localOnly || !cloudReady()) { body.innerHTML = '<div class="card empty-card"><p class="muted">Clans need an internet connection.</p></div>'; return; }
-  const sum = LIVE.summary ? liveSummaryHTML() : '';
+  const sum = LIVE.summary && LIVE.summary.home !== 'friends' ? liveSummaryHTML() : '';
   if (!inClan()) { body.innerHTML = sum + noClanHTML(); return; }
   const d = CLAN.doc, plainUI = minimal();
   body.innerHTML = sum + clanHeaderHTML(d) + `<div class="clan-grid">
     <div class="stack">${liveHTML()}${sessionsHTML()}${plainUI ? '' : questRaidHTML(d)}</div>
-    <div class="stack">${requestsHTML()}${membersHTML()}${feedHTML()}${plainUI ? '' : trophyHTML(d)}</div></div>`;
+    <div class="stack">${requestsHTML()}${membersHTML()}${feedHTML()}${plainUI ? '' : groupCardHTML('clan') + trophyHTML(d)}</div></div>`;
   animateFills(body);
   if (inLive()) renderLiveClock();
 }
@@ -20583,6 +20847,11 @@ GSPECIES.push(
   { id: 'bamboo',      name: 'Bamboo',      rarity: 'rare',      need: 280, price: 28,  lvl: 3, shop: 'rotating', leaf: '#6fb162', flower: '#e9f5d0', fruit: '#7cc26a', shape: 'long',  hint: 'Rotating shop only — shoots up fast.' },
   { id: 'pineapple',   name: 'Pineapple',   rarity: 'rare',      need: 330, price: 33,  lvl: 4, shop: 'rotating', leaf: '#4e8a4a', flower: '#fbe7a0', fruit: '#f2b632', shape: 'big',   hint: 'Rotating shop only — sweet and spiky.' },
   { id: 'sakura',      name: 'Sakura',      rarity: 'legendary', need: 640, price: 100, lvl: 6, shop: 'rotating', leaf: '#8fae8a', flower: '#ffd6e7', fruit: '#f7a8c4', shape: 'pom',   hint: 'Rotating shop only — a cloud of blossom.' },
+);
+// v1.18 — clan-exclusive species: only from clan-session milestones (never in any shop or rotation)
+GSPECIES.push(
+  { id: 'clanclover', name: 'Clan clover', rarity: 'rare',      need: 260, price: 30, lvl: 1, shop: 'reward', leaf: '#3f9e8f', flower: '#d8f3ee', fruit: '#5fb3a5', shape: 'leafy', hint: 'Clan sessions only — grows best with company.' },
+  { id: 'clanrose',   name: 'Clan rose',   rarity: 'legendary', need: 620, price: 90, lvl: 1, shop: 'reward', leaf: '#4e7d74', flower: '#ffe08a', fruit: '#e0a93b', shape: 'rose',  hint: 'For 250 hours studied with your clan.' },
 );
 for (const sp of GSPECIES) GSP_BY_ID[sp.id] = sp;
 GDECOR.push(
