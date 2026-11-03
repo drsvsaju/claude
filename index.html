@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pomodorolist</title>
-<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%229%22%20fill%3D%22%232f8f83%22%2F%3E%3C%2Fsvg%3E">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2218.6%22%20rx%3D%2212.6%22%20ry%3D%2211.8%22%20fill%3D%22%23f0735f%22%2F%3E%3Cpath%20d%3D%22M16%207.6V5%22%20stroke%3D%22%235a9a5c%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M16.4%206C17.6%202.8%2021.2%201.9%2024%203.2%2022.7%206.1%2019.2%207.4%2016.4%206Z%22%20fill%3D%22%237cc07a%22%2F%3E%3Ccircle%20cx%3D%2212.4%22%20cy%3D%2218.6%22%20r%3D%221.6%22%20fill%3D%22%233b2420%22%2F%3E%3Ccircle%20cx%3D%2219.6%22%20cy%3D%2218.6%22%20r%3D%221.6%22%20fill%3D%22%233b2420%22%2F%3E%3C%2Fsvg%3E">
 <meta name="description" content="A minimal, distraction-free Pomodoro focus timer with named sessions, streaks, statistics and cloud sync across devices.">
 <style>
 /* ==========================================================================
@@ -2529,7 +2529,7 @@ dialog.pv-dlg { width: min(380px, calc(100vw - 32px)); text-align: center; }
 .sp-eo, .sp-yawn { opacity: 0; }
 .sp-yawn { transform-box: fill-box; transform-origin: center; }
 .sp-logo { font-size: 19px; font-weight: 600; letter-spacing: .01em; display: inline-flex; align-items: center; gap: 8px; }
-.sp-logo i { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.sp-logo .sp-logo-svg { width: 22px; height: 22px; flex: none; }   /* Pomeo (v1.18) */
 .sp-vine { position: relative; width: 210px; height: 26px; overflow: hidden; padding-right: 16px; }
 .sp-track { position: absolute; left: 0; right: 16px; top: 4px; bottom: 4px; }
 .sp-grow { position: absolute; inset: 0; transform: translateX(calc((var(--sp, .1) - 1) * 100%)); transition: transform .6s var(--ease); }
@@ -3549,22 +3549,22 @@ body.first-load #todayBar { opacity: 0; }
 <div class="splash" id="splash" aria-hidden="true"><div class="splash-in">
   <div class="sp-greet" id="spGreet"></div>
   <div class="sp-pomeo" id="spPomeo"><svg class="sp-svg" viewBox="-4 -8 48 48"><g class="sp-body">
-    <ellipse cx="20" cy="24" rx="13.5" ry="12.5" fill="#e5654f"/><ellipse cx="14.5" cy="19" rx="3.4" ry="2" fill="#fff" opacity=".25" transform="rotate(-28 14.5 19)"/>
-    <path d="M20 12.6 16.2 10.4l1.2 3.1-3.6.9 3.8.9 2.4-.6 2.4.6 3.8-.9-3.6-.9 1.2-3.1Z" fill="#5c9b57"/><path d="M20 12.8V8.8" stroke="#4e8a4a" stroke-width="1.6" stroke-linecap="round"/>
-    <circle cx="13.2" cy="27.2" r="1.9" fill="#ff9d8c" opacity=".6"/><circle cx="26.8" cy="27.2" r="1.9" fill="#ff9d8c" opacity=".6"/>
-    <g class="sp-ec" stroke="#3a1d18" stroke-width="1.4" stroke-linecap="round" fill="none"><path d="M14.2 24q1.6 1.4 3.2 0M22.6 24q1.6 1.4 3.2 0"/></g>
-    <g class="sp-eo" fill="#3a1d18"><circle cx="15.8" cy="24" r="1.55"/><circle cx="24.2" cy="24" r="1.55"/></g>
-    <g class="sp-eh" stroke="#3a1d18" stroke-width="1.5" stroke-linecap="round" fill="none"><path d="M14.2 24.8q1.6-2.3 3.2 0M22.6 24.8q1.6-2.3 3.2 0"/></g>
-    <path class="sp-smile" d="M18.4 28.3q1.6 1.3 3.2 0" stroke="#3a1d18" stroke-width="1.3" stroke-linecap="round" fill="none"/>
-    <g class="sp-yawn"><ellipse cx="20" cy="29.4" rx="2.3" ry="2.7" fill="#3a1d18"/><ellipse cx="20" cy="30.9" rx="1.4" ry=".9" fill="#ff8c7a"/></g>
+    <ellipse cx="20" cy="24.4" rx="13.2" ry="12.2" fill="#f0735f"/><ellipse cx="20" cy="31.6" rx="9.6" ry="4.4" fill="#d9584a" opacity=".22"/><circle cx="14.6" cy="18.6" r="2.1" fill="#fff" opacity=".32"/>
+    <path d="M20 12.9V10.4" stroke="#5a9a5c" stroke-width="1.7" stroke-linecap="round"/><path d="M20.4 11.2C21.6 8.2 24.9 7.4 27.4 8.6 26.2 11.2 23 12.4 20.4 11.2Z" fill="#7cc07a"/>
+    <ellipse cx="13.9" cy="27.3" rx="1.7" ry="1.05" fill="#ff9e8f" opacity=".5"/><ellipse cx="26.1" cy="27.3" rx="1.7" ry="1.05" fill="#ff9e8f" opacity=".5"/>
+    <g class="sp-ec" stroke="#3b2420" stroke-width="1.2" stroke-linecap="round" fill="none"><path d="M15.2 24.4q1.2 1.1 2.4 0M22.4 24.4q1.2 1.1 2.4 0"/></g>
+    <g class="sp-eo" fill="#3b2420"><circle cx="16.4" cy="24.6" r="1.25"/><circle cx="23.6" cy="24.6" r="1.25"/></g>
+    <g class="sp-eh" stroke="#3b2420" stroke-width="1.3" stroke-linecap="round" fill="none"><path d="M15.2 25.2q1.2-1.6 2.4 0M22.4 25.2q1.2-1.6 2.4 0"/></g>
+    <path class="sp-smile" d="M19 27.9q1 .85 2 0" stroke="#3b2420" stroke-width="1.1" stroke-linecap="round" fill="none"/>
+    <g class="sp-yawn"><ellipse cx="20" cy="28.9" rx="1.5" ry="1.8" fill="#3b2420"/><ellipse cx="20" cy="29.9" rx=".9" ry=".55" fill="#ff8c7a"/></g>
   </g></svg></div>
-  <b class="sp-logo"><i></i>Pomodorolist</b>
+  <b class="sp-logo"><svg class="sp-logo-svg" aria-hidden="true" viewBox="0 0 32 32"><ellipse cx="16" cy="18.6" rx="12" ry="11.1" fill="#f0735f"/><ellipse cx="16" cy="25.2" rx="8.7" ry="4" fill="#d9584a" opacity=".22"/><circle cx="11.1" cy="13.4" r="1.9" fill="#fff" opacity=".35"/><path d="M16 8V5.6" stroke="#5a9a5c" stroke-width="1.9" stroke-linecap="round"/><path d="M16.4 6.4C17.6 3.4 21 2.6 23.6 3.8 22.4 6.5 19 7.7 16.4 6.4Z" fill="#7cc07a"/><circle cx="12.7" cy="18.8" r="1.25" fill="#3b2420"/><circle cx="19.3" cy="18.8" r="1.25" fill="#3b2420"/><path d="M15.1 21.9q.9.8 1.8 0" stroke="#3b2420" stroke-width="1.1" fill="none" stroke-linecap="round"/><ellipse cx="10.3" cy="21.3" rx="1.5" ry=".95" fill="#ff9e8f" opacity=".5"/><ellipse cx="21.7" cy="21.3" rx="1.5" ry=".95" fill="#ff9e8f" opacity=".5"/></svg>Pomodorolist</b>
   <div class="sp-vine" role="progressbar" aria-label="Loading"><div class="sp-track"><div class="sp-grow">
     <div class="sp-mask"><div class="sp-vine-in"><svg viewBox="0 0 194 18" preserveAspectRatio="none" aria-hidden="true">
       <path d="M0 9C12 4 24 14 36 9S60 4 72 9s24 5 36 0 24-5 36 0 24 5 36 0 10-2 14-1" fill="none" stroke="#5c9b57" stroke-width="2.2" stroke-linecap="round"/>
       <g fill="#6aab62"><ellipse cx="18" cy="5" rx="4.6" ry="2.2" transform="rotate(-28 18 5)"/><ellipse cx="54" cy="13" rx="4.6" ry="2.2" transform="rotate(28 54 13)"/><ellipse cx="90" cy="5" rx="4.6" ry="2.2" transform="rotate(-28 90 5)"/><ellipse cx="126" cy="13" rx="4.6" ry="2.2" transform="rotate(28 126 13)"/><ellipse cx="162" cy="5" rx="4.6" ry="2.2" transform="rotate(-28 162 5)"/></g>
     </svg></div></div>
-    <span class="sp-tom"><svg viewBox="0 0 14 14" aria-hidden="true"><circle cx="7" cy="8.2" r="5.2" fill="#e5654f"/><path d="M7 3.2 5 2.3l.6 1.4-1.6.4 1.7.4L7 4.2l1.3.3 1.7-.4-1.6-.4.6-1.4Z" fill="#5c9b57"/><ellipse cx="5.2" cy="6.8" rx="1.3" ry=".7" fill="#fff" opacity=".35" transform="rotate(-28 5.2 6.8)"/></svg></span>
+    <span class="sp-tom"><svg viewBox="0 0 14 14" aria-hidden="true"><ellipse cx="7" cy="8.3" rx="5.3" ry="4.9" fill="#f0735f"/><circle cx="4.9" cy="6.7" r=".9" fill="#fff" opacity=".35"/><path d="M7 3.6V2.6" stroke="#5a9a5c" stroke-width=".9" stroke-linecap="round"/><path d="M7.2 3C7.7 1.8 9 1.5 10 2 9.5 3 8.2 3.5 7.2 3Z" fill="#7cc07a"/></svg></span>
   </div></div></div>
   <p class="sp-quote" id="spQuote"></p>
 </div></div>
@@ -3764,7 +3764,7 @@ body.first-load #todayBar { opacity: 0; }
 <header class="top">
   <div class="row hdr-left" style="gap:4px">
     <button class="iconbtn nav-burger" id="navBurger" type="button" aria-label="Menu" aria-controls="tabs" aria-expanded="false" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><i class="tbadge hidden" id="navBurgerDot" aria-label="Something new in the menu"></i></button>
-    <button class="brand" id="brandBtn" type="button" aria-label="Pomodorolist — go to the Timer" title="Home (Timer)"><i class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="18.5" r="11.5" fill="#e5654f"/><path d="M16 8.2c-2.2-3.2-6.3-3.1-7.6-1.4 3.1-.1 5.4 1 7.6 1.4Zm0 0c2.2-3.2 6.3-3.1 7.6-1.4-3.1-.1-5.4 1-7.6 1.4Z" fill="#5c9b57"/><path d="M16 4.6v4" stroke="#4a7d46" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="11.6" cy="14.4" rx="2.3" ry="1.3" fill="#fff" opacity=".4"/><circle cx="12.6" cy="19.6" r="1.45" fill="#2b2118"/><circle cx="19.4" cy="19.6" r="1.45" fill="#2b2118"/><path d="M13.3 23q2.7 2.2 5.4 0" stroke="#2b2118" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></i><span>Pomodorolist</span></button>
+    <button class="brand" id="brandBtn" type="button" aria-label="Pomodorolist — go to the Timer" title="Home (Timer)"><i class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><ellipse cx="16" cy="18.6" rx="12" ry="11.1" fill="#f0735f"/><ellipse cx="16" cy="25.2" rx="8.7" ry="4" fill="#d9584a" opacity=".22"/><circle cx="11.1" cy="13.4" r="1.9" fill="#fff" opacity=".35"/><path d="M16 8V5.6" stroke="#5a9a5c" stroke-width="1.9" stroke-linecap="round"/><path d="M16.4 6.4C17.6 3.4 21 2.6 23.6 3.8 22.4 6.5 19 7.7 16.4 6.4Z" fill="#7cc07a"/><circle cx="12.7" cy="18.8" r="1.25" fill="#3b2420"/><circle cx="19.3" cy="18.8" r="1.25" fill="#3b2420"/><path d="M15.1 21.9q.9.8 1.8 0" stroke="#3b2420" stroke-width="1.1" fill="none" stroke-linecap="round"/><ellipse cx="10.3" cy="21.3" rx="1.5" ry=".95" fill="#ff9e8f" opacity=".5"/><ellipse cx="21.7" cy="21.3" rx="1.5" ry=".95" fill="#ff9e8f" opacity=".5"/></svg></i><span>Pomodorolist</span></button>
     <span class="nav-cur" id="navCur" aria-hidden="true"></span>
     <span class="sync" id="syncStatus" title="Cloud sync status"><i></i><b>Synced</b></span>
   </div>
@@ -3779,7 +3779,7 @@ body.first-load #todayBar { opacity: 0; }
 </header>
 <div class="shell" id="shell">
 <nav class="sidenav" id="tabs" aria-label="Main">
-  <div class="nv-top"><button class="brand" id="navBrandBtn" type="button" aria-label="Pomodorolist — go to the Timer" title="Home (Timer)"><i class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="18.5" r="11.5" fill="#e5654f"/><path d="M16 8.2c-2.2-3.2-6.3-3.1-7.6-1.4 3.1-.1 5.4 1 7.6 1.4Zm0 0c2.2-3.2 6.3-3.1 7.6-1.4-3.1-.1-5.4 1-7.6 1.4Z" fill="#5c9b57"/><path d="M16 4.6v4" stroke="#4a7d46" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="11.6" cy="14.4" rx="2.3" ry="1.3" fill="#fff" opacity=".4"/><circle cx="12.6" cy="19.6" r="1.45" fill="#2b2118"/><circle cx="19.4" cy="19.6" r="1.45" fill="#2b2118"/><path d="M13.3 23q2.7 2.2 5.4 0" stroke="#2b2118" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></i><span>Pomodorolist</span></button><button class="iconbtn" id="navClose" type="button" aria-label="Close the menu">✕</button></div>
+  <div class="nv-top"><button class="brand" id="navBrandBtn" type="button" aria-label="Pomodorolist — go to the Timer" title="Home (Timer)"><i class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><ellipse cx="16" cy="18.6" rx="12" ry="11.1" fill="#f0735f"/><ellipse cx="16" cy="25.2" rx="8.7" ry="4" fill="#d9584a" opacity=".22"/><circle cx="11.1" cy="13.4" r="1.9" fill="#fff" opacity=".35"/><path d="M16 8V5.6" stroke="#5a9a5c" stroke-width="1.9" stroke-linecap="round"/><path d="M16.4 6.4C17.6 3.4 21 2.6 23.6 3.8 22.4 6.5 19 7.7 16.4 6.4Z" fill="#7cc07a"/><circle cx="12.7" cy="18.8" r="1.25" fill="#3b2420"/><circle cx="19.3" cy="18.8" r="1.25" fill="#3b2420"/><path d="M15.1 21.9q.9.8 1.8 0" stroke="#3b2420" stroke-width="1.1" fill="none" stroke-linecap="round"/><ellipse cx="10.3" cy="21.3" rx="1.5" ry=".95" fill="#ff9e8f" opacity=".5"/><ellipse cx="21.7" cy="21.3" rx="1.5" ry=".95" fill="#ff9e8f" opacity=".5"/></svg></i><span>Pomodorolist</span></button><button class="iconbtn" id="navClose" type="button" aria-label="Close the menu">✕</button></div>
   <div class="nv-grp" role="group" aria-labelledby="nvhFocus"><div class="nv-h" id="nvhFocus">Focus</div>
     <button type="button" title="Timer (1)" data-tab="timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4"/><path d="M12 14l3-3"/><circle cx="12" cy="14" r="8"/></svg><span class="nv-l">Timer</span></button>
     <button type="button" title="Reminders (2)" data-tab="reminders" id="remTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nv-l">Reminders</span></button>
@@ -8450,7 +8450,7 @@ function startFx() {
 }
 
 // Live tab icon: the favicon becomes a tiny progress ring while the timer runs.
-const FAV_DEFAULT = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="9" fill="#2f8f83"/></svg>');
+const FAV_DEFAULT = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><ellipse cx="16" cy="18.6" rx="12.6" ry="11.8" fill="#f0735f"/><path d="M16 7.6V5" stroke="#5a9a5c" stroke-width="2.2" stroke-linecap="round"/><path d="M16.4 6C17.6 2.8 21.2 1.9 24 3.2 22.7 6.1 19.2 7.4 16.4 6Z" fill="#7cc07a"/><circle cx="12.4" cy="18.6" r="1.6" fill="#3b2420"/><circle cx="19.6" cy="18.6" r="1.6" fill="#3b2420"/></svg>');   // Pomeo (v1.18)
 let favKey = '';
 function updateFavicon(progress) {
   const on = !!USER && S.timer.status !== 'idle' && extraOn('x_favicon');
@@ -9819,17 +9819,17 @@ function pomeoSVG({ state = 'idle', hat = 'hat_none', acc = 'acc_none', skin = '
   const sk = POMEO_SKINS[skin];   // a skin (pumpkin, jack-o'-lantern) replaces the tomato body and stem
   return `<svg class="mascot"${id ? ` id="${id}"` : ''} data-state="${state}"${sk ? ` data-skin="${sk.lantern ? 'lantern' : 'pumpkin'}"` : ''} viewBox="-4 -8 48 48"${size ? ` width="${size}" height="${size}"` : ''} aria-hidden="true">
     <g class="m-body">
-      ${sk ? sk.body : '<ellipse cx="20" cy="24" rx="13.5" ry="12.5" fill="#e5654f"/>'}
-      <ellipse cx="14.5" cy="19" rx="3.4" ry="2" fill="#fff" opacity=".25" transform="rotate(-28 14.5 19)"/>
-      ${sk ? sk.stem : `<path d="M20 12.6 16.2 10.4l1.2 3.1-3.6.9 3.8.9 2.4-.6 2.4.6 3.8-.9-3.6-.9 1.2-3.1Z" fill="#5c9b57"/>
-      <path d="M20 12.8V8.8" stroke="#4e8a4a" stroke-width="1.6" stroke-linecap="round"/>`}
-      <circle class="m-cheek" cx="13.2" cy="27.2" r="1.9" fill="#ff9d8c" opacity=".6"/><circle class="m-cheek" cx="26.8" cy="27.2" r="1.9" fill="#ff9d8c" opacity=".6"/>
-      <g class="e e-open" fill="#3a1d18"><circle cx="15.8" cy="24" r="1.55"/><circle cx="24.2" cy="24" r="1.55"/></g>
-      <g class="e e-focus" stroke="#3a1d18" stroke-width="1.5" stroke-linecap="round"><path d="M14.2 24.2h3.2M22.6 24.2h3.2M14 21.8l3.2.8M26 21.8l-3.2.8"/></g>
-      <g class="e e-sleep" stroke="#3a1d18" stroke-width="1.4" stroke-linecap="round" fill="none"><path d="M14.2 24q1.6 1.4 3.2 0M22.6 24q1.6 1.4 3.2 0"/></g>
-      <g class="e e-happy" stroke="#3a1d18" stroke-width="1.5" stroke-linecap="round" fill="none"><path d="M14.2 24.8q1.6-2.3 3.2 0M22.6 24.8q1.6-2.3 3.2 0"/></g>
-      <g class="e-wink"><path d="M14.2 24.6q1.6-1.8 3.2 0" stroke="#3a1d18" stroke-width="1.5" stroke-linecap="round" fill="none"/><circle cx="24.2" cy="24" r="1.55" fill="#3a1d18"/></g>
-      <path class="m-mouth" d="M18.4 28.3q1.6 1.3 3.2 0" stroke="#3a1d18" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+      ${sk ? sk.body : '<ellipse cx="20" cy="24.4" rx="13.2" ry="12.2" fill="#f0735f"/><ellipse cx="20" cy="31.6" rx="9.6" ry="4.4" fill="#d9584a" opacity=".22"/>'}
+      ${sk ? '' : '<circle cx="14.6" cy="18.6" r="2.1" fill="#fff" opacity=".32"/>'}
+      ${sk ? sk.stem : `<path d="M20 12.9V10.4" stroke="#5a9a5c" stroke-width="1.7" stroke-linecap="round"/>
+      <path d="M20.4 11.2C21.6 8.2 24.9 7.4 27.4 8.6 26.2 11.2 23 12.4 20.4 11.2Z" fill="#7cc07a"/>`}
+      <ellipse class="m-cheek" cx="13.9" cy="27.3" rx="1.7" ry="1.05" fill="#ff9e8f" opacity=".5"/><ellipse class="m-cheek" cx="26.1" cy="27.3" rx="1.7" ry="1.05" fill="#ff9e8f" opacity=".5"/>
+      <g class="e e-open" fill="#3b2420"><circle cx="16.4" cy="24.6" r="1.25"/><circle cx="23.6" cy="24.6" r="1.25"/></g>
+      <g class="e e-focus" stroke="#3b2420" stroke-width="1.3" stroke-linecap="round"><path d="M15.2 24.8h2.4M22.4 24.8h2.4"/></g>
+      <g class="e e-sleep" stroke="#3b2420" stroke-width="1.2" stroke-linecap="round" fill="none"><path d="M15.2 24.4q1.2 1.1 2.4 0M22.4 24.4q1.2 1.1 2.4 0"/></g>
+      <g class="e e-happy" stroke="#3b2420" stroke-width="1.3" stroke-linecap="round" fill="none"><path d="M15.2 25.2q1.2-1.6 2.4 0M22.4 25.2q1.2-1.6 2.4 0"/></g>
+      <g class="e-wink"><path d="M15.2 25q1.2-1.3 2.4 0" stroke="#3b2420" stroke-width="1.3" stroke-linecap="round" fill="none"/><circle cx="23.6" cy="24.6" r="1.25" fill="#3b2420"/></g>
+      <path class="m-mouth" d="M19 27.9q1 .85 2 0" stroke="#3b2420" stroke-width="1.1" stroke-linecap="round" fill="none"/>
       ${sk && sk.face ? sk.face : ''}${POMEO_ACCS[acc] || ''}${POMEO_HATS[hat] || ''}
     </g>
     <text class="zz" x="33" y="9" font-size="8" font-weight="600" fill="currentColor" style="color:var(--muted)">z</text>
@@ -15094,9 +15094,9 @@ setInterval(() => { if (USER) ibRefresh(); }, 60000);
    anyone without the field shows Default (the badge / initial).
    ========================================================================== */
 const EYE = (x, y, r = .9) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#2a1d18"/>`;
-const TOMATO = (c, leaf = '#5c9b57') => `<ellipse cx="12" cy="13.6" rx="7.4" ry="6.6" fill="${c}"/><ellipse cx="9.2" cy="11.2" rx="1.8" ry="1" fill="#fff" opacity=".28" transform="rotate(-28 9.2 11.2)"/><path d="M12 7.6 9.9 6.4l.7 1.7-2 .5 2.1.5 1.3-.3 1.3.3 2.1-.5-2-.5.7-1.7Z" fill="${leaf}"/>${EYE(9.8, 13.6, .85)}${EYE(14.2, 13.6, .85)}<path d="M10.9 15.9q1.1.9 2.2 0" stroke="#2a1d18" stroke-width=".8" stroke-linecap="round" fill="none"/><circle cx="8.3" cy="15.4" r="1" fill="#ff9d8c" opacity=".55"/><circle cx="15.7" cy="15.4" r="1" fill="#ff9d8c" opacity=".55"/>`;
+const TOMATO = (c, leaf = '#7cc07a') => `<ellipse cx="12" cy="13.8" rx="7.3" ry="6.7" fill="${c === '#e5654f' ? '#f0735f' : c}"/><ellipse cx="12" cy="17.7" rx="5.3" ry="2.4" fill="#000" opacity=".07"/><circle cx="8.9" cy="10.6" r="1.1" fill="#fff" opacity=".32"/><path d="M12 7.3V5.9" stroke="#5a9a5c" stroke-width=".95" stroke-linecap="round"/><path d="M12.2 6.4c.7-1.7 2.5-2.1 3.9-1.5-.7 1.5-2.5 2.2-3.9 1.5Z" fill="${leaf}"/>${EYE(10, 13.8, .7)}${EYE(14, 13.8, .7)}<path d="M11.45 15.55q.55.5 1.1 0" stroke="#2a1d18" stroke-width=".65" stroke-linecap="round" fill="none"/><ellipse cx="8.5" cy="15.5" rx=".95" ry=".6" fill="#ff9e8f" opacity=".5"/><ellipse cx="15.5" cy="15.5" rx=".95" ry=".6" fill="#ff9e8f" opacity=".5"/>`;   // v1.18: the minimal Pomeo face
 const AVATAR_ART = {
-  av_g_duo: { bg: '#fde3dc', art: '<ellipse cx="8.4" cy="14" rx="5.4" ry="4.9" fill="#e5654f"/><ellipse cx="15.8" cy="14.6" rx="5" ry="4.5" fill="#f28c6b"/><path d="M8.4 9.2l-1.6-1.8 1.6.5 1.6-.5ZM15.8 10.1l-1.5-1.7 1.5.5 1.5-.5Z" fill="#4e8a4a"/><circle cx="7" cy="13.6" r=".7" fill="#3a2a2a"/><circle cx="9.8" cy="13.6" r=".7" fill="#3a2a2a"/><circle cx="14.6" cy="14.2" r=".7" fill="#3a2a2a"/><circle cx="17.2" cy="14.2" r=".7" fill="#3a2a2a"/><rect x="4" y="19" width="16" height="1.6" rx=".8" fill="#c98b4a"/>' },
+  av_g_duo: { bg: '#fde3dc', art: '<ellipse cx="8.4" cy="14" rx="5.4" ry="4.9" fill="#f0735f"/><ellipse cx="15.8" cy="14.6" rx="5" ry="4.5" fill="#f5937a"/><path d="M8.4 9.3V8.4M15.8 10.2V9.3" stroke="#5a9a5c" stroke-width=".8" stroke-linecap="round"/><path d="M8.6 8.7c.5-1.2 1.8-1.5 2.8-1-.5 1.1-1.8 1.5-2.8 1ZM16 9.6c.5-1.1 1.7-1.4 2.6-1-.5 1-1.7 1.4-2.6 1Z" fill="#7cc07a"/><circle cx="7.2" cy="13.8" r=".55" fill="#3b2420"/><circle cx="9.6" cy="13.8" r=".55" fill="#3b2420"/><circle cx="14.7" cy="14.4" r=".55" fill="#3b2420"/><circle cx="16.9" cy="14.4" r=".55" fill="#3b2420"/><rect x="4" y="19" width="16" height="1.6" rx=".8" fill="#c98b4a"/>' },
   av_s_flame: { bg: '#ffe6cf', art: '<path d="M12 1.6c2.6 2.6 5.4 4.8 5.4 8.4 0 .6-.1 1.1-.2 1.6H6.8c-.1-.5-.2-1-.2-1.6 0-1.9.9-3.3 2-4.2.3 1.4 1.1 2.3 1.9 2.6-.4-2.4.1-4.7 1.5-6.8Z" fill="#f28c28"/><path d="M12 4.6c1.4 1.5 2.8 2.8 2.8 4.8 0 .4 0 .7-.1 1H9.3c-.1-.3-.1-.6-.1-1 0-1 .5-1.8 1.1-2.3.2.8.6 1.3 1 1.4-.2-1.3.1-2.6.7-3.9Z" fill="#ffd166"/>' + TOMATO('#e5654f') },   // v1.18 50-day streak
   av_g_star: { bg: '#fff3cf', art: TOMATO('#e5654f') + '<path d="M12 6.2l1.1 2.2 2.4.3-1.8 1.6.5 2.4L12 11.6l-2.2 1.1.5-2.4-1.8-1.6 2.4-.3Z" fill="#ffd166" stroke="#c9a12a" stroke-width=".4"/>' },
   av_tomato: { bg: '#fde3dc', art: TOMATO('#e5654f') },
@@ -16089,7 +16089,7 @@ $('#pvDlg').addEventListener('click', e => { if (e.target.closest('[data-pv-go]'
    ========================================================================== */
 const SCENES = {
   water: { vb: '-8 -8 72 50', state: 'idle', props: `
-    <path d="M33.2 25.8 37.4 22.8" stroke="#d4553f" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M33.2 25.8 37.4 22.8" stroke="#d9584a" stroke-width="2.6" stroke-linecap="round"/>
     <path d="M36 19.6h9.6l-1.1 9.2h-7.4Z" fill="#8db3e2" stroke="#5b7fd6" stroke-width=".9" stroke-linejoin="round"/>
     <path d="M37.8 19.6q2.6-4.6 5.4 0" fill="none" stroke="#5b7fd6" stroke-width="1.2"/>
     <path d="M45.2 22.4 51.6 19.8" stroke="#5b7fd6" stroke-width="1.8" stroke-linecap="round"/><circle cx="52.2" cy="19.6" r="1.4" fill="#5b7fd6"/>
@@ -16098,13 +16098,13 @@ const SCENES = {
     <path d="M54 34.2q-3.2-1.4-3.8-3.8 3.2.3 3.8 3.8Zm0-.9q2.6-2.6 4.8-2.4-1 3-4.8 2.4Z" fill="#6aab62"/>
     <path d="M46.5 38.3h15" stroke="#b9a07a" stroke-width="1.6" stroke-linecap="round"/>` },
   read: { vb: '-14 -8 68 50', state: 'idle', props: `
-    <path d="M8.2 28.4 11.6 31.6M31.8 28.4 28.4 31.6" stroke="#d4553f" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M8.2 28.4 11.6 31.6M31.8 28.4 28.4 31.6" stroke="#d9584a" stroke-width="2.4" stroke-linecap="round"/>
     <path d="M20 31.4q-5.2-2.3-10.8-.8v8.4q5.6-1.5 10.8.8Z" fill="#fff" stroke="#5b7fd6" stroke-width=".9" stroke-linejoin="round"/>
     <path d="M20 31.4q5.2-2.3 10.8-.8v8.4q-5.6-1.5-10.8.8Z" fill="#fff" stroke="#5b7fd6" stroke-width=".9" stroke-linejoin="round"/>
     <path d="M12 33.4h5.4M12 35.5h5.4M12 37.5h3.6M22.6 33.4h5.4M22.6 35.5h5.4" stroke="#a9bde8" stroke-width=".7" stroke-linecap="round"/>
     <path class="ps-page" d="M20 31.4q4.2-1.7 8.6-.9v7.6q-4.4-.8-8.6.9Z" fill="#eef3fb" stroke="#a9bde8" stroke-width=".6"/>` },
   wave: { vb: '-12 -8 66 50', state: 'happy', props: `
-    <g class="ps-arm ps-wave"><path d="M31.6 25.6Q36.2 21.2 37.8 15.8" stroke="#d4553f" stroke-width="2.6" stroke-linecap="round" fill="none"/><circle cx="38.1" cy="14.6" r="2.7" fill="#e5654f"/></g>
+    <g class="ps-arm ps-wave"><path d="M31.6 25.6Q36.2 21.2 37.8 15.8" stroke="#d9584a" stroke-width="2.6" stroke-linecap="round" fill="none"/><circle cx="38.1" cy="14.6" r="2.7" fill="#f0735f"/></g>
     <path d="M42.2 11.2l2.2-1.3M43 15.2l2.5-.1M42.4 19l2.1 1" stroke="#9aa3a0" stroke-width="1" stroke-linecap="round"/>` },
 };
 function pomeoScene(kind) {
