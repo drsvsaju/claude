@@ -27,7 +27,7 @@
     { "collectionGroup": "rankStats", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "seasonKey", "order": "ASCENDING" }, { "fieldPath": "seasonMin", "order": "DESCENDING" } ] },
     { "collectionGroup": "rankStats", "queryScope": "COLLECTION", "fields": [
-      { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "streak", "order": "DESCENDING" } ] },
+      { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "streakDay", "order": "ASCENDING" }, { "fieldPath": "streak", "order": "DESCENDING" } ] },
     { "collectionGroup": "rankStats", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "bestStreak", "order": "DESCENDING" } ] }
   ],
