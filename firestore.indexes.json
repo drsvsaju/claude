@@ -23,7 +23,13 @@
     { "collectionGroup": "clans", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "weekKey", "order": "ASCENDING" }, { "fieldPath": "weekMin", "order": "ASCENDING" } ] },
     { "collectionGroup": "studySessions", "queryScope": "COLLECTION", "fields": [
-      { "fieldPath": "lobby", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] }
+      { "fieldPath": "lobby", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "publicStats", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "seasonKey", "order": "ASCENDING" }, { "fieldPath": "seasonMin", "order": "DESCENDING" } ] },
+    { "collectionGroup": "publicStats", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "streak", "order": "DESCENDING" } ] },
+    { "collectionGroup": "publicStats", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "bestStreak", "order": "DESCENDING" } ] }
   ],
   "fieldOverrides": []
 }

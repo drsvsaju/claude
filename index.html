@@ -497,6 +497,22 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 .sm-row .sm-st { flex: 0 0 auto; font-weight: 700; font-size: 13px; color: var(--muted); } .sm-row.done .sm-st { color: #e5654f; }
 .sm-card .sm-bar i { background: linear-gradient(90deg, #f2a65a, #e5654f); }
 .rw-note { margin: 6px 0 0; }
+/* v1.19 ranks */
+.rk-b { display: inline-flex; vertical-align: -2px; margin-left: 4px; flex: none; } .rk-b svg { display: block; }
+.rk-b.big { margin: 0; } .rk-b.big svg { filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--rk, #888) 45%, transparent)); }
+.rank-line { margin: -6px 0 14px; padding: 8px 11px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
+.rank-line .rl-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; } .rank-line .rl-top .rk-b { margin-left: 0; }
+.rank-line .rl-next { margin-left: auto; }
+.rl-bar i { background: linear-gradient(90deg, var(--rk2, #f2d06b), var(--rk, var(--accent))) !important; }
+.rank-line .rl-bar i { background: var(--rk, var(--accent)) !important; }
+.rk-card .rk-hero { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; } .rk-card .rk-name { font-size: 20px; font-weight: 800; color: var(--rk); }
+.rk-gifts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; } .rk-gift { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.rk-gift .rk-b { margin: 0; } .rk-gift.got { color: var(--text); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.season-shelf { margin-bottom: 10px; } .season-badge .rk-b { margin: 0 auto; }
+.ms-chip { font-size: 11px; font-weight: 700; margin-left: 5px; padding: 0 5px; border-radius: 99px; background: color-mix(in srgb, #f28c28 14%, transparent); color: #c4621a; white-space: nowrap; }
+.fr-gm { transform-box: view-box; transform-origin: 12px 12px; } :root[data-motion="full"] .fr-gm { animation: frGm 8s linear infinite; }
+@keyframes frGm { to { transform: rotate(360deg); } }
+#lbKind { flex-wrap: wrap; }
 /* landing cards (v1.18): a mini session lobby and the streak milestones */
 .fx-sess { display: grid; gap: 6px; width: 100%; max-width: 240px; }
 .fx-srow { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 12px; text-align: left; }
@@ -3938,6 +3954,7 @@ body.first-load #todayBar { opacity: 0; }
             <div><div class="big" id="bestStreak">0<small>days</small></div><div class="lbl">Longest streak</div></div>
           </div>
           <div class="streak-next hidden" id="streakNext"></div>
+          <div class="rank-line hidden" id="rankLine"></div>
           <div class="row between"><span id="todayText">0m of 1h</span><span class="lbl" id="todayPct">0%</span></div>
           <div class="progress"><i id="todayBar" style="width:0%"></i></div>
           <div class="today-extra" id="todayExtra"></div>
@@ -5919,7 +5936,7 @@ function mergeData(obj) {
   // Progression: keep every purchase and the earliest claim of each reward; take equipped items only where unset.
   const sg = src.game, g = S.game;
   for (const [k, v] of Object.entries(sg.purchases)) if (!g.purchases[k]) g.purchases[k] = v;
-  for (const kind of ['goalDays', 'milestones', 'achievements', 'social', 'challenges', 'login', 'bosses', 'wq', 'track', 'evo']) {
+  for (const kind of ['goalDays', 'milestones', 'achievements', 'social', 'challenges', 'login', 'bosses', 'wq', 'track', 'evo', 'season', 'rkup']) {
     for (const [k, v] of Object.entries(sg.claims[kind] || {})) if (!g.claims[kind][k] || v < g.claims[kind][k]) g.claims[kind][k] = v;
   }
   for (const [k, v] of Object.entries(sg.freezesUsed)) if (!g.freezesUsed[k]) g.freezesUsed[k] = v;
@@ -6465,6 +6482,7 @@ function renderToday() {
   }
   $('#bestStreak').innerHTML = `${longest}<small>${longest === 1 ? 'day' : 'days'}</small>`;
   renderStreakNext(cur);
+  renderRankLine();
   $('#todayText').textContent = `${fmtMin(mins)} of ${fmtMin(goal)}${mins >= goal ? ' · goal met ✓' : ''}`;
   const pct = Math.min(100, Math.round(mins / goal * 100));
   $('#todayPct').textContent = pct + '%';
@@ -6882,6 +6900,8 @@ function normalizeGame(g) {
       wq: map(c.wq),                   // v1.18 weekly quest board: '<week Monday>:<quest id>' -> ts
       track: map(c.track),             // v1.18 monthly reward track: 'YYYY-MM:<tier>' -> ts
       evo: map(c.evo),                 // v1.18 Pomeo's stages reached: '1'…'5' -> ts
+      season: map(c.season),           // v1.19 season rewards: 'YYYY-MM:<peak rank>' -> ts (the earliest per season pays)
+      rkup: map(c.rkup),               // v1.19 rank-ups celebrated: 'YYYY-MM:<rank>' -> ts
     },
     trophies: map(g.trophies),       // same keys as claims.bosses -> { boss, mode, hp, coins, size, at }
     grants: map(g.grants),           // itemId -> { src: 'boss:<id>:<mode>' | 'ev:<event>', at } (rewards in the bag)
@@ -6927,6 +6947,9 @@ const tierFor = level => TIERS.filter(t => level >= t.min).pop();
 const FRAMES = {
   frame_none: '',
   frame_g_link: '<circle cx="9.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/><circle cx="14.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/>',   // v1.18
+  frame_r_silver: '<circle cx="12" cy="12" r="11.1" stroke-width="1" opacity=".6" stroke="#9aa6b2"/>' + [0, 90, 180, 270].map(a => `<path d="M12 -.2 13.3 1.2 12 2.6 10.7 1.2Z" fill="#c8d1d9" stroke="#7f8c98" stroke-width=".35" transform="rotate(${a} 12 12)"/>`).join(''),   // v1.19 ranks
+  frame_r_gold: '<circle cx="12" cy="12" r="11.1" stroke-width="1.2" opacity=".85" stroke="#c9a227"/><circle cx="12" cy="12" r="9.9" stroke-width=".5" opacity=".5" stroke="#f6d878"/>' + [0, 60, 120, 180, 240, 300].map(a => `<path d="M12 -.3 13.2 1 12 2.3 10.8 1Z" fill="#f6d878" stroke="#a8841c" stroke-width=".3" transform="rotate(${a} 12 12)"/>`).join(''),
+  frame_r_gm: '<circle cx="12" cy="12" r="11.1" stroke-width="1.1" opacity=".7" stroke="#d6455f"/><g class="fr-gm" stroke="none">' + [0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => `<path d="M12 -.5 13.3 1.1 12 2.7 10.7 1.1Z" fill="${i % 2 ? '#ffbf73' : '#d6455f'}" transform="rotate(${a} 12 12)"/>`).join('') + '</g><path d="M8.8 .9 10.3 2.2 12 .3 13.7 2.2 15.2 .9 14.8 3H9.2Z" fill="#ffd166" stroke="none"/>',
   frame_s_blaze: '<circle cx="12" cy="12" r="11.1" stroke-width="1" opacity=".5"/><g class="fr-blaze" stroke="none">' + [0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => `<path d="M12 -.5c1.1 1.2 1.7 2.2 1.2 3.2-.3.6-.8.9-1.2.9s-.9-.3-1.2-.9c-.5-1 .1-2 1.2-3.2Z" fill="${i % 2 ? '#e5654f' : '#f28c28'}" transform="rotate(${a} 12 12)"/>`).join('') + '</g>',   // v1.18 streak
   frame_g_banner: '<circle cx="12" cy="12" r="11.2" stroke-width="1.1" opacity=".7"/><path d="M3.2 5.4l2.6 1.2-1.9 2Z M20.8 5.4l-2.6 1.2 1.9 2Z M12 .4l1.4 2.2h-2.8Z" fill="currentColor" stroke="none" opacity=".8"/>',
   frame_ring: '<circle cx="12" cy="12" r="11.2" stroke-width="1" opacity=".6"/>',
@@ -7760,6 +7783,13 @@ ITEMS.push(
   { id: 'frame_s_blaze', cat: 'frame', name: 'Blaze frame', desc: 'Flames dance around your badge · animated', price: -1, rarity: 'legendary', how: 'Reach a 200-day streak' },
   { id: 'au_s_eternal', cat: 'aura', name: 'Eternal flame aura', desc: 'A year of days, burning bright · animated', price: -1, rarity: 'legendary', how: 'Reach a 365-day streak' },
   { id: 'plant_s_golden', cat: 'room', name: 'Golden Pomeo statue', desc: 'A gilded Pomeo for the corner', price: -1, rarity: 'legendary', how: 'Reach a 365-day streak' },
+  // v1.19 ranks: the first time ever at each rank (see RANK_ITEMS)
+  { id: 'frame_r_silver', cat: 'frame', name: 'Silver rank frame', desc: 'Four silver gems', price: -1, rarity: 'rare', how: 'Reach Silver rank for the first time' },
+  { id: 'frame_r_gold', cat: 'frame', name: 'Gold rank frame', desc: 'A gilded ring with gems', price: -1, rarity: 'epic', how: 'Reach Gold rank for the first time' },
+  { id: 'au_r_platinum', cat: 'aura', name: 'Platinum aura', desc: 'A cool teal glow', price: -1, rarity: 'epic', how: 'Reach Platinum rank for the first time' },
+  { id: 'au_r_diamond', cat: 'aura', name: 'Diamond aura', desc: 'Blue light, turning slowly', price: -1, rarity: 'legendary', how: 'Reach Diamond rank for the first time' },
+  { id: 'poster_r_master', cat: 'room', name: 'Master poster', desc: 'A violet gem, framed for the wall', price: -1, rarity: 'legendary', how: 'Reach Master rank for the first time' },
+  { id: 'frame_r_gm', cat: 'frame', name: 'Grandmaster frame', desc: 'A crown of gems that turns · animated', price: -1, rarity: 'legendary', how: 'Reach Grandmaster rank for the first time' },
 );
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
 const DEFAULTS = { avatar: 'av_default', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none', sound: 'snd_chime', ambient: 'amb_none', theme: 'th_default', ring: 'ring_classic', font: 'font_system', effect: 'fx_none', frame: 'frame_none', color: 'col_default', aura: 'au_streak', title: 'ti_none', stamp: 'stamp_classic', card: 'card_minimal', trail: 'trail_none' };
@@ -7776,7 +7806,7 @@ function earnedAt(t) {
   const cl = S.game.claims;
   for (const ts of Object.values(cl.goalDays)) if (ts <= t) c += GOAL_BONUS;
   for (const [m, ts] of Object.entries(cl.milestones)) if (ts <= t) c += STREAK_BONUS[m] || 0;
-  c += wqCoinsAt(t) + trackCoinsAt(t);   // v1.18 weekly quests and the monthly track
+  c += wqCoinsAt(t) + trackCoinsAt(t) + seasonCoinsAt(t);   // v1.18 weekly quests and the monthly track; v1.19 season rewards
   for (const [id, ts] of Object.entries(cl.achievements)) if (ts <= t && ACH_BY_ID[id]) c += ACH_BY_ID[id].coins;
   // Social: +10 per new friend, but at most 5 per Monday-to-Sunday week, so it can't be farmed.
   const perWeek = {};
@@ -7913,6 +7943,20 @@ function reconcileRewards(mode = 'quiet') {
     }
     const st = evoStage(g0.focusMs);
     for (let i = 1; i <= st; i++) if (!cl.evo[i]) { cl.evo[i] = now; news.push({ type: 'evo', s: i }); }
+    // v1.19 ranks: finished seasons pay their peak once, the first time ever at a rank gives its cosmetic, rank-ups
+    const tot = seasonTotals(), sk = seasonKeyNow();
+    for (const mk of Object.keys(tot)) if (mk >= RANK_FROM && mk < sk && tot[mk] > 0 && !Object.keys(cl.season).some(k => k.split(':')[0] === mk)) {
+      const peak = rankOfMin(tot[mk]); cl.season[mk + ':' + peak] = now; news.push({ type: 'season', mk, peak });
+    }
+    const r = myRank();
+    if (r.mk >= RANK_FROM) {
+      const got = Object.keys(cl.rkup).filter(k => k.split(':')[0] === r.mk).map(k => +k.split(':')[1]), top = Math.max(r.floor, ...got);
+      const firstItems = [];
+      const best = Math.max(rankMajor(r.raw), ...Object.keys(tot).filter(mk => mk >= RANK_FROM).map(mk => rankMajor(rankOfMin(tot[mk]))));
+      for (let m = 1; m <= best; m++) for (const id of RANK_ITEMS[m] || []) if (ITEM_BY_ID[id] && !S.game.grants[id]) { S.game.grants[id] = { src: 'rank:' + m, at: now }; firstItems.push(id); G = null; }
+      if (r.idx > top) { cl.rkup[r.mk + ':' + r.idx] = now; news.push({ type: 'rankup', idx: r.idx, items: firstItems }); }
+      else if (firstItems.length) news.push({ type: 'rankitems', items: firstItems });
+    }
   }
   const stats = computeStats(g0.idx, streak, g0.ownedCount);
   for (const a of ACHIEVEMENTS) {
@@ -7948,6 +7992,7 @@ function announce(news, mode) {
     }
     writeLS(key, '1');
   }
+  for (const n of news) if (['rankup', 'rankitems', 'season'].includes(n.type) && (mode === 'loud' || mode === 'initial')) announceRank(n, mode);   // v1.19
   const evo = news.filter(n => n.type === 'evo').map(n => n.s);
   if (evo.length && (mode === 'loud' || mode === 'initial')) announceEvo(Math.max(...evo));
   for (const n of news) if ((n.type === 'wq' || n.type === 'track') && (mode === 'loud' || mode === 'initial')) announceQuest(n);
@@ -8682,6 +8727,7 @@ function renderProgress() {
         </div>
         ${loginCard()}
         ${streakMilesCard(g)}
+        ${rankCardHTML()}
         ${(({ have, total }) => `<div class="card coll-card"><div class="row between" style="gap:8px;flex-wrap:wrap"><div><h2 style="margin:0">Collection log</h2><div class="lbl">${have} of ${total} cosmetics · every one shows how to get it</div></div><button class="btn small" data-open-coll>Open</button></div><div class="xpbar" style="margin-top:8px"><i data-fill="${(have / Math.max(1, total) * 100).toFixed(1)}" data-fill-key="coll"></i></div></div>`)(collCounts())}
         <div class="card"><h2>Badges</h2><div class="tiergrid">${tiers}</div></div>
         ${auraCard()}
@@ -8944,6 +8990,14 @@ function writePublic(col, data) {
       setTimeout(() => publishPublic(), 300);
       return;
     }
+    // Rules from before 1.19 refuse the season / streak fields: publish without them for a while, then try again.
+    if (e.code === 'permission-denied' && (('seasonKey' in data) || ('streak' in data)) && !SOC.v19Rejected && (col === 'publicProfiles' || (SOC.statRetries || 0) >= 2)) {
+      SOC.v19Rejected = true;
+      console.warn('Firestore rules do not accept the v1.19 rank / streak fields yet — publishing without them. Publish the v1.19 rules.');
+      delete lastPub.publicProfiles; delete lastPub.publicStats;
+      setTimeout(() => { publishPublic(); setTimeout(() => { SOC.v19Rejected = false; }, 10 * 60000); }, 300);
+      return;
+    }
     // Rules from before clans (or a clan you just left) refuse "clanTag": publish without it.
     if (e.code === 'permission-denied' && 'clanTag' in data && !SOC.clanTagRejected) {
       SOC.clanTagRejected = true;
@@ -9000,6 +9054,12 @@ function myPeriodStats() {
   };
 }
 /** Keep within what the security rules allow (e.g. after importing a big history, totals catch up over a few sessions). */
+/** v1.19: the profile carries the same season numbers as the published stats (badges on friend rows, tables, clans). */
+function profileSeason() {
+  if (SOC.v19Rejected || SOC.v19ProfRejected) return {};
+  const st = SOC.myStats, f = clampStats({ ...myPeriodStats(), ...seasonFields() }, st);
+  return 'seasonKey' in f ? { seasonKey: f.seasonKey, seasonMin: f.seasonMin, prevPeak: f.prevPeak } : {};
+}
 function clampStats(n, o) {
   const cap = { dayMin: 1440, weekMin: 10080, weekMinSun: 10080, monthMin: 44640 };
   // the garden totals (v1.16): never below what is published, growth bounded like the rules (2 produce per minute,
@@ -9019,7 +9079,39 @@ function clampStats(n, o) {
   }
   n.weekMin = Math.min(n.weekMin, n.lifeMin); n.weekMinSun = Math.min(n.weekMinSun, n.lifeMin); n.monthMin = Math.min(n.monthMin, n.lifeMin);
   n.dayMin = Math.min(n.dayMin, n.weekMin, n.weekMinSun, n.monthMin);
+  // v1.19 season (mirrors the rules): within a season never down and at most the real time since the last write + 4 h;
+  // a new season starts from that bound; last season's peak is fixed for the season and never above what was published
+  if ('seasonKey' in n) {
+    const day = new Date().getUTCDate(), dayCap = day * RANK_DAY_CAP;
+    n.seasonMin = Math.min(Math.max(0, Math.round(+n.seasonMin || 0)), dayCap);
+    if (!o || !o.seasonKey) n.prevPeak = 0;
+    else if (o.seasonKey === n.seasonKey) { n.seasonMin = Math.max(+o.seasonMin || 0, Math.min(n.seasonMin, (+o.seasonMin || 0) + allow)); n.prevPeak = +o.prevPeak || 0; }
+    else { n.seasonMin = Math.min(n.seasonMin, allow); n.prevPeak = Math.min(+n.prevPeak || 0, rankOfMin(+o.seasonMin || 0)); }
+  }
+  // v1.19 streaks (mirror the rules): best never below what is published; both grow by at most the elapsed days + 2;
+  // the account's creation time stays as first published; the best streak is never longer than the account is old
+  if ('streak' in n) {
+    if (o && o.joined) n.joined = o.joined;
+    const ageDays = Math.floor((Date.now() - n.joined) / 864e5) + 2;
+    n.bestStreak = Math.min(n.bestStreak, ageDays); n.streak = Math.min(n.streak, n.bestStreak);
+    if (o && typeof o.streak === 'number') {
+      const room = Math.floor(Math.max(0, Date.now() - o.at) / 864e5) + 2;
+      n.bestStreak = Math.max(+o.bestStreak || 0, Math.min(n.bestStreak, (+o.bestStreak || 0) + room));
+      n.streak = Math.min(n.streak, (+o.streak || 0) + room, n.bestStreak);
+    }
+  }
   return n;
+}
+/** v1.19: this season's counted minutes and last season's peak (as published, see clampStats). */
+function seasonFields() { if (SOC.v19Rejected) return {}; const r = myRank(); return { seasonKey: r.mk, seasonMin: r.min, prevPeak: r.prevPeak }; }
+/** v1.19: the streak boards — current and best streak, the last day the goal was met, the account's creation time. */
+function streakFields() {
+  if (SOC.v19Rejected) return {};
+  const g = game(), today = startOfDay(new Date());
+  let last = '';
+  for (let i = 0; i < 3; i++) { const k = dayKey(addDays(today, -i)); if (goalMetDay(g.idx, k)) { last = k; break; } }
+  const user = FB.auth && FB.auth.currentUser, joined = user && user.metadata && user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : 0;
+  return { streak: g.streak.cur, bestStreak: Math.max(g.streak.longest, g.streak.cur), streakDay: last || (g.streak.cur ? dayKey(addDays(today, -1)) : ''), joined: joined || Date.now() - 864e5 };
 }
 function publishPublic(first) {
   if (isPreview() || (!socialReady() && !first)) return;   // the demo never writes
@@ -9032,8 +9124,9 @@ function publishPublic(first) {
     username: USER.username, ...flair, ...aura, ...(SOC.bigRejected ? {} : bigField()), streak: g.streak.cur, longest: g.streak.longest,
     hours: Math.round(g.focusMs / 3.6e5) / 10,
     joined: user && user.metadata.creationTime ? Date.parse(user.metadata.creationTime) : Date.now() - 3600e3,
+    ...profileSeason(),
   });
-  const stats = clampStats({ username: USER.username, ...flair, ...(SOC.auraOk ? aura : {}), global: !!s.globalBoard, ...myPeriodStats() }, SOC.myStats);
+  const stats = clampStats({ username: USER.username, ...flair, ...(SOC.auraOk ? aura : {}), global: !!s.globalBoard, ...myPeriodStats(), ...seasonFields(), ...streakFields() }, SOC.myStats);
   if (SOC.gardenStatsRejected) { delete stats.produce; delete stats.harvests; }
   const p = writePublic('publicStats', stats), probing = !!SOC.gardenProbe && !('produce' in stats);   // this very write is the probe (without the fields)
   if (p) p.then(() => {
@@ -9244,14 +9337,22 @@ function presenceText(p) {
 /* ---------- Leaderboards ---------- */
 /* Leaderboard v2 (v1.16): two kinds of board — Focus time (daily / weekly / monthly / lifetime) and Garden (produce
    earned and plants harvested, both all-time, from the optional publicStats fields `produce` and `harvests`). */
-const BOARD_KINDS = { focus: [['day', 'Daily'], ['week', 'Weekly'], ['month', 'Monthly'], ['life', 'Lifetime']], garden: [['produce', 'Produce'], ['harvests', 'Harvests']] };
-const boardKindOf = period => (period === 'produce' || period === 'harvests' ? 'garden' : 'focus');
-const BOARD_NAME = { day: 'daily', week: 'weekly', month: 'monthly', life: 'lifetime', produce: 'produce', harvests: 'harvests' };
+const BOARD_KINDS = { focus: [['day', 'Daily'], ['week', 'Weekly'], ['month', 'Monthly'], ['life', 'Lifetime']], garden: [['produce', 'Produce'], ['harvests', 'Harvests']],
+  rank: [['season', 'This season']], streak: [['streak', 'Current'], ['best', 'Best']] };   // v1.19: Ranks and Streaks
+const boardKindOf = period => (period === 'produce' || period === 'harvests' ? 'garden' : period === 'season' ? 'rank' : period === 'streak' || period === 'best' ? 'streak' : 'focus');
+const BOARD_NAME = { day: 'daily', week: 'weekly', month: 'monthly', life: 'lifetime', produce: 'produce', harvests: 'harvests', season: 'season', streak: 'streak', best: 'best streak' };
+/** A streak still running for the viewer: the last goal day is today or the day before (one more day for time zones). */
+const streakLive = d => !!d && typeof d.streakDay === 'string' && DAY_RE.test(d.streakDay) && (startOfDay(new Date()) - parseDay(d.streakDay)) / 864e5 <= 2;
+/** The best streak milestone reached, as a small flame next to a name on the streak boards (v1.18 milestones). */
+const streakChip = best => { const m = [...STREAK_MILES].reverse().find(x => (+best || 0) >= x); return m && !minimal() ? `<span class="ms-chip" title="${m}-day streak milestone">🔥${m}</span>` : ''; };
 /** A board value as text: focus minutes, produce or plants. */
-const fmtBoardVal = (period, v) => period === 'produce' ? `${PRODUCE_SVG} ${fmtNum(v)}` : period === 'harvests' ? `${fmtNum(v)} 🌱` : fmtMin(v);
+const fmtBoardVal = (period, v) => period === 'produce' ? `${PRODUCE_SVG} ${fmtNum(v)}` : period === 'harvests' ? `${fmtNum(v)} 🌱` : period === 'season' ? fmtH(v) : period === 'streak' || period === 'best' ? `${fmtNum(v)} day${v === 1 ? '' : 's'}` : fmtMin(v);
 function periodField(period) {
   if (period === 'produce') return { key: null, min: 'produce' };
   if (period === 'harvests') return { key: null, min: 'harvests' };
+  if (period === 'season') return { key: 'seasonKey', min: 'seasonMin' };   // v1.19
+  if (period === 'streak') return { key: null, min: 'streak' };
+  if (period === 'best') return { key: null, min: 'bestStreak' };
   if (period === 'day') return { key: 'dayKey', min: 'dayMin' };
   if (period === 'week') return S.settings.weekStart === 0 ? { key: 'weekKeySun', min: 'weekMinSun' } : { key: 'weekKey', min: 'weekMin' };
   if (period === 'month') return { key: 'monthKey', min: 'monthMin' };
@@ -9262,6 +9363,7 @@ function periodKey(period) {
   if (period === 'day') return dayKey(now);
   if (period === 'week') return dayKey(weekStartOf(now, S.settings.weekStart));
   if (period === 'month') return monthKeyOf(now);
+  if (period === 'season') return seasonKeyNow();
   return null;
 }
 /** A stats doc's minutes for the viewer's current period (0 if it's from an older period). */
@@ -9269,11 +9371,15 @@ function minutesFor(d, period) {
   const f = periodField(period);
   if (!d || d.denied) return 0;
   if (f.key && d[f.key] !== periodKey(period)) return 0;
+  if (period === 'streak' && !streakLive(d)) return 0;   // a broken streak doesn't stay on the board
   return d[f.min] || 0;
 }
 function resetText(period) {
   if (period === 'produce') return 'All produce ever harvested in the garden';
   if (period === 'harvests') return 'Plants harvested, all time';
+  if (period === 'streak') return 'Days in a row with the daily goal met · a missed day drops off';
+  if (period === 'best') return 'Longest streak ever';
+  if (period === 'season') { const m = Math.max(1, Math.round((seasonEnd(seasonKeyNow()) - Date.now()) / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60); return `Season ${seasonLabel(seasonKeyNow())} · ends in ${d ? `${d}d ${h}h` : `${h}h ${m % 60}m`} · at most 14 h a day count`; }
   const now = new Date();
   let end;
   if (period === 'day') end = addDays(startOfDay(now), 1);
@@ -9289,7 +9395,7 @@ async function loadLeaderboard(scope, period, force) {
   const c = SOC.lb[ck];
   if (c && !force && Date.now() - c.at < CACHE_MS) return c;
   const me = { uid: USER.uid, ...JSON.parse(lastPub.publicStats || '{}'), username: USER.username };
-  const mine = minutesFor(clampStats({ ...myPeriodStats() }, null), period);
+  const mine = minutesFor(clampStats({ ...myPeriodStats(), ...seasonFields(), ...streakFields() }, null), period);
   let rows = [], myRow = null, error = '';
   try {
     if (scope === 'friends') {
@@ -9313,6 +9419,7 @@ async function loadLeaderboard(scope, period, force) {
     console.warn('leaderboard', e);
     error = /index/i.test(e.message) ? 'This leaderboard needs a Firestore index — see the setup notes (the browser console has a one-click link).' : 'Couldn’t load the leaderboard. Check your connection.';
   }
+  if (period === 'streak' || period === 'season') rows = rows.filter(r => r.minutes > 0 || r.uid === USER.uid);   // stale streaks and last season's hours drop off
   rows.sort((a, b) => b.minutes - a.minutes || (a.username < b.username ? -1 : 1));
   rows.forEach((r, i) => { r.rank = i + 1; });
   // Errors are cached briefly too (retry after ~20 s) so a failing query can't loop.
@@ -9581,17 +9688,19 @@ function lbEmptyHTML(scope, period) {
   const kind = boardKindOf(period);
   const txt = scope === 'friends' && !friendsList().length ? 'No friends on the board yet — add one and race them.'
     : kind === 'garden' ? (scope === 'friends' ? 'Nobody you know has harvested anything yet. Grow something!' : 'No harvests on the global board yet — yours could be the first.')
+    : kind === 'streak' ? 'No running streaks yet. Meet your daily goal two days in a row to appear here.'
+    : kind === 'rank' ? 'No one has focused yet this season. The first block starts your rank.'
     : scope === 'friends' ? 'No one has focused yet in this period. Start a block and take the lead.' : 'No one has focused yet in this period.';
   return `<div class="lb-empty">${pomeoSVG({ state: 'idle', size: 72 })}<p>${txt}</p></div>`;
 }
 async function renderBoard(fromLoad) {
   const scope = S.ui.lbScope || 'friends', period = S.ui.lbPeriod || 'week', kind = boardKindOf(period);
-  S.ui[kind === 'garden' ? 'lbGardenPeriod' : 'lbFocusPeriod'] = period;   // the kind buttons return to the last period of each kind
+  S.ui[kind === 'garden' ? 'lbGardenPeriod' : kind === 'streak' ? 'lbStreakPeriod' : kind === 'rank' ? 'lbRankPeriod' : 'lbFocusPeriod'] = period;   // the kind buttons return to the last period of each kind
   if (scope === 'clans') return renderClanBoard(fromLoad);
   const head = `
     <div class="lb-head">
       <div class="seg" id="lbScope"><button data-scope="friends" class="${scope === 'friends' ? 'active' : ''}">Friends</button><button data-scope="global" class="${scope === 'global' ? 'active' : ''}">Global</button><button data-scope="clans">Clans</button></div>
-      <div class="seg lb-kind" id="lbKind"><button data-period="${S.ui.lbFocusPeriod || 'week'}" class="${kind === 'focus' ? 'active' : ''}">Focus time</button><button data-period="${S.ui.lbGardenPeriod || 'produce'}" class="${kind === 'garden' ? 'active' : ''}">Garden</button></div>
+      <div class="seg lb-kind" id="lbKind"><button data-period="${S.ui.lbFocusPeriod || 'week'}" class="${kind === 'focus' ? 'active' : ''}">Focus time</button><button data-period="${S.ui.lbGardenPeriod || 'produce'}" class="${kind === 'garden' ? 'active' : ''}">Garden</button><button data-period="season" class="${kind === 'rank' ? 'active' : ''}">Ranks</button><button data-period="${S.ui.lbStreakPeriod || 'streak'}" class="${kind === 'streak' ? 'active' : ''}">Streaks</button></div>
       <div class="seg" id="lbPeriod">${BOARD_KINDS[kind].map(([p, n]) => `<button data-period="${p}" class="${p === period ? 'active' : ''}">${n}</button>`).join('')}</div>
     </div>`;
   const key = `${scope}|${period}|${periodKey(period)}|${S.settings.weekStart}`, c = SOC.lb[key];
@@ -9611,7 +9720,7 @@ async function renderBoard(fromLoad) {
     const me = r.uid === USER.uid, L = personLook(r.uid, r.username, r);
     return `<li class="${me ? 'me' : ''}${r.rank <= 3 ? ' top' + r.rank : ''}" data-uid="${r.uid}"${!me && scope === 'friends' ? ` data-open="${r.uid}"` : ''}>
       <span class="rk">${r.rank}</span>${lbDeltaHTML(prev, r)}${lookPic(L, 26)}
-      <span class="nm-row">${lookName(L)}${me ? ' <span class="lbl">(you)</span>' : ''}</span>
+      <span class="nm-row">${lookName(L)}${kind === 'streak' ? streakChip(r.bestStreak) : ''}${me ? ' <span class="lbl">(you)</span>' : ''}</span>
       <span class="v">${fmtBoardVal(period, r.minutes)}</span></li>`;
   };
   // the podium: the top three, the leader in the middle
@@ -9619,7 +9728,7 @@ async function renderBoard(fromLoad) {
     const me = r.uid === USER.uid, L = personLook(r.uid, r.username, r);
     return `<div class="lb-pod p${r.rank}${me ? ' me' : ''}" data-uid="${r.uid}"${!me && scope === 'friends' ? ` data-open="${r.uid}" role="button" tabindex="0"` : ''}>
       <span class="lb-pr">${r.rank}</span><span class="lb-crown" aria-hidden="true">${r.rank === 1 ? '👑' : ''}</span>${lookPic(L, r.rank === 1 ? 52 : 40)}
-      <span class="lb-pn">${lookName(L)}${me ? ' <span class="lbl">(you)</span>' : ''}</span><span class="lb-pv">${fmtBoardVal(period, r.minutes)}</span>${lbDeltaHTML(prev, r)}</div>`;
+      <span class="lb-pn">${lookName(L)}${kind === 'streak' ? streakChip(r.bestStreak) : ''}${me ? ' <span class="lbl">(you)</span>' : ''}</span><span class="lb-pv">${fmtBoardVal(period, r.minutes)}</span>${lbDeltaHTML(prev, r)}</div>`;
   };
   const lonely = scope === 'friends' && !friendsList().length;   // only me on the board: Pomeo's empty state instead of a one-row list
   const podium = !res.error && !lonely && res.rows.length >= 3 ? `<div class="lb-podium">${[res.rows[1], res.rows[0], res.rows[2]].map(pod).join('')}</div>` : '';
@@ -9629,7 +9738,7 @@ async function renderBoard(fromLoad) {
   const you = res.error ? '' : `<div class="lb-you">${mine && mine.minutes > 0
     ? `<span class="rk">#${mine.rank}</span><span class="lb-yt"><b>You</b> · ${fmtBoardVal(period, mine.minutes)}</span>${lbDeltaHTML(prev, mine)}`
     : scope === 'global' && !S.settings.globalBoard ? `<span class="lb-yt">You’re not on the global board. <button class="linkbtn" id="goPrivacy">Turn it on in Settings</button></span>`
-    : `<span class="lb-yt">${kind === 'garden' ? 'Harvest something to appear here' : 'Finish a block to appear here'}</span>`}</div>`;
+    : `<span class="lb-yt">${kind === 'garden' ? 'Harvest something to appear here' : kind === 'streak' ? 'Meet your daily goal to start a streak' : 'Finish a block to appear here'}</span>`}</div>`;
   // "You passed …": someone who stood above me last time is below me now
   if (fresh && mine && prev && prev[USER.uid] !== undefined) {
     const passed = res.rows.filter(r => r.uid !== USER.uid && prev[r.uid] !== undefined && prev[r.uid] < prev[USER.uid] && r.rank > mine.rank).map(r => '@' + r.username);
@@ -11133,6 +11242,128 @@ document.addEventListener('click', e => {
   else if (e.target.closest('[data-coll-garden]')) { host.close(); S.ui.gardenView = 'almanac'; showTab('garden'); }
 });
 
+/* ==========================================================================
+   RANKS (v1.19) — how much you study this season. A season is one calendar
+   month in UTC (the rules can only read the server clock). Counted minutes are
+   completed focus blocks, each UTC day capped at 14 h. Bronze–Diamond have
+   three divisions; Master and Grandmaster have none. A new season starts from
+   its own hours with a small placement floor from last season's peak. Nothing
+   here is stored except add-only claims (season rewards, rank-ups) and grants.
+   ========================================================================== */
+const RANK_FROM = '2026-11';   // the first season
+const RANK_MAJORS = [
+  { id: 'bronze', name: 'Bronze', col: '#b07a4a', col2: '#e0ad7a' }, { id: 'silver', name: 'Silver', col: '#7f8c98', col2: '#d3dbe2' },
+  { id: 'gold', name: 'Gold', col: '#c9a227', col2: '#f6d878' }, { id: 'platinum', name: 'Platinum', col: '#2f9c97', col2: '#a6e6df' },
+  { id: 'diamond', name: 'Diamond', col: '#3f78d6', col2: '#b3d0ff' }, { id: 'master', name: 'Master', col: '#8a5fd1', col2: '#d3b8ff' },
+  { id: 'grandmaster', name: 'Grandmaster', col: '#d6455f', col2: '#ffbf73' },
+];
+const RANK_T = [0, 200, 400, 600, 900, 1200, 1500, 2000, 2500, 3000, 3600, 4200, 4800, 5600, 6400, 7200, 10800];   // minutes for ranks 0 (Bronze III) … 16 (Grandmaster)
+const RANK_DAY_CAP = 840;   // at most 14 h a UTC day count
+const SEASON_COINS = [10, 40, 80, 150, 250, 400, 600];   // by the peak's major rank
+const RANK_ITEMS = { 1: ['frame_r_silver'], 2: ['frame_r_gold'], 3: ['au_r_platinum'], 4: ['au_r_diamond'], 5: ['poster_r_master'], 6: ['frame_r_gm'] };
+const rankMajor = i => (i >= 16 ? 6 : i >= 15 ? 5 : Math.floor(Math.max(0, i) / 3));
+const rankName = i => { const m = rankMajor(i); return RANK_MAJORS[m].name + (m < 5 ? ' ' + ['III', 'II', 'I'][i % 3] : ''); };
+const rankOfMin = m => { let i = 0; for (let k = 1; k < RANK_T.length; k++) if (m >= RANK_T[k]) i = k; return i; };
+/** Placement floor from last season's peak: Gold → Bronze I, Platinum → Silver III, Diamond → Silver I, Master → Gold III, Grandmaster → Gold II. */
+const rankFloor = peak => (peak >= 16 ? 7 : peak >= 15 ? 6 : peak >= 12 ? 5 : peak >= 9 ? 3 : peak >= 6 ? 2 : 0);
+const seasonKeyOf = t => { const d = new Date(t); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0'); };
+const seasonKeyNow = () => seasonKeyOf(Date.now());
+const seasonPrev = mk => { const [y, m] = mk.split('-').map(Number); return seasonKeyOf(Date.UTC(y, m - 2, 15)); };
+const seasonLabel = mk => { const [y, m] = mk.split('-').map(Number); return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString([], { month: 'short', year: 'numeric', timeZone: 'UTC' }); };
+const seasonEnd = mk => { const [y, m] = mk.split('-').map(Number); return Date.UTC(y, m, 1); };
+let SEAS = null, SEASkey = '';
+/** Counted minutes per season, from the session log (each UTC day capped at 14 h); cached on the log. */
+function seasonTotals() {
+  const list = S.sessions || [], last = list[list.length - 1], key = list.length + ':' + (last ? last.id + ':' + last.end : '');
+  if (SEAS && SEASkey === key) return SEAS;
+  const day = {}, out = {};
+  for (const x of list) { if (!x || !(+x.duration > 0) || !(+x.end > 0)) continue; const k = new Date(+x.end).toISOString().slice(0, 10); day[k] = (day[k] || 0) + x.duration / 60000; }
+  for (const [k, m] of Object.entries(day)) out[k.slice(0, 7)] = (out[k.slice(0, 7)] || 0) + Math.min(RANK_DAY_CAP, m);
+  for (const k in out) out[k] = Math.floor(out[k]);
+  SEAS = out; SEASkey = key;
+  return out;
+}
+const seasonMinutes = mk => seasonTotals()[mk] || 0;
+/** My rank: counted minutes, the rank they earn, last season's peak and floor, the rank shown, progress to the next step. */
+function myRank() {
+  const mk = seasonKeyNow(), min = seasonMinutes(mk), raw = rankOfMin(min), pk = seasonPrev(mk);
+  const prevPeak = pk >= RANK_FROM && seasonMinutes(pk) > 0 ? rankOfMin(seasonMinutes(pk)) : 0, floor = rankFloor(prevPeak), idx = Math.max(raw, floor);
+  const next = idx < 16 ? idx + 1 : null, base = idx === raw ? RANK_T[idx] : 0, to = next !== null ? RANK_T[next] : null;
+  return { mk, min, raw, prevPeak, floor, idx, next, pct: to ? Math.max(0, Math.min(1, (min - base) / (to - base))) : 1, left: to ? Math.max(0, to - min) : 0 };
+}
+/** Someone else's rank from a published document (null when it is not from this season). */
+function rankFromDoc(d) {
+  if (!d || d.denied || d.seasonKey !== seasonKeyNow() || typeof d.seasonMin !== 'number') return null;
+  return Math.max(rankOfMin(d.seasonMin), rankFloor(Math.min(16, Math.max(0, +d.prevPeak || 0))));
+}
+/** The rank badge: a small gem in the rank's colours, with one to three pips for the division. */
+function rankBadge(i, { size = 14, cls = '' } = {}) {
+  if (i === null || i === undefined || i < 0 || minimal()) return '';
+  const m = rankMajor(i), R = RANK_MAJORS[m], pips = m < 5 ? (i % 3) + 1 : 0;
+  const crown = m === 6 ? '<path d="M4.6 3.2 6 4.6 8 2.4 10 4.6 11.4 3.2 11 5.6H5Z" fill="#ffd166"/>' : m === 5 ? '<circle cx="8" cy="3.4" r="1.1" fill="#ffd166"/>' : '';
+  const dots = pips ? Array.from({ length: pips }, (_, k) => `<circle cx="${8 + (k - (pips - 1) / 2) * 2.6}" cy="14.6" r=".9" fill="${R.col}"/>`).join('') : '';
+  return `<span class="rk-b ${cls}" title="${esc(rankName(i))}" aria-label="${esc(rankName(i))}"><svg viewBox="0 0 16 16" width="${size}" height="${size}" aria-hidden="true">${crown}<path d="M8 4 13 7.6 8 13 3 7.6Z" fill="${R.col}"/><path d="M8 4 10.4 7.6 8 13 5.6 7.6Z" fill="${R.col2}" opacity=".75"/>${dots}</svg></span>`;
+}
+const fmtH = m => (Math.floor(m / 6) / 10).toFixed(1).replace(/\.0$/, '') + ' h';
+/** Season rewards in the coin ledger: the earliest claim of each season pays its peak's coins, once. */
+function seasonCoinsAt(t) {
+  const first = {};
+  for (const [k, ts] of Object.entries(S.game.claims.season || {})) { const [mk, p] = k.split(':'); if (+ts <= t && (!first[mk] || +ts < first[mk][0])) first[mk] = [+ts, +p]; }
+  return Object.values(first).reduce((a, [, p]) => a + (SEASON_COINS[rankMajor(p)] || 0), 0);
+}
+/** The season badges for the trophy shelf (one per finished season, the paid claim). */
+function seasonBadges() {
+  const first = {};
+  for (const [k, ts] of Object.entries(S.game.claims.season || {})) { const [mk, p] = k.split(':'); if (!first[mk] || +ts < first[mk].ts) first[mk] = { mk, p: +p, ts: +ts }; }
+  return Object.values(first).sort((a, b) => (a.mk < b.mk ? 1 : -1));
+}
+function announceRank(n, mode) {
+  if (isPreview()) return;
+  if (n.type === 'season') {
+    const coins = SEASON_COINS[rankMajor(n.peak)];
+    inboxAdd({ type: 'level', key: 'season:' + n.mk, title: `🏅 ${seasonLabel(n.mk)} season: ${rankName(n.peak)}`, body: `+${coins} coins · a season badge on your trophy shelf`, go: { tab: 'profile' }, read: true });
+    const t = `🏅 ${seasonLabel(n.mk)} season ended at ${rankName(n.peak)} · +${coins} coins`;
+    if (!holdForFocus('toast', 'season:' + n.mk, () => toast(t, 4200, true, { log: false }))) toast(t, 4200, true, { log: false });
+    return;
+  }
+  const items = (n.items || []).filter(id => ITEM_BY_ID[id]);
+  if (n.type === 'rankitems' || mode === 'initial') {
+    const t = n.type === 'rankup' ? `⬆️ ${rankName(n.idx)}${items.length ? ' · new: ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : ''}` : `🏅 Rank rewards: ${items.map(id => ITEM_BY_ID[id].name).join(', ')}`;
+    inboxAdd({ type: 'level', key: 'rk:' + (n.idx ?? 'items') + ':' + items.join(','), title: t, go: { tab: 'profile' }, read: true });
+    if (!holdForFocus('toast', 'rk:' + t, () => toast(t, 3600, true, { log: false }))) toast(t, 3600, true, { log: false });
+    return;
+  }
+  // a rank-up: a small toast right away (even during a block), the celebration once the block ends
+  const R = RANK_MAJORS[rankMajor(n.idx)], r = myRank();
+  inboxAdd({ type: 'level', key: 'rk:' + seasonKeyNow() + ':' + n.idx, title: `⬆️ Rank up: ${rankName(n.idx)}`, body: items.length ? 'New: ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : `${fmtH(r.min)} this season`, go: { tab: 'profile' }, read: true });
+  if (guardOn()) toast(`⬆️ Rank up: ${rankName(n.idx)}`, 2400, true, { log: false });
+  showRewardReveal({ kicker: 'Rank up', title: rankName(n.idx), items, pal: [R.col, R.col2], key: 'rk:' + seasonKeyNow() + ':' + n.idx,
+    note: r.next !== null ? `${fmtH(r.min)} this season · ${rankName(r.next)} in ${fmtH(r.left)}` : `${fmtH(r.min)} this season · the top rank` });
+}
+/** Under the streak on the Timer: the rank and the step to the next division (hidden in True Minimalist). */
+function renderRankLine() {
+  const el = $('#rankLine');
+  if (!el) return;
+  const on = USER && S.settings.gamification && seasonKeyNow() >= RANK_FROM;
+  el.classList.toggle('hidden', !on);
+  if (!on) { el.innerHTML = ''; return; }
+  const r = myRank();
+  el.innerHTML = `<div class="rl-top">${rankBadge(r.idx, { size: 18 })}<b>${esc(rankName(r.idx))}</b><span class="lbl">${fmtH(r.min)} this season</span><span class="lbl rl-next">${r.next !== null ? `${esc(rankName(r.next))} in ${fmtH(r.left)}` : 'Top rank'}</span></div>
+    <div class="sn-bar rl-bar" style="--rk:${RANK_MAJORS[rankMajor(r.idx)].col}"><i style="transform:translateX(${(r.pct * 100 - 100).toFixed(1)}%)"></i></div>`;
+}
+/** The profile's Rank card. */
+function rankCardHTML() {
+  if (!S.settings.gamification || seasonKeyNow() < RANK_FROM) return '';
+  const r = myRank(), R = RANK_MAJORS[rankMajor(r.idx)], days = Math.max(1, Math.ceil((seasonEnd(r.mk) - Date.now()) / 864e5));
+  const last = seasonBadges()[0], items = Object.entries(RANK_ITEMS).map(([m, ids]) => ids.map(id => ITEM_BY_ID[id] ? `<span class="rk-gift${isOwned(id) ? ' got' : ''}">${rankBadge(+m === 6 ? 16 : +m === 5 ? 15 : +m * 3 + 2, { size: 13 })}${esc(ITEM_BY_ID[id].name)}</span>` : '').join('')).join('');
+  return `<div class="card rk-card" id="rankCard" style="--rk:${R.col};--rk2:${R.col2}"><div class="row between" style="gap:8px;flex-wrap:wrap"><h2 style="margin:0">Rank · ${esc(seasonLabel(r.mk))} season</h2><span class="lbl">${days} day${days === 1 ? '' : 's'} left</span></div>
+    <div class="rk-hero">${rankBadge(r.idx, { size: 44, cls: 'big' })}<div><div class="rk-name">${esc(rankName(r.idx))}</div><div class="lbl">${fmtH(r.min)} counted this season${r.floor > r.raw ? ` · placed at ${esc(rankName(r.floor))} from last season` : ''}</div></div></div>
+    <div class="sn-bar rl-bar"><i style="transform:translateX(${(r.pct * 100 - 100).toFixed(1)}%)"></i></div>
+    <div class="lbl">${r.next !== null ? `${esc(rankName(r.next))} in ${fmtH(r.left)}` : 'Grandmaster — the top rank'} · at most 14 h a day count · a new season starts on the 1st (UTC)</div>
+    ${last ? `<div class="lbl" style="margin-top:6px">Last season (${esc(seasonLabel(last.mk))}): ${esc(rankName(last.p))} · +${SEASON_COINS[rankMajor(last.p)]} coins</div>` : ''}
+    <div class="rk-gifts">${items}</div></div>`;
+}
+
 /* ---------- Streak milestones (v1.18) ----------
    3 · 7 · 14 · 30 · 50 · 100 · 200 · 365 days, judged on the longest streak (computeStreaks follows the per-day goal
    history, so changing the goal never re-awards one). Claims live in the add-only S.game.claims.milestones, so a broken
@@ -11402,8 +11633,9 @@ $('#tab-quests').addEventListener('click', e => {
 });
 /** Trophy shelf for the Profile page: every victory, newest first. */
 function trophyShelf() {
-  const list = allVictories();
-  return `<div class="card"><div class="row between" style="margin-bottom:10px"><h2 style="margin:0">Trophy shelf</h2><span class="lbl">${list.length} victor${list.length === 1 ? 'y' : 'ies'}</span></div>
+  const list = allVictories(), seasons = seasonBadges();
+  return `<div class="card"><div class="row between" style="margin-bottom:10px"><h2 style="margin:0">Trophy shelf</h2><span class="lbl">${list.length} victor${list.length === 1 ? 'y' : 'ies'}${seasons.length ? ` · ${seasons.length} season${seasons.length === 1 ? '' : 's'}` : ''}</span></div>
+    ${seasons.length ? `<div class="shelf season-shelf">${seasons.map(x => `<div class="trophy season-badge" title="${esc(seasonLabel(x.mk))} · ${esc(rankName(x.p))}">${rankBadge(x.p, { size: 40 })}<div class="tn">${esc(seasonLabel(x.mk))}</div><div class="lbl">${esc(rankName(x.p))}</div></div>`).join('')}</div>` : ''}
     ${list.length ? `<div class="shelf">${list.map(t => { const b = BOSS_BY_ID[t.boss] || BOSSES[0]; return `<div class="trophy" title="${esc(b.name)}">${bossSVG(b.id)}<div class="tn">${esc(b.name.replace(/^The /, ''))}</div><div class="tw">${fmtDayShort(t.wk)}</div><div class="tm">${t.mode === 'squad' ? `Squad of ${t.size}` : 'Solo'}</div></div>`; }).join('')}</div>`
       : '<div class="empty e-trophy">Defeat a weekly boss in Quests to earn your first trophy.<br><button class="btn small" data-gotab="quests">Go to Quests</button></div>'}</div>`;
 }
@@ -13432,6 +13664,7 @@ function rmFloor(id) {
   return `<rect x="0" y="168" width="400" height="82" fill="${a}"/>${pat}`;
 }
 const RM_ART = {
+  poster_r_master: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#2a1f45" stroke="#8a5fd1" stroke-width="3"/><path d="M290 42 306 56 290 82 274 56Z" fill="#8a5fd1"/><path d="M290 42 297 56 290 82 283 56Z" fill="#d3b8ff" opacity=".8"/><text x="290" y="94" font-size="8" font-weight="800" fill="#d3b8ff" text-anchor="middle" font-family="system-ui,sans-serif" letter-spacing="1">MASTER</text>',   // v1.19
   shelf_s_trophy: '<rect x="300" y="118" width="80" height="5" rx="1" fill="#8a6238"/><rect x="332" y="112" width="16" height="6" rx="1" fill="#8a6238"/><rect x="338" y="104" width="4" height="8" fill="#c9a227"/><path d="M329 86h22v6q0 11-11 12-11-1-11-12Z" fill="#e3b341"/><path d="M329 89q-7 0-6 6t7 5M351 89q7 0 6 6t-7 5" stroke="#c9a227" stroke-width="2" fill="none"/><path d="M340 88c1.8 1.8 3 3.4 2.3 5.2-.4 1.1-1.3 1.6-2.3 1.6s-1.9-.5-2.3-1.6c-.7-1.8.5-3.4 2.3-5.2Z" fill="#f28c28"/><text x="340" y="101.5" font-size="5.5" font-weight="800" text-anchor="middle" fill="#8a6238" font-family="system-ui,sans-serif">100</text><path d="M362 96l.9 1.9 1.9.9-1.9.9-.9 1.9-.9-1.9-1.9-.9 1.9-.9Z" fill="#ffd166"/>',
   plant_s_golden: '<rect x="350" y="206" width="34" height="20" rx="2" fill="#d9c7a3"/><rect x="347" y="202" width="40" height="5" rx="1.5" fill="#cbb48a"/><ellipse cx="367" cy="189" rx="13" ry="12" fill="#e3b341"/><ellipse cx="367" cy="196" rx="9" ry="4" fill="#b8871a" opacity=".35"/><ellipse cx="361.5" cy="183" rx="3.4" ry="2" fill="#fff3c4" opacity=".75"/><path d="M367 177v-3.6" stroke="#b8871a" stroke-width="1.6" stroke-linecap="round"/><path d="M367.4 174.4c1.2-3 4.4-3.8 7-2.6-1.2 2.6-4.4 3.8-7 2.6Z" fill="#c99a22"/><circle cx="363.4" cy="189" r="1.15" fill="#7a5a10"/><circle cx="370.6" cy="189" r="1.15" fill="#7a5a10"/><path d="M366 192q1 .8 2 0" stroke="#7a5a10" stroke-width="1" stroke-linecap="round" fill="none"/><path d="M384 170l1 2.1 2.1 1-2.1 1-1 2.1-1-2.1-2.1-1 2.1-1Z" fill="#fff3c4"/>',
   poster_g_together: '<rect x="250" y="30" width="80" height="70" rx="3" fill="#fff6e8" stroke="#c9a66b" stroke-width="3"/><circle cx="278" cy="68" r="12" fill="#e5654f"/><circle cx="302" cy="68" r="12" fill="#f28c6b"/><path d="M278 55l-3-4 3 1 3-1Z M302 55l-3-4 3 1 3-1Z" fill="#4e8a4a"/><text x="290" y="92" font-size="9" font-weight="800" fill="#8a6238" text-anchor="middle" font-family="system-ui, sans-serif">100 h together</text>',
@@ -14780,9 +15013,10 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
    command palette, offline banner, pull to refresh, tab swipes, haptics.
    Everything here is stored on this device (localStorage); no new cloud data.
    ========================================================================== */
-const APP_VERSION = '1.18';
+const APP_VERSION = '1.19';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
+  { v: '1.19', t: 'Ranks for this season and streak leaderboards', d: 'Ranks show how much you study right now: every month is a season, and your counted focus hours (up to 14 h a day) take you from Bronze through Silver, Gold, Platinum and Diamond (three divisions each) to Master and Grandmaster. A new season starts on the 1st with a small head start from last season’s best. The end of a season pays coins and puts a season badge on your trophy shelf, and the first time you reach a rank you get its frame, aura or room poster. Rank badges show next to names on boards, friend lists, study tables and clans. The leaderboard has Ranks and Streaks (current and best) boards for friends and everyone.' },
   { v: '1.18', t: 'Study sessions without a clan, rewards for studying together, streak milestones, a new Pomeo, a weekly quest board, a monthly track, Pomeo’s stages and a collection log', d: 'The Friends tab now has Friends · Study sessions · Challenges. Host a public, friends-only or link study session (no clan needed), let people ask to join, invite friends, hand over or end it, and see who is studying now. Studying together pays: coins for new study partners, clan-session milestones with clan-only rewards, bonus Clan Points and 39 new achievements with real rewards, on a sortable achievements page. Streak milestones at 3, 7, 14, 30, 50, 100, 200 and 365 days give titles, the Ember theme, a Flame Pomeo picture, a trophy, a Flame ring, a Blaze frame, an Eternal flame aura and a Golden Pomeo statue, celebrated once after your block. Pomeo is redrawn: minimal and cute, everywhere, and he grows with your focus hours. New: a weekly quest board, a free monthly reward track, a collection log, and your monthly recap counts who you studied with. Fixes: recently used presets keep their order and favourites, and one challenge join per week.' },
   { v: '1.17', t: 'Plant XP, the Harvests basket, boosts, a garden tour, stronger pets with mutations, Finish early, endless daily rewards and user-reported fixes', d: 'Growth is now plant XP: every focus block feeds each growing plant a generous share (a common plant is ready in 2–3 blocks, 4–6 with four growing), and coin-bought ×1.5 / ×2 boosts speed it up. Harvested crops wait in the new Harvests tab with their weight, skins and a 1–5★ rarity: sell them one by one or in bulk, keep favourites, and get a festival bonus at weekends. A Pomeo-guided garden tour, daily garden tasks, compost, a trophy shelf, plant info cards, scenes unlocked by garden level and a livelier scene. Pets: three slots (garden levels 1 / 3 / 6), stronger capped buffs, every egg drinks every block in full, and a small deterministic chance of a Golden, Shiny, Rainbow, Shadow, Frost or Ember pet. Finish early logs the minutes you did; a garden glance card sits on the Timer; the logo takes you home. Daily rewards keep counting past Day 7 with a gift every 7th day. Fixes: blocks always water your plants, changing the daily goal keeps your streak, one challenge reward per preset per week, starting banners that suit every theme, smoother animations.' },
   { v: '1.16', t: 'Garden pets, a rotating seed shop, crop weights, focus-weather mutations, garden looks and new leaderboards', d: 'The garden grew up: every finished focus block also fills the egg in the garden head, and after 5 hours it hatches one of ten pets (bunny to golden snail) that help the garden a little — more water from your blocks, better mutation odds, slower wilting, bonus produce, heavier crops (all capped); duplicates level a pet up, and garden levels 4 and 8 and questline finals add rarer eggs. The Seeds shop restocks every 4 hours UTC with featured seeds at 20% off and a rare seed of the day (two a day; bamboo, pineapple and sakura come only this way or as level gifts). Every harvest now weighs something — long blocks, mutations and pets make it heavier, and 3 in 100 harvests are Giants — with records, a harvest log and a biggest-harvest line on your player card. Seven focus-weather mutations (Shocked for 90-minute blocks, Moonlit after 10 PM, Dawn before 7 AM, Frozen in December, Clan-blessed in a live clan session, Streak-touched at a 14-day streak, Stormy in monsoon questlines) stack up to two on a plant, capped at ×8 produce. The garden sells twenty looks for produce — avatars, themes, titles, frames, name colours, stamps, ring trails, room pieces. And the leaderboard got a podium, rank arrows, your own rank pinned, Pomeo empty states, a "You passed…" moment and two garden boards: produce earned and plants harvested, for friends and for everyone.' },
@@ -14810,7 +15044,7 @@ const CHANGELOG = [
   { v: '1.1', t: 'Accounts & sync', d: 'Log in and keep your sessions in sync on every device, even offline.' },
   { v: '1.0', t: 'Focus timer', d: 'Pomodoro timer with named sessions, presets, streaks and stats.' },
 ];
-const NEWS = ['👥 Study sessions without a clan: public, friends-only or by link — ask to join, invites, host tools, “Studying now”', '🤝 Studying together pays: coins for new partners, clan-session milestones, bonus Clan Points and 39 new achievements with real rewards', '🔥 Streak milestones at 3 · 7 · 14 · 30 · 50 · 100 · 200 · 365 days: titles, the Ember theme, Flame Pomeo, a trophy, a Flame ring, a Blaze frame, an Eternal aura', '🍅 A new, minimal Pomeo everywhere — and he grows with your focus hours (Sprout, Bloom, Ripe, Radiant, Golden)', '📋 A weekly quest board (three new quests every Monday) and a free monthly reward track', '📚 A collection log: every cosmetic and how to get it; your monthly recap now counts who you studied with', '🛠️ Fixes: recently used presets keep their order and favourites; one challenge join per week', '🌱 Plant XP: focus minutes feed every growing plant a fair share (no more strict split) — a common plant is ready in 2–3 blocks, and XP boosts (×1.5 / ×2) can be bought with coins', '🧺 The Harvests tab: crops wait in your basket with their weight, skins and a 1–5★ rarity; sell one by one or in bulk, keep favourites, and get +25% at the weekend festival', '🎓 A garden tour with Pomeo, daily garden tasks, compost, a trophy shelf, plant info cards, scenes by garden level and a livelier garden', '🐾 Pets round 2: up to three pets out (garden levels 1 / 3 / 6), stronger buffs, every egg drinks every block in full, and mutated pets — Golden, Shiny, Rainbow, Shadow, Frost, Ember', '⏱️ Finish early: end a focus block and log the minutes you did (5+ minutes); a garden glance card on the Timer; the logo takes you home', '🎁 Daily rewards keep counting past Day 7 — every 7th day is a gift day and long runs earn a little more', '🛠️ Fixes: blocks always water your plants (even after a reload, a migration or on another device), changing the daily goal keeps your streak, one challenge reward per preset per week, starting banners match every theme, smoother animations', '🥚 Garden pets: every focus block fills the egg; ten pets that water, protect and fatten your plants (capped boosts), hearts for duplicates', '🏪 The Seeds shop restocks every 4 hours: featured seeds at 20% off and a rare seed of the day — bamboo, pineapple and sakura come only this way', '⚖️ Every harvest has a weight: long blocks, mutations and pets make it heavier; Giants (3 in 100), records, a harvest log and a card stat', '⚡ Focus-weather mutations: Shocked, Moonlit, Dawn, Frozen, Clan-blessed, Streak-touched, Stormy — up to two per plant, ×8 produce at most', '🎁 Twenty garden looks for produce: avatars, themes, titles, frames, colours, stamps, trails and room pieces', '🏆 Leaderboard v2: a podium, rank arrows, your rank pinned, “You passed…”, and garden boards for produce and harvests', '🌱 A real garden: plant seeds in up to 16 plots, water them with focus blocks, harvest produce, mutations, visitors, weather and an almanac', '🛋️ Pomeo’s room: furnish it from the coin shop, save rooms, share a picture; questline and boss rewards now include room items', '🃏 Break-time flashcards with spaced repetition — Pomeo offers a few due cards in your breaks, never during focus', '📊 A weekly subject plan in Stats: hours per subject, progress from your session names and tags, carry-over', '🎨 8 themes, 10 stamps, 6 ring trails, 22 room items, 5 garden species and 6 decor pieces', '⚔️ Much stronger monthly clan raid bosses from November: a new boss every month, with everyone’s hits and a rally bonus', '🧭 A cleaner menu: a sidebar on wide screens, ☰ on tablets, More on phones — no more cut-off tabs', '📋 Copy buttons that always work, plus Share on phones; fold the stats on your profile card', '🪑 Focus together: clan sessions where everyone runs their own timer at one table (the Synced timer is still an option)', '✨ Cosmetics fixes: Squad auras look different from Solo ones, and your look is the same on every screen', '🛡️ Clans: your study group — create one or join with a link or code', '🔴 Study live on one shared timer, at a study table with your clan (reactions, no chat)', '📅 Plan group sessions: RSVP, a reminder 5–30 min before, add to your calendar', '⭐ Clan levels, Clan Points and a cosmetic clan shop; clan tags, colours and auras in your bag', '🏆 A weekly clan quest, a monthly raid boss, a clan leaderboard and a trophy case', '☑️ A to-do list in Reminders: due dates, priorities, tags and a checklist that becomes subtasks', '🔒 Members-only clan data, approval by default, and leave / remove / disband any time'];
+const NEWS = ['🏅 Ranks: every month is a season — Bronze to Grandmaster by this season’s focus hours, with season rewards and first-time cosmetics', '🔥 Streak leaderboards: current and best streaks for friends and everyone (broken streaks drop off)', '👥 Study sessions without a clan: public, friends-only or by link — ask to join, invites, host tools, “Studying now”', '🤝 Studying together pays: coins for new partners, clan-session milestones, bonus Clan Points and 39 new achievements with real rewards', '🔥 Streak milestones at 3 · 7 · 14 · 30 · 50 · 100 · 200 · 365 days: titles, the Ember theme, Flame Pomeo, a trophy, a Flame ring, a Blaze frame, an Eternal aura', '🍅 A new, minimal Pomeo everywhere — and he grows with your focus hours (Sprout, Bloom, Ripe, Radiant, Golden)', '📋 A weekly quest board (three new quests every Monday) and a free monthly reward track', '📚 A collection log: every cosmetic and how to get it; your monthly recap now counts who you studied with', '🛠️ Fixes: recently used presets keep their order and favourites; one challenge join per week', '🌱 Plant XP: focus minutes feed every growing plant a fair share (no more strict split) — a common plant is ready in 2–3 blocks, and XP boosts (×1.5 / ×2) can be bought with coins', '🧺 The Harvests tab: crops wait in your basket with their weight, skins and a 1–5★ rarity; sell one by one or in bulk, keep favourites, and get +25% at the weekend festival', '🎓 A garden tour with Pomeo, daily garden tasks, compost, a trophy shelf, plant info cards, scenes by garden level and a livelier garden', '🐾 Pets round 2: up to three pets out (garden levels 1 / 3 / 6), stronger buffs, every egg drinks every block in full, and mutated pets — Golden, Shiny, Rainbow, Shadow, Frost, Ember', '⏱️ Finish early: end a focus block and log the minutes you did (5+ minutes); a garden glance card on the Timer; the logo takes you home', '🎁 Daily rewards keep counting past Day 7 — every 7th day is a gift day and long runs earn a little more', '🛠️ Fixes: blocks always water your plants (even after a reload, a migration or on another device), changing the daily goal keeps your streak, one challenge reward per preset per week, starting banners match every theme, smoother animations', '🥚 Garden pets: every focus block fills the egg; ten pets that water, protect and fatten your plants (capped boosts), hearts for duplicates', '🏪 The Seeds shop restocks every 4 hours: featured seeds at 20% off and a rare seed of the day — bamboo, pineapple and sakura come only this way', '⚖️ Every harvest has a weight: long blocks, mutations and pets make it heavier; Giants (3 in 100), records, a harvest log and a card stat', '⚡ Focus-weather mutations: Shocked, Moonlit, Dawn, Frozen, Clan-blessed, Streak-touched, Stormy — up to two per plant, ×8 produce at most', '🎁 Twenty garden looks for produce: avatars, themes, titles, frames, colours, stamps, trails and room pieces', '🏆 Leaderboard v2: a podium, rank arrows, your rank pinned, “You passed…”, and garden boards for produce and harvests', '🌱 A real garden: plant seeds in up to 16 plots, water them with focus blocks, harvest produce, mutations, visitors, weather and an almanac', '🛋️ Pomeo’s room: furnish it from the coin shop, save rooms, share a picture; questline and boss rewards now include room items', '🃏 Break-time flashcards with spaced repetition — Pomeo offers a few due cards in your breaks, never during focus', '📊 A weekly subject plan in Stats: hours per subject, progress from your session names and tags, carry-over', '🎨 8 themes, 10 stamps, 6 ring trails, 22 room items, 5 garden species and 6 decor pieces', '⚔️ Much stronger monthly clan raid bosses from November: a new boss every month, with everyone’s hits and a rally bonus', '🧭 A cleaner menu: a sidebar on wide screens, ☰ on tablets, More on phones — no more cut-off tabs', '📋 Copy buttons that always work, plus Share on phones; fold the stats on your profile card', '🪑 Focus together: clan sessions where everyone runs their own timer at one table (the Synced timer is still an option)', '✨ Cosmetics fixes: Squad auras look different from Solo ones, and your look is the same on every screen', '🛡️ Clans: your study group — create one or join with a link or code', '🔴 Study live on one shared timer, at a study table with your clan (reactions, no chat)', '📅 Plan group sessions: RSVP, a reminder 5–30 min before, add to your calendar', '⭐ Clan levels, Clan Points and a cosmetic clan shop; clan tags, colours and auras in your bag', '🏆 A weekly clan quest, a monthly raid boss, a clan leaderboard and a trophy case', '☑️ A to-do list in Reminders: due dates, priorities, tags and a checklist that becomes subtasks', '🔒 Members-only clan data, approval by default, and leave / remove / disband any time'];
 
 /* ---------- Haptics ---------- */
 const HAPTIC_KEY = 'pomodorolist-haptics';
@@ -15511,6 +15745,8 @@ const SPECIAL_AURAS = {
   au_clan: { cols: ['#2f8f83', '#e3b341', '#5fb3a5'], name: 'Clan guard aura', lv: 4, spin: true },
   au_g_storm: { cols: ['#5b7fd6', '#9b7be0', '#7ec8e3'], name: 'Storm aura', lv: 5, spin: true, shim: true },
   au_g_bloom: { cols: ['#f28ab0', '#6fb162', '#ffd166'], name: 'Bloom aura', lv: 5, spin: true, shim: true },
+  au_r_platinum: { cols: ['#2f9c97', '#a6e6df'], name: 'Platinum aura', lv: 3, pulse: true },   // v1.19 ranks
+  au_r_diamond: { cols: ['#3f78d6', '#b3d0ff', '#ffffff'], name: 'Diamond aura', lv: 5, spin: true, shim: true },
   au_s_eternal: { cols: ['#ffb347', '#f2552c', '#ffd166'], name: 'Eternal flame aura', lv: 6, spin: true, shim: true, flare: true },   // v1.18 365-day streak
 };
 for (const b of BOSSES) {
@@ -16679,6 +16915,7 @@ function srcOf(s) {
   if (k === 'ev') { const ev = EVENT_BY_ID[a]; return { kind: 'event', label: ev ? ev.label : 'Event' }; }
   if (k === 'ach') return { kind: 'reward', label: 'Achievement' };
   if (k === 'streak') return { kind: 'reward', label: `${a}-day streak` };   // v1.18
+  if (k === 'rank') return { kind: 'reward', label: `Rank: ${(RANK_MAJORS[+a] || {}).name || ''}` };   // v1.19
   return { kind: 'reward', label: 'Reward' };
 }
 /** Owned items for the bag: { it, src, at } (free starter items left out). */
@@ -20944,7 +21181,7 @@ function personLook(uid, name = '', extra = null) {
   if (USER && !USER.guest && uid === USER.uid) {
     const g = game();
     return { uid, me: true, name: USER.username, avatar: myAvatar(), frame: equippedId('frame'), color: equippedId('color'), aura: SPECIAL_AURAS[myAura()] ? myAura() : '',
-      streak: g.streak.cur, tier: g.tier.id, level: g.lv.level, clanTag: clanTagOn() ? CLAN.doc.tag : '' };
+      streak: g.streak.cur, tier: g.tier.id, level: g.lv.level, clanTag: clanTagOn() ? CLAN.doc.tag : '', rank: seasonKeyNow() >= RANK_FROM ? myRank().idx : null };
   }
   const ok = d => d && typeof d === 'object' && !d.denied;
   const pub = [cached('publicProfiles', uid), cached('publicStats', uid), extra && 'username' in extra ? extra : null].filter(ok).sort((a, b) => tsOf(b) - tsOf(a));
@@ -20956,6 +21193,7 @@ function personLook(uid, name = '', extra = null) {
     avatar: okItem(src.avatar, 'avatar') || 'av_default', frame: okItem(src.frame, 'frame') || okItem(any('frame'), 'frame') || 'frame_none',
     color: okItem(src.color, 'color'), aura: SPECIAL_AURAS[src.aura] ? src.aura : '',
     streak: +any('streak') || 0, tier, level: +src.level || +any('level') || 1, clanTag: okTag(pub[0] && pub[0].clanTag),
+    rank: (() => { for (const d of [...pub, extra]) { const r = rankFromDoc(d); if (r !== null) return r; } return null; })(),   // v1.19
   };
 }
 /** The picture: badge (avatar or tier symbol) + frame + aura. True Minimalist: just the initial. */
@@ -20964,8 +21202,8 @@ function lookPic(L, size = 26) {
   return `<span class="look-pic">${withAura(badgeSVG(tierById(L.tier), { size, frame: L.frame, avatar: L.avatar }), L.streak, L.aura)}</span>`;
 }
 /** The name: in their name colour, with their clan tag (both hidden in True Minimalist). */
-function lookName(L, { cls = 'nm', tag = true, at = true, you = '' } = {}) {
-  return `<span${nameAttrs(L.color, cls)}>${you || (at ? '@' : '') + esc(L.name)}</span>${tag && L.clanTag && !minimal() ? ' ' + clanTagHTML(L.clanTag) : ''}`;
+function lookName(L, { cls = 'nm', tag = true, at = true, you = '', rank = true } = {}) {
+  return `<span${nameAttrs(L.color, cls)}>${you || (at ? '@' : '') + esc(L.name)}</span>${rank && L.rank !== null && L.rank !== undefined ? rankBadge(L.rank) : ''}${tag && L.clanTag && !minimal() ? ' ' + clanTagHTML(L.clanTag) : ''}`;
 }
 /** Fetch public profiles for people on screen (clan members, live seats) — cached for 15 minutes. */
 let lookFetch = null;
