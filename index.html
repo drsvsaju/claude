@@ -496,6 +496,31 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 .sm-row .sm-st { flex: 0 0 auto; font-weight: 700; font-size: 13px; color: var(--muted); } .sm-row.done .sm-st { color: #e5654f; }
 .sm-card .sm-bar i { background: linear-gradient(90deg, #f2a65a, #e5654f); }
 .rw-note { margin: 6px 0 0; }
+/* v1.18 long-term: the quest board, the monthly track, Pomeo's stage, the collection log */
+.wq-list { display: grid; gap: 8px; margin-top: 10px; }
+.wq-row { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; }
+.wq-row.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: var(--accent-soft); }
+.wq-main { flex: 1; min-width: 0; } .wq-t { font-weight: 650; font-size: 14px; overflow-wrap: anywhere; }
+.wq-bar, .sn-bar.evo-bar { height: 5px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 6px 0 4px; }
+.wq-bar i { display: block; height: 100%; width: 100%; background: var(--accent); border-radius: inherit; transition: transform .6s var(--ease, ease); }
+.wq-st { flex: none; font-weight: 700; font-size: 13px; color: var(--muted); } .wq-row.done .wq-st { color: var(--accent); }
+.tr-card { margin-top: 16px; }
+.tr-line { position: relative; height: 6px; border-radius: 99px; background: var(--line); margin: 30px 12px 64px; }
+.tr-fill { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, #f2a65a, var(--accent)); transform-origin: 0 50%; }
+.tr-node { position: absolute; left: var(--x); top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; width: 64px; }
+.tr-node i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; background: var(--surface); border: 2px solid var(--line); color: var(--muted); }
+.tr-node.ready i, .tr-node.got i { border-color: var(--accent); color: var(--accent); } .tr-node.got i { background: var(--accent); color: var(--on-accent, #fff); }
+.tr-node span { position: absolute; top: 30px; font-size: 10.5px; line-height: 1.2; text-align: center; color: var(--muted); width: 64px; }
+.tr-node:nth-child(odd) span { top: auto; bottom: 30px; }
+.tr-line { margin-top: 48px; }
+.evo-line { margin-top: 2px; } .evo-bar { max-width: 220px; }
+.evo-bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, #9ad395, #5a9a5c); border-radius: inherit; }
+.coll-dlg { width: min(880px, calc(100vw - 24px)); max-height: min(88vh, 900px); }
+.coll-cats { margin: 4px 0 8px; } .coll-f { margin-bottom: 10px; }
+.coll-grid { grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); }
+.coll-it.locked .pv { filter: grayscale(.85) opacity(.55); } .coll-it .coll-how { font-size: 11.5px; overflow-wrap: anywhere; }
+.coll-it.own .coll-how { color: var(--accent); }
+@media (max-width: 480px) { .tr-node, .tr-node span { width: 46px; } .tr-node span { font-size: 9.5px; } .coll-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); } }
 .rw-coins { --rc: #c9a227; } .rw-coins .coin { color: #c9a227; }
 .ring.rs-orbit .prog { stroke-linecap: round; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 45%, transparent)); }
 .ring.rs-glow .prog { filter: drop-shadow(0 0 5px var(--accent)); }
@@ -4445,6 +4470,7 @@ body.first-load #todayBar { opacity: 0; }
   <p class="eg-line" id="egLine"></p>
   <div class="btn-row"><button class="btn" id="egOk">Keep it in the bag</button><button class="btn primary" id="egOut">Let it out</button></div>
 </dialog>
+<dialog id="collDlg" class="coll-dlg" aria-labelledby="collTitle"><div id="collBody"></div></dialog>
 <dialog id="rewardDlg" class="reward-dlg" aria-labelledby="rwTitle">
   <div class="rw-pomeo" id="rwPomeo"></div>
   <div class="rw-kicker" id="rwKicker"></div>
@@ -5883,8 +5909,8 @@ function mergeData(obj) {
   // Progression: keep every purchase and the earliest claim of each reward; take equipped items only where unset.
   const sg = src.game, g = S.game;
   for (const [k, v] of Object.entries(sg.purchases)) if (!g.purchases[k]) g.purchases[k] = v;
-  for (const kind of ['goalDays', 'milestones', 'achievements', 'social', 'challenges', 'login', 'bosses']) {
-    for (const [k, v] of Object.entries(sg.claims[kind])) if (!g.claims[kind][k] || v < g.claims[kind][k]) g.claims[kind][k] = v;
+  for (const kind of ['goalDays', 'milestones', 'achievements', 'social', 'challenges', 'login', 'bosses', 'wq', 'track', 'evo']) {
+    for (const [k, v] of Object.entries(sg.claims[kind] || {})) if (!g.claims[kind][k] || v < g.claims[kind][k]) g.claims[kind][k] = v;
   }
   for (const [k, v] of Object.entries(sg.freezesUsed)) if (!g.freezesUsed[k]) g.freezesUsed[k] = v;
   for (const [k, v] of Object.entries(sg.equipped)) if (!(k in g.equipped)) g.equipped[k] = v;
@@ -6843,6 +6869,9 @@ function normalizeGame(g) {
       bosses: map(c.bosses),           // '<week Monday>|solo' | '<week Monday>|squad' -> ts (weekly boss defeated; older: bare week)
       brew: map(c.brew),               // '<boss>|solo' | '<boss>|squad' -> ts (boss rewards claimed)
       quests: map(c.quests),           // '<event>:q1' … | '<event>:final' -> ts (questline rewards claimed)
+      wq: map(c.wq),                   // v1.18 weekly quest board: '<week Monday>:<quest id>' -> ts
+      track: map(c.track),             // v1.18 monthly reward track: 'YYYY-MM:<tier>' -> ts
+      evo: map(c.evo),                 // v1.18 Pomeo's stages reached: '1'…'5' -> ts
     },
     trophies: map(g.trophies),       // same keys as claims.bosses -> { boss, mode, hp, coins, size, at }
     grants: map(g.grants),           // itemId -> { src: 'boss:<id>:<mode>' | 'ev:<event>', at } (rewards in the bag)
@@ -7736,6 +7765,7 @@ function earnedAt(t) {
   const cl = S.game.claims;
   for (const ts of Object.values(cl.goalDays)) if (ts <= t) c += GOAL_BONUS;
   for (const [m, ts] of Object.entries(cl.milestones)) if (ts <= t) c += STREAK_BONUS[m] || 0;
+  c += wqCoinsAt(t) + trackCoinsAt(t);   // v1.18 weekly quests and the monthly track
   for (const [id, ts] of Object.entries(cl.achievements)) if (ts <= t && ACH_BY_ID[id]) c += ACH_BY_ID[id].coins;
   // Social: +10 per new friend, but at most 5 per Monday-to-Sunday week, so it can't be farmed.
   const perWeek = {};
@@ -7861,6 +7891,18 @@ function reconcileRewards(mode = 'quiet') {
   for (const m of Object.keys(STREAK_BONUS)) {
     if (streak.longest >= +m && !cl.milestones[m]) { cl.milestones[m] = now; news.push({ type: 'streak', m: +m }); }
   }
+  if (!isPreview()) {   // v1.18: the weekly quest board (this week and last), the monthly track (this month and last), Pomeo's stages
+    for (const mon of [weekMonday(), addDays(weekMonday(), -7)]) for (const q of wqBoard(mon)) {
+      const k = dayKey(mon) + ':' + q.id;
+      if (!cl.wq[k] && wqVal(q, mon) >= q.n) { cl.wq[k] = Math.min(now, +addDays(mon, 7) - 1); wqGive(q, k, cl.wq[k]); news.push({ type: 'wq', q }); }
+    }
+    for (const mk of [monthKey(now), monthKey(+new Date(new Date().getFullYear(), new Date().getMonth(), 0))]) {
+      const h = trackHours(mk);
+      TRACK.forEach((t, i) => { const k = mk + ':' + i; if (!cl.track[k] && h >= t.h) { cl.track[k] = now; trackGive(t, k, now); news.push({ type: 'track', t, mk }); } });
+    }
+    const st = evoStage(g0.focusMs);
+    for (let i = 1; i <= st; i++) if (!cl.evo[i]) { cl.evo[i] = now; news.push({ type: 'evo', s: i }); }
+  }
   const stats = computeStats(g0.idx, streak, g0.ownedCount);
   for (const a of ACHIEVEMENTS) {
     if (!cl.achievements[a.id] && a.val(stats) >= a.goal) { cl.achievements[a.id] = now; news.push({ type: 'ach', a }); }
@@ -7895,6 +7937,9 @@ function announce(news, mode) {
     }
     writeLS(key, '1');
   }
+  const evo = news.filter(n => n.type === 'evo').map(n => n.s);
+  if (evo.length && (mode === 'loud' || mode === 'initial')) announceEvo(Math.max(...evo));
+  for (const n of news) if ((n.type === 'wq' || n.type === 'track') && (mode === 'loud' || mode === 'initial')) announceQuest(n);
   const miles = news.filter(n => n.type === 'streak').map(n => n.m);
   if (miles.length && (mode === 'loud' || mode === 'initial')) showStreakMilestones(miles);   // one skippable celebration (v1.18)
   for (const n of news) {
@@ -8543,7 +8588,7 @@ function pomeoCard() {
     <span class="pomeo-pic">${pomeoSVG({ state: pomeoOn() ? 'happy' : 'sleep', ...o })}</span>
     <div class="pc-main"><div class="pc-name">Pomeo</div>
       <div class="desc">${pomeoOn() ? esc(POMEO_MOOD_TEXT[mood] || POMEO_MOOD_TEXT.idle) : 'Hidden — he’s napping'}</div>
-      <div class="desc">Wearing: ${wear.length ? esc(wear.join(' · ')) : 'nothing special yet'}</div></div>
+      <div class="desc">Wearing: ${wear.length ? esc(wear.join(' · ')) : 'nothing special yet'}</div>${pomeoOn() ? evoLineHTML() : ''}</div>
     ${!pomeoOn() ? '<button class="btn" id="pomeoShow">Show Pomeo</button>' : S.settings.gamification ? '<span class="btn-row"><button class="btn" id="pomeoRoom">His room</button><button class="btn" id="pomeoOutfit">Change outfit</button></span>' : ''}</div>`;
 }
 
@@ -8625,6 +8670,7 @@ function renderProgress() {
         </div>
         ${loginCard()}
         ${streakMilesCard(g)}
+        ${(({ have, total }) => `<div class="card coll-card"><div class="row between" style="gap:8px;flex-wrap:wrap"><div><h2 style="margin:0">Collection log</h2><div class="lbl">${have} of ${total} cosmetics · every one shows how to get it</div></div><button class="btn small" data-open-coll>Open</button></div><div class="xpbar" style="margin-top:8px"><i data-fill="${(have / Math.max(1, total) * 100).toFixed(1)}" data-fill-key="coll"></i></div></div>`)(collCounts())}
         <div class="card"><h2>Badges</h2><div class="tiergrid">${tiers}</div></div>
         ${auraCard()}
         ${groupCard}
@@ -9815,14 +9861,17 @@ const POMEO_ACCS = {
   acc_phones: '<g class="m-acc"><path d="M6.4 22.5Q7 7.5 20 7.2q13 .3 13.6 15.3" stroke="#3d3f4a" stroke-width="2.3" fill="none" stroke-linecap="round"/><rect x="3.4" y="19" width="5.6" height="9.4" rx="2.4" fill="#3d3f4a"/><rect x="31" y="19" width="5.6" height="9.4" rx="2.4" fill="#3d3f4a"/><rect x="4.8" y="21" width="2.6" height="5.4" rx="1.2" fill="#8c9aff"/><rect x="32.6" y="21" width="2.6" height="5.4" rx="1.2" fill="#8c9aff"/></g>',
 };
 /** The Pomeo drawing. state = idle | focus | sleep | sleepy | celebrate | happy | excited */
-function pomeoSVG({ state = 'idle', hat = 'hat_none', acc = 'acc_none', skin = 'skin_none', id = '', size = 0 } = {}) {
+function pomeoSVG({ state = 'idle', hat = 'hat_none', acc = 'acc_none', skin = 'skin_none', id = '', size = 0, evo = -1 } = {}) {
   const sk = POMEO_SKINS[skin];   // a skin (pumpkin, jack-o'-lantern) replaces the tomato body and stem
+  const ev = evo >= 0 ? evo : pomeoEvo(), hatOn = !!POMEO_HATS[hat], gold = ev >= 5;   // v1.18 stages: leaf · blossom · shine · glow · golden leaf
   return `<svg class="mascot"${id ? ` id="${id}"` : ''} data-state="${state}"${sk ? ` data-skin="${sk.lantern ? 'lantern' : 'pumpkin'}"` : ''} viewBox="-4 -8 48 48"${size ? ` width="${size}" height="${size}"` : ''} aria-hidden="true">
-    <g class="m-body">
+    <g class="m-body"${ev ? ` data-evo="${ev}"` : ''}>
+      ${ev >= 4 ? `<circle class="m-halo" cx="20" cy="24.4" r="17.4" fill="#ffd166" opacity="${gold ? '.24' : '.15'}"/>` : ''}
       ${sk ? sk.body : '<ellipse cx="20" cy="24.4" rx="13.2" ry="12.2" fill="#f0735f"/><ellipse cx="20" cy="31.6" rx="9.6" ry="4.4" fill="#d9584a" opacity=".22"/>'}
-      ${sk ? '' : '<circle cx="14.6" cy="18.6" r="2.1" fill="#fff" opacity=".32"/>'}
+      ${sk ? '' : '<circle cx="14.6" cy="18.6" r="2.1" fill="#fff" opacity=".32"/>'}${!sk && ev >= 3 ? '<circle cx="17.4" cy="16.7" r=".9" fill="#fff" opacity=".5"/>' : ''}
       ${sk ? sk.stem : `<path d="M20 12.9V10.4" stroke="#5a9a5c" stroke-width="1.7" stroke-linecap="round"/>
-      <path d="M20.4 11.2C21.6 8.2 24.9 7.4 27.4 8.6 26.2 11.2 23 12.4 20.4 11.2Z" fill="#7cc07a"/>`}
+      <path d="M20.4 11.2C21.6 8.2 24.9 7.4 27.4 8.6 26.2 11.2 23 12.4 20.4 11.2Z" fill="${gold ? '#e3b341' : '#7cc07a'}"/>${ev >= 1 && !hatOn ? `<path class="m-leaf2" d="M19.6 11.6C18.4 9.2 15.6 8.6 13.6 9.6 14.6 11.7 17.3 12.6 19.6 11.6Z" fill="${gold ? '#f2cf6b' : '#9ad395'}"/>` : ''}`}
+      ${!sk && ev >= 2 ? '<g class="m-bloom"><circle cx="27" cy="15.3" r=".95" fill="#fff"/><circle cx="28.6" cy="16.3" r=".95" fill="#fff"/><circle cx="28.1" cy="18" r=".95" fill="#fff"/><circle cx="26.3" cy="18" r=".95" fill="#fff"/><circle cx="25.8" cy="16.3" r=".95" fill="#fff"/><circle cx="27.2" cy="16.9" r=".75" fill="#ffd166"/></g>' : ''}
       <ellipse class="m-cheek" cx="13.9" cy="27.3" rx="1.7" ry="1.05" fill="#ff9e8f" opacity=".5"/><ellipse class="m-cheek" cx="26.1" cy="27.3" rx="1.7" ry="1.05" fill="#ff9e8f" opacity=".5"/>
       <g class="e e-open" fill="#3b2420"><circle cx="16.4" cy="24.6" r="1.25"/><circle cx="23.6" cy="24.6" r="1.25"/></g>
       <g class="e e-focus" stroke="#3b2420" stroke-width="1.3" stroke-linecap="round"><path d="M15.2 24.8h2.4M22.4 24.8h2.4"/></g>
@@ -9833,6 +9882,7 @@ function pomeoSVG({ state = 'idle', hat = 'hat_none', acc = 'acc_none', skin = '
       ${sk && sk.face ? sk.face : ''}${POMEO_ACCS[acc] || ''}${POMEO_HATS[hat] || ''}
     </g>
     <text class="zz" x="33" y="9" font-size="8" font-weight="600" fill="currentColor" style="color:var(--muted)">z</text>
+    ${gold ? '<path class="m-glint" d="M34 17.6l.7 1.5 1.5.7-1.5.7-.7 1.5-.7-1.5-1.5-.7 1.5-.7Z" fill="#ffd166"/>' : ''}
     <g class="spark" fill="#f2c14e"><path d="M3 6l1 2.4L6.4 9.4 4 10.4 3 12.8 2 10.4-.4 9.4 2 8.4Z" transform="scale(.8)"/><path d="M38 4l.8 1.8 1.8.8-1.8.8-.8 1.8-.8-1.8-1.8-.8 1.8-.8Z"/></g>
   </svg>`;
 }
@@ -10879,6 +10929,193 @@ async function claimBossRewards(id, mode) {
   if (S.ui.tab === 'quests') renderQuests();
 }
 
+/* ==========================================================================
+   LONG-TERM (v1.18) — the weekly quest board, the monthly reward track,
+   Pomeo's stages and the collection log. Everything is derived from the
+   session log and the garden; claims are add-only maps in S.game.claims
+   (wq / track / evo) that sync like the other claims, so nothing is paid
+   twice on two devices. The board is the same for everyone in a week.
+   ========================================================================== */
+const h32 = str => { let h = 2166136261; for (const ch of String(str)) h = Math.imul(h ^ ch.charCodeAt(0), 16777619); return h >>> 0; };
+const WQ_POOL = [
+  { id: 'blocks',   n: 12, coins: 40, t: n => `Finish ${n} focus blocks` },
+  { id: 'hours',    n: 6,  coins: 50, t: n => `Focus for ${n} hours`, unit: 'h' },
+  { id: 'goal',     n: 5,  coins: 60, t: n => `Hit your daily goal on ${n} days`, unit: 'days' },
+  { id: 'together', n: 3,  coins: 40, seed: 1, t: n => `Focus ${n} blocks with someone`, cloud: true },
+  { id: 'harvest',  n: 5,  produce: 40, t: n => `Harvest ${n} crops`, garden: true },
+  { id: 'early',    n: 2,  coins: 30, t: n => `${n} blocks that start before 9 AM` },
+  { id: 'long',     n: 50, coins: 30, t: n => `One ${n}-minute block`, unit: 'min' },
+  { id: 'subjects', n: 3,  coins: 30, t: n => `Focus on ${n} different subjects` },
+  { id: 'weekend',  n: 2,  coins: 40, t: () => 'Focus on both Saturday and Sunday', unit: 'days' },
+  { id: 'days',     n: 5,  produce: 30, t: n => `Focus on ${n} different days`, unit: 'days', garden: true },
+];
+const WQ_BY_ID = Object.fromEntries(WQ_POOL.map(q => [q.id, q]));
+const WQ_SEEDS = ['lavender', 'blueberry', 'rose', 'pumpkin'];
+const wqSeedOf = key => WQ_SEEDS[h32(key) % WQ_SEEDS.length];
+/** This week's three quests: the same for everyone (seeded by the week); guests skip "with someone", True Minimalist skips the garden ones. */
+function wqBoard(mon = weekMonday()) {
+  const pool = WQ_POOL.filter(q => !(q.cloud && (!USER || USER.guest)) && !(q.garden && minimal()));
+  const r = h32('wq' + dayKey(mon)), out = [], idx = pool.map((_, i) => i);
+  for (let i = 0; i < 3 && idx.length; i++) out.push(pool[idx.splice((r >>> (i * 5)) % idx.length, 1)[0]]);
+  return out;
+}
+/** Progress toward a quest in the week starting `mon`. */
+function wqVal(q, mon) {
+  const a = +mon, b = +addDays(mon, 7), ss = S.sessions.filter(x => x.start >= a && x.start < b);
+  const days = new Set(ss.map(x => dayKey(new Date(x.start))));
+  switch (q.id) {
+    case 'blocks': return ss.length;
+    case 'hours': return ss.reduce((t, x) => t + (+x.duration || 0), 0) / 3.6e6;
+    case 'goal': { const idx = game().idx; let n = 0; for (let d = new Date(a); +d < b; d = addDays(d, 1)) if (goalMetDay(idx, dayKey(d))) n++; return n; }
+    case 'together': return ss.filter(x => Array.isArray(x.mates) && x.mates.length).length;
+    case 'harvest': return isPreview() ? 0 : garden().harvested.filter(x => x.h >= a && x.h < b).length;
+    case 'early': return ss.filter(x => new Date(x.start).getHours() < 9 && new Date(x.start).getHours() >= 4).length;
+    case 'long': return ss.reduce((m, x) => Math.max(m, Math.floor((+x.duration || 0) / 60000)), 0);
+    case 'subjects': return new Set(ss.map(x => String(x.name || '').trim().toLowerCase()).filter(Boolean)).size;
+    case 'weekend': return [5, 6].filter(i => days.has(dayKey(addDays(mon, i)))).length;
+    case 'days': return days.size;
+  }
+  return 0;
+}
+const wqRewardText = (q, key = '') => [q.coins ? `${q.coins} coins` : '', q.produce ? `${q.produce} produce` : '', q.seed ? `a ${(GSP_BY_ID[key ? wqSeedOf(key) : WQ_SEEDS[0]] || {}).name || 'rare'}${key ? '' : '-or-similar'} seed` : ''].filter(Boolean).join(' · ').replace('-or-similar', '');
+/** Produce and seeds for a claimed quest (fixed ids: given once, two devices give the same ids). */
+function wqGive(q, key, at) {
+  const has = id => (S.gbuys || []).some(b => b && b.id === id);
+  if (q.produce && !has('wq_' + key)) S.gbuys.push({ id: 'wq_' + key, v: 1, item: 'quest', price: 0, bonus: q.produce, at, slot: '', src: 'quest' });
+  if (q.seed && !has('wqs_' + key)) S.gbuys.push({ id: 'wqs_' + key, v: 1, item: 'seed_' + wqSeedOf(key), price: 0, at, slot: '', src: 'gift' });
+  GD = null;
+}
+/** Coins from the board: at most three quests a week count (two devices can't add a fourth). */
+function wqCoinsAt(t) {
+  const per = {};
+  for (const [k, ts] of Object.entries(S.game.claims.wq || {})) { const [wk, id] = k.split(':'); if (WQ_BY_ID[id] && +ts <= t) (per[wk] ||= []).push([+ts, WQ_BY_ID[id].coins || 0]); }
+  let c = 0;
+  for (const arr of Object.values(per)) c += arr.sort((x, y) => x[0] - y[0]).slice(0, 3).reduce((a, x) => a + x[1], 0);
+  return c;
+}
+// ---- the monthly reward track: free tiers by the month's focus hours, reset on the 1st with the questline ----
+const TRACK = [{ h: 2, coins: 20 }, { h: 5, produce: 30 }, { h: 10, coins: 60 }, { h: 15, seed: 1 }, { h: 25, produce: 80 }, { h: 40, coins: 150 }, { h: 60, egg: 'rare' }];
+function trackHours(mk) {
+  const [y, m] = mk.split('-').map(Number), a = +new Date(y, m - 1, 1), b = +new Date(y, m, 1);
+  return S.sessions.filter(x => x.start >= a && x.start < b).reduce((t, x) => t + (+x.duration || 0), 0) / 3.6e6;
+}
+const trackSeedOf = mk => WQ_SEEDS[h32('tr' + mk) % WQ_SEEDS.length];
+const trackText = (t, mk) => t.coins ? `${t.coins} coins` : t.produce ? `${t.produce} produce` : t.seed ? `${(GSP_BY_ID[trackSeedOf(mk)] || {}).name} seed` : t.egg ? 'a rare egg' : '';
+function trackGive(t, key, at) {
+  const has = id => (S.gbuys || []).some(b => b && b.id === id), mk = key.split(':')[0];
+  if (t.produce && !has('tr_' + key)) S.gbuys.push({ id: 'tr_' + key, v: 1, item: 'quest', price: 0, bonus: t.produce, at, slot: '', src: 'quest' });
+  if (t.seed && !has('trs_' + key)) S.gbuys.push({ id: 'trs_' + key, v: 1, item: 'seed_' + trackSeedOf(mk), price: 0, at, slot: '', src: 'gift' });
+  if (t.egg && !(S.eggs || []).some(e => e && e.id === 'egg_tr_' + mk)) (S.eggs ||= []).push({ id: 'egg_tr_' + mk, v: 1, kind: t.egg, src: 'gift', at, need: EGG_NEED[t.egg], w: {} });
+  GD = null;
+}
+function trackCoinsAt(t) {
+  let c = 0;
+  for (const [k, ts] of Object.entries(S.game.claims.track || {})) { const tr = TRACK[+k.split(':')[1]]; if (tr && +ts <= t) c += tr.coins || 0; }
+  return c;
+}
+function announceQuest(n) {
+  if (isPreview()) return;
+  const text = n.type === 'wq' ? `Weekly quest done: ${n.q.t(n.q.n)} · ${wqRewardText(n.q)}` : `${monthName(n.mk)} track: ${n.t.h} h reached · ${trackText(n.t, n.mk)}`;
+  inboxAdd({ type: 'boss', key: n.type + ':' + (n.type === 'wq' ? n.q.id + dayKey(weekMonday()) : n.mk + n.t.h), title: '📋 ' + text, go: { tab: 'quests' }, read: true });
+  if (!holdForFocus('toast', 'qt:' + text, () => toast('📋 ' + text, 3200, true, { log: false }))) toast('📋 ' + text, 3200, true, { log: false });
+}
+const monthName = mk => { const [y, m] = mk.split('-').map(Number); return new Date(y, m - 1, 1).toLocaleDateString([], { month: 'long' }); };
+/** The Quest board view: this week's three quests, then this month's track. */
+function renderBoardView(host) {
+  const mon = weekMonday(), wk = dayKey(mon), cl = S.game.claims, left = Math.max(1, Math.ceil((+addDays(mon, 7) - Date.now()) / 864e5));
+  const rows = wqBoard(mon).map(q => {
+    const k = wk + ':' + q.id, v = wqVal(q, mon), got = !!cl.wq[k], pct = Math.min(1, v / q.n);
+    const shown = q.unit === 'h' ? (Math.floor(Math.min(v, q.n) * 10) / 10) : Math.min(Math.floor(v), q.n);
+    return `<div class="wq-row${got ? ' done' : ''}" data-wq="${q.id}"><div class="wq-main"><div class="wq-t">${esc(q.t(q.n))}</div>
+      <div class="wq-bar"><i style="transform:translateX(${(pct * 100 - 100).toFixed(1)}%)"></i></div>
+      <div class="lbl">${got ? '✓ Done · ' : `${shown} / ${q.n}${q.unit && q.unit !== 'days' ? ' ' + q.unit : ''} · `}${esc(wqRewardText(q, k))}</div></div><span class="wq-st">${got ? '✓' : Math.round(pct * 100) + '%'}</span></div>`;
+  }).join('');
+  const mk = monthKey(Date.now()), h = trackHours(mk), ev = currentEvent();
+  const last = TRACK[TRACK.length - 1].h;
+  const nodes = TRACK.map((t, i) => { const got = !!cl.track[mk + ':' + i]; return `<div class="tr-node${got ? ' got' : h >= t.h ? ' ready' : ''}" style="--x:${(t.h / last * 100).toFixed(1)}%" title="${t.h} h · ${esc(trackText(t, mk))}"><i>${got ? '✓' : t.h}</i><span>${esc(trackText(t, mk))}</span></div>`; }).join('');
+  const daysLeft = Math.ceil((+new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1) - Date.now()) / 864e5);
+  host.innerHTML = `<div class="card wq-card"><div class="row between" style="flex-wrap:wrap;gap:6px"><h2 style="margin:0">This week’s quests</h2><span class="lbl">${left} day${left === 1 ? '' : 's'} left · new quests every Monday</span></div>
+      <div class="wq-list">${rows}</div><p class="lbl" style="margin:8px 0 0">Rewards arrive by themselves when a quest is done. Everyone gets the same three quests each week.</p></div>
+    <div class="card tr-card"><div class="row between" style="flex-wrap:wrap;gap:6px"><h2 style="margin:0">${monthName(mk)} track${ev ? ` <span class="lbl">alongside ${esc(ev.label)}</span>` : ''}</h2><span class="lbl">${fmtNum(Math.floor(h * 10) / 10)} h this month · resets in ${daysLeft} day${daysLeft === 1 ? '' : 's'}</span></div>
+      <div class="tr-line"><div class="tr-fill" style="transform:scaleX(${Math.min(1, h / last).toFixed(3)})"></div>${nodes}</div>
+      <p class="lbl" style="margin:8px 0 0">Free for everyone: focus hours this month unlock each step. It starts again on the 1st.</p></div>`;
+}
+// ---- Pomeo's stages: lifetime focus hours ----
+const EVO = [{ h: 0, name: 'Seedling' }, { h: 10, name: 'Sprout' }, { h: 50, name: 'Bloom' }, { h: 150, name: 'Ripe' }, { h: 400, name: 'Radiant' }, { h: 1000, name: 'Golden' }];
+const evoStage = ms => { const h = (+ms || 0) / 3.6e6; let s = 0; EVO.forEach((e, i) => { if (h >= e.h) s = i; }); return s; };
+/** The signed-in user's stage for drawing Pomeo (0 before sign-in, with rewards off, or when the look is turned off). */
+function pomeoEvo() {
+  if (!USER || !S || !S.settings || S.settings.gamification === false || S.settings.pomeoEvo === false) return 0;
+  try { return evoStage(game().focusMs); } catch (e) { return 0; }
+}
+function announceEvo(stage) {
+  if (isPreview() || !EVO[stage]) return;
+  const text = `Pomeo grew: ${EVO[stage].name} (stage ${stage} of ${EVO.length - 1})`;
+  inboxAdd({ type: 'level', key: 'evo:' + stage, title: '🌱 ' + text, body: `${EVO[stage].h} hours of focus together`, go: { tab: 'profile' }, read: true });
+  if (!holdForFocus('unlock', 'evo:' + stage, () => toast('🌱 ' + text, 3600, true, { log: false }))) toast('🌱 ' + text, 3600, true, { log: false });
+}
+function evoLineHTML() {
+  if (!S.settings.gamification) return '';
+  const h = game().focusMs / 3.6e6, st = evoStage(game().focusMs), nx = EVO[st + 1];
+  const bar = nx ? `<div class="sn-bar evo-bar"><i style="transform:translateX(${(Math.min(1, (h - EVO[st].h) / (nx.h - EVO[st].h)) * 100 - 100).toFixed(1)}%)"></i></div>` : '';
+  return `<div class="desc evo-line">Stage ${st} · <b>${EVO[st].name}</b> · ${fmtNum(Math.floor(h))} h${nx ? ` · ${nx.name} at ${nx.h} h` : ' · fully grown'}</div>${bar}`;
+}
+// ---- the collection log: every cosmetic with how to get it ----
+let EV_OF = null;
+function itemHow(it) {
+  if (!EV_OF) { EV_OF = {}; for (const ev of EVENTS) for (const id of [...(ev.rewards || []), ...(ev.final || [])]) EV_OF[id] = ev; }
+  if (it.price === 0) return 'Free from the start';
+  if (it.how) return it.how;
+  if (it.boss) { const b = BOSS_BY_ID[it.boss]; return `Beat ${b ? b.name : 'a boss'}${it.mode === 'squad' ? ' with a squad' : ''}`; }
+  if (/^(stamp_b_|av_b_)/.test(it.id)) { const id = it.id.replace(/^(stamp_b_|av_b_)/, '').replace(/_sq$/, ''), b = BOSS_BY_ID[id]; return `Beat ${b ? b.name : 'a boss'}${/_sq$/.test(it.id) ? ' with a squad' : ''}`; }
+  if (EV_OF[it.id]) return `${EV_OF[it.id].name} · ${EV_OF[it.id].label}${(EV_OF[it.id].final || []).includes(it.id) ? ' (final reward)' : ''}`;
+  if (it.clanRaid) return 'Clan raid boss';
+  if (it.clanLv) return `Clan level ${it.clanLv}`;
+  if (it.gprice) return `Garden shop · ${it.gprice} produce${it.glvl ? ` · garden level ${it.glvl}` : ''}`;
+  if (it.price > 0) return `Shop · ${fmtNum(it.price)} coins${it.lvl ? ` · level ${it.lvl}` : ''}`;
+  const u = UNLOCKS.find(x => x.id === it.id);
+  if (u) { const e = /^ev:/.test(u.src) && EVENT_BY_ID[u.src.slice(3)]; return e ? `${e.name} · ${e.label}` : 'Boss reward'; }
+  return 'A special reward';
+}
+let COLL_G = null;
+const collGroups = () => COLL_G || (COLL_G = BAG_CATS.filter(c => c[2].length));   // (BAG_CATS is defined further down)
+const collItems = () => ITEMS.filter(it => it.price !== 0 && it.cat !== 'freeze' && it.cat !== 'boost' && collGroups().some(c => c[2].includes(it.cat)));
+function collCounts() { const all = collItems(); return { have: all.filter(it => isOwned(it.id)).length, total: all.length }; }
+function openCollection() {
+  const d = $('#collDlg');
+  if (!d) return;
+  renderCollection();
+  if (!d.open) d.showModal();
+}
+function renderCollection() {
+  const host = $('#collBody'), g = game();
+  if (!host) return;
+  const grp = collGroups().some(c => c[0] === S.ui.collCat) ? S.ui.collCat : collGroups()[0][0], f = ['all', 'have', 'missing'].includes(S.ui.collF) ? S.ui.collF : 'all';
+  const all = collItems(), { have, total } = collCounts(), c = collGroups().find(x => x[0] === grp);
+  const list = all.filter(it => c[2].includes(it.cat)).map(it => ({ it, own: isOwned(it.id) })).filter(x => f === 'all' || (f === 'have') === x.own)
+    .sort((a, b) => (b.own - a.own) || ['common', 'rare', 'epic', 'legendary'].indexOf(itemRarity(a.it)) - ['common', 'rare', 'epic', 'legendary'].indexOf(itemRarity(b.it)));
+  const gd = isPreview() ? null : garden();
+  const tiles = list.map(({ it, own }) => { let pv = ''; try { pv = previewFor(it, g); } catch (e) { pv = ''; }
+    return `<div class="item coll-it r-${itemRarity(it)}${own ? ' own' : ' locked'}" data-coll="${it.id}"><div class="pv">${pv}</div><div class="nm">${esc(it.name)}</div><div class="lbl coll-how">${own ? '✓ Collected' : esc(itemHow(it))}</div></div>`; }).join('');
+  host.innerHTML = `<div class="row between coll-head"><h2 id="collTitle" style="margin:0">Collection log</h2><button class="iconbtn" data-coll-close aria-label="Close">✕</button></div>
+    <div class="lbl">${have} of ${total} cosmetics collected${gd ? ` · ${gd.discovered.size} of ${GSPECIES.length} garden species · ${(typeof petsOwnedCount === 'function' ? petsOwnedCount() : 0)} pets` : ''}</div>
+    <div class="xpbar" style="margin:6px 0 10px"><i style="width:${(have / Math.max(1, total) * 100).toFixed(1)}%"></i></div>
+    <div class="catrow coll-cats" id="collCats">${collGroups().map(x => { const n = all.filter(it => x[2].includes(it.cat)); return `<button data-collcat="${x[0]}" class="${x[0] === grp ? 'active' : ''}">${x[1]} <span class="cnt">${n.filter(it => isOwned(it.id)).length}/${n.length}</span></button>`; }).join('')}</div>
+    <div class="seg coll-f" id="collF">${[['all', 'All'], ['have', 'Collected'], ['missing', 'Missing']].map(([k, n]) => `<button data-collf="${k}" class="${k === f ? 'active' : ''}">${n}</button>`).join('')}</div>
+    <div class="shopgrid coll-grid">${tiles || '<p class="lbl">Nothing here.</p>'}</div>
+    ${gd ? '<div class="btn-row" style="margin-top:12px"><button class="btn small" data-coll-garden>Garden species and pets: open the almanac</button></div>' : ''}`;
+}
+document.addEventListener('click', e => {
+  const host = e.target.closest('#collDlg');
+  if (e.target.closest('[data-open-coll]')) { openCollection(); return; }
+  if (!host) return;
+  const c = e.target.closest('[data-collcat]'), f = e.target.closest('[data-collf]');
+  if (c) { S.ui.collCat = c.dataset.collcat; saveLocal(); renderCollection(); }
+  else if (f) { S.ui.collF = f.dataset.collf; saveLocal(); renderCollection(); }
+  else if (e.target.closest('[data-coll-close]') || e.target === host) host.close();
+  else if (e.target.closest('[data-coll-garden]')) { host.close(); S.ui.gardenView = 'almanac'; showTab('garden'); }
+});
+
 /* ---------- Streak milestones (v1.18) ----------
    3 · 7 · 14 · 30 · 50 · 100 · 200 · 365 days, judged on the longest streak (computeStreaks follows the per-day goal
    history, so changing the goal never re-awards one). Claims live in the add-only S.game.claims.milestones, so a broken
@@ -10957,13 +11194,14 @@ function updateQuestDot() {
 function renderQuests() {
   const el = $('#questBody');
   if (!el || !USER) return;
-  const view = S.ui.questView === 'quest' ? 'quest' : 'boss', ev = currentEvent();
+  const view = ['quest', 'board'].includes(S.ui.questView) ? S.ui.questView : 'boss', ev = currentEvent();
   const bossPend = rewardsReady() && pendingBossRewards().length, qPend = rewardsReady() && questClaimable();
   el.innerHTML = `<div class="q-switch"><div class="seg" id="questSeg">
       <button data-qview="boss" class="${view === 'boss' ? 'active' : ''}">⚔️ Weekly boss${bossPend ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
-      <button data-qview="quest" class="${view === 'quest' ? 'active' : ''}">${ev ? ev.emoji : '🗺️'} Questline${qPend ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button></div></div>
+      <button data-qview="quest" class="${view === 'quest' ? 'active' : ''}">${ev ? ev.emoji : '🗺️'} Questline${qPend ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
+      <button data-qview="board" class="${view === 'board' ? 'active' : ''}">📋 Quest board</button></div></div>
     <div id="qView"></div>`;
-  if (view === 'boss') renderBossView($('#qView')); else renderQuestline($('#qView'));
+  if (view === 'boss') renderBossView($('#qView')); else if (view === 'board') renderBoardView($('#qView')); else renderQuestline($('#qView'));
   animateIn(el);
   animateCounts(el);
   updateQuestDot();
@@ -11698,11 +11936,11 @@ function computeGarden() {
   // than the folded history — keeps the verdict it had)
   const hv = sum ? +sum.hv || 0 : 0;   // when the Harvests inventory arrived on this account (v1.17): older harvests paid at once
   const soldAt = p => (+p.sold || +p.cp || (hv && +p.h < hv ? +p.h : Infinity)), soldVal = p => (p.sv !== undefined && p.sv !== null ? +p.sv : +p.y || 0);
-  const bonuses = (S.gbuys || []).filter(b => b && b.id && (b.src === 'task' || b.src === 'ach') && +b.bonus > 0);   // daily garden tasks (v1.17) and achievements (v1.18) pay produce
+  const bonuses = (S.gbuys || []).filter(b => b && b.id && (b.src === 'task' || b.src === 'ach' || b.src === 'quest') && +b.bonus > 0);   // + weekly quests / the monthly track (v1.18)   // daily garden tasks (v1.17) and achievements (v1.18) pay produce
   const earnedAt = t => sums.reduce((a, x) => a + (x.at <= t ? (+x.y || 0) - (+x.spent || 0) : 0), 0) + harvested.filter(p => { const sa = soldAt(p); return !+p.cp && sa < Infinity && sa <= t; }).reduce((a, p) => a + soldVal(p), 0)   // a composted crop pays nothing
-    + bonuses.filter(b => +b.at <= t).reduce((a, b) => a + Math.min(b.src === 'ach' ? 100 : 20, Math.round(+b.bonus)), 0);
+    + bonuses.filter(b => +b.at <= t).reduce((a, b) => a + Math.min(b.src === 'ach' || b.src === 'quest' ? 100 : 20, Math.round(+b.bonus)), 0);
   const crops = harvested.filter(p => soldAt(p) === Infinity).sort((a, b) => b.h - a.h);   // the Harvests inventory: harvested, not yet sold or composted
-  const buys = (S.gbuys || []).filter(b => b && b.id && b.item && b.src !== 'task' && b.src !== 'ach').slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
+  const buys = (S.gbuys || []).filter(b => b && b.id && b.item && b.src !== 'task' && b.src !== 'ach' && b.src !== 'quest').slice().sort((a, b) => (a.at - b.at) || (a.id < b.id ? -1 : 1));
   const used = new Set(plants.map(p => p.seed));   // a seed a plant grew from is settled whatever the clocks said
   let spent = 0;
   const valid = [], invalid = [];
@@ -13780,7 +14018,10 @@ function wrappedData(p) {
     : active / totalDays >= 0.7 ? { t: 'Consistent Climber', e: '🧗', d: 'Day after day, you kept showing up.' }
     : weekend > 0.4 ? { t: 'Weekend Warrior', e: '⚔️', d: 'Saturdays and Sundays are your training ground.' }
     : { t: 'Rising Scholar', e: '🌱', d: 'Every session planted something. Keep growing.' };
-  return { mins, n: ss.length, top, best, hours, peak, peakPart, bestPart, longest, active, totalDays, bosses, garden, gArt, persona };
+  const people = new Set(), tg = ss.filter(s => Array.isArray(s.mates) && s.mates.length);   // studied with (v1.18): blocks where someone else focused too
+  for (const s of tg) for (const u of s.mates) people.add(u);
+  const together = { people: people.size, mins: tg.reduce((a, s) => a + s.duration, 0) / 60000 };
+  return { mins, n: ss.length, top, best, hours, peak, peakPart, bestPart, longest, active, totalDays, bosses, garden, gArt, persona, together };
 }
 const W = { i: 0, slides: [], timer: 0, p: null, d: null };
 const fmtHr = h => new Date(2000, 0, 1, h).toLocaleTimeString([], { hour: 'numeric' });
@@ -13804,10 +14045,11 @@ function openWrapped(i) {
     !plain && `<div class="wr-in wr-k" style="--i:0">Bosses & garden</div><div class="wr-in wr-h" style="--i:1">${d.bosses.length ? `${d.bosses.length} boss${d.bosses.length === 1 ? '' : 'es'} defeated ⚔️` : 'The bosses got away this time'}</div>
      <div class="wr-in wr-p" style="--i:2">Your garden grew <b>${d.garden.grown}</b> plant${d.garden.grown === 1 ? '' : 's'}${d.garden.golden ? `, including <b>${d.garden.golden}</b> golden` : ''}${d.garden.rainbow ? `, <b>${d.garden.rainbow}</b> rainbow` : ''}${d.garden.crystal ? `, <b>${d.garden.crystal}</b> crystal` : ''}${d.garden.legacy.wilted ? ` (${d.garden.legacy.wilted} wilted)` : ''}.</div>
      <div class="wr-in wr-garden" style="--i:3">${d.gArt}</div>`,
+    d.together.people > 0 && `<div class="wr-in wr-k" style="--i:0">Studied together</div><div class="wr-in wr-big" style="--i:1">${d.together.people}<small>${d.together.people === 1 ? 'person' : 'people'}</small></div><div class="wr-in wr-p" style="--i:2"><b>${fmtMin(d.together.mins)}</b> of focus with someone else at the table.</div>`,
     `<div class="wr-in wr-k" style="--i:0">Your focus personality</div><div class="wr-in wr-emoji" style="--i:1">${d.persona.e}</div><div class="wr-in wr-h" style="--i:2">${d.persona.t}</div><div class="wr-in wr-p" style="--i:3">${d.persona.d}</div>`,
     `<div class="wr-in wr-k" style="--i:0">${esc(p.label)} · Wrapped</div><div class="wr-in wr-h" style="--i:1">${d.persona.e} ${d.persona.t}</div>
      <div class="wr-in wr-sum" style="--i:2"><div><b>${(d.mins / 60).toFixed(1)}h</b><span>focused</span></div><div><b>${d.n}</b><span>sessions</span></div><div><b>${d.longest}</b><span>day streak</span></div>${plain ? `<div><b>${d.active}</b><span>active days</span></div>` : `<div><b>${d.garden.grown}</b><span>plants grown</span></div>`}
-     <div style="grid-column:1/-1"><b style="font-size:17px">${d.top[0] ? esc(d.top[0][0]) : '—'}</b><span>top subject</span></div></div>
+     <div style="grid-column:1/-1"><b style="font-size:17px">${d.top[0] ? esc(d.top[0][0]) : '—'}</b><span>top subject</span></div>${d.together.people ? `<div style="grid-column:1/-1"><b style="font-size:17px">${d.together.people} ${d.together.people === 1 ? 'person' : 'people'}</b><span>studied with</span></div>` : ''}</div>
      <button class="wr-in wr-share" style="--i:3" id="wrShare">Share</button>`,
   ].filter(Boolean);
   const story = $('#wrapped .wr-story');
@@ -13867,7 +14109,7 @@ function wrappedImage() {
   x.fillStyle = '#fff'; x.textBaseline = 'alphabetic';
   x.font = font(600, 34); x.globalAlpha = .8; x.fillText(`POMODOROLIST · ${p.label.toUpperCase()} WRAPPED`, 80, 140); x.globalAlpha = 1;
   x.font = font(800, 76); x.fillText(`${d.persona.e} ${d.persona.t}`, 80, 260, w - 160);
-  x.font = font(400, 34); x.globalAlpha = .85; x.fillText(d.persona.d, 80, 320, w - 160); x.globalAlpha = 1;
+  x.font = font(400, 34); x.globalAlpha = .85; x.fillText(d.persona.d + (d.together && d.together.people ? ` · studied with ${d.together.people} ${d.together.people === 1 ? 'person' : 'people'}` : ''), 80, 320, w - 160); x.globalAlpha = 1;
   const tile = (tx, ty, big, small) => {
     x.fillStyle = 'rgba(255,255,255,.1)'; x.strokeStyle = 'rgba(255,255,255,.22)'; x.lineWidth = 2;
     x.beginPath(); x.roundRect(tx, ty, 440, 200, 28); x.fill(); x.stroke();
@@ -16401,6 +16643,7 @@ function srcOf(s) {
   if (k === 'boss') { const bb = BOSS_BY_ID[a]; return { kind: 'boss', label: `Boss: ${bb ? bb.name.replace(/^The /, '') : a} (${b === 'squad' ? 'Squad' : 'Solo'})` }; }
   if (k === 'ev') { const ev = EVENT_BY_ID[a]; return { kind: 'event', label: ev ? ev.label : 'Event' }; }
   if (k === 'ach') return { kind: 'reward', label: 'Achievement' };
+  if (k === 'streak') return { kind: 'reward', label: `${a}-day streak` };   // v1.18
   return { kind: 'reward', label: 'Reward' };
 }
 /** Owned items for the bag: { it, src, at } (free starter items left out). */
