@@ -293,6 +293,8 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .chip .pin { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 2px 6px; font-size: 15px; line-height: 1; }
 .chip.pinned { border-color: var(--accent); }
 .chip.pinned .pin { color: var(--accent); }
+.chip.current { background: var(--accent-soft); }   /* the chip that is loaded right now (v1.18) */
+.chip .meta { white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
 .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
 .empty { color: var(--muted); font-size: 14px; }
 
@@ -5169,8 +5171,9 @@ function defaultState() {
     activePresetId: 'p-classic',
     names: {},      // name -> { color, tag }
     sessions: [],   // { id, name, start, end, duration(ms of focus), planned(ms), preset }
-    recent: [],     // { name, presetId, ts }  most recent first
-    pinned: [],     // { name, presetId }
+    recent: [],     // legacy (≤ v1.17): { name, presetId, ts } — migrated into chips, still written for old clients
+    pinned: [],     // legacy (≤ v1.17): { name, presetId }
+    chips: [],      // v1.18 "Recently used" chips, one per preset + name, synced item by item: { id, name, presetId, ts, fav, u }
     reminders: [],  // see REMINDERS
     notes: {},      // sessionId -> one-line note
     energy: {},     // sessionId -> focus check-in 1 (low) … 4 (locked in)
@@ -5220,8 +5223,9 @@ function hydrate(obj) {
   const out = { ...def, ...obj };
   for (const k of ['settings', 'timer', 'ui']) out[k] = { ...def[k], ...(obj[k] || {}) };
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
-  for (const k of ['sessions', 'recent', 'pinned', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'goalLog', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs']) if (!Array.isArray(out[k])) out[k] = [];
+  for (const k of ['sessions', 'recent', 'pinned', 'chips', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'goalLog', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
+  if (!out.chips.length && (out.recent.length || out.pinned.length)) out.chips = chipsFromLegacy(out.recent, out.pinned);   // v1.18: the old two lists become chips once
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
   if (!out.notes || typeof out.notes !== 'object' || Array.isArray(out.notes)) out.notes = {};
@@ -5326,8 +5330,9 @@ function profileFromState() {
     presets: S.presets,
     activePresetId: S.activePresetId,
     names: Object.entries(S.names).map(([name, v]) => ({ name, color: v.color || '', tag: v.tag || '' })),
-    recent: S.recent,
-    pinned: S.pinned,
+    chips: (S.chips || []).slice(0, 40),
+    recent: chipRecents().map(c => ({ name: c.name, presetId: c.presetId, ts: c.ts })),   // for clients before v1.18
+    pinned: chipFavs().map(c => ({ name: c.name, presetId: c.presetId })),
     game: S.game,
     reminders: S.reminders,
     notes: recentNotes(),
@@ -5379,9 +5384,9 @@ function scheduleProfilePush() {
 /** Upload the profile if it changed. Never before the cloud copy has been read (would overwrite it). */
 function pushProfile(force) {
   if (!USER || USER.guest) return;
+  if (localOnly || (!FB.db && !USER.preview)) { localEditPending = false; S.profileDirty = true; saveLocal(); return; }
+  if (!cloudReady() || (!profileLoaded && !force)) return;   // the edit stays pending: the first snapshot merges instead of overwriting it (v1.18)
   localEditPending = false;
-  if (localOnly || (!FB.db && !USER.preview)) { S.profileDirty = true; saveLocal(); return; }
-  if (!cloudReady() || (!profileLoaded && !force)) return;
   const p = profileFromState();
   const json = JSON.stringify(p);
   if (!force && json === lastProfileJSON) return;
@@ -5474,8 +5479,8 @@ function applyProfile(d) {
   S.activePresetId = S.presets.some(p => p.id === d.activePresetId) ? d.activePresetId : S.activePresetId;
   S.names = {};
   for (const n of d.names || []) if (n && n.name) S.names[n.name] = { color: n.color || hashColor(n.name), tag: n.tag || '' };
-  S.recent = Array.isArray(d.recent) ? d.recent : [];
-  S.pinned = Array.isArray(d.pinned) ? d.pinned : [];
+  if (!(S.chips || []).length && !(Array.isArray(d.chips) && d.chips.length)) S.chips = chipsFromLegacy(d.recent, d.pinned);   // an account last used by a client before v1.18
+  S.recent = []; S.pinned = [];
   const mg = mergeGame(S.game, d.game);   // add-only maps: what this device saved last is never dropped
   S.game = mg.game;
   const cp = mergeCardPrefs(S.cardPrefs, d.cardPrefs);   // the newer value wins, key by key
@@ -5824,11 +5829,8 @@ function mergeData(obj) {
     S.presets.push({ id: String(p.id || uid()), name: String(p.name || 'Preset'), focus: n(p.focus, 1, 240, 25), short: n(p.short, 1, 120, 5), long: n(p.long, 1, 180, 15), rounds: n(p.rounds, 1, 12, 4) });
   }
   for (const [name, v] of Object.entries(src.names)) if (!S.names[name] && v) S.names[name] = { color: v.color || hashColor(name), tag: v.tag || '' };
-  for (const p of src.pinned) if (p && !isPinned(p.name, p.presetId)) S.pinned.push({ name: p.name, presetId: p.presetId });
+  for (const c of chipsFromLegacy(src.recent, src.pinned)) if (!S.chips.some(x => x.id === c.id)) S.chips.push(c);   // a backup from before v1.18
   for (const t of src.todos) if (t && t.id && t.title && !S.todos.some(x => x.id === t.id)) S.todos.push({ id: String(t.id), title: String(t.title).slice(0, 120), due: DAY_RE.test(t.due || '') ? t.due : '', pri: TODO_PRI[t.pri] ? t.pri : 'med', tag: String(t.tag || '').slice(0, 30), notes: String(t.notes || '').slice(0, 1000), check: Array.isArray(t.check) ? t.check.slice(0, 20).map(x => ({ t: String(x.t || '').slice(0, 80), d: !!x.d })) : [], done: +t.done || 0, order: +t.order || 0, created: +t.created || Date.now() });
-  const seen = new Set();
-  S.recent = [...S.recent, ...src.recent].filter(r => r && r.name).sort((a, b) => (b.ts || 0) - (a.ts || 0))
-    .filter(r => { const k = r.name + '|' + r.presetId; if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 8);
   if (!hadSessions) S.settings = { ...S.settings, ...src.settings };  // empty account: adopt the old settings
   // Progression: keep every purchase and the earliest claim of each reward; take equipped items only where unset.
   const sg = src.game, g = S.game;
@@ -5843,7 +5845,7 @@ function mergeData(obj) {
   for (const [k, v] of Object.entries(src.energy)) if (!S.energy[k] && v >= 1 && v <= 4) S.energy[k] = Math.round(v);
   for (const k of ['revisions', 'exams', 'parked', 'abandoned', 'subTemplates']) for (const x of src[k]) if (x && x.id && !S[k].some(y => y.id === x.id)) S[k].push(x);
   for (const [k, v] of Object.entries(sg.trophies)) if (!g.trophies[k]) g.trophies[k] = v;
-  for (const f of ['decks', 'cards', 'plan', 'goalLog']) for (const x of src[f]) { if (!x || !x.id) continue; const i = S[f].findIndex(y => y && y.id === x.id); if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() }); else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x; }   // flashcards: by id, newer wins
+  for (const f of ['decks', 'cards', 'plan', 'goalLog', 'chips']) for (const x of src[f]) { if (!x || !x.id) continue; const i = S[f].findIndex(y => y && y.id === x.id); if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() }); else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x; }   // flashcards: by id, newer wins
   S.roomPrefs = mergeCardPrefs(S.roomPrefs, src.roomPrefs).prefs;   // Pomeo's room: the newer choice per slot
   S.petPrefs = mergeCardPrefs(S.petPrefs, src.petPrefs).prefs;   // pets out (v1.16)
   for (const x of src.roomSets) if (x && x.id && x.name && !S.roomSets.some(y => y.id === x.id)) S.roomSets.push({ ...x, u: +x.u || Date.now() });
@@ -6000,7 +6002,7 @@ function startTimer() {
       t.focusStartedAt = now;
       t.name = currentName();
       ensureName(t.name);
-      pushRecent(t.name, S.activePresetId);
+      touchChip(t.name, S.activePresetId);
       if (extraOn('x_startcue')) playStartCue();
       hideNote();
       pomeoFocusStart();
@@ -6143,26 +6145,68 @@ function logSession(focusedMs, end, early = false) {
 /* ==========================================================================
    RECENT + PINNED CHIPS
    ========================================================================== */
-function pushRecent(name, presetId) {
-  S.recent = S.recent.filter(r => !(r.name === name && r.presetId === presetId));
-  S.recent.unshift({ name, presetId, ts: Date.now() });
-  S.recent = S.recent.slice(0, 8);
+/* "Recently used" chips (v1.18): one chip per preset + name, in S.chips, synced item by item like every other list
+   (a star or a new chip on one device never wipes another's; removals leave tombstones). Favourites are pinned first;
+   the rest are the last CHIP_RECENT_MAX used. A chip whose preset no longer exists is simply not shown. */
+const CHIP_RECENT_MAX = 6, CHIP_FAV_MAX = 12;
+const chipId = (name, pid) => 'c:' + String(pid || '') + ':' + String(name || '').trim().toLowerCase();
+const chipList = () => (S.chips || []).filter(c => c && c.id && c.name && S.presets.some(p => p.id === c.presetId));
+const chipFavs = () => chipList().filter(c => c.fav).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, CHIP_FAV_MAX);
+const chipRecents = () => chipList().filter(c => !c.fav).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, CHIP_RECENT_MAX);
+/** The two lists of clients before v1.18 (recent + pinned) as chips: pins become favourites, the rest keep their last-used time. */
+function chipsFromLegacy(recent, pinned) {
+  const out = new Map();
+  for (const r of recent || []) if (r && r.name && r.presetId) { const id = chipId(r.name, r.presetId); if (!out.has(id)) out.set(id, { id, name: String(r.name).trim(), presetId: r.presetId, ts: +r.ts || 0, fav: 0 }); }
+  for (const p of pinned || []) if (p && p.name && p.presetId) { const id = chipId(p.name, p.presetId); const c = out.get(id); if (c) c.fav = 1; else out.set(id, { id, name: String(p.name).trim(), presetId: p.presetId, ts: 0, fav: 1 }); }
+  return [...out.values()];
 }
-const isPinned = (name, pid) => S.pinned.some(p => p.name === name && p.presetId === pid);
-function togglePin(name, pid) {
-  if (isPinned(name, pid)) S.pinned = S.pinned.filter(p => !(p.name === name && p.presetId === pid));
-  else S.pinned.push({ name, presetId: pid });
+/** A block started with this name + preset: the chip moves to the front (one chip, never a copy); old recents beyond the cap go. */
+function touchChip(name, presetId) {
+  if (!name || !name.trim() || !presetId) return;
+  const id = chipId(name, presetId);
+  let c = (S.chips || []).find(x => x && x.id === id);
+  if (!c) { c = { id, name: name.trim(), presetId, ts: 0, fav: 0 }; S.chips.push(c); }
+  c.ts = Date.now(); c.name = name.trim();
+  const keep = new Set(chipList().filter(x => !x.fav).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, CHIP_RECENT_MAX).map(x => x.id));
+  S.chips = S.chips.filter(x => x && x.id && (x.fav || keep.has(x.id) || !S.presets.some(p => p.id === x.presetId)));   // chips of unknown presets are left alone (the preset may just not have synced yet)
+}
+const pushRecent = touchChip;   // the old name
+const isPinned = (name, pid) => !!(S.chips || []).find(c => c && c.id === chipId(name, pid) && c.fav);
+function toggleFav(name, pid) {
+  const id = chipId(name, pid);
+  let c = (S.chips || []).find(x => x && x.id === id);
+  if (!c) { c = { id, name: String(name).trim(), presetId: pid, ts: Date.now(), fav: 0 }; S.chips.push(c); }
+  if (!c.fav && chipFavs().length >= CHIP_FAV_MAX) { toast(`Up to ${CHIP_FAV_MAX} favourites — unstar one first`); return false; }
+  c.fav = c.fav ? 0 : 1;
   save();
   renderChips();
+  uiSound(c.fav ? 'tick' : 'tock');
+  return !!c.fav;
 }
-/** Tap a chip: load the name and preset. A running block keeps its length; the preset applies from the next phase. */
+const togglePin = toggleFav;
+/** Tap a chip: load the name and the preset (lengths come from the preset). A running block keeps its length; the preset applies from the next phase. */
 function loadChip(name, pid) {
+  const p = S.presets.find(x => x.id === pid);
   $('#nameInput').value = name;
   onNameChange();
-  if (S.presets.some(p => p.id === pid)) S.activePresetId = pid;
+  if (p) S.activePresetId = pid;
+  else { toast('That preset no longer exists — the name was loaded'); S.chips = (S.chips || []).filter(c => !(c && c.id === chipId(name, pid))); }
   if (S.timer.status !== 'idle') toast('Name updated · preset applies from the next phase');
   save();
   renderAll();
+  return !!p;
+}
+/** Clear removes the recents and keeps the favourites (asked first); Undo brings them back. */
+function clearRecents() {
+  const gone = chipRecents();
+  if (!gone.length) return false;
+  if (!confirm('Clear your recently used list? Favourites stay.')) return false;
+  const ids = new Set(gone.map(c => c.id)), before = gone.map(c => ({ ...c }));
+  S.chips = S.chips.filter(c => !ids.has(c.id));
+  save();
+  renderChips();
+  toastUndo('Recently used cleared', () => { for (const c of before) if (!S.chips.some(x => x.id === c.id)) S.chips.push(c); save(); renderChips(); });
+  return true;
 }
 
 /* ==========================================================================
@@ -6302,25 +6346,18 @@ function renderSessionInputs() {
 }
 
 function renderChips() {
-  const seen = new Set();
-  const items = [];
-  for (const p of S.pinned) { items.push({ ...p, pinned: true }); seen.add(p.name + '|' + p.presetId); }
-  for (const r of S.recent) {
-    if (seen.has(r.name + '|' + r.presetId)) continue;
-    items.push({ ...r, pinned: false });
-  }
-  const presetLabel = pid => {
-    const p = S.presets.find(x => x.id === pid);
-    return p ? `${p.focus}/${p.short}` : '—';
-  };
+  const items = [...chipFavs().map(c => ({ ...c, pinned: true })), ...chipRecents().map(c => ({ ...c, pinned: false }))];
+  const presetLabel = pid => { const p = S.presets.find(x => x.id === pid); return p ? `${p.name} · ${p.focus}/${p.short}` : '—'; };
+  const active = S.activePresetId, cur = (S.timer.name || '').trim().toLowerCase();
   $('#chips').innerHTML = items.length ? items.map(it => `
-    <div class="chip${it.pinned ? ' pinned' : ''}" role="button" tabindex="0" data-name="${esc(it.name)}" data-pid="${esc(it.presetId)}">
+    <div class="chip${it.pinned ? ' pinned' : ''}${it.presetId === active && it.name.trim().toLowerCase() === cur ? ' current' : ''}" role="button" tabindex="0" data-id="${esc(it.id)}" data-name="${esc(it.name)}" data-pid="${esc(it.presetId)}" title="Load ${esc(it.name)} with ${esc(presetLabel(it.presetId))}">
       <span class="dot" style="background:${esc(colorFor(it.name))}"></span>
       <span class="nm">${esc(it.name)}</span>
-      <span class="meta">${presetLabel(it.presetId)}</span>
-      <button class="pin" title="${it.pinned ? 'Unpin' : 'Pin as favourite'}" aria-label="Pin">${it.pinned ? '★' : '☆'}</button>
+      <span class="meta">${esc(presetLabel(it.presetId))}</span>
+      <button class="pin" type="button" title="${it.pinned ? 'Remove from favourites' : 'Favourite (pinned first)'}" aria-label="${it.pinned ? 'Unfavourite' : 'Favourite'}" aria-pressed="${it.pinned ? 'true' : 'false'}">${it.pinned ? '★' : '☆'}</button>
     </div>`).join('')
     : sceneEmpty('read', '', 'Start a session and it will appear here for one-tap reuse.');
+  const clr = $('#clearRecent'); if (clr) clr.classList.toggle('hidden', !chipRecents().length);
 }
 
 function renderToday() {
@@ -8963,6 +9000,7 @@ async function loadChallenges(force) {
     }
     const friends = new Set(friendsList().map(otherUid));   // invitations count only from friends (anyone can list uids as invited)
     SOC.challenges = Object.values(out).filter(c => (c.members || []).includes(USER.uid) || friends.has(c.creator));
+    try { const j = await FB.getDoc(FB.doc(FB.db, 'challengeJoins', USER.uid)); SOC.chJoins = j.exists() ? j.data() : { weekKey: '', n: 0 }; } catch (e) { SOC.chJoins = SOC.chJoins || null; }   // the weekly join counter (v1.18)
     SOC.challengesAt = Date.now();
     await syncChallengeProgress();
   } catch (e) { console.warn('challenges', e); if (!SOC.challenges) SOC.challenges = []; }
@@ -9001,16 +9039,31 @@ async function startChallenge(preset) {
     loadChallenges(true);
   } catch (e) { toast('Couldn’t start the challenge — try again'); }
 }
+/* The join cap (v1.18): your own challenge plus at most CH_JOIN_MAX joined challenge a week. The client counts the
+   challenges you are in this week; the server checks a per-user counter (challengeJoins/{uid}) written in the same
+   batch as the join, so the console cannot get round it. People already over the cap keep their challenges. */
+const CH_JOIN_MAX = 1;
+function joinedThisWeek() {
+  const wk = monWeekKey(), list = (SOC.challenges || []).filter(c => c.weekKey === wk && c.creator !== USER.uid && (c.members || []).includes(USER.uid)).length;
+  const counter = SOC.chJoins && SOC.chJoins.weekKey === wk ? +SOC.chJoins.n || 0 : 0;
+  return Math.max(list, counter);
+}
+const canJoinChallenge = () => joinedThisWeek() < CH_JOIN_MAX;
 async function joinChallenge(id) {
   const c = (SOC.challenges || []).find(x => x.id === id);
-  if (!c) return;
+  if (!c) return false;
+  if (!canJoinChallenge()) { toast(`You’re already in a challenge this week — join another from Monday`); return false; }
   try {
-    await FB.updateDoc(FB.doc(FB.db, 'challenges', id), {
-      members: FB.arrayUnion(USER.uid), ['names.' + USER.uid]: USER.username, ['progress.' + USER.uid]: challengeProgress(c.preset, c.weekKey),
-    });
+    const wk = c.weekKey, prev = SOC.chJoins && SOC.chJoins.weekKey === wk ? +SOC.chJoins.n || 0 : 0;
+    const batch = FB.writeBatch(FB.db);
+    batch.update(FB.doc(FB.db, 'challenges', id), { members: FB.arrayUnion(USER.uid), ['names.' + USER.uid]: USER.username, ['progress.' + USER.uid]: challengeProgress(c.preset, wk) });
+    batch.set(FB.doc(FB.db, 'challengeJoins', USER.uid), { weekKey: wk, n: prev + 1, last: id, at: FB.serverTimestamp() });
+    await batch.commit();
+    SOC.chJoins = { weekKey: wk, n: prev + 1, last: id };
     toast('Joined — good luck!', 2600, true);
     loadChallenges(true);
-  } catch (e) { toast('Couldn’t join — try again'); }
+    return true;
+  } catch (e) { toast(/permission/i.test(String(e && e.message)) ? 'You’re already in a challenge this week' : 'Couldn’t join — try again'); return false; }
 }
 
 function updateFriendsDot() {
@@ -9270,6 +9323,7 @@ function renderChallenges(fromLoad) {
   if (!fromLoad || !SOC.challenges) loadChallenges();
   const list = SOC.challenges || [], wk = monWeekKey();
   const mine = new Set(list.filter(c => c.creator === USER.uid).map(c => c.preset));
+  const joined = joinedThisWeek(), capped = joined >= CH_JOIN_MAX;
   const cards = list.map(c => {
     const p = CHALLENGES[c.preset], member = c.members.includes(USER.uid), done = !!S.game.claims.challenges[c.id];
     const people = c.members.map(uid => {
@@ -9280,13 +9334,14 @@ function renderChallenges(fromLoad) {
     }).join('');
     return `<div class="card chal"><div class="row between"><b>${p.name}</b><span class="lbl">${done ? '✓ ' : ''}${COIN_SVG} +${p.coins}</span></div>
       <div class="lbl" style="margin-bottom:10px">Started by @${esc(c.names[c.creator] || '?')} · ${c.members.length} joined</div>${people}
-      ${member ? '' : `<button class="btn small primary" data-join="${c.id}" style="margin-top:10px">Join</button>`}</div>`;
+      ${member ? '' : capped ? `<button class="btn small" disabled style="margin-top:10px" title="Your own challenge plus one joined challenge a week">You’re already in a challenge this week</button>` : `<button class="btn small primary" data-join="${c.id}" style="margin-top:10px">Join</button>`}</div>`;
   }).join('');
   const starters = Object.entries(CHALLENGES).filter(([id]) => !mine.has(id)).map(([id, p]) =>
     `<button class="btn small" data-start="${id}">${p.name} · ${COIN_SVG} ${p.coins}</button>`).join('');
   $('#friendsBody').innerHTML = `
     <div class="card"><h2>Start a challenge this week</h2>
       <p class="lbl" style="margin:-4px 0 10px">Runs Monday to Sunday (week of ${fmtShort(new Date(wk + 'T00:00'))}). All your friends are invited; finishing it earns bonus coins.</p>
+      <p class="lbl" id="chCap" style="margin:-4px 0 10px">Joined this week: <b>${Math.min(joined, CH_JOIN_MAX)}/${CH_JOIN_MAX}</b> — your own challenge plus one joined challenge a week.</p>
       <div class="btn-row">${starters || '<span class="lbl">You’ve started every challenge this week.</span>'}</div></div>
     <div class="stack chal-list" style="margin-top:16px">${cards || (SOC.challenges ? '<div class="card"><div class="empty">No challenges this week yet.</div></div>' : `<div class="card">${skelRows(2)}</div>`)}</div>`;
   animateFills($('#friendsBody'));
@@ -16328,7 +16383,7 @@ function paintRipe(p) {
    which Firestore merges key by key on write — two devices never overwrite each other.
    Nothing here needs new security rules: it all lives in users/{uid}.
    ========================================================================== */
-const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'goalLog', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs'];
+const SYNC_LISTS = ['reminders', 'revisions', 'exams', 'parked', 'presets', 'subTemplates', 'loadouts', 'todos', 'goalLog', 'chips', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs'];
 /** Lists whose two copies of one item are combined rather than the newer one simply winning. */
 const LIST_MERGE = { plants: (win, lose) => mergePlant(win, lose), eggs: (win, lose) => mergeEgg(win, lose) };
 const syncSnap = {};   // field -> Map(id -> the item as last saved or merged)
@@ -16647,20 +16702,15 @@ $('#presetSelect').addEventListener('change', e => {
 $('#chips').addEventListener('click', e => {
   const chip = e.target.closest('.chip');
   if (!chip) return;
-  if (e.target.closest('.pin')) { togglePin(chip.dataset.name, chip.dataset.pid); return; }
+  if (e.target.closest('.pin')) { toggleFav(chip.dataset.name, chip.dataset.pid); return; }
   loadChip(chip.dataset.name, chip.dataset.pid);
 });
 $('#chips').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.target.classList.contains('chip')) loadChip(e.target.dataset.name, e.target.dataset.pid);
+  if (!e.target.classList.contains('chip')) return;
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); loadChip(e.target.dataset.name, e.target.dataset.pid); }
+  else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); toggleFav(e.target.dataset.name, e.target.dataset.pid); }
 });
-$('#clearRecent').addEventListener('click', () => {
-  if (!S.recent.length) return;
-  const before = S.recent.slice();
-  S.recent = [];
-  save();
-  renderChips();
-  toastUndo('Recently used cleared', () => { S.recent = before; save(); renderChips(); });
-});
+$('#clearRecent').addEventListener('click', () => clearRecents());
 
 // Tabs
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) showTab(b.dataset.tab); });
@@ -16930,11 +16980,10 @@ $('#presetList').addEventListener('click', e => {
   if (ed) fillPresetForm(S.presets.find(p => p.id === ed.dataset.edit));
   if (dl && S.presets.length > 1) {
     const p = S.presets.find(x => x.id === dl.dataset.delp);
-    const snap = { presets: S.presets.slice(), pinned: S.pinned.slice(), recent: S.recent.slice(), active: S.activePresetId };
-    toastUndo(`Preset “${p.name}” deleted`, () => { S.presets = snap.presets; S.pinned = snap.pinned; S.recent = snap.recent; S.activePresetId = snap.active; save(); renderPresetList(); renderAll(); });
+    const snap = { presets: S.presets.slice(), chips: S.chips.map(c => ({ ...c })), active: S.activePresetId };
+    toastUndo(`Preset “${p.name}” deleted`, () => { S.presets = snap.presets; S.chips = snap.chips; S.activePresetId = snap.active; save(); renderPresetList(); renderAll(); });
     S.presets = S.presets.filter(x => x.id !== p.id);
-    S.pinned = S.pinned.filter(x => x.presetId !== p.id);
-    S.recent = S.recent.filter(x => x.presetId !== p.id);
+    S.chips = S.chips.filter(x => x.presetId !== p.id);
     if (S.activePresetId === p.id) S.activePresetId = S.presets[0].id;
     save();
     renderPresetList();
@@ -17008,7 +17057,7 @@ function initInputs() {
     return `<circle cx="${(130 + 120 * Math.cos(a)).toFixed(1)}" cy="${(130 + 120 * Math.sin(a)).toFixed(1)}" r="3"/>`;
   }).join('');
   lastDots = -1;
-  const name = S.timer.name || (S.recent[0] && S.recent[0].name) || '';
+  const name = S.timer.name || (chipRecents()[0] || {}).name || '';
   $('#nameInput').value = name;
   syncNameInputs();
 }

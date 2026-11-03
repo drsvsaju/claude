@@ -271,7 +271,32 @@ service cloud.firestore {
         && n.members == o.members.concat([me()])
         && n.names.diff(o.names).affectedKeys().hasOnly([me()]) && n.names[me()] == myName()
         && n.progress.diff(o.progress).affectedKeys().hasOnly([me()]) && n.progress[me()] is int
-        && n.progress[me()] >= 0 && n.progress[me()] <= 10080;
+        && n.progress[me()] >= 0 && n.progress[me()] <= 10080
+        // v1.18 join cap: the same batch must bump my weekly join counter (challengeJoins/{me}) for this week and this challenge
+        && getAfter(joinsPath()).data.weekKey == o.weekKey && getAfter(joinsPath()).data.last == request.resource.id;
+    }
+    // ---------------- Challenge join counter (v1.18) ----------------
+    //   challengeJoins/{uid}  { weekKey, n, last, at }  — how many challenges I JOINED this week (my own don't count).
+    //   Written only in the batch that joins a challenge; n can never pass CH_JOIN_MAX (1) within a week, so a user
+    //   is in their own challenge plus at most one joined one. Owner-only read; never deleted.
+    function joinsPath() { return /databases/$(database)/documents/challengeJoins/$(me()); }
+    function validJoinCounter(d) {
+      return d.keys().hasOnly(['weekKey', 'n', 'last', 'at'])
+        && d.weekKey is string && d.weekKey.size() == 10
+        && d.n is int && d.n >= 1 && d.n <= 1
+        && d.last is string && d.last.size() <= 80 && d.at == request.time
+        && getAfter(path('challenges', d.last)).data.weekKey == d.weekKey
+        && me() in getAfter(path('challenges', d.last)).data.members
+        && getAfter(path('challenges', d.last)).data.creator != me();
+    }
+    match /challengeJoins/{uid} {
+      allow get: if signedIn() && me() == uid;
+      allow list: if false;
+      allow create: if signedIn() && me() == uid && validJoinCounter(request.resource.data) && request.resource.data.n == 1;
+      allow update: if signedIn() && me() == uid && validJoinCounter(request.resource.data)
+        && request.resource.data.last != resource.data.last
+        && (resource.data.weekKey != request.resource.data.weekKey ? request.resource.data.n == 1 : request.resource.data.n == resource.data.n + 1);
+      allow delete: if false;
     }
     function updateMyProgress() {
       let n = request.resource.data;
@@ -348,10 +373,15 @@ service cloud.firestore {
       return [[7000, 9300], [7500, 10000], [5000, 6000], [6500, 8500], [8000, 10000], [5000, 6000],
               [7000, 9300], [6500, 8500], [5000, 6000], [6000, 8000], [8500, 10000], [5500, 7500]][i];
     }
+    // v1.18: the range is looked up once (`let`), so a clan write stays well inside the rules engine's 1,000-expression
+    // budget — from November 2026 the first version evaluated the 12-month table three times per call and clan
+    // creation (a six-document batch) tripped the budget.
     function raidHPFor(mk, members) {
+      let r = raidRange(mk);
+      let m = members > 30 ? 30 : (members < 1 ? 1 : members);
       return mk < '2026-11'
         ? (members * 600 > 1800 ? members * 600 : 1800)
-        : math.round((raidRange(mk)[0] * 29 + (raidRange(mk)[1] - raidRange(mk)[0]) * ((members > 30 ? 30 : (members < 1 ? 1 : members)) - 1)) / 2900.0) * 100;
+        : math.round((r[0] * 29 + (r[1] - r[0]) * (m - 1)) / 2900.0) * 100;
     }
     function validClanDoc(d) {
       return d.keys().hasOnly(['name', 'nameLower', 'tag', 'desc', 'emblem', 'banner', 'theme', 'frame', 'joinMode', 'members',
