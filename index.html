@@ -5463,7 +5463,7 @@ function scheduleProfilePush() {
 
 /** Upload the profile if it changed. Never before the cloud copy has been read (would overwrite it). */
 function pushProfile(force) {
-  if (!USER || USER.guest) return;
+  if (!USER || USER.guest || isPreview()) return;   // the demo never writes (v1.18: not even to its stand-in)
   if (localOnly || (!FB.db && !USER.preview)) { localEditPending = false; S.profileDirty = true; saveLocal(); return; }
   if (!cloudReady() || (!profileLoaded && !force)) return;   // the edit stays pending: the first snapshot merges instead of overwriting it (v1.18)
   localEditPending = false;
@@ -9022,7 +9022,7 @@ function clampStats(n, o) {
   return n;
 }
 function publishPublic(first) {
-  if (!socialReady() && !first) return;
+  if (isPreview() || (!socialReady() && !first)) return;   // the demo never writes
   const g = game(), s = S.settings, user = FB.auth.currentUser;
   const flair = { level: g.lv.level, tier: g.tier.id, frame: equippedId('frame'), color: equippedId('color'), ...(SOC.avatarRejected ? {} : { avatar: myAvatar() }), ...(clanTagOn() && !SOC.clanTagRejected ? { clanTag: CLAN.doc.tag } : {}) };
   // A special aura (from a boss or questline) is shared as "aura"; leaderboards get it once the rules have accepted it once.
@@ -17111,7 +17111,7 @@ addEventListener('visibilitychange', () => { if (!document.hidden) pullProfile()
    claims the occurrence in a Firestore transaction: whichever device claims it rings, the others skip. */
 async function claimReminder(key) {
   if ((S.remFired || {})[key]) return false;
-  if (!cloudReady()) return true;   // "this device only", or offline: nothing to share
+  if (!cloudReady() || isPreview()) return true;   // "this device only", offline, or the demo (which never writes): nothing to share
   try {
     const won = await Promise.race([
       FB.runTransaction(FB.db, async tx => {
