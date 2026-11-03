@@ -236,12 +236,15 @@ service cloud.firestore {
     }
     function validInboxItem(id) {
       let d = request.resource.data;
-      return d.keys().hasOnly(['from', 'fromName', 'type', 'emoji', 'target', 'day', 'createdAt'])
+      return d.keys().hasOnly(['from', 'fromName', 'type', 'emoji', 'target', 'day', 'title', 'createdAt'])
         && d.from == me() && d.fromName == myName() && d.createdAt == request.time
         && ((d.type == 'kudos' && d.emoji in ['🔥', '👏', '💪', '⭐'] && d.target is string && d.target.matches('^[A-Za-z0-9_-]{1,40}$')
               && id == 'k_' + me() + '_' + d.target)
          || (d.type == 'nudge' && d.emoji == '👀' && d.day is string && d.day.size() == 10
-              && id == 'n_' + me() + '_' + d.day));
+              && id == 'n_' + me() + '_' + d.day)
+         // v1.18: a study-session invite — only the session's host sends it, the title passes the word filter
+         || (d.type == 'sinvite' && d.target is string && d.target.matches('^[A-Za-z0-9_-]{1,40}$') && d.title is string && d.title.size() <= 40 && cleanText(d.title)
+              && id == 'si_' + me() + '_' + d.target && get(path('studySessions', d.target)).data.host == me()));
     }
 
     // ---------------- Weekly challenges ----------------
@@ -305,6 +308,118 @@ service cloud.firestore {
         && n.diff(o).affectedKeys().hasOnly(['progress'])
         && n.progress.diff(o.progress).affectedKeys().hasOnly([me()])
         && n.progress[me()] is int && n.progress[me()] >= o.progress[me()] && n.progress[me()] <= 10080;
+    }
+
+    // ============================================================================
+    // STUDY SESSIONS (v1.18) — live sessions without a clan, on the clan live engine.
+    //   studySessions/{sid}                 host, pattern, mode, visibility, members (≤ max ≤ 10), invited (friends-only lobby), code
+    //   studySessions/{sid}/people/{uid}    presence (members only, own document, heartbeat)
+    //   studySessions/{sid}/reactions/{uid} preset emoji, one doc per person, ≥ 2 s apart
+    //   studySessions/{sid}/requests/{uid}  "ask to join" (friends of the host; the host answers)
+    //   sessionCodes/{code}                 { sid } — invite links, get only
+    // Visibility: public (listed and joinable by anyone), link (joinable by anyone who has the id), friends (friends
+    // of the host see it and must be let in). Nobody writes another person's presence; only the host answers
+    // requests, kicks, hands over, changes the link; the longest-present member may take a stale host seat.
+    // ============================================================================
+    function sessPath(id) { return /databases/$(database)/documents/studySessions/$(id); }
+    function sessPeople(id, u) { return /databases/$(database)/documents/studySessions/$(id)/people/$(u); }
+    function sessReq(id, u) { return /databases/$(database)/documents/studySessions/$(id)/requests/$(u); }
+    function sessVisible(d) { return d.lobby == 'public' || d.vis == 'link' || me() in d.members || me() in d.invited; }
+    function sessMember(id) { return signedIn() && me() in get(sessPath(id)).data.members; }
+    function validPattern(p) { return p is map && p.keys().hasOnly(['focus', 'short', 'rounds']) && p.focus is int && p.focus >= 5 && p.focus <= 120 && p.short is int && p.short >= 1 && p.short <= 30 && p.rounds is int && p.rounds >= 1 && p.rounds <= 8; }
+    function validNewSession(sid) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['title', 'host', 'hostName', 'pattern', 'mode', 'startAt', 'pausedAt', 'pauseTotal', 'shift', 'open', 'counted', 'vis', 'lobby', 'max', 'members', 'invited', 'welcome', 'plan', 'code', 'hostAt', 'createdAt', 'endedAt', 'updatedAt'])
+        && d.host == me() && d.hostName == myName()
+        && d.title is string && d.title.size() >= 1 && d.title.size() <= 40 && cleanText(d.title)
+        && validPattern(d.pattern) && d.mode in ['together', 'synced']
+        && d.startAt == request.time && d.pausedAt is int && d.pausedAt >= 0 && d.pauseTotal == 0 && d.shift == 0
+        && d.open == true && d.counted == false
+        && d.vis in ['friends', 'link', 'public']
+        && d.lobby == (d.vis == 'public' ? 'public' : (d.vis == 'friends' ? 'friends' : 'none'))
+        && d.max is int && d.max >= 2 && d.max <= 10
+        && d.members == [me()]
+        && d.invited is list && d.invited.size() <= 100 && (d.vis == 'friends' || d.invited.size() == 0)
+        && d.plan is int && d.plan >= 0 && d.welcome == []
+        && d.code is string && (d.code == '' || (d.code.size() == 8 && d.vis != 'friends' && getAfter(path('sessionCodes', d.code)).data.sid == sid))
+        && d.hostAt == request.time && d.createdAt == request.time && d.endedAt == 0 && d.updatedAt == request.time;
+    }
+    function sessUpdate(sid) {
+      let n = request.resource.data;
+      let o = resource.data;
+      let k = n.diff(o).affectedKeys();
+      let host = o.host == me();
+      let newMember = n.members.size() == o.members.size() + 1 && n.members[0:o.members.size()] == o.members;
+      let who = n.members[n.members.size() - 1];
+      return n.updatedAt == request.time && k.hasAny(['updatedAt']) && o.open == true && (
+        // someone joins: themselves (public / link) or a friend the host let in (the request says 'ok' after this batch)
+        (k.hasOnly(['members', 'updatedAt']) && newMember && n.members.size() <= o.max
+          && ((who == me() && !(me() in o.members) && (o.vis in ['public', 'link'] || me() in o.welcome))
+              || (host && who != me() && getAfter(sessReq(sid, who)).data.status == 'ok')))
+        // someone leaves (themselves), or the host removes someone
+        || (k.hasOnly(['members', 'updatedAt']) && n.members.size() == o.members.size() - 1 && o.members.hasAll(n.members)
+          && ((!(me() in n.members) && me() in o.members && me() != o.host) || (host && me() in n.members)))
+        // the host's timer controls, link and lobby
+        || (host && k.hasOnly(['pausedAt', 'pauseTotal', 'shift', 'code', 'lobby', 'invited', 'welcome', 'updatedAt'])
+          && n.pausedAt is int && n.pausedAt >= 0 && n.pauseTotal is int && n.pauseTotal >= 0 && n.shift is int && n.shift >= 0
+          && n.code is string && (n.code == '' || (n.code.size() == 8 && o.vis != 'friends' && getAfter(path('sessionCodes', n.code)).data.sid == sid))
+          && n.lobby in ['public', 'friends', 'none'] && n.invited is list && n.invited.size() <= 100 && n.welcome is list && n.welcome.size() <= 100)
+        // hand over (host), or take a stale host seat (any member, when the host's presence stopped)
+        || (k.hasOnly(['host', 'hostName', 'hostAt', 'updatedAt']) && n.host in o.members && n.hostAt == request.time && n.hostName is string && n.hostName.size() <= 30
+          && (host || (n.host == me() && me() in o.members
+              && (!exists(sessPeople(sid, o.host)) || get(sessPeople(sid, o.host)).data.state == 'left' || get(sessPeople(sid, o.host)).data.beat < request.time - duration.value(2, 'm')))))
+        // the end: the host, any member, or anyone once it is 6 hours old
+        || (k.hasOnly(['open', 'endedAt', 'lobby', 'invited', 'pausedAt', 'pauseTotal', 'shift', 'updatedAt']) && n.open == false && n.lobby == 'none' && n.invited.size() == 0
+          && (me() in o.members || o.createdAt < request.time - duration.value(6, 'h')))
+      );
+    }
+    match /studySessions/{sid} {
+      allow get, list: if signedIn() && sessVisible(resource.data);
+      allow create: if signedIn() && validNewSession(sid);
+      allow update: if signedIn() && sessUpdate(sid);
+      allow delete: if false;
+      match /people/{uid} {
+        allow read: if sessMember(sid);
+        allow create, update: if signedIn() && uid == me() && sessMember(sid)
+          && request.resource.data.keys().hasOnly(['name', 'avatar', 'color', 'aura', 'state', 'sname', 'min', 'beat', 'joinedAt', 'endAt', 'left'])
+          && request.resource.data.name == myName()
+          && request.resource.data.state in ['focus', 'break', 'paused', 'idle', 'away', 'left']
+          && request.resource.data.avatar is string && request.resource.data.color is string && request.resource.data.aura is string
+          && request.resource.data.sname is string && request.resource.data.sname.size() <= 80
+          && request.resource.data.min is int && request.resource.data.min >= 0 && request.resource.data.min <= 1440
+          && request.resource.data.joinedAt is number && request.resource.data.endAt is number && request.resource.data.left is number
+          && request.resource.data.beat == request.time;
+        allow delete: if signedIn() && (uid == me() || get(sessPath(sid)).data.host == me());
+      }
+      match /reactions/{rid} {
+        allow read: if sessMember(sid);
+        allow create, update: if signedIn() && rid == me() && sessMember(sid) && validReaction()
+          && (resource == null || resource.data.at < request.time - duration.value(2, 's'));
+        allow delete: if false;
+      }
+      match /requests/{uid} {
+        allow read: if signedIn() && (uid == me() || get(sessPath(sid)).data.host == me());
+        allow create: if signedIn() && uid == me() && !(me() in get(sessPath(sid)).data.members)
+          && get(sessPath(sid)).data.vis == 'friends' && isFriend(get(sessPath(sid)).data.host) && !blockedBy(get(sessPath(sid)).data.host)
+          && request.resource.data.keys().hasOnly(['name', 'at', 'status']) && request.resource.data.name == myName()
+          && request.resource.data.at == request.time && request.resource.data.status == 'pending';
+        // the host answers once; the requester may ask again 60 s later (a new pending request)
+        allow update: if signedIn() && (
+          (get(sessPath(sid)).data.host == me() && resource.data.status == 'pending'
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'by', 'answeredAt'])
+            && request.resource.data.status in ['ok', 'no'] && request.resource.data.by == myName() && request.resource.data.answeredAt == request.time)
+          || (uid == me() && request.resource.data.keys().hasOnly(['name', 'at', 'status']) && request.resource.data.status == 'pending'
+            && request.resource.data.name == myName() && request.resource.data.at == request.time && resource.data.at < request.time - duration.value(60, 's')));
+        allow delete: if signedIn() && (uid == me() || get(sessPath(sid)).data.host == me());
+      }
+    }
+    match /sessionCodes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['sid'])
+        && getAfter(sessPath(request.resource.data.sid)).data.code == code && getAfter(sessPath(request.resource.data.sid)).data.host == me();
+      allow update: if false;
+      allow delete: if signedIn() && get(sessPath(resource.data.sid)).data.host == me();
     }
 
     // ============================================================================

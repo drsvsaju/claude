@@ -294,6 +294,12 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .chip.pinned { border-color: var(--accent); }
 .chip.pinned .pin { color: var(--accent); }
 .chip.current { background: var(--accent-soft); }   /* the chip that is loaded right now (v1.18) */
+.sess-row .btn { flex: none; }
+.person.hosting .sub.now { font-weight: 600; }
+.sess-tools details summary { cursor: pointer; }
+.sess-tools .plist { margin-top: 6px; }
+#sessForm select { width: 100%; margin-top: 4px; }
+#sessForm label.lbl { display: block; }
 .chip .meta { white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
 .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
 .empty { color: var(--muted); font-size: 14px; }
@@ -3942,6 +3948,7 @@ body.first-load #todayBar { opacity: 0; }
     <div class="stats-head">
       <div class="seg" id="friendsSeg">
         <button data-view="friends">Friends<span class="cnt" id="reqCount"></span></button>
+        <button data-view="sessions">Study sessions</button>
         <button data-view="challenges">Challenges</button>
       </div>
     </div>
@@ -5571,7 +5578,7 @@ function afterFirstLoad() {
   updateBagDot(); updateQuestDot(); renderFestive();
   maybeOfferMigration();
   initSocial();
-  clanStart().then(() => { watchClanLive(); liveResume(); maybeOpenClanLink(); });
+  clanStart().then(() => { watchClanLive(); liveResume(); maybeOpenClanLink(); maybeOpenSessionLink(); });
 }
 
 /* ==========================================================================
@@ -6109,6 +6116,8 @@ function logSession(focusedMs, end, early = false) {
     preset: activePreset().name,
     stamp: equippedId('stamp'),
     ...(t.live && (t.live.mode !== 'together' || (LIVE.blockMates && LIVE.blockMates.size)) ? { live: t.live.lid, clan: t.live.cid, stamp: 'stamp_together' } : t.live ? { live: t.live.lid, clan: t.live.cid } : {}),
+    ...(t.live ? { mates: liveMatesNow().slice(0, 12) } : {}),
+    ...(t.live && !t.live.cid ? { lt: String(t.live.title || '').slice(0, 40) } : {}),   // v1.18: who focused at the same time (verified by their presence beats), for the group rewards
   };
   const subRec = takeSubtasks();
   if (subRec) s.subtasks = subRec;
@@ -8843,6 +8852,14 @@ function onInbox(qs) {
     if (at < fresh) { FB.deleteDoc(d.ref).catch(() => {}); continue; }   // tidy up old items
     if (SOC.inboxSeen.has(d.id)) continue;
     SOC.inboxSeen.add(d.id);
+    if (it.type === 'sinvite') {   // a study-session invite (v1.18): Join / Ignore in the inbox, a toast now
+      inboxAdd({ type: 'session', key: 'sinv:' + d.id, at, who: it.from || '', title: `@${it.fromName} invites you to study: ${it.title || 'a session'}`, body: 'Join from here or from Friends › Study sessions', go: { tab: 'friends', view: 'sessions' } });
+      const item = IB.find(x => x.key === 'sinv:' + d.id); if (item) { item.act = { kind: 'sinv', sid: it.target }; ibSave(); }
+      if (S.ui.tab !== 'friends') { SOC.unread = true; updateFriendsDot(); }
+      if (shown++ < 3 && Date.now() - at < 10 * 60000) toast(`@${it.fromName} invites you to study: ${it.title || 'a session'}`, 4200, false, { log: false, type: 'session', go: { tab: 'friends', view: 'sessions' } });
+      SESS.at = 0;
+      continue;
+    }
     inboxAdd({ type: it.type === 'nudge' ? 'nudge' : 'kudos', key: 'kudo:' + d.id, at, who: it.from || '',
       title: it.type === 'nudge' ? `@${it.fromName}: Time to focus? 👀` : `@${it.fromName} sent ${it.emoji} for your ${String(it.target).startsWith('st_') ? 'streak' : 'session'}`, go: { tab: 'friends' } });
     if (S.ui.tab !== 'friends') { SOC.unread = true; updateFriendsDot(); }
@@ -9096,10 +9113,11 @@ function renderFriends(fromLoad) {
     return;
   }
   if (SOC.friend) { renderFriendProfile(fromLoad); return; }
-  let view = S.ui.friendsView === 'challenges' ? 'challenges' : 'friends';
-  if (!gameOn && view !== 'friends') view = S.ui.friendsView = 'friends';
+  let view = ['challenges', 'sessions'].includes(S.ui.friendsView) ? S.ui.friendsView : 'friends';
+  if (!gameOn && view === 'challenges') view = S.ui.friendsView = 'friends';
   $$('#friendsSeg button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'challenges') renderChallenges(fromLoad);
+  else if (view === 'sessions') renderSessions(fromLoad);   // v1.18
   else renderFriendsList(fromLoad);
 }
 
@@ -9111,13 +9129,15 @@ function personRow(uid, name, prof, extra = '') {
 function renderFriendsList(fromLoad) {
   const fl = friendsList(), inc = incoming(), out = outgoing();
   if (!fromLoad) loadFriendsPublic();
+  if (!SESS.at) sessLoad();   // who is hosting a session right now (v1.18)
   const typed = $('#addFriendName') ? $('#addFriendName').value : '';   // keep what's being typed across refreshes
   const recap = recapCard();
   const rows = fl.map(f => {
-    const uid = otherUid(f), prof = cached('publicProfiles', uid), pres = cached('presence', uid), now = presenceText(pres);
+    const uid = otherUid(f), prof = cached('publicProfiles', uid), pres = cached('presence', uid), now = presenceText(pres), hosting = sessHostedBy(uid);
     const streak = prof && !prof.denied && prof.streak ? `<span class="chip-s">${iconSVG(ICONS.flame, 13)} ${prof.streak}</span>` : '';
-    const sub = now ? `<div class="sub now"><i class="live"></i>${esc(now)}</div>` : `<div class="sub">${prof && !prof.denied ? `${fmtNum(prof.hours)}h focused` : ''}</div>`;
-    return `<li class="person" data-open="${uid}" tabindex="0">${personRow(uid, otherName(f), prof, sub)}${streak}<span class="chev">›</span></li>`;
+    const sub = hosting ? `<div class="sub now"><i class="live"></i>Studying now · ${esc(hosting.title)}</div>` : now ? `<div class="sub now"><i class="live"></i>${esc(now)}</div>` : `<div class="sub">${prof && !prof.denied ? `${fmtNum(prof.hours)}h focused` : ''}</div>`;
+    const ask = hosting && !inLive() ? (hosting.vis === 'friends' ? `<button class="btn small primary" data-sask="${esc(hosting.id)}">Ask to join</button>` : `<button class="btn small primary" data-sjoin="${esc(hosting.id)}">Join</button>`) : '';
+    return `<li class="person${hosting ? ' hosting' : ''}" data-open="${uid}" tabindex="0">${personRow(uid, otherName(f), prof, sub)}${ask}${streak}<span class="chev">›</span></li>`;
   }).sort((a, b) => (b.includes('class="live"') ? 1 : 0) - (a.includes('class="live"') ? 1 : 0)).join('');
   $('#friendsBody').innerHTML = `
     ${recap}
@@ -14233,7 +14253,7 @@ const IB_TYPES = {
   friend: { ic: '👋', cat: 'social' }, friendNew: { ic: '🤝', cat: 'social' }, kudos: { ic: '🔥', cat: 'social' }, nudge: { ic: '👀', cat: 'social' }, challenge: { ic: '🏁', cat: 'social' },
   reminder: { ic: '🔔', cat: 'reminders' }, missed: { ic: '⏰', cat: 'reminders' },
   ach: { ic: '🏅', cat: 'rewards' }, level: { ic: '⭐', cat: 'rewards' }, boss: { ic: '⚔️', cat: 'rewards' }, login: { ic: '🎁', cat: 'rewards' }, streak: { ic: '🔥', cat: 'rewards' },
-  event: { ic: '🎃', cat: 'rewards' }, clan: { ic: '🛡️', cat: 'social' },
+  event: { ic: '🎃', cat: 'rewards' }, clan: { ic: '🛡️', cat: 'social' }, session: { ic: '📚', cat: 'social' },
   info: { ic: '💬', cat: 'other' },
 };
 const ibKey = () => 'pomodorolist-inbox:' + (USER ? (USER.guest ? 'guest' : USER.uid) : 'none');
@@ -15622,6 +15642,9 @@ function demoDocs() {
   });
   docs['friendships/demo_req'] = { users: ['demo', 'demo_f6'], from: 'demo_f6', to: 'demo', status: 'pending', fromName: 'mochi_naps', toName: 'demo_scholar', createdAt: ts(Date.now() - 3600e3) };
   docs['inbox/demo/items/k1'] = { from: 'demo_f1', fromName: 'James', type: 'kudos', emoji: '🔥', target: 'st_' + dayKey(now), createdAt: ts(Date.now() - 1800e3) };
+  // v1.18: two study sessions in the lobby — James hosts a public table, Ava a friends-only one
+  docs['studySessions/demo_sess1'] = { title: 'Organic chemistry sprint', host: 'demo_f1', hostName: 'James', pattern: { focus: 25, short: 5, rounds: 4 }, mode: 'together', startAt: ts(Date.now() - 20 * 60000), pausedAt: 0, pauseTotal: 0, shift: 0, open: true, counted: false, vis: 'public', lobby: 'public', max: 6, members: ['demo_f1', 'demo_f2'], invited: [], plan: 0, code: 'DEMO2K26', hostAt: ts(Date.now() - 20 * 60000), createdAt: ts(Date.now() - 20 * 60000), endedAt: 0, updatedAt: ts(Date.now() - 60000) };
+  docs['studySessions/demo_sess2'] = { title: 'Mock test marathon', host: 'demo_f4', hostName: 'Princess_cupcake', pattern: { focus: 50, short: 10, rounds: 3 }, mode: 'synced', startAt: ts(Date.now() - 5 * 60000), pausedAt: 0, pauseTotal: 0, shift: 0, open: true, counted: false, vis: 'friends', lobby: 'friends', max: 4, members: ['demo_f4'], invited: ['demo'], plan: 0, code: '', hostAt: ts(Date.now() - 5 * 60000), createdAt: ts(Date.now() - 5 * 60000), endedAt: 0, updatedAt: ts(Date.now() - 60000) };
   docs['challenges/demo_c1'] = { preset: 'h10', weekKey: wk, creator: 'demo_f4', members: ['demo_f4', 'demo', 'demo_f1'], invited: ['demo'], names: { demo_f4: 'Princess_cupcake', demo: 'demo_scholar', demo_f1: 'James' },
     progress: { demo_f4: 410, demo: Math.round(myWeek), demo_f1: 280 }, createdAt: ts(Date.now() - 2 * 864e5) };
   Object.assign(docs, demoClanDocs(ts, wk));
@@ -15684,13 +15707,13 @@ function startPreview() {
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
 const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
-  '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
+  '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-sjoin]', '[data-sask]', '[data-shost]', '[data-sinvite]', '[data-sallow]', '[data-sdeny]', '[data-skick]', '[data-shand]', '[data-scode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '[data-sell]', '[data-sellall]', '[data-fav]', '[data-compost]', '[data-gtask]', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
 const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
-  ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-sell],[data-sellall],[data-fav],[data-compost]', 'sell your harvests for produce'], ['[data-gtask]', 'claim garden tasks'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
+  ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-sjoin],[data-sask],[data-shost],[data-sinvite],[data-sallow],[data-sdeny],[data-skick],[data-shand],[data-scode]', 'study live with friends'], ['[data-sell],[data-sellall],[data-fav],[data-compost]', 'sell your harvests for produce'], ['[data-gtask]', 'claim garden tasks'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
   $('#pvWhy').textContent = `This is a demo account, so nothing can be changed. Create your own free account to ${why}.`;
@@ -18875,6 +18898,16 @@ function setClanRem(sid, on, before) {
 const LIVE = { cid: '', lid: '', doc: null, people: {}, unsubs: [], off: 0, joinAt: 0, beatTimer: 0, idx: null, shiftSeen: 0, lastReact: 0, reacts: [],
   summary: null, closing: false, counting: false, myMin: 0, state: '' };
 let liveWatch = null;   // listener for "a live session is open in my clan" (cheap: only fires when a live session changes)
+/* v1.18: a live session lives in a clan (clans/{cid}/live/{lid}) or on its own (studySessions/{lid}, see STUDY SESSIONS).
+   The engine reads and writes through these helpers, so both kinds share one code path. LIVE.cid is '' for a session
+   without a clan. */
+const liveIsClan = () => !!LIVE.cid;
+const liveDoc = (...sub) => (LIVE.cid ? FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid, ...sub) : FB.doc(FB.db, 'studySessions', LIVE.lid, ...sub));
+const liveCol = sub => (LIVE.cid ? FB.collection(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid, sub) : FB.collection(FB.db, 'studySessions', LIVE.lid, sub));
+const liveRefFor = (cid, lid, ...sub) => (cid ? FB.doc(FB.db, 'clans', cid, 'live', lid, ...sub) : FB.doc(FB.db, 'studySessions', lid, ...sub));
+const liveHome = () => (liveIsClan() ? 'clan' : 'friends');
+/** Who focused at the same time as me in this block (both modes): the Phase 3 "studied together" record. */
+const liveMatesNow = () => [...new Set([...(LIVE.blockMates || []), ...livePeople().filter(p => p.id !== USER.uid && p.st === 'focus').map(p => p.id)])];
 const liveSrvNow = () => Date.now() + LIVE.off;
 const tsMs = v => (v && typeof v.toMillis === 'function' ? v.toMillis() : typeof v === 'number' ? v : 0);
 /** Snapshot handlers never throw into Firestore (a bad document must not stop the listener). */
@@ -18900,7 +18933,7 @@ function liveState(d, now) {
   if (i < 0) return { done: true, el, sch };
   return { ...sch[i], i, el, sch, left: sch[i].to - el, paused: d.pausedAt > 0, waiting: d.pausedAt > 0 && el < 1000 && i === 0 };
 }
-const liveMine = () => !!(LIVE.doc && USER && (LIVE.doc.host === USER.uid || isClanOfficer()));
+const liveMine = () => !!(LIVE.doc && USER && (LIVE.doc.host === USER.uid || (liveIsClan() && isClanOfficer())));
 const inLive = () => !!(S.timer.live && LIVE.lid);
 
 /* ---------- Finding and starting ---------- */
@@ -18944,19 +18977,19 @@ async function liveStart({ title, pattern, sid = '', mode = 'together' }) {
   }
   await liveJoin(lid, true);
 }
-async function liveJoin(lid, fresh = false) {
-  if (!inClan()) return;
+async function liveJoin(lid, fresh = false, cid = CLAN.id) {
+  if (cid && !inClan()) return;
   if (inLive() && LIVE.lid !== lid) { toast('Leave your current live session first'); return; }
   const resuming = S.timer.live && S.timer.live.lid === lid;
   if (!fresh) await clockOffset();
-  const snap = await FB.getDoc(cDoc(CLAN.id, 'live', lid));
+  const snap = await FB.getDoc(liveRefFor(cid, lid));
   const d = livePlain(snap);
   if (!d || !d.open) { if (resuming) { S.timer.live = null; saveLocal(); } toast('That live session has ended'); return; }
   const mode = liveModeOf(d);
   if (mode !== 'together' && !inLive() && !resuming && S.timer.status !== 'idle') { toast('Finish or reset your current timer first — a Synced timer takes over your timer', 3200, false, { now: true }); return; }
-  Object.assign(LIVE, { cid: CLAN.id, lid, doc: d, people: {}, joinAt: resuming ? +S.timer.live.joinAt || Date.now() : LIVE.lid === lid && LIVE.joinAt ? LIVE.joinAt : Date.now(), idx: null, shiftSeen: d.shift || 0, summary: null, closing: false, myMin: LIVE.lid === lid ? LIVE.myMin : 0, reacts: [],
+  Object.assign(LIVE, { cid: cid || '', lid, doc: d, people: {}, joinAt: resuming ? +S.timer.live.joinAt || Date.now() : LIVE.lid === lid && LIVE.joinAt ? LIVE.joinAt : Date.now(), idx: null, shiftSeen: d.shift || 0, summary: null, closing: false, myMin: LIVE.lid === lid ? LIVE.myMin : 0, reacts: [],
     mates: LIVE.lid === lid && LIVE.mates ? LIVE.mates : new Set(), blockMates: new Set() });
-  S.timer.live = { cid: CLAN.id, lid, title: d.title, joinAt: LIVE.joinAt, mode };
+  S.timer.live = { cid: cid || '', lid, title: d.title, joinAt: LIVE.joinAt, mode };
   togetherSig = '';
   saveLocal();
   liveListen();
@@ -18965,26 +18998,31 @@ async function liveJoin(lid, fresh = false) {
   LIVE.beatTimer = setInterval(() => liveBeat(), 60000);   // presence heartbeat: once a minute
   if (mode !== 'together') liveSync();
   renderAll();
-  showTab('clan');
+  if (!cid) { S.ui.friendsView = 'sessions'; sessWatchRequests(); }
+  showTab(liveHome());
 }
 function liveListen() {
   liveUnlisten();
-  const base = ['clans', LIVE.cid, 'live', LIVE.lid];
-  LIVE.unsubs.push(FB.onSnapshot(FB.doc(FB.db, ...base), safeSnap(s => {
+  LIVE.unsubs.push(FB.onSnapshot(liveDoc(), safeSnap(s => {
     const d = livePlain(s);
     if (!d) { liveEnded('gone'); return; }
+    const hostChanged = !LIVE.doc || LIVE.doc.host !== d.host;
     LIVE.doc = d;
+    if (!liveIsClan() && hostChanged) sessWatchRequests();   // the host's request list follows the host seat (v1.18)
+    if (!liveIsClan() && !(d.members || []).includes(USER.uid) && d.host !== USER.uid) { liveEnded('kicked'); return; }
     if (inTogether()) { if (!d.open) liveEnded('closed'); } else liveSync();
     renderLive();
   }), e => console.warn('live', e && e.code)));
-  LIVE.unsubs.push(FB.onSnapshot(FB.collection(FB.db, ...base, 'people'), safeSnap(qs => {
+  LIVE.unsubs.push(FB.onSnapshot(liveCol('people'), safeSnap(qs => {
     LIVE.people = Object.fromEntries(qs.docs.map(x => [x.id, livePlain(x)]));
+    LIVE.peopleReady = true;
     prefetchLooks(Object.keys(LIVE.people), () => renderLive());
     liveMaybeCount();
+    if (!liveIsClan()) sessMaybeClaimHost();
     renderLive();
   }), e => console.warn('live people', e && e.code)));
   let first = true;
-  LIVE.unsubs.push(FB.onSnapshot(FB.query(FB.collection(FB.db, ...base, 'reactions'), FB.orderBy('at', 'desc'), FB.limit(8)), safeSnap(qs => {
+  LIVE.unsubs.push(FB.onSnapshot(FB.query(liveCol('reactions'), FB.orderBy('at', 'desc'), FB.limit(8)), safeSnap(qs => {
     const fresh = first ? [] : qs.docChanges().filter(c => (c.type === 'added' || c.type === 'modified') && !c.doc.metadata.hasPendingWrites).map(c => livePlain(c.doc));
     first = false;
     for (const r of fresh) if (r && SOC.blocked[r.from] === undefined && r.from !== USER.uid) showReaction(r.from, r.emoji);
@@ -19005,7 +19043,7 @@ function liveBeat(force = false) {
   if (!force && st === LIVE.state && Date.now() - (LIVE.lastBeat || 0) < 45000) return;
   LIVE.state = st; LIVE.lastBeat = Date.now();
   const look = memberLook();
-  FB.setDoc(FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid, 'people', USER.uid), {
+  FB.setDoc(liveDoc('people', USER.uid), {
     name: USER.username, avatar: look.avatar, color: look.color, aura: look.aura, state: LIVE.legacy && (st === 'paused' || st === 'idle') ? 'break' : st,
     sname: S.settings.shareNames && S.timer.phase === 'focus' ? String(currentName()).slice(0, 80) : '', min: Math.min(1440, Math.round(LIVE.myMin)),
     beat: FB.serverTimestamp(), joinedAt: LIVE.joinAt, ...(inTogether() && !LIVE.legacy ? togetherSeat() : {}),
@@ -19016,12 +19054,14 @@ function liveBeat(force = false) {
   });
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden) LIVE.hiddenAt = Date.now(); else { LIVE.hiddenAt = 0; liveBeat(); } });
-/** Who's at the table: a missed heartbeat for ~2 minutes shows as away, ~5 minutes and they're gone. */
+/** Who's at the table: a missed heartbeat for ~2 minutes shows as away; ~5 minutes (a clan table) or ~2.5 minutes (a
+ *  session without a clan, v1.18) and they're gone. */
+const LIVE_GONE_MS = () => (liveIsClan() ? 300000 : 150000);
 function livePeople() {
-  const now = liveSrvNow();
+  const now = liveSrvNow(), goneAt = LIVE_GONE_MS();
   return Object.entries(LIVE.people).map(([id, p]) => {
     const age = now - tsMs(p.beat);
-    return { id, ...p, endAt: +p.endAt || 0, left: +p.left || 0, st: p.state === 'left' ? 'left' : age > 300000 ? 'gone' : age > 120000 || p.state === 'away' ? 'away' : p.state };
+    return { id, ...p, endAt: +p.endAt || 0, left: +p.left || 0, st: p.state === 'left' ? 'left' : age > goneAt ? 'gone' : age > 120000 || p.state === 'away' ? 'away' : p.state };
   }).filter(p => p.st !== 'gone' && p.st !== 'left').sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
 }
 
@@ -19070,7 +19110,7 @@ function liveEnded(why) {
   if (t.status !== 'idle' && t.phase === 'focus' && why !== 'done') { LIVE.syncing = true; try { finishPhase('skip'); } finally { LIVE.syncing = false; } }
   else if (t.status !== 'idle' && why === 'done') { t.endAt = Math.min(t.endAt, Date.now()); LIVE.syncing = true; try { finishPhase('complete'); } finally { LIVE.syncing = false; } }
   const mine = S.sessions.filter(s => s.live === LIVE.lid);
-  LIVE.summary = { title: d.title || 'Live session', people: people.length ? people : [{ id: USER.uid, name: USER.username, ...memberLook() }], min: mine.reduce((a, s) => a + s.duration, 0) / 60000,
+  LIVE.summary = { home: liveHome(), title: d.title || 'Live session', people: people.length ? people : [{ id: USER.uid, name: USER.username, ...memberLook() }], min: mine.reduce((a, s) => a + s.duration, 0) / 60000,
     blocks: mine.length, why, together: people.length >= 2 || !!d.counted };
   liveTeardown();
   renderAll();
@@ -19078,12 +19118,13 @@ function liveEnded(why) {
 }
 function liveTeardown() {
   liveUnlisten();
+  sessUnwatchRequests(); SESS.prompted.clear(); SESS.invited = null; SESS.at = 0;
   clearInterval(LIVE.beatTimer);
-  if (LIVE.lid && !isPreview() && cloudReady()) FB.deleteDoc(FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid, 'people', USER.uid)).catch(() => {});
+  if (LIVE.lid && !isPreview() && cloudReady()) FB.deleteDoc(liveDoc('people', USER.uid)).catch(() => {});
   const t = S.timer, synced = t.live && t.live.mode !== 'together';
   if (synced) { t.status = 'idle'; t.phase = 'focus'; t.round = 1; t.endAt = 0; t.remaining = 0; }
   t.live = null;
-  LIVE.lid = ''; LIVE.doc = null; LIVE.people = {}; LIVE.idx = null; LIVE.myMin = 0; LIVE.doneMin = 0;
+  LIVE.lid = ''; LIVE.doc = null; LIVE.people = {}; LIVE.peopleReady = false; LIVE.idx = null; LIVE.myMin = 0; LIVE.doneMin = 0;
   saveLocal();
 }
 async function liveLeave() {
@@ -19101,9 +19142,10 @@ function togetherLeave(why) {
   const d = LIVE.doc || {}, mates = [...(LIVE.mates || [])], others = livePeople().filter(p => p.id !== USER.uid);
   const mine = S.sessions.filter(s => s.live === LIVE.lid && s.start >= (LIVE.joinAt || 0) - 4 * 3600e3);
   const seen = mates.map(id => LIVE.people[id] ? { id, ...LIVE.people[id] } : (CLAN.members || []).find(m => m.id === id)).filter(Boolean);
-  LIVE.summary = { title: d.title || 'Focus together', people: [{ id: USER.uid, name: USER.username, ...memberLook() }, ...seen], min: mine.reduce((a, s) => a + s.duration, 0) / 60000,
+  LIVE.summary = { home: liveHome(), title: d.title || 'Focus together', people: [{ id: USER.uid, name: USER.username, ...memberLook() }, ...seen], min: mine.reduce((a, s) => a + s.duration, 0) / 60000,
     blocks: mine.length, why, together: mates.length > 0 };
   if (why === 'left' && !others.length && d.open) liveClose();
+  else if (why === 'kicked') toast('The host removed you from the session', 3200, false, { now: true });
   liveTeardown();
   renderAll(); renderLive();
   if (why === 'left') toast(S.timer.status === 'idle' ? 'You left the table' : 'You left the table — your own timer keeps going', 2600, false, { now: true });
@@ -19112,15 +19154,15 @@ function togetherLeave(why) {
 async function liveClose() {
   if (LIVE.closing || !LIVE.lid || isPreview()) return;
   LIVE.closing = true;
-  const ref = FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid), n = livePeople().length;
+  const ref = liveDoc(), n = livePeople().length, clan = liveIsClan();
   try {
     const did = await FB.runTransaction(FB.db, async tx => {
       const s = await tx.get(ref);
       if (!s.exists() || !s.data().open) return false;
-      tx.update(ref, { open: false, endedAt: Math.round(liveSrvNow()), updatedAt: FB.serverTimestamp() });
+      tx.update(ref, { open: false, endedAt: Math.round(liveSrvNow()), updatedAt: FB.serverTimestamp(), ...(clan ? {} : { lobby: 'none', invited: [] }) });
       return true;
     });
-    if (did && n >= 2) clanFeed('live', n);
+    if (did && n >= 2 && clan) clanFeed('live', n);
   } catch (e) { console.warn('live close', e && e.code); }
 }
 
@@ -19132,18 +19174,18 @@ async function liveControl(kind) {
   if (kind === 'pause' && !(d.pausedAt > 0)) up.pausedAt = now;
   else if (kind === 'resume' && d.pausedAt > 0) { up.pauseTotal = (d.pauseTotal || 0) + Math.max(0, now - d.pausedAt); up.pausedAt = 0; }
   else if (kind === 'skip' && !st.done) up.shift = (d.shift || 0) + Math.max(0, Math.ceil(st.left));
-  else if (kind === 'end') { up.open = false; up.endedAt = now; }
+  else if (kind === 'end') { up.open = false; up.endedAt = now; if (!liveIsClan()) { up.lobby = 'none'; up.invited = []; } }
   else return;
   if (kind === 'skip' && d.pausedAt > 0) { up.pauseTotal = (d.pauseTotal || 0) + Math.max(0, now - d.pausedAt); up.pausedAt = 0; }
   uiClaim(); uiSound(kind === 'pause' ? 'pause' : 'tap', { always: true }); haptic(10);
-  try { await FB.updateDoc(FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid), up); if (kind === 'end' && livePeople().length >= 2) clanFeed('live', livePeople().length); }
+  try { await FB.updateDoc(liveDoc(), up); if (kind === 'end' && livePeople().length >= 2 && liveIsClan()) clanFeed('live', livePeople().length); }
   catch (e) { toast('Couldn’t update the session — check your connection'); }
 }
 
 /* ---------- Counted once as a group session (2+ people) → weekly quest + clan streak ---------- */
 async function liveMaybeCount() {
   const d = LIVE.doc;
-  if (!d || d.counted || LIVE.counting || isPreview() || !inClan()) return;
+  if (!d || d.counted || LIVE.counting || isPreview() || !inClan() || !liveIsClan()) return;
   const here = livePeople().filter(p => ['focus', 'break', 'paused', 'idle'].includes(p.st)), second = here.find(p => p.id !== USER.uid);
   if (here.length < 2 || !second || !here.some(p => p.id === USER.uid)) return;   // the rules check both seats really exist
   LIVE.counting = true;
@@ -19170,7 +19212,7 @@ async function liveReact(emoji) {
   LIVE.lastReact = Date.now();
   showReaction(USER.uid, emoji);
   if (isPreview()) return;
-  FB.setDoc(FB.doc(FB.db, 'clans', LIVE.cid, 'live', LIVE.lid, 'reactions', USER.uid), { from: USER.uid, emoji, at: FB.serverTimestamp() }).catch(() => {});
+  FB.setDoc(liveDoc('reactions', USER.uid), { from: USER.uid, emoji, at: FB.serverTimestamp() }).catch(() => {});
 }
 function showReaction(from, emoji) {
   const seat = document.querySelector(`.lv-seat[data-uid="${CSS.escape(from)}"]`);
@@ -19203,11 +19245,349 @@ function liveButton(which) {
 async function liveResume() {
   const lv = S.timer.live;
   if (!lv || LIVE.lid || isPreview()) return;
-  if (!inClan() || CLAN.id !== lv.cid) { if (lv.mode !== 'together') S.timer.status = 'idle'; S.timer.live = null; saveLocal(); return; }
+  if (lv.cid && (!inClan() || CLAN.id !== lv.cid)) { if (lv.mode !== 'together') S.timer.status = 'idle'; S.timer.live = null; saveLocal(); return; }
   LIVE.joinAt = lv.joinAt || Date.now();
   LIVE.lid = '';
-  try { await liveJoin(lv.lid); } catch (e) { if (lv.mode !== 'together') S.timer.status = 'idle'; S.timer.live = null; saveLocal(); renderAll(); }
+  try { await liveJoin(lv.lid, false, lv.cid || ''); } catch (e) { if (lv.mode !== 'together') S.timer.status = 'idle'; S.timer.live = null; saveLocal(); renderAll(); }
 }
+
+/* ==========================================================================
+   STUDY SESSIONS (v1.18) — live sessions without a clan, on the same engine as the clan ones.
+     studySessions/{sid}                 the session: host, pattern, mode, visibility, members, lobby, invite code
+     studySessions/{sid}/people/{uid}    presence (the same heartbeat as clan sessions)
+     studySessions/{sid}/reactions/{uid} preset emoji only
+     studySessions/{sid}/requests/{uid}  "ask to join" (friends-only sessions): { name, at, status }
+     sessionCodes/{code}                 { sid } — invite links (get by code only)
+   Visibility: friends (friends of the host see it in their lobby and ask to join; the host allows), link (anyone with
+   the code joins), public (listed for everyone, anyone joins). Up to `max` people. Sessions older than 6 hours count
+   as over everywhere; the last one out closes the table; anyone may close an old one. The host can kick, hand over or
+   end; if the host's presence stops, the longest-present member takes over.
+   ========================================================================== */
+const SESS = { lobby: [], mine: [], at: 0, asked: {}, askUnsub: null, reqUnsub: null, reqs: [], prompted: new Set(), history: null };
+const SESS_MAX_AGE = 6 * 3600e3, SESS_REQ_TTL = 2 * 60000, SESS_REQ_GAP = 60000, SESS_CACHE = 90000;
+const SESS_VIS = { friends: { name: 'Friends only', desc: 'Friends see it and ask to join; you allow them in' }, link: { name: 'Invite link', desc: 'Anyone with the link can join' }, public: { name: 'Public', desc: 'Listed for everyone' } };
+const sessRef = (sid, ...sub) => FB.doc(FB.db, 'studySessions', sid, ...sub);
+const sessOpen = l => !!l && l.open && Date.now() - (l.createdAt || 0) < SESS_MAX_AGE;
+const sessLink = code => `${location.origin}${location.pathname}?session=${code}`;
+const sessReady = () => socialReady() && !isPreview();
+const inSess = () => inLive() && !liveIsClan();
+const sessMyLive = () => (inSess() ? LIVE.doc : null);
+/** The lobby: public sessions, friends' sessions I'm invited to, and the ones I'm in. Three small queries, cached 90 s. */
+async function sessLoad(force) {
+  if (!socialReady() || (!force && SESS.at && Date.now() - SESS.at < SESS_CACHE)) return SESS.lobby;
+  const col = FB.collection(FB.db, 'studySessions'), out = {};
+  try {
+    for (const q of [FB.query(col, FB.where('lobby', '==', 'public'), FB.limit(25)), FB.query(col, FB.where('invited', 'array-contains', USER.uid), FB.limit(25)), FB.query(col, FB.where('members', 'array-contains', USER.uid), FB.limit(10))]) {
+      const qs = await FB.getDocs(q);
+      qs.docs.forEach(d => { const l = livePlain(d); if (l) out[d.id] = l; });
+    }
+  } catch (e) { console.warn('sessions', e && e.code); }
+  const all = Object.values(out), stale = all.filter(l => l.open && Date.now() - (l.createdAt || 0) >= SESS_MAX_AGE);
+  for (const l of stale.slice(0, 3)) sessExpire(l.id);   // tidy up what we can see (the rules let anyone close a 6-hour-old session)
+  SESS.lobby = all.filter(sessOpen).sort((a, b) => (b.members || []).length - (a.members || []).length || (a.createdAt || 0) - (b.createdAt || 0));
+  SESS.mine = SESS.lobby.filter(l => (l.members || []).includes(USER.uid));
+  SESS.at = Date.now();
+  prefetchLooks(SESS.lobby.map(l => l.host), () => renderSessionBits());
+  return SESS.lobby;
+}
+function sessExpire(sid) { if (!cloudReady() || isPreview()) return; FB.updateDoc(sessRef(sid), { open: false, lobby: 'none', invited: [], endedAt: Date.now(), updatedAt: FB.serverTimestamp() }).catch(() => {}); }
+/** A friend hosting an open session right now (for the "Studying now · Ask to join" badge). */
+const sessHostedBy = uid => SESS.lobby.find(l => l.host === uid && sessOpen(l) && !(l.members || []).includes(USER.uid));
+/** Host a session. mode together|synced, vis friends|link|public, max 2–10, plan = ms (0 = now). */
+async function sessCreate({ title, mode = 'together', vis = 'friends', max = 6, plan = 0 }) {
+  if (!sessReady()) throw new Error('Log in and connect to host a session');
+  if (inLive()) throw new Error('Leave your current session first');
+  const bad = clanTitleProblem(title);
+  if (bad) throw new Error(bad);
+  if (mode === 'synced' && S.timer.status !== 'idle') throw new Error('Finish or reset your current timer first — a Synced timer takes over your timer');
+  await clockOffset();
+  const p = activePreset(), sid = FB.doc(FB.collection(FB.db, 'studySessions')).id, code = vis === 'friends' ? '' : newClanCode();
+  const invited = vis === 'friends' ? friendsList().map(otherUid).slice(0, 100) : [];
+  const data = { title: title.trim().slice(0, 40), host: USER.uid, hostName: USER.username, pattern: { focus: p.focus, short: p.short, rounds: p.rounds }, mode: mode === 'synced' ? 'synced' : 'together',
+    startAt: FB.serverTimestamp(), pausedAt: mode === 'synced' ? Math.round(liveSrvNow()) : 0, pauseTotal: 0, shift: 0, open: true, counted: false,
+    vis, lobby: vis === 'public' ? 'public' : vis === 'friends' ? 'friends' : 'none', max: clamp(Math.round(+max) || 6, 2, 10), members: [USER.uid], invited,
+    plan: Math.max(0, Math.round(+plan) || 0), code, welcome: [], hostAt: FB.serverTimestamp(), createdAt: FB.serverTimestamp(), endedAt: 0, updatedAt: FB.serverTimestamp() };
+  const b = FB.writeBatch(FB.db);
+  b.set(sessRef(sid), data);
+  if (code) b.set(FB.doc(FB.db, 'sessionCodes', code), { sid });
+  await b.commit();
+  SESS.at = 0;
+  await liveJoin(sid, true, '');
+  if (vis === 'friends' && invited.length) toast(`Your friends can see the session now — invite them from the table`, 3200, false, { now: true });
+  return sid;
+}
+/** Join: public and link sessions straight away (while there is room); a friend's session by asking. */
+async function sessJoin(sid) {
+  if (!sessReady()) { toast('Log in to join a session'); return false; }
+  if (inLive() && LIVE.lid !== sid) { toast('Leave your current session first'); return false; }
+  const snap = await FB.getDoc(sessRef(sid)).catch(() => null), l = livePlain(snap);
+  if (!sessOpen(l)) { toast('That session has ended'); SESS.at = 0; return false; }
+  if ((l.members || []).includes(USER.uid)) { await liveJoin(sid, false, ''); return true; }
+  if (l.mode === 'synced' && S.timer.status !== 'idle') { toast('Finish or reset your current timer first — a Synced timer takes over your timer', 3200, false, { now: true }); return false; }
+  if ((l.members || []).length >= (l.max || 10)) { toast('That session is full'); return false; }
+  if (l.vis === 'friends' && !(l.welcome || []).includes(USER.uid)) return sessAsk(sid, l);   // an invited friend walks straight in
+  try {
+    await FB.updateDoc(sessRef(sid), { members: FB.arrayUnion(USER.uid), updatedAt: FB.serverTimestamp() });
+  } catch (e) { toast(e && e.code === 'permission-denied' ? 'Couldn’t join — the session may be full or closed' : 'Couldn’t join — check your connection'); return false; }
+  SESS.at = 0;
+  await liveJoin(sid, false, '');
+  return true;
+}
+/** Ask to join a friend's session: a request document; we wait up to 2 minutes for the host. */
+async function sessAsk(sid, l) {
+  if (SESS.asked[sid] && Date.now() - SESS.asked[sid] < SESS_REQ_GAP) { toast('You’ve just asked — give them a moment'); return false; }
+  try {
+    await FB.setDoc(sessRef(sid, 'requests', USER.uid), { name: USER.username, at: FB.serverTimestamp(), status: 'pending' });
+  } catch (e) { toast(e && e.code === 'permission-denied' ? 'You can only ask to join a friend’s session' : 'Couldn’t send the request — check your connection'); return false; }
+  SESS.asked[sid] = Date.now(); SESS.waiting = { sid, host: l.hostName, title: l.title, at: Date.now() };
+  sessWatchAsk(sid);
+  renderSessionBits();
+  return true;
+}
+function sessWatchAsk(sid) {
+  sessUnwatchAsk();
+  SESS.askUnsub = FB.onSnapshot(sessRef(sid, 'requests', USER.uid), safeSnap(s => {
+    const r = s.exists() ? s.data() : null;
+    if (!SESS.waiting || SESS.waiting.sid !== sid) return;
+    if (r && r.status === 'ok') { sessUnwatchAsk(); SESS.waiting = null; toast(`@${r.by || 'the host'} let you in`, 2600, true, { now: true }); SESS.at = 0; liveJoin(sid, false, ''); }
+    else if (r && r.status === 'no') { sessUnwatchAsk(); SESS.waiting = null; toast('The host didn’t let you in this time', 3000, false, { now: true }); renderSessionBits(); }
+    else if (!r && SESS.waiting && Date.now() - SESS.waiting.at > 2000) { sessUnwatchAsk(); SESS.waiting = null; renderSessionBits(); }
+  }), e => console.warn('ask', e && e.code));
+  SESS.askTimer = setTimeout(() => { if (SESS.waiting && SESS.waiting.sid === sid) sessCancelAsk('No answer from the host — try again later'); }, SESS_REQ_TTL);
+}
+function sessUnwatchAsk() { if (SESS.askUnsub) { try { SESS.askUnsub(); } catch (e) { /* gone */ } SESS.askUnsub = null; } clearTimeout(SESS.askTimer); }
+async function sessCancelAsk(msg = 'Request cancelled') {
+  const w = SESS.waiting; if (!w) return;
+  sessUnwatchAsk(); SESS.waiting = null;
+  if (!isPreview()) FB.deleteDoc(sessRef(w.sid, 'requests', USER.uid)).catch(() => {});
+  toast(msg, 2400, false, { now: true });
+  renderSessionBits();
+}
+/* ----- the host: requests, answers, invites, kicks, hand-over ----- */
+function sessWatchRequests() {
+  sessUnwatchRequests();
+  if (!inSess() || !liveMine() || isPreview()) return;
+  SESS.reqUnsub = FB.onSnapshot(FB.query(liveCol('requests'), FB.where('status', '==', 'pending')), safeSnap(qs => {
+    SESS.reqs = qs.docs.map(d => ({ id: d.id, ...plain(d.data()), at: tsMs(d.data().at) || Date.now() })).filter(r => Date.now() - r.at < SESS_REQ_TTL + 15000);
+    for (const r of SESS.reqs) if (!SESS.prompted.has(r.id + ':' + r.at)) { SESS.prompted.add(r.id + ':' + r.at); sessPromptRequest(r); }
+    renderSessionBits();
+  }), e => console.warn('requests', e && e.code));
+}
+function sessUnwatchRequests() { if (SESS.reqUnsub) { try { SESS.reqUnsub(); } catch (e) { /* gone */ } SESS.reqUnsub = null; } SESS.reqs = []; }
+/** "@x wants to join your session — Allow / Decline": a small toast right away (even in a focus block: it never pauses the
+ *  timer and makes no sound) and an inbox item with the two buttons. */
+function sessPromptRequest(r) {
+  const key = 'sreq:' + LIVE.lid + ':' + r.id;
+  inboxAdd({ type: 'session', key, title: `@${r.name} wants to join your session`, body: 'Allow or decline — they are waiting', go: { tab: 'friends', view: 'sessions' } });
+  const it = IB.find(x => x.key === key); if (it) { it.act = { kind: 'sreq', sid: LIVE.lid, uid: r.id }; ibSave(); }
+  toast(`@${r.name} wants to join your session`, 5000, false, { now: true, log: false, type: 'session', go: { tab: 'friends', view: 'sessions' } });
+  if (S.ui.tab !== 'friends') { SOC.unread = true; updateFriendsDot(); }
+}
+async function sessAnswer(uid, ok) {
+  if (!inSess() || !liveMine()) return false;
+  const d = LIVE.doc || {}, full = (d.members || []).length >= (d.max || 10);
+  if (ok && full) { toast('The session is full — kick someone first'); return false; }
+  const b = FB.writeBatch(FB.db);
+  b.update(liveDoc('requests', uid), { status: ok ? 'ok' : 'no', by: USER.username, answeredAt: FB.serverTimestamp() });
+  if (ok) b.update(liveDoc(), { members: FB.arrayUnion(uid), updatedAt: FB.serverTimestamp() });
+  try { await b.commit(); } catch (e) { toast('Couldn’t answer — check your connection'); return false; }
+  const it = IB.find(x => x.act && x.act.kind === 'sreq' && x.act.uid === uid); if (it) { it.read = true; it.act = null; ibSave(); }
+  toast(ok ? 'They’re in' : 'Declined', 2000, ok, { now: true, log: false });
+  return true;
+}
+async function sessKick(uid) {
+  if (!inSess() || !liveMine() || uid === USER.uid) return false;
+  const b = FB.writeBatch(FB.db);
+  b.update(liveDoc(), { members: FB.arrayRemove(uid), updatedAt: FB.serverTimestamp() });
+  b.delete(liveDoc('people', uid));
+  try { await b.commit(); toast('Removed from the session', 2000, false, { now: true }); return true; } catch (e) { toast('Couldn’t remove them — check your connection'); return false; }
+}
+async function sessHandOver(uid) {
+  if (!inSess() || !liveMine() || uid === USER.uid || !(LIVE.doc.members || []).includes(uid)) return false;
+  const p = LIVE.people[uid] || {};
+  try { await FB.updateDoc(liveDoc(), { host: uid, hostName: p.name || '?', hostAt: FB.serverTimestamp(), updatedAt: FB.serverTimestamp() }); toast(`@${p.name || 'they'} now hosts the session`, 2400, true, { now: true }); return true; }
+  catch (e) { toast('Couldn’t hand over — check your connection'); return false; }
+}
+/** The host's presence stopped (closed the tab): the longest-present member takes the host seat (the rules check the stale beat). */
+async function sessMaybeClaimHost() {
+  const d = LIVE.doc; if (!inSess() || !d || d.host === USER.uid || SESS.claiming || isPreview()) return;
+  const now = liveSrvNow(), hp = LIVE.people[d.host], hostGone = !hp || hp.state === 'left' || now - tsMs(hp.beat) > 150000;
+  if (!hostGone) return;
+  const here = sessOthers(true).filter(u => u !== d.host);   // the longest-present member who is still here takes the seat
+  if (!here.length || here[0] !== USER.uid) return;
+  SESS.claiming = true;
+  try { await FB.updateDoc(liveDoc(), { host: USER.uid, hostName: USER.username, hostAt: FB.serverTimestamp(), updatedAt: FB.serverTimestamp() }); toast('The host left — you’re hosting now', 3000, false, { now: true }); }
+  catch (e) { /* someone else took it, or the host came back */ }
+  SESS.claiming = false;
+}
+/** Invite a friend in the app: an inbox item with Join / Ignore (host only; the title passes the same word filter as clans). */
+async function sessInvite(uid) {
+  const d = sessMyLive(); if (!d || !liveMine() || !sessReady()) return false;
+  const id = 'si_' + USER.uid + '_' + LIVE.lid;
+  try {
+    const b = FB.writeBatch(FB.db);   // the invite opens the door (welcome) and lands in their inbox
+    b.update(liveDoc(), { welcome: FB.arrayUnion(uid), updatedAt: FB.serverTimestamp() });
+    b.set(FB.doc(FB.db, 'inbox', uid, 'items', id), { from: USER.uid, fromName: USER.username, type: 'sinvite', target: LIVE.lid, title: String(d.title || '').slice(0, 40), createdAt: FB.serverTimestamp() });
+    await b.commit(); toast('Invite sent', 2200, true, { now: true }); SESS.invited = SESS.invited || new Set(); SESS.invited.add(uid); renderSessionBits(); return true; }
+  catch (e) { toast(e && e.code === 'permission-denied' ? 'You can only invite friends' : 'Couldn’t send the invite'); return false; }
+}
+async function sessRegenCode(disable = false) {
+  const d = sessMyLive(); if (!d || !liveMine()) return false;
+  const code = disable ? '' : newClanCode(), b = FB.writeBatch(FB.db);
+  b.update(liveDoc(), { code, updatedAt: FB.serverTimestamp() });
+  if (d.code) b.delete(FB.doc(FB.db, 'sessionCodes', d.code));
+  if (code) b.set(FB.doc(FB.db, 'sessionCodes', code), { sid: LIVE.lid });
+  try { await b.commit(); toast(disable ? 'Invite link disabled' : 'New invite link ready', 2200, true, { now: true }); return true; } catch (e) { toast('Couldn’t change the link'); return false; }
+}
+/** Leave (the last one out closes a session without a clan, in both modes). */
+/** Members still around: the member list is authoritative; someone whose presence has been gone for 5+ minutes
+ *  (or who said 'left') does not count — but only once the presence list has actually arrived. */
+function sessOthers(includeMe = false) {
+  const d = LIVE.doc || {}, members = d.members || [], known = !!LIVE.peopleReady, now = liveSrvNow();
+  const gone = u => known && (!LIVE.people[u] || LIVE.people[u].state === 'left' || now - tsMs(LIVE.people[u].beat) > LIVE_GONE_MS());
+  return members.filter(u => (includeMe || u !== USER.uid) && !gone(u)).sort((a, b) => ((LIVE.people[a] || {}).joinedAt || 0) - ((LIVE.people[b] || {}).joinedAt || 0));
+}
+async function sessLeave() {
+  if (!inSess()) return;
+  const d = LIVE.doc || {}, others = sessOthers().map(id => ({ id }));
+  if (d.host === USER.uid && others.length) await sessHandOver(others[0].id);   // the host leaves: the longest-present person takes over
+  if (!others.length && d.open) await liveClose();   // the last one out closes the session (both modes)
+  else if (!isPreview()) await FB.updateDoc(liveDoc(), { members: FB.arrayRemove(USER.uid), updatedAt: FB.serverTimestamp() }).catch(() => {});   // free the seat
+  await liveLeave();
+  SESS.at = 0;
+}
+/* ----- invite links: ?session=CODE ----- */
+function captureSessionLink() {
+  const m = /[?&]session=([A-Za-z0-9]{8})/.exec(location.search);
+  if (!m) return;
+  writeLS('pomodorolist-sesslink', m[1].toUpperCase());
+  const u = new URL(location.href); u.searchParams.delete('session'); history.replaceState(null, '', u.pathname + u.search + u.hash);
+}
+captureSessionLink();
+async function sessByCode(code) {
+  code = String(code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (code.length !== 8) throw new Error('An invite link has an 8-character code');
+  const c = await FB.getDoc(FB.doc(FB.db, 'sessionCodes', code));
+  if (!c.exists()) throw new Error('That invite link is no longer valid');
+  return c.data().sid;
+}
+function maybeOpenSessionLink() {
+  const code = localStorage.getItem('pomodorolist-sesslink');
+  if (!code || !USER || USER.guest || isPreview() || !cloudReady()) return;
+  localStorage.removeItem('pomodorolist-sesslink');
+  let tries = 0;
+  const go = async () => {
+    if (!socialReady()) { if (tries++ < 40) { setTimeout(go, 500); return; } toast('Couldn’t open the invite — try the link again once you’re online', 3600); return; }   // the friends / cloud layer is still loading
+    try { const sid = await sessByCode(code); S.ui.friendsView = 'sessions'; showTab('friends'); await sessJoin(sid); } catch (e) { toast(e.message || 'That invite link didn’t work', 3600); }
+  };
+  setTimeout(go, 600);
+}
+/* ----- history: my blocks inside sessions without a clan ----- */
+function sessHistory() {
+  const by = {};
+  for (const s of S.sessions) if (s.live && !s.clan) { const h = by[s.live] ||= { lid: s.live, blocks: 0, min: 0, mates: new Set(), last: 0, title: s.lt || '' }; h.blocks++; h.min += s.duration / 60000; (s.mates || []).forEach(m => h.mates.add(m)); h.last = Math.max(h.last, s.end); if (s.lt) h.title = s.lt; }
+  return Object.values(by).sort((a, b) => b.last - a.last).slice(0, 12);
+}
+/* ----- rendering: Friends › Study sessions ----- */
+function renderSessionBits() {
+  renderLiveBar();
+  if (S.ui.tab === 'friends' && !SOC.friend) renderFriends(true);
+}
+function sessRowHTML(l) {
+  const mine = (l.members || []).includes(USER.uid), n = (l.members || []).length, isHost = l.host === USER.uid, friend = friendsList().some(f => otherUid(f) === l.host);
+  const when = l.plan && l.plan > Date.now() ? `starts ${fmtHM(l.plan)}` : `${n} of ${l.max || 10} at the table`;
+  const btn = mine ? `<button class="btn small primary" data-sjoin="${esc(l.id)}">${isHost ? 'Open' : 'Rejoin'}</button>`
+    : SESS.waiting && SESS.waiting.sid === l.id ? `<span class="lbl">Waiting for @${esc(l.hostName)}… <button class="linkbtn" data-scancel>cancel</button></span>`
+    : n >= (l.max || 10) ? '<span class="lbl">Full</span>'
+    : l.vis === 'friends' ? `<button class="btn small primary" data-sask="${esc(l.id)}">Ask to join</button>` : `<button class="btn small primary" data-sjoin="${esc(l.id)}">Join</button>`;
+  return `<li class="clan-live-row sess-row"><span class="live-dot" aria-hidden="true"></span><div><b>${esc(l.title)}</b> <span class="lv-mode${l.mode === 'synced' ? ' synced' : ''}">${CLAN_MODES[l.mode === 'synced' ? 'synced' : 'together'].short}</span>
+    <div class="lbl">${lookPic(personLook(l.host, l.hostName), 18)} @${esc(l.hostName)}${friend ? ' · friend' : l.vis === 'public' ? ' · public' : ''} · ${when} · ${l.pattern.focus}/${l.pattern.short} × ${l.pattern.rounds}</div></div>${btn}</li>`;
+}
+function sessHostFormHTML() {
+  const p = activePreset();
+  return `<div class="card" id="sessHost"><h2>Host a study session</h2>
+    <p class="lbl" style="margin:-4px 0 10px">No clan needed. Your current preset sets the rhythm: <b>${esc(p.name)}</b> (${p.focus}/${p.short} × ${p.rounds}).</p>
+    <form id="sessForm" autocomplete="off">
+      <div class="addrow"><input type="text" id="sessTitle" placeholder="What are you studying?" maxlength="40" value="${esc(S.ui.sessTitle || '')}"></div>
+      <div class="seg" style="margin:10px 0" id="sessMode"><button type="button" data-smode="together" class="${S.ui.sessMode !== 'synced' ? 'active' : ''}">Focus together</button><button type="button" data-smode="synced" class="${S.ui.sessMode === 'synced' ? 'active' : ''}">Synced timer</button></div>
+      <p class="lbl" style="margin:-4px 0 10px">${S.ui.sessMode === 'synced' ? CLAN_MODES.synced.desc : CLAN_MODES.together.desc}.</p>
+      <div class="grid-2" style="gap:10px">
+        <label class="lbl">Who can join<select id="sessVis">${Object.entries(SESS_VIS).map(([k, v]) => `<option value="${k}"${(S.ui.sessVis || 'friends') === k ? ' selected' : ''}>${v.name} — ${v.desc}</option>`).join('')}</select></label>
+        <label class="lbl">Seats<select id="sessMax">${[2, 3, 4, 5, 6, 8, 10].map(n => `<option value="${n}"${(+S.ui.sessMax || 6) === n ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+      </div>
+      <div class="row between" style="margin-top:10px;gap:8px;flex-wrap:wrap"><label class="lbl"><input type="checkbox" id="sessLater"${S.ui.sessLater ? ' checked' : ''}> Plan it for later <input type="time" id="sessTime" value="${esc(S.ui.sessTime || '')}" style="margin-left:6px"></label>
+        <button class="btn primary" type="submit" data-shost>Start the session</button></div>
+    </form></div>`;
+}
+function sessTableToolsHTML() {
+  const d = LIVE.doc; if (!d) return '';
+  const host = liveMine(), people = livePeople(), members = d.members || [];
+  const reqs = host ? SESS.reqs.map(r => `<li class="person">${personRow(r.id, r.name, null, '<div class="sub">wants to join</div>')}<button class="btn small primary" data-sallow="${esc(r.id)}">Allow</button><button class="btn small" data-sdeny="${esc(r.id)}">Decline</button></li>`).join('') : '';
+  const seats = host ? members.filter(u => u !== USER.uid).map(u => { const p = LIVE.people[u] || {}; return `<li class="person">${personRow(u, p.name || '?', null, `<div class="sub">${p.name ? (SEAT_STATE[(people.find(x => x.id === u) || {}).st] || 'not here right now') : 'not here yet'}</div>`)}<button class="btn small" data-shand="${esc(u)}" title="Hand over hosting">Make host</button><button class="btn small" data-skick="${esc(u)}">Remove</button></li>`; }).join('') : '';
+  const friends = host ? friendsList().map(f => ({ uid: otherUid(f), name: otherName(f) })).filter(f => !members.includes(f.uid)).slice(0, 30) : [];
+  const invites = friends.map(f => `<li class="person">${personRow(f.uid, f.name, cached('publicProfiles', f.uid), '')}<button class="btn small${SESS.invited && SESS.invited.has(f.uid) ? '' : ' primary'}" data-sinvite="${esc(f.uid)}"${SESS.invited && SESS.invited.has(f.uid) ? ' disabled' : ''}>${SESS.invited && SESS.invited.has(f.uid) ? 'Invited' : 'Invite'}</button></li>`).join('');
+  const link = d.code ? `<div class="row between" style="gap:8px;flex-wrap:wrap"><span class="lbl">Invite link: <b class="code">${esc(sessLink(d.code))}</b></span><span class="btn-row" style="gap:6px"><button class="btn small" data-scopy="${esc(d.code)}">Copy</button><button class="btn small${canShareNative() ? '' : ' hidden'}" data-sshare="${esc(d.code)}">Share</button>${host ? `<button class="btn small" data-scode="new">New link</button><button class="btn small" data-scode="off">Disable</button>` : ''}</span></div>`
+    : host && d.vis !== 'friends' ? `<div class="row between"><span class="lbl">Invite link disabled</span><button class="btn small" data-scode="new">Make a link</button></div>` : '';
+  return `<div class="card sess-tools"><div class="row between"><h2 style="margin:0">${host ? 'Your session' : 'Session'}</h2><span class="lbl">${SESS_VIS[d.vis] ? SESS_VIS[d.vis].name : ''} · ${members.length} of ${d.max || 10} seats · host @${esc(d.hostName)}</span></div>
+    ${reqs ? `<h3 style="margin:12px 0 6px">Asking to join</h3><ul class="plist">${reqs}</ul>` : ''}
+    ${link ? `<div style="margin-top:10px">${link}</div>` : ''}
+    ${host && invites ? `<details style="margin-top:10px"><summary class="lbl">Invite friends (${friends.length})</summary><ul class="plist">${invites}</ul></details>` : ''}
+    ${host && seats ? `<details style="margin-top:10px"><summary class="lbl">Manage seats (${members.length - 1})</summary><ul class="plist">${seats}</ul></details>` : ''}
+    ${host ? '' : '<p class="lbl" style="margin:10px 0 0">The host can hand over, remove people or end the session. If the host leaves, the longest-present person takes over.</p>'}</div>`;
+}
+function renderSessions(fromLoad) {
+  if (!fromLoad || !SESS.at) sessLoad();
+  const body = $('#friendsBody');
+  if (inSess()) { body.innerHTML = liveTableHTML() + sessTableToolsHTML(); animateFills(body); return; }
+  const lobby = SESS.lobby.filter(l => l.host !== USER.uid), mine = SESS.mine, now = lobby.filter(l => !(l.plan > Date.now())), planned = lobby.filter(l => l.plan > Date.now());
+  const hist = sessHistory();
+  body.innerHTML = `${LIVE.summary && LIVE.summary.home === 'friends' ? liveSummaryHTML() : ''}${sessHostFormHTML()}
+    ${mine.length ? `<div class="card"><h2>Your session</h2><ul class="clan-lives">${mine.map(sessRowHTML).join('')}</ul></div>` : ''}
+    <div class="card"><div class="row between"><h2 style="margin:0">Live now</h2><button class="linkbtn" data-srefresh title="Refresh">↻</button></div>
+      ${now.length ? `<ul class="clan-lives">${now.map(sessRowHTML).join('')}</ul>` : `<p class="lbl" style="margin:8px 0 0">${SESS.at ? 'No one you can join is studying right now. Host one — your friends will see it.' : skelRows(2)}</p>`}</div>
+    ${planned.length ? `<div class="card"><h2>Planned</h2><ul class="clan-lives">${planned.map(sessRowHTML).join('')}</ul></div>` : ''}
+    <div class="card"><h2>Your history</h2>${hist.length ? `<ul class="plist">${hist.map(h => `<li class="person"><div class="who"><div class="nm-row">${esc(h.title || 'Study session')}</div><div class="sub">${fmtShort(new Date(h.last))} · ${h.blocks} block${h.blocks === 1 ? '' : 's'} · ${fmtMin(h.min)}${h.mates.size ? ` · with ${h.mates.size} other${h.mates.size === 1 ? '' : 's'}` : ''}</div></div></li>`).join('')}</ul>` : '<p class="lbl" style="margin:8px 0 0">Blocks you focus inside a session will be listed here.</p>'}</div>`;
+}
+/* ----- clicks in the Friends tab for sessions ----- */
+$('#friendsBody').addEventListener('click', async e => {
+  const t = e.target, lv = t.closest('#lvLeave, #lvSumClose, [data-lvctl], [data-react]');
+  if (lv && inSess()) {
+    e.stopPropagation();
+    if (lv.id === 'lvSumClose') { LIVE.summary = null; renderFriends(true); return; }
+    if (lv.id === 'lvLeave') { if (await confirmDlg({ title: 'Leave the session?', body: 'Your focus so far counts if you’ve done at least 80% of this block.', ok: 'Leave' })) sessLeave(); return; }
+    if (lv.dataset.lvctl) { if (lv.dataset.lvctl === 'end' && !(await confirmDlg({ title: 'End the session for everyone?', ok: 'End session', danger: true }))) return; liveControl(lv.dataset.lvctl); return; }
+    if (lv.dataset.react) { liveReact(lv.dataset.react); return; }
+  }
+  if (lv && lv.id === 'lvSumClose') { LIVE.summary = null; renderFriends(true); return; }
+  const b = t.closest('[data-sjoin],[data-sask],[data-scancel],[data-sallow],[data-sdeny],[data-skick],[data-shand],[data-sinvite],[data-scopy],[data-sshare],[data-scode],[data-srefresh],[data-smode]');
+  if (!b) return;
+  e.stopPropagation();   // a button inside a friend row must not open their profile
+  if (isPreview()) { previewPrompt(b); return; }
+  if (b.dataset.smode) { S.ui.sessMode = b.dataset.smode; if ($('#sessTitle')) S.ui.sessTitle = $('#sessTitle').value; saveLocal(); renderFriends(true); return; }
+  if (b.dataset.srefresh !== undefined) { await sessLoad(true); renderFriends(true); return; }
+  if (b.dataset.sjoin) { clanAct(b, () => sessJoin(b.dataset.sjoin)); return; }
+  if (b.dataset.sask) { clanAct(b, () => sessJoin(b.dataset.sask)); return; }
+  if (b.dataset.scancel !== undefined) { sessCancelAsk(); return; }
+  if (b.dataset.sallow) { clanAct(b, () => sessAnswer(b.dataset.sallow, true)); return; }
+  if (b.dataset.sdeny) { clanAct(b, () => sessAnswer(b.dataset.sdeny, false)); return; }
+  if (b.dataset.skick) { clanAct(b, () => sessKick(b.dataset.skick)); return; }
+  if (b.dataset.shand) { clanAct(b, () => sessHandOver(b.dataset.shand)); return; }
+  if (b.dataset.sinvite) { clanAct(b, () => sessInvite(b.dataset.sinvite)); return; }
+  if (b.dataset.scopy) { copyText(sessLink(b.dataset.scopy), { btn: b, what: 'Invite link' }); return; }
+  if (b.dataset.sshare) { shareLink({ title: 'Study with me on Pomodorolist', text: 'Join my study session', url: sessLink(b.dataset.sshare), btn: b }); return; }
+  if (b.dataset.scode) { clanAct(b, () => sessRegenCode(b.dataset.scode === 'off')); return; }
+});
+$('#friendsBody').addEventListener('submit', async e => {
+  if (e.target.id !== 'sessForm') return;
+  e.preventDefault();
+  if (isPreview()) { previewPrompt(e.target.querySelector('[data-shost]')); return; }
+  const title = $('#sessTitle').value.trim() || `${USER.username}'s session`, later = $('#sessLater').checked, time = $('#sessTime').value;
+  let plan = 0;
+  if (later && /^\d\d:\d\d$/.test(time)) { const [h, m] = time.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); if (d.getTime() < Date.now() - 60000) d.setDate(d.getDate() + 1); plan = d.getTime(); }
+  Object.assign(S.ui, { sessTitle: title, sessVis: $('#sessVis').value, sessMax: +$('#sessMax').value, sessLater: later, sessTime: time }); saveLocal();
+  const btn = e.target.querySelector('[data-shost]');
+  clanAct(btn, () => sessCreate({ title, mode: S.ui.sessMode === 'synced' ? 'synced' : 'together', vis: $('#sessVis').value, max: +$('#sessMax').value, plan }), 'Session started');
+});
 
 /* ---------- Clan screen ---------- */
 const clanAgo = at => { const m = Math.max(0, Math.round((Date.now() - at) / 60000)); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} d ago`; };
@@ -19328,7 +19708,7 @@ function renderLiveClock() {
   const st = liveState(d);
   el.textContent = st.done ? '0:00' : fmtClock(st.left);
 }
-function renderLive() { renderClanBits(); }   // renderClanBits draws the clan screen when it is open (once, v1.17)
+function renderLive() { renderClanBits(); if (!liveIsClan()) renderSessionBits(); }   // renderClanBits draws the clan screen when it is open (once, v1.17); sessions without a clan draw in Friends › Study sessions (v1.18)
 function liveSummaryHTML() {
   const s = LIVE.summary;
   return `<div class="card lv-sum">
@@ -19766,9 +20146,22 @@ $('#remBody').addEventListener('click', e => {
 
 /* ---------- Inbox: accept / decline join requests right there ---------- */
 function ibActionsHTML(x) {
-  if (!x.act || x.act.kind !== 'creq' || !inClan() || CLAN.id !== x.act.cid || !isClanOfficer() || !(CLAN.requests || []).some(r => r.id === x.act.uid)) return '';
+  if (!x.act) return '';
+  if (x.act.kind === 'sinv') return inLive() ? '' : `<span class="ib-acts"><button class="btn primary small" data-ibsjoin="${esc(x.act.sid)}">Join</button><button class="btn small" data-ibsno="1">Ignore</button></span>`;
+  if (x.act.kind === 'sreq') return inSess() && liveMine() && LIVE.lid === x.act.sid && SESS.reqs.some(r => r.id === x.act.uid) ? `<span class="ib-acts"><button class="btn primary small" data-ibsok="${esc(x.act.uid)}">Allow</button><button class="btn small" data-ibsdeny="${esc(x.act.uid)}">Decline</button></span>` : '';
+  if (x.act.kind !== 'creq' || !inClan() || CLAN.id !== x.act.cid || !isClanOfficer() || !(CLAN.requests || []).some(r => r.id === x.act.uid)) return '';
   return `<span class="ib-acts"><button class="btn primary small" data-ibcok="${esc(x.act.uid)}">Accept</button><button class="btn small" data-ibcno="${esc(x.act.uid)}">Decline</button></span>`;
 }
+$('#ibBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-ibsjoin],[data-ibsno],[data-ibsok],[data-ibsdeny]');
+  if (!b) return;
+  e.stopPropagation();
+  const li = e.target.closest('[data-ib]'), it = IB.find(x => li && x.id === li.dataset.ib), done = () => { if (it) { it.read = true; it.act = null; ibSave(); } };
+  if (b.dataset.ibsjoin) { done(); clanAct(b, async () => { S.ui.friendsView = 'sessions'; showTab('friends'); await sessJoin(b.dataset.ibsjoin); }); }
+  else if (b.dataset.ibsno) { done(); }
+  else if (b.dataset.ibsok) { clanAct(b, async () => { await sessAnswer(b.dataset.ibsok, true); done(); }); }
+  else if (b.dataset.ibsdeny) { clanAct(b, async () => { await sessAnswer(b.dataset.ibsdeny, false); done(); }); }
+}, true);
 $('#ibBody').addEventListener('click', e => {
   const ok = e.target.closest('[data-ibcok]'), no = e.target.closest('[data-ibcno]');
   if (!ok && !no) return;
@@ -19812,7 +20205,7 @@ function renderLiveBar() {
   const n = livePeople().length;
   el.innerHTML = `<span class="live-dot" aria-hidden="true"></span><b>${inTogether() ? 'At the table' : 'Live'}: ${esc(LIVE.doc.title)}</b><span class="lbl">${n} at the table · ${inTogether() ? 'your own timer' : liveMine() ? 'you run the timer' : 'host @' + esc(LIVE.doc.hostName)}</span><button class="linkbtn" data-goclan>Open table</button>`;
 }
-$('#liveBar').addEventListener('click', e => { if (e.target.closest('[data-goclan]')) showTab('clan'); });
+$('#liveBar').addEventListener('click', e => { if (e.target.closest('[data-goclan]')) { if (!liveIsClan()) S.ui.friendsView = 'sessions'; showTab(liveHome()); } });
 function clanTodayLine() {
   if (!inClan()) return '';
   if (inLive()) return `<div class="today-clan"><span class="live-dot" aria-hidden="true"></span>Studying live: <button data-goclan>${esc(LIVE.doc ? LIVE.doc.title : 'your clan')}</button></div>`;
