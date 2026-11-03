@@ -4965,7 +4965,8 @@ window.addEventListener('resize', () => requestAnimationFrame(syncSegs));
     timers.set(this, setTimeout(() => { timers.delete(this); this.classList.remove('closing'); nativeClose.call(this, v); }, 170));
   };
   P.showModal = function () {
-    if (timers.has(this)) { clearTimeout(timers.get(this)); timers.delete(this); this.classList.remove('closing'); if (this.open) return; }
+    if (timers.has(this)) { clearTimeout(timers.get(this)); timers.delete(this); this.classList.remove('closing'); if (this.open) return; }   // re-opened while closing: stay open
+    if (this.open) return;   // already open: nothing to do (callers can always call showModal)
     return nativeShow.call(this);
   };
 })();
@@ -8856,7 +8857,7 @@ function showLevelUp(from, to) {
   const next = TIERS.find(x => x.min > to);
   $('#lvSub').textContent = tierUp ? `You reached level ${to}. Your new badge is in your profile.`
     : `${t.name} · ${next ? `${next.name} at level ${next.min}` : 'the highest tier'}`;
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
   if (tierUp) playTierChord(); else uiSound('arp', { always: true });
 }
 
@@ -11227,7 +11228,7 @@ function openCollection() {
   const d = $('#collDlg');
   if (!d) return;
   renderCollection();
-  if (!d.open) d.showModal();
+  d.showModal();
 }
 function renderCollection() {
   const host = $('#collBody'), g = game();
@@ -11440,7 +11441,7 @@ function showRewardReveal(opt) {
   $('#rwBagNote').classList.toggle('hidden', !items.length);
   $('#rwBag').classList.toggle('hidden', !items.length);
   $('#rwNote').textContent = note; $('#rwNote').classList.toggle('hidden', !note);
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
   if (motion() !== 'off') setTimeout(() => burstParticles($('#rwItems'), motion() === 'full' ? 24 : 8), 120);
   uiClaim(); uiSound('reward', { always: true });
   playTierChord();
@@ -11947,7 +11948,7 @@ function openExams() {
   $('#examName').value = '';
   $('#examDate').value = '';
   $('#examDate').min = dayKey(new Date());
-  if (!$('#examDlg').open) $('#examDlg').showModal();
+  $('#examDlg').showModal();
 }
 $('#examForm').addEventListener('submit', e => {
   e.preventDefault();
@@ -12709,7 +12710,7 @@ function showHatch(e) {
   const canOut = !petsOut().some(x => x.id === e.pet) && petsOut().length < petSlots();
   $('#egOut').classList.toggle('hidden', !canOut);
   dlg.classList.toggle('still', motion() === 'off');
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
   dlg.classList.remove('cracked');
   const reveal = () => { dlg.classList.add('cracked'); uiSound('reward', { always: true }); if (motion() !== 'off') burstParticles($('#egStage'), motion() === 'full' ? 22 : 8); haptic([10, 30, 10]); };
   if (motion() === 'full') setTimeout(reveal, 1400); else reveal();
@@ -13462,7 +13463,7 @@ function renderGardenSlot() {
 function gdDialog(html, onOpen) {
   const dlg = $('#gdDlg');
   $('#gdDlgBody').innerHTML = html;
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
   animateFills(dlg);
   if (onOpen) onOpen(dlg);
 }
@@ -13794,7 +13795,7 @@ async function roomPNG() {
 function openRoomShare() {
   const dlg = $('#rmShareDlg');
   $('#rmShImg').src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(roomSVG(roomLayout(), { self: true }).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" '));
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
 }
 async function saveRoomImage(share = false) {
   const btn = share ? $('#rmShNative') : $('#rmShSave');
@@ -13945,7 +13946,7 @@ function startReview(deckId = '', limit = 0) {
   Object.assign(RV, { q, i: 0, done: 0, again: 0, deck: deckId, flipped: false, open: true, start: Date.now() });
   renderReview();
   const dlg = $('#fcDlg');
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
   return true;
 }
 function renderReview() {
@@ -14030,7 +14031,7 @@ function openDeckDlg(id) {
   deckOpen = id;
   renderDeckDlg();
   const dlg = $('#deckDlg');
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
 }
 function renderDeckDlg() {
   const d = deckById(deckOpen), el = $('#deckDlgBody');
@@ -14208,7 +14209,7 @@ function openPlanDlg() {
   $('#plRows').innerHTML = (rows.length ? rows : [{ name: '', hrs: '' }]).map(r => planRowHTML(r.name, r.hrs)).join('');
   $('#plNames').innerHTML = [...new Set([...Object.entries(S.names).flatMap(([n, x]) => [n, x.tag]), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 40).map(n => `<option value="${esc(n)}">`).join('');
   $('#plErr').textContent = '';
-  if (!dlg.open) dlg.showModal();
+  dlg.showModal();
   setTimeout(() => { const i = $('#plRows input[name="name"]'); if (i && !i.value) i.focus(); }, 50);
 }
 const planRowHTML = (name = '', hrs = '') => `<div class="pl-row"><input type="text" name="name" list="plNames" maxlength="40" placeholder="Subject (session name or tag)" aria-label="Subject" value="${esc(name)}"><input type="number" name="hrs" min="0.5" max="60" step="0.5" placeholder="h / week" aria-label="Hours per week" value="${hrs === '' ? '' : esc(String(hrs))}"><button type="button" class="iconbtn" data-plremove aria-label="Remove this subject">✕</button></div>`;
@@ -14713,7 +14714,7 @@ function openTemplates() {
   $('#tplList').innerHTML = list.length ? list.map(t => `<li><span class="nm"><b>${esc(t.name)}</b><small>${esc(t.items.join(' · '))}</small></span>
       <button class="btn small" data-tload="${esc(t.id)}">Load</button><button class="iconbtn" data-tdel="${esc(t.id)}" aria-label="Delete ${esc(t.name)}">${TRASH_SVG}</button></li>`).join('')
     : '<li class="empty">No templates yet.</li>';
-  if (!$('#tplDlg').open) $('#tplDlg').showModal();
+  $('#tplDlg').showModal();
 }
 $('#tplList').addEventListener('click', e => {
   const l = e.target.closest('[data-tload]'), d = e.target.closest('[data-tdel]');
@@ -15151,7 +15152,7 @@ function renderInbox() {
 function openInbox() {
   ibRefresh();
   renderInbox();
-  if (!$('#inboxDlg').open) $('#inboxDlg').showModal();
+  $('#inboxDlg').showModal();
 }
 function ibGo(it) {
   const g = it.go || {};
@@ -15366,7 +15367,7 @@ function openCmd() {
   $('#cmdInput').value = '';
   CMD.sel = 0;
   renderCmd();
-  if (!$('#cmdDlg').open) $('#cmdDlg').showModal();
+  $('#cmdDlg').showModal();
   setTimeout(() => $('#cmdInput').focus(), 20);
 }
 function runCmd(i) {
@@ -15874,7 +15875,7 @@ const USE_CASES = {
 };
 function startTutorial() {
   TUT.i = 0; TUT.use = S.settings.useCase || ''; TUT.goal = 0;
-  if (!$('#tutDlg').open) $('#tutDlg').showModal();
+  $('#tutDlg').showModal();
   renderTut();
 }
 function renderTut() {
@@ -16595,7 +16596,7 @@ function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
   $('#pvWhy').textContent = `This is a demo account, so nothing can be changed. Create your own free account to ${why}.`;
   $('#pvPomeo').innerHTML = pomeoSVG({ state: 'happy' });
-  if (!$('#pvDlg').open) $('#pvDlg').showModal();
+  $('#pvDlg').showModal();
   uiSound('tap');
 }
 document.addEventListener('click', e => {
@@ -20766,7 +20767,7 @@ function openClanCard(d) {
   b.textContent = { mine: 'Open my clan', busy: 'You’re already in a clan', pending: 'Request sent · cancel', full: 'This clan is full', open: 'Join', approval: 'Request to join' }[b.dataset.mode];
   b.disabled = b.dataset.mode === 'busy' || b.dataset.mode === 'full';
   CLAN.card = d;
-  if (!$('#clanCardDlg').open) $('#clanCardDlg').showModal();
+  $('#clanCardDlg').showModal();
 }
 
 /* ---------- Dialogs ---------- */
@@ -21208,7 +21209,8 @@ function personLook(uid, name = '', extra = null) {
       streak: g.streak.cur, tier: g.tier.id, level: g.lv.level, clanTag: clanTagOn() ? CLAN.doc.tag : '', rank: seasonKeyNow() >= RANK_FROM ? myRank().idx : null };
   }
   const ok = d => d && typeof d === 'object' && !d.denied;
-  const pub = [cached('publicProfiles', uid), cached('publicStats', uid), cached('rankStats', uid), extra && 'username' in extra ? extra : null].filter(ok).sort((a, b) => tsOf(b) - tsOf(a));
+  const pub = [cached('publicProfiles', uid), cached('publicStats', uid), extra && 'username' in extra ? extra : null]   // (rankStats gives only the rank: it carries no clan tag and its look is refreshed less often)
+   .filter(ok).sort((a, b) => tsOf(b) - tsOf(a));
   const src = pub[0] || (ok(extra) ? extra : {});
   const any = k => { for (const d of [...pub, extra]) if (ok(d) && d[k] !== undefined && d[k] !== '') return d[k]; return undefined; };
   const tier = TIERS.some(t => t.id === src.tier) ? src.tier : TIERS.some(t => t.id === any('tier')) ? any('tier') : TIERS[0].id;
