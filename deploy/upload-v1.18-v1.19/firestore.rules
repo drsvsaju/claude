@@ -111,7 +111,7 @@ service cloud.firestore {
       let d = request.resource.data;
       // (on an update only the changed keys are checked: the stored document passed this check when it was written,
       //  and checking every key against the list costs too many of the 1,000 expressions a request may use — v1.19)
-      return (resource == null ? d.keys() : d.diff(resource.data).affectedKeys()).hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'clanTag', 'global',
+      return (resource == null ? d.keys().toSet() : d.diff(resource.data).affectedKeys()).hasOnly(['username', 'level', 'tier', 'frame', 'color', 'avatar', 'aura', 'clanTag', 'global',
                                'dayKey', 'dayMin', 'weekKey', 'weekMin', 'weekKeySun', 'weekMinSun',
                                'monthKey', 'monthMin', 'lifeMin', 'lastWeekKey', 'lastWeekMin', 'produce', 'harvests', 'updatedAt'])
         && d.username == myName()
