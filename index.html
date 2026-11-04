@@ -9350,11 +9350,32 @@ function presenceText(p) {
 }
 
 /* ---------- Leaderboards ---------- */
-/* Leaderboard v2 (v1.16): two kinds of board — Focus time (daily / weekly / monthly / lifetime) and Garden (produce
-   earned and plants harvested, both all-time, from the optional publicStats fields `produce` and `harvests`). */
-const BOARD_KINDS = { focus: [['day', 'Daily'], ['week', 'Weekly'], ['month', 'Monthly'], ['life', 'Lifetime']], garden: [['produce', 'Produce'], ['harvests', 'Harvests']],
-  rank: [['season', 'This season']], streak: [['streak', 'Current'], ['best', 'Best']] };   // v1.19: Ranks and Streaks
+/* Leaderboard v2 (v1.16): two kinds of board — Focus time (daily / weekly / lifetime) and Garden (produce earned and
+   plants harvested, both all-time, from the optional publicStats fields `produce` and `harvests`). v1.19: Ranks and
+   Streaks. v1.19.1: no Monthly focus board any more — the Ranks board (this season = this UTC month) replaces it; the app
+   still publishes monthKey / monthMin, so older apps' monthly boards keep working. */
+const BOARD_KINDS = { focus: [['day', 'Daily'], ['week', 'Weekly'], ['life', 'Lifetime']], garden: [['produce', 'Produce'], ['harvests', 'Harvests']],
+  rank: [['season', 'This season']], streak: [['streak', 'Current'], ['best', 'Best']] };
 const boardKindOf = period => (period === 'produce' || period === 'harvests' ? 'garden' : period === 'season' ? 'rank' : period === 'streak' || period === 'best' ? 'streak' : 'focus');
+/* Each kind's button reopens the last period used on that kind (S.ui.lbFocusPeriod …). v1.19.1: the click handler used to
+   file every non-garden period under Focus, so after a visit to Ranks or Streaks the Focus time button carried "season"
+   (or "streak") and opened that board instead — saved, so a reload kept it. Now one function files the period under its
+   own kind, and a remembered period is only used when it really belongs to that kind (saved state from 1.19 is repaired
+   on read; a saved "month" falls back to Weekly). */
+const BOARD_MEMO = { focus: 'lbFocusPeriod', garden: 'lbGardenPeriod', rank: 'lbRankPeriod', streak: 'lbStreakPeriod' };
+const BOARD_DEFAULT = { focus: 'week', garden: 'produce', rank: 'season', streak: 'streak' };
+const boardPeriodOk = (kind, p) => !!BOARD_KINDS[kind] && BOARD_KINDS[kind].some(([x]) => x === p);
+/** The period a kind's button opens. */
+const boardPeriodFor = kind => (boardPeriodOk(kind, S.ui[BOARD_MEMO[kind]]) ? S.ui[BOARD_MEMO[kind]] : BOARD_DEFAULT[kind]);
+/** The board showing now (a saved period that no longer exists, such as "month", becomes Weekly). */
+const boardPeriodNow = () => { const p = S.ui.lbPeriod; return boardPeriodOk(boardKindOf(p), p) ? p : BOARD_DEFAULT.focus; };
+/** Show a period and remember it for its own kind. */
+function setBoardPeriod(p) {
+  if (!boardPeriodOk(boardKindOf(p), p)) p = BOARD_DEFAULT.focus;
+  S.ui.lbPeriod = p;
+  S.ui[BOARD_MEMO[boardKindOf(p)]] = p;
+  for (const k in BOARD_MEMO) if (S.ui[BOARD_MEMO[k]] !== undefined && !boardPeriodOk(k, S.ui[BOARD_MEMO[k]])) delete S.ui[BOARD_MEMO[k]];   // repair what 1.19 filed under the wrong kind
+}
 const BOARD_NAME = { day: 'daily', week: 'weekly', month: 'monthly', life: 'lifetime', produce: 'produce', harvests: 'harvests', season: 'season', streak: 'streak', best: 'best streak' };
 /** A streak still running for the viewer: the last goal day is today or the day before (one more day for time zones). */
 const streakLive = d => !!d && typeof d.streakDay === 'string' && DAY_RE.test(d.streakDay) && Math.round((startOfDay(new Date()) - parseDay(d.streakDay)) / 864e5) <= 2;
@@ -9711,13 +9732,14 @@ function lbEmptyHTML(scope, period) {
   return `<div class="lb-empty">${pomeoSVG({ state: 'idle', size: 72 })}<p>${txt}</p></div>`;
 }
 async function renderBoard(fromLoad) {
-  const scope = S.ui.lbScope || 'friends', period = S.ui.lbPeriod || 'week', kind = boardKindOf(period);
-  S.ui[kind === 'garden' ? 'lbGardenPeriod' : kind === 'streak' ? 'lbStreakPeriod' : kind === 'rank' ? 'lbRankPeriod' : 'lbFocusPeriod'] = period;   // the kind buttons return to the last period of each kind
+  const period = boardPeriodNow(), kind = boardKindOf(period);
+  const scope = ['friends', 'global', 'clans'].includes(S.ui.lbScope) ? S.ui.lbScope : 'friends';
+  setBoardPeriod(period);   // the kind buttons return to the last period of each kind
   if (scope === 'clans') return renderClanBoard(fromLoad);
   const head = `
     <div class="lb-head">
       <div class="seg" id="lbScope"><button data-scope="friends" class="${scope === 'friends' ? 'active' : ''}">Friends</button><button data-scope="global" class="${scope === 'global' ? 'active' : ''}">Global</button><button data-scope="clans">Clans</button></div>
-      <div class="seg lb-kind" id="lbKind"><button data-period="${S.ui.lbFocusPeriod || 'week'}" class="${kind === 'focus' ? 'active' : ''}">Focus time</button><button data-period="${S.ui.lbGardenPeriod || 'produce'}" class="${kind === 'garden' ? 'active' : ''}">Garden</button><button data-period="season" class="${kind === 'rank' ? 'active' : ''}">Ranks</button><button data-period="${S.ui.lbStreakPeriod || 'streak'}" class="${kind === 'streak' ? 'active' : ''}">Streaks</button></div>
+      <div class="seg lb-kind" id="lbKind">${[['focus', 'Focus time'], ['garden', 'Garden'], ['rank', 'Ranks'], ['streak', 'Streaks']].map(([k, n]) => `<button data-period="${boardPeriodFor(k)}" data-kind="${k}" class="${kind === k ? 'active' : ''}" aria-pressed="${kind === k}">${n}</button>`).join('')}</div>
       <div class="seg" id="lbPeriod">${BOARD_KINDS[kind].map(([p, n]) => `<button data-period="${p}" class="${p === period ? 'active' : ''}">${n}</button>`).join('')}</div>
     </div>`;
   const key = `${scope}|${period}|${periodKey(period)}|${S.settings.weekStart}`, c = SOC.lb[key];
@@ -9764,7 +9786,7 @@ async function renderBoard(fromLoad) {
   let note = '';
   if (scope === 'global' && !S.settings.globalBoard && mine) note = `<div class="lb-note">You’re not on the global leaderboard. <button class="linkbtn" id="goPrivacy">Turn it on in Settings</button></div>`;
   $('#boardBody').innerHTML = head + `
-    <div class="card lb-card">
+    <div class="card lb-card" data-board="${scope}|${period}">
       <div class="row between lb-meta"><span class="lbl">${resetText(period)}</span><span class="lbl">Updated ${Math.max(0, Math.round((Date.now() - (res.at || Date.now())) / 60000))} min ago <button class="linkbtn" id="lbRefresh" title="Refresh">↻</button></span></div>
       ${res.error ? `<div class="empty">${esc(res.error)}</div>` : res.rows.length && !lonely ? podium + (rest.length ? `<ol class="lb">${rest.map(row).join('')}</ol>` : '') : lbEmptyHTML(scope, period)}
       ${res.myRow ? `<ol class="lb pinned">${row(res.myRow)}</ol>` : ''}
@@ -17790,7 +17812,7 @@ $('#tab-board').addEventListener('click', e => {
   const b = t.closest('[data-scope],[data-period],[data-open]');
   if (!b) return;
   if (b.dataset.scope) { S.ui.lbScope = b.dataset.scope; saveLocal(); renderBoard(); }
-  else if (b.dataset.period) { S.ui.lbPeriod = b.dataset.period; S.ui[boardKindOf(b.dataset.period) === 'garden' ? 'lbGardenPeriod' : 'lbFocusPeriod'] = b.dataset.period; saveLocal(); renderBoard(); }
+  else if (b.dataset.period) { setBoardPeriod(b.dataset.kind ? boardPeriodFor(b.dataset.kind) : b.dataset.period); saveLocal(); renderBoard(); }   // a kind button: that kind's last period (read now, not from the button)
   else { S.ui.friendsView = 'friends'; showTab('friends'); openFriend(b.dataset.open); }
 });
 // Shop tab
@@ -20736,7 +20758,7 @@ async function loadClanBoard(period, force) {
   return (CLB[key] = { rows, mine, error, at: error ? Date.now() - 160000 : Date.now() });
 }
 async function renderClanBoard(fromLoad) {
-  const period = S.ui.clbPeriod || 'week', wk = dayKey(weekMonday()), key = period + '|' + wk, c = CLB[key];
+  const period = S.ui.clbPeriod === 'all' ? 'all' : 'week', wk = dayKey(weekMonday()), key = period + '|' + wk, c = CLB[key];
   const head = `<div class="lb-head"><div class="seg" id="lbScope">${[['friends', 'Friends'], ['global', 'Global'], ['clans', 'Clans']].map(([s, n]) => `<button data-scope="${s}" class="${s === 'clans' ? 'active' : ''}">${n}</button>`).join('')}</div>
     <div class="seg" id="clbPeriod"><button data-cperiod="week" class="${period === 'week' ? 'active' : ''}">Weekly</button><button data-cperiod="all" class="${period === 'all' ? 'active' : ''}">All-time</button></div></div>`;
   if (!c || (!fromLoad && Date.now() - c.at > 3 * 60000)) {
@@ -20746,7 +20768,7 @@ async function renderClanBoard(fromLoad) {
   }
   const row = r => `<li class="${r.id === CLAN.id ? 'me' : ''}${r.rank <= 3 ? ' top' + r.rank : ''}" data-cpub="${esc(r.id)}" tabindex="0" role="button">
     <span class="rk">${r.rank}</span>${clanEmblemSVG(r, 30)}<span class="nm">${esc(r.name)} ${clanTagHTML(r.tag)}<span class="lbl clb-sub">Lv ${r.level} · ${r.members} member${r.members === 1 ? '' : 's'}</span></span><span class="v">${fmtMin(r.minutes)}</span></li>`;
-  $('#boardBody').innerHTML = head + `<div class="card">
+  $('#boardBody').innerHTML = head + `<div class="card" data-board="clans|${period}">
     <div class="row between lb-meta"><span class="lbl">${period === 'week' ? 'Clan focus this week · resets Monday' : 'All clan focus since each clan began'}</span><span class="lbl"><button class="linkbtn" id="clbRefresh" title="Refresh">↻</button></span></div>
     ${c.error ? `<div class="empty">${esc(c.error)}</div>` : c.rows.length ? `<ol class="lb clb">${c.rows.map(row).join('')}</ol>` : '<div class="empty">No clan has focused yet this week.</div>'}
     ${c.mine ? `<ol class="lb clb pinned">${row(c.mine)}</ol>` : ''}
