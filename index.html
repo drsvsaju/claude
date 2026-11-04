@@ -193,6 +193,7 @@ main { max-width: 1040px; margin: 0 auto; padding: 20px 16px 56px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
 .stack { display: grid; gap: 16px; align-content: start; }
 .grid-2 { display: grid; gap: 16px; grid-template-columns: 1fr; }
+.grid-2 > * { min-width: 0; }   /* a column may be narrower than its widest content (a switcher that scrolls, v1.19.1) */
 @media (min-width: 860px) { .grid-2 { grid-template-columns: 1.1fr 1fr; align-items: start; } }
 
 /* Buttons */
@@ -295,8 +296,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .chip.pinned .pin { color: var(--accent); }
 .chip.current { background: var(--accent-soft); }   /* the chip that is loaded right now (v1.18) */
 .sess-row .btn { flex: none; }
-.ach-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0 0 10px; }
-.seg.seg-wrap { flex-wrap: wrap; }
+.ach-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0 0 10px; min-width: 0; }
 .ach-sort { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; white-space: nowrap; }   /* the label holds the select: it sizes to it (v1.18 layout fix) */
 .ach-sort select { margin: 0; min-width: 0; max-width: 100%; }
 .ach .ach-cat { font-size: 11px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; margin-left: 4px; vertical-align: 1px; }
@@ -526,7 +526,6 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .ms-chip { font-size: 11px; font-weight: 700; margin-left: 5px; padding: 0 5px; border-radius: 99px; background: color-mix(in srgb, #f28c28 14%, transparent); color: #c4621a; white-space: nowrap; }
 .fr-gm { transform-box: view-box; transform-origin: 12px 12px; } :root[data-motion="full"] .fr-gm { animation: frGm 8s linear infinite; }
 @keyframes frGm { to { transform: rotate(360deg); } }
-#lbKind { flex-wrap: wrap; }
 /* landing cards (v1.18): a mini session lobby and the streak milestones */
 .fx-sess { display: grid; gap: 6px; width: 100%; max-width: 240px; }
 .fx-srow { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 12px; text-align: left; }
@@ -664,7 +663,6 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .lb li.me { background: var(--accent-soft); }
 .lb.pinned { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 8px; }
 /* Leaderboard v2 (v1.16): podium, rank arrows, your own rank, Pomeo's empty states */
-.lb-head .seg { flex-wrap: wrap; }
 .lb-podium { display: grid; grid-template-columns: 1fr 1.18fr 1fr; gap: 8px; align-items: end; margin: 4px 0 14px; }
 .lb-pod { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 14px 6px 10px; border-radius: 14px; background: var(--bg); text-align: center; }
 .lb-pod.p1 { padding-top: 20px; background: linear-gradient(180deg, rgba(201, 162, 39, .18), var(--bg) 80%); }
@@ -756,13 +754,23 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 :root[data-motion="full"] #mainBtn.running::after { animation: glow 2.8s ease-in-out infinite; }
 @keyframes glow { 50% { opacity: .5; } }
 
-/* ---------- Segmented toggles: sliding pill ---------- */
-.seg { position: relative; }
-.seg > button { position: relative; z-index: 1; }
+/* ---------- Segmented toggles: sliding pill ----------
+   v1.19.1: every switcher stays on one line. One that doesn't fit its space scrolls sideways (no scrollbar), with a soft
+   fade on the side that has more (.seg-fl / .seg-fr, set by syncSegs); the selected option is scrolled into view. The pill
+   takes the selected button's own box (left, top, width, height), so it can never be taller than a button. */
+.seg { position: relative; flex-wrap: nowrap; max-width: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  scroll-behavior: smooth; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.seg::-webkit-scrollbar { display: none; }
+:root[data-motion="off"] .seg { scroll-behavior: auto; }
+.seg > button { position: relative; z-index: 1; flex-shrink: 0; white-space: nowrap; }
+.seg > button:focus-visible { outline-offset: -2px; }   /* inside the bar, which clips what sticks out */
+.seg.seg-fl { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px); mask-image: linear-gradient(to right, transparent, #000 28px); }
+.seg.seg-fr { -webkit-mask-image: linear-gradient(to left, transparent, #000 28px); mask-image: linear-gradient(to left, transparent, #000 28px); }
+.seg.seg-fl.seg-fr { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
 .seg.has-ind > button.active { background: transparent; }
 .seg-ind {
-  position: absolute; left: 0; top: 3px; bottom: 3px; width: 0; border-radius: 999px; background: var(--accent);
-  z-index: 0; pointer-events: none; transition: transform .42s var(--spring-soft), width .42s var(--spring-soft), opacity .2s;
+  position: absolute; left: 0; top: 0; width: 0; height: 0; border-radius: 999px; background: var(--accent);
+  z-index: 0; pointer-events: none; transition: transform .42s var(--spring-soft), width .42s var(--spring-soft), height .42s var(--spring-soft), opacity .2s;
 }
 
 /* ---------- Switches and sliders ---------- */
@@ -4928,13 +4936,59 @@ document.addEventListener('pointerdown', e => {
   setTimeout(() => dot.remove(), 650);
 }, { passive: true });
 
-/* ---------- Segmented toggles: a pill that slides to the selected option ---------- */
-const segPos = new Map();
+/* ---------- Segmented toggles: a pill that slides to the selected option ----------
+   One routine for every switcher (.seg) and the phone's bottom bar (.tabs). v1.19.1: the pill takes the selected
+   button's own box — it used to span the bar's whole height and only move sideways, so a bar that wrapped onto two
+   lines (the achievement categories) got a pill as tall as both lines. Bars no longer wrap (CSS): one that doesn't fit
+   scrolls, keeps the selected option in view and fades on the side that has more. The pill is measured again whenever
+   a bar or its selected button changes size (fonts, themes, glass, a view rendered while hidden and then shown), on
+   window resize, theme / glass / minimal / motion changes and when web fonts finish loading. */
+const segPos = new Map(), segKeys = new Map(), segScroll = new Map(), segWidth = new WeakMap();
+const segRO = typeof ResizeObserver === 'function' ? new ResizeObserver(() => queueSegs()) : null, segSeen = new WeakSet();
+const segName = seg => seg.id || seg.className;
+/** The fade on the side(s) with more options. */
+function segEdges(seg) {
+  const more = seg.scrollWidth > seg.clientWidth + 1;
+  seg.classList.toggle('seg-fl', more && seg.scrollLeft > 1);
+  seg.classList.toggle('seg-fr', more && seg.scrollLeft + seg.clientWidth < seg.scrollWidth - 1);
+}
+/** Scroll a bar that doesn't fit so the selected option is fully in view (with room for the fade). */
+function segReveal(seg, act, smooth) {
+  if (seg.scrollWidth <= seg.clientWidth + 1) return;
+  const pad = 28, l = act.offsetLeft, r = l + act.offsetWidth;
+  let to = null;
+  if (l - pad < seg.scrollLeft) to = l - pad;
+  else if (r + pad > seg.scrollLeft + seg.clientWidth) to = r + pad - seg.clientWidth;
+  if (to !== null) seg.scrollTo({ left: Math.max(0, to), behavior: smooth && motion() !== 'off' ? 'smooth' : 'instant' });
+}
+function segPlace(ind, p, sideOnly) {
+  ind.style.width = p.w + 'px';
+  if (sideOnly) ind.style.transform = `translateX(${p.x}px)`;
+  else { ind.style.height = p.h + 'px'; ind.style.transform = `translate(${p.x}px, ${p.y}px)`; }
+}
 function syncSegs() {
   document.querySelectorAll('.seg, .tabs').forEach(seg => {
+    const isSeg = seg.classList.contains('seg'), fresh = !segSeen.has(seg);
+    if (fresh) {
+      segSeen.add(seg);
+      if (segRO) segRO.observe(seg);
+      if (isSeg) {
+        seg.addEventListener('scroll', () => { segEdges(seg); segScroll.set(segName(seg), seg.scrollLeft); }, { passive: true });
+        const was = segScroll.get(segName(seg));   // a re-rendered bar starts where the previous one was scrolled to
+        if (was) seg.scrollTo({ left: was, behavior: 'instant' });
+      }
+    }
     const act = seg.querySelector(':scope > button.active:not(.hidden)');
     let ind = seg.querySelector(':scope > .seg-ind');
-    if (!act || !seg.getClientRects().length || !act.offsetWidth) { if (ind) ind.style.opacity = 0; return; }
+    if (!act || !seg.getClientRects().length || !act.offsetWidth) { if (ind) ind.style.opacity = 0; return; }   // hidden: measured again once shown (ResizeObserver)
+    if (segRO && !segSeen.has(act)) { segSeen.add(act); segRO.observe(act); }
+    const sideOnly = seg.classList.contains('btmbar');   // the bottom bar draws its own small pill (CSS): only follow sideways
+    // the button's layout box (not its on-screen box, which shrinks for a moment while pressed); the exact size comes
+    // from the computed style — offsetWidth/Height are rounded, which left the pill a pixel short
+    const cs = getComputedStyle(act), bb = cs.boxSizing === 'border-box', ex = (a, b) => bb ? 0 : parseFloat(cs[a]) + parseFloat(cs[b]);
+    const p = { x: act.offsetLeft, y: act.offsetTop,
+      w: (parseFloat(cs.width) + ex('paddingLeft', 'paddingRight') + ex('borderLeftWidth', 'borderRightWidth')) || act.offsetWidth,
+      h: (parseFloat(cs.height) + ex('paddingTop', 'paddingBottom') + ex('borderTopWidth', 'borderBottomWidth')) || act.offsetHeight };
     if (!ind) {
       ind = document.createElement('span');
       ind.className = 'seg-ind';
@@ -4943,32 +4997,41 @@ function syncSegs() {
       // A re-rendered toggle starts from where the previous one with the same id was, so it still slides.
       const prev = seg.id && segPos.get(seg.id);
       ind.style.transition = 'none';
-      ind.style.transform = `translateX(${prev ? prev.x : act.offsetLeft}px)`;
-      ind.style.width = (prev ? prev.w : act.offsetWidth) + 'px';
+      segPlace(ind, prev && prev.h ? prev : p, sideOnly);
       void ind.offsetWidth;
       ind.style.transition = '';
     }
-    const x = act.offsetLeft, w = act.offsetWidth;
     ind.style.opacity = 1;
-    if (ind.dataset.x === String(x) && ind.dataset.w === String(w)) return;
-    ind.dataset.x = x; ind.dataset.w = w;
-    ind.style.transform = `translateX(${x}px)`;
-    ind.style.width = w + 'px';
-    if (seg.id) segPos.set(seg.id, { x, w });
+    if (isSeg) {
+      const key = act.getAttributeNames().filter(a => a.startsWith('data-')).map(a => a + '=' + act.getAttribute(a)).join('&') + '|' + act.textContent.trim();
+      const was = segKeys.get(segName(seg)), wide = seg.clientWidth, resized = segWidth.get(seg) !== wide;
+      segWidth.set(seg, wide);
+      if (fresh || key !== was) { segKeys.set(segName(seg), key); segReveal(seg, act, was !== undefined && key !== was); }
+      else if (resized) segReveal(seg, act, false);   // shown again or a different width: keep the selected option in view
+      segEdges(seg);
+    }
+    const sig = `${p.x},${p.y},${p.w},${p.h}`;
+    if (ind.dataset.sig === sig) return;
+    ind.dataset.sig = sig;
+    segPlace(ind, p, sideOnly);
+    if (seg.id) segPos.set(seg.id, p);
   });
 }
 let segQueued = false;
+function queueSegs() { if (segQueued) return; segQueued = true; requestAnimationFrame(() => { segQueued = false; syncSegs(); }); }
 new MutationObserver(muts => {
   if (segQueued) return;
   for (const m of muts) {
     const t = m.target;
     if (t.nodeType !== 1 || t.closest('#ring, #toast, #achCard, .floater, .gring')) continue;
-    segQueued = true;
-    requestAnimationFrame(() => { segQueued = false; syncSegs(); });
+    queueSegs();
     return;
   }
 }).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
-window.addEventListener('resize', () => requestAnimationFrame(syncSegs));
+// theme, glass, minimal, motion and font-size changes live on <html>
+new MutationObserver(queueSegs).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-theme', 'data-skin', 'data-glass', 'data-glass-solid', 'data-minimal', 'data-motion'] });
+window.addEventListener('resize', queueSegs);
+if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', queueSegs);
 
 /* ---------- Dialogs: animate closing too (opening is pure CSS) ---------- */
 (() => {
@@ -15110,7 +15173,7 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
 const APP_VERSION = '1.19.1';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
-  { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist.' },
+  { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist. Also fixed: switchers such as the achievement categories no longer wrap onto two lines with a stretched highlight — they stay on one line and scroll sideways when they don’t fit.' },
   { v: '1.19', t: 'Ranks for this season and streak leaderboards', d: 'Ranks show how much you study right now: every month is a season, and your counted focus hours (up to 14 h a day) take you from Bronze through Silver, Gold, Platinum and Diamond (three divisions each) to Master and Grandmaster. A new season starts on the 1st with a small head start from last season’s best. The end of a season pays coins and puts a season badge on your trophy shelf, and the first time you reach a rank you get its frame, aura or room poster. Rank badges show next to names on boards, friend lists, study tables and clans. The leaderboard has Ranks and Streaks (current and best) boards for friends and everyone.' },
   { v: '1.18', t: 'Study sessions without a clan, rewards for studying together, streak milestones, a new Pomeo, a weekly quest board, a monthly track, Pomeo’s stages and a collection log', d: 'The Friends tab now has Friends · Study sessions · Challenges. Host a public, friends-only or link study session (no clan needed), let people ask to join, invite friends, hand over or end it, and see who is studying now. Studying together pays: coins for new study partners, clan-session milestones with clan-only rewards, bonus Clan Points and 39 new achievements with real rewards, on a sortable achievements page. Streak milestones at 3, 7, 14, 30, 50, 100, 200 and 365 days give titles, the Ember theme, a Flame Pomeo picture, a trophy, a Flame ring, a Blaze frame, an Eternal flame aura and a Golden Pomeo statue, celebrated once after your block. Pomeo is redrawn: minimal and cute, everywhere, and he grows with your focus hours. New: a weekly quest board, a free monthly reward track, a collection log, and your monthly recap counts who you studied with. Fixes: recently used presets keep their order and favourites, and one challenge join per week.' },
   { v: '1.17', t: 'Plant XP, the Harvests basket, boosts, a garden tour, stronger pets with mutations, Finish early, endless daily rewards and user-reported fixes', d: 'Growth is now plant XP: every focus block feeds each growing plant a generous share (a common plant is ready in 2–3 blocks, 4–6 with four growing), and coin-bought ×1.5 / ×2 boosts speed it up. Harvested crops wait in the new Harvests tab with their weight, skins and a 1–5★ rarity: sell them one by one or in bulk, keep favourites, and get a festival bonus at weekends. A Pomeo-guided garden tour, daily garden tasks, compost, a trophy shelf, plant info cards, scenes unlocked by garden level and a livelier scene. Pets: three slots (garden levels 1 / 3 / 6), stronger capped buffs, every egg drinks every block in full, and a small deterministic chance of a Golden, Shiny, Rainbow, Shadow, Frost or Ember pet. Finish early logs the minutes you did; a garden glance card sits on the Timer; the logo takes you home. Daily rewards keep counting past Day 7 with a gift every 7th day. Fixes: blocks always water your plants, changing the daily goal keeps your streak, one challenge reward per preset per week, starting banners that suit every theme, smoother animations.' },
