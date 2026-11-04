@@ -194,6 +194,20 @@ main { max-width: 1040px; margin: 0 auto; padding: 20px 16px 56px; }
 .stack { display: grid; gap: 16px; align-content: start; }
 .grid-2 { display: grid; gap: 16px; grid-template-columns: 1fr; }
 .grid-2 > * { min-width: 0; }   /* a column may be narrower than its widest content (a switcher that scrolls, v1.19.1) */
+/* Card columns (v1.19.1): a page's cards in reading order, split by the browser into two balanced columns on wide
+   screens (CSS columns: a card is never cut, and the split re-flows by itself when a card opens or closes, on resize and
+   when the sidebar collapses). Where two columns can't be balanced (one would end far above the other, or there are
+   only one or two cards) fitMason() switches to one centred column. Phones and tablets: one full-width column, as before. */
+.mason { display: grid; gap: var(--sp-4, 16px); align-content: start; min-width: 0; }
+.mason > * { min-width: 0; }
+@media (min-width: 860px) {
+  .mason { display: block; column-count: 2; column-gap: var(--sp-4, 16px); }
+  .mason > * { break-inside: avoid; margin: 0 0 var(--sp-4, 16px); }
+  .mason.mason-one { column-count: 1; max-width: 760px; margin-inline: auto; }
+  .ach-card .achlist { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); column-gap: 28px; }   /* the achievements, full width below the cards */
+  .ach-card .achlist > .ach-tools { grid-column: 1 / -1; }
+  .ach-card .achlist > .ach:nth-child(-n+4) { border-top: 0; }
+}
 @media (min-width: 860px) { .grid-2 { grid-template-columns: 1.1fr 1fr; align-items: start; } }
 
 /* Buttons */
@@ -575,8 +589,8 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 #appView { position: relative; z-index: 1; }
 
 /* Zen mode: only the timer while a focus block runs */
-.zen #tab-timer .grid-2 { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto; }
-.zen #tab-timer .grid-2 > .stack:nth-child(2), .zen #tab-timer .stack > .card:not(.timer-card) { display: none; }
+.zen #tab-timer .mason { column-count: 1; max-width: 560px; margin: 0 auto; }
+.zen #tab-timer .mason > .card:not(.timer-card) { display: none; }
 .zen .top { opacity: .3; transition: opacity .3s; }
 .zen .top:hover, .zen .top:focus-within { opacity: 1; }
 
@@ -1010,9 +1024,9 @@ dialog.gt-dlg::backdrop { background: rgba(0, 0, 0, .18); backdrop-filter: none;
 @keyframes bounceIn { 0% { transform: scale(.7); opacity: .2; } 60% { transform: scale(1.07); opacity: 1; } 100% { transform: scale(1); } }
 
 /* Focus mode: everything but the timer steps back while a focus block runs */
-.top, .sidenav, .btmbar, .greet, #tab-timer .grid-2 > .stack:nth-child(2), #tab-timer .stack > .card:not(.timer-card) { transition: opacity .6s var(--ease); }
-body.focus-dim :is(.top, .sidenav, .btmbar, .greet, #tab-timer .grid-2 > .stack:nth-child(2), #tab-timer .stack > .card:not(.timer-card)) { opacity: .26; }
-body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-child(2), #tab-timer .stack > .card:not(.timer-card)):is(:hover, :focus-within) { opacity: 1; }
+.top, .sidenav, .btmbar, .greet, #tab-timer .mason > .card:not(.timer-card) { transition: opacity .6s var(--ease); }
+body.focus-dim :is(.top, .sidenav, .btmbar, .greet, #tab-timer .mason > .card:not(.timer-card)) { opacity: .26; }
+body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .mason > .card:not(.timer-card)):is(:hover, :focus-within) { opacity: 1; }
 
 /* Tomato mascot */
 .mascot { position: absolute; top: 10px; left: 12px; width: 40px; height: 40px; overflow: visible; }
@@ -1361,8 +1375,6 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .grid-2 > .stack:nth-chil
 .squad-pick { list-style: none; margin: 0 0 12px; padding: 0; max-height: 50vh; overflow: auto; }
 .squad-pick li { border-top: 1px solid var(--line); }
 .squad-pick label { display: flex; align-items: center; gap: 10px; padding: 9px 2px; cursor: pointer; }
-.quest-grid { display: grid; gap: 16px; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
-@media (max-width: 800px) { .quest-grid { grid-template-columns: 1fr; } }
 .past-bosses { display: flex; gap: 8px; flex-wrap: wrap; }
 .past-bosses .pb { width: 46px; height: 46px; border-radius: 12px; background: var(--heat0); display: grid; place-items: center; }
 .past-bosses .pb svg { width: 38px; height: 38px; }
@@ -2274,7 +2286,8 @@ a.btn { color: var(--text); text-decoration: none; display: inline-flex; align-i
 :root[data-minimal] { --card-pad: 24px; }
 @media (max-width: 640px) { :root[data-minimal] { --card-pad: 18px; } }
 :root[data-minimal] main { padding-top: 28px; }
-:root[data-minimal] .stack, :root[data-minimal] .grid-2 { gap: 22px; }
+:root[data-minimal] .stack, :root[data-minimal] .grid-2, :root[data-minimal] .mason { gap: 22px; }
+@media (min-width: 860px) { :root[data-minimal] .mason { column-gap: 22px; } :root[data-minimal] .mason > * { margin-bottom: 22px; } }
 :root[data-minimal] .tabs { --accent-soft: color-mix(in srgb, var(--text) 8%, transparent); }
 :root[data-minimal] .tabs button.active { color: var(--text); }
 :root[data-minimal] .tabs button.active::before { display: none; }
@@ -3296,8 +3309,7 @@ body.first-load #todayBar { opacity: 0; }
 
 /* ---------- Clans (v1.14) ---------- */
 .ctag { font-size: .82em; font-weight: 700; letter-spacing: .03em; color: var(--clan-acc, var(--accent)); white-space: nowrap; }
-.clan-grid { display: grid; gap: 16px; grid-template-columns: 1fr; margin-top: 16px; align-items: start; }
-@media (min-width: 860px) { .clan-grid { grid-template-columns: 1.1fr 1fr; } }
+.clan-grid { margin-top: 16px; }
 .clan-none { text-align: center; padding: 28px 18px; }
 .clan-none .pomeo-pic { display: inline-block; }
 .clan-none .mascot { width: 76px; height: 76px; }
@@ -3881,8 +3893,7 @@ body.first-load #todayBar { opacity: 0; }
     <div class="greet" id="greet" aria-live="polite"></div>
     <div id="newsSlot"></div>
     <div id="eventSlot"></div>
-    <div class="grid-2">
-      <div class="stack">
+    <div class="mason timer-cards" data-keep2>   <!-- one list of cards in reading order, split into two balanced columns on wide screens (v1.19.1) -->
         <div class="card timer-card">
           <div class="pomeo-host" id="pomeoHost">
             <button class="pomeo-btn" id="pomeoBtn" aria-label="Pomeo, your tomato buddy. Tap to say hi, hold to pet."></button>
@@ -3966,9 +3977,6 @@ body.first-load #todayBar { opacity: 0; }
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="stack">
         <div class="card exam-card empty" id="examCard" role="button" tabindex="0" aria-label="Exam countdown — tap to manage exams"></div>
         <div class="card">
           <div class="row between"><h2 style="margin:0">Today</h2><span class="lbl" id="todayDate"></span></div>
@@ -3996,7 +4004,6 @@ body.first-load #todayBar { opacity: 0; }
           </div>
           <div class="chips" id="chips"></div>
         </div>
-      </div>
     </div>
   </section>
 
@@ -5032,6 +5039,48 @@ new MutationObserver(muts => {
 new MutationObserver(queueSegs).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style', 'data-theme', 'data-skin', 'data-glass', 'data-glass-solid', 'data-minimal', 'data-motion'] });
 window.addEventListener('resize', queueSegs);
 if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', queueSegs);
+
+/* ---------- Card columns (v1.19.1) ----------
+   .mason lists are split into two columns by the browser (CSS columns). Here: when two columns can't be balanced — one
+   or two cards, or one column would end more than MASON_SLACK px above the other because a card is too tall to share —
+   the list becomes one centred column instead of leaving one side blank. Checked again when the list or any card in it
+   changes size (a card opening or closing, a resize, the sidebar collapsing, fonts) and when cards are added or removed. */
+const MASON_MQ = matchMedia('(min-width: 860px)'), MASON_SLACK = 160;
+const masonSeen = new WeakSet(), masonQ = new Set();
+let masonRaf = 0;
+const masonRO = typeof ResizeObserver === 'function' ? new ResizeObserver(es => { for (const e of es) { const m = e.target.classList.contains('mason') ? e.target : e.target.parentElement && e.target.parentElement.closest('.mason'); if (m) queueMason(m); } }) : null;
+function queueMason(m) { masonQ.add(m); if (!masonRaf) masonRaf = requestAnimationFrame(() => { masonRaf = 0; const l = [...masonQ]; masonQ.clear(); l.forEach(fitMason); }); }
+/** Where each column of a two-column list ends (page px), or null when it isn't laid out in two columns. */
+function masonEnds(m) {
+  const r = m.getBoundingClientRect(), mid = r.left + r.width / 2, end = [null, null];
+  for (const c of m.children) { if (!c.getClientRects().length) continue; const b = c.getBoundingClientRect(); const k = b.left + b.width / 2 < mid ? 0 : 1; end[k] = Math.max(end[k] ?? -Infinity, b.bottom); }
+  return end;
+}
+function fitMason(m) {
+  if (!m.isConnected) return;
+  const items = [...m.children].filter(c => c.getClientRects().length);
+  if (masonRO) { if (!masonSeen.has(m)) { masonSeen.add(m); masonRO.observe(m); } for (const c of items) if (!masonSeen.has(c)) { masonSeen.add(c); masonRO.observe(c); } }
+  if (!MASON_MQ.matches || !m.getClientRects().length) { m.classList.remove('mason-one'); return; }
+  const was = m.classList.contains('mason-one');
+  m.classList.remove('mason-one');   // measure the two-column split (the class is set back before anything is painted)
+  if (m.hasAttribute('data-keep2')) { m.classList.remove('mason-one'); return; }   // the Timer page keeps the timer beside its cards
+  let one = items.length < 3;
+  if (!one) { const [a, b] = masonEnds(m); one = a === null || b === null || Math.abs(a - b) > MASON_SLACK; }
+  m.classList.toggle('mason-one', one);
+  if (one !== was) m.dataset.cols = one ? '1' : '2';
+}
+function fitAllMasons() { document.querySelectorAll('.mason').forEach(queueMason); }
+new MutationObserver(muts => {
+  for (const mu of muts) {
+    const t = mu.target;
+    if (t.nodeType !== 1) continue;
+    const m = t.classList.contains('mason') ? t : t.closest('.mason');
+    if (m) { queueMason(m); continue; }
+    for (const n of mu.addedNodes) if (n.nodeType === 1 && (n.classList.contains('mason') || n.querySelector('.mason'))) { fitAllMasons(); return; }
+  }
+}).observe(document.body, { subtree: true, childList: true });
+MASON_MQ.addEventListener && MASON_MQ.addEventListener('change', fitAllMasons);
+window.addEventListener('resize', fitAllMasons);
 
 /* ---------- Dialogs: animate closing too (opening is pure CSS) ---------- */
 (() => {
@@ -8787,8 +8836,7 @@ function renderProgress() {
   const achs = achListHTML(stats, claimed);
   const groupCard = groupCardHTML('profile');
   $('#progressView').innerHTML = `
-    <div class="grid-2">
-      <div class="stack">
+    <div class="mason prog-cards">
         <div class="card prog-hero" style="--tier:${g.tier.color}">
           <div class="bigbadge">${withAura(badgeSVG(g.tier, { size: 76, frame }), g.streak.cur, myAura())}</div>
           <div style="flex:1;min-width:0">
@@ -8812,11 +8860,10 @@ function renderProgress() {
         <div class="card"><h2>Badges</h2><div class="tiergrid">${tiers}</div></div>
         ${auraCard()}
         ${groupCard}
-      </div>
-      <div class="card">
-        <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Achievements</h2><span class="lbl">${done} / ${ACHIEVEMENTS.length}</span></div>
-        <div class="achlist">${achs}</div>
-      </div>
+    </div>
+    <div class="card ach-card" style="margin-top:var(--sp-4, 16px)">
+      <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Achievements</h2><span class="lbl">${done} / ${ACHIEVEMENTS.length}</span></div>
+      <div class="achlist">${achs}</div>
     </div>
     <div style="margin-top:16px">${trophyShelf()}</div>`;
   animateCounts($('#progressView'));
@@ -9692,8 +9739,7 @@ function renderFriendsList(fromLoad) {
   }).sort((a, b) => (b.includes('class="live"') ? 1 : 0) - (a.includes('class="live"') ? 1 : 0)).join('');
   $('#friendsBody').innerHTML = `
     ${recap}
-    <div class="grid-2">
-      <div class="stack">
+    <div class="mason fr-cards">
         <div class="card">
           <h2>Add a friend</h2>
           <form class="addrow" id="addFriendForm" autocomplete="off">
@@ -9711,7 +9757,6 @@ function renderFriendsList(fromLoad) {
         ${out.length ? `<div class="card"><h2>Sent</h2><ul class="plist">${out.map(f => `
           <li class="person">${personRow(f.to, f.toName, null, '<div class="sub">waiting for them to accept</div>')}
             <button class="btn small" data-cancel="${f.id}">Cancel</button></li>`).join('')}</ul></div>` : ''}
-      </div>
       <div class="card">
         <div class="row between" style="margin-bottom:8px"><h2 style="margin:0">Friends</h2><span class="lbl">${fl.length} / ${MAX_FRIENDS}
           <button class="linkbtn" id="refreshFriends" title="Refresh">↻</button></span></div>
@@ -11674,8 +11719,7 @@ function renderBossView(host) {
         : `<p class="muted" style="margin:0 0 10px;font-size:14px">${sqb.members.length} fighters · ${fmtNum(sqb.done ? sqb.hp : Math.min(sqb.rawDmg, sqb.hp))} / ${fmtNum(sqb.hp)} HP done</p><div class="btn-row" style="align-items:center"><button class="btn small" data-bmode="squad">Open the squad battle</button>${sqb.done ? '' : '<button class="linkbtn" id="squadEdit">Edit squad</button>'}</div>`}</div>`;
   const pendCard = pendOther.length ? `<div class="card claim-card"><h2>Rewards to claim</h2><ul class="claim-list">${pendOther.map(p => `<li><span class="cl-art">${bossSVG(p.boss.id)}</span><span><b>${esc(p.boss.name)}</b><span class="lbl">${p.mode === 'squad' ? 'Squad' : 'Solo'} victory</span></span><button class="btn primary small" data-bclaim="${p.boss.id}|${p.mode}">Claim</button></li>`).join('')}</ul></div>` : '';
   host.innerHTML = `
-    <div class="quest-grid">
-      <div class="stack">
+    <div class="mason quest-grid">
         <div class="card arena-card phase-${st.phase}${noSquad ? ' no-squad' : ''}" style="${pal}">
           <div class="arena-top"><span class="boss-kicker">Boss of the week · ${range}</span>
             ${canSquad || view === 'squad' ? `<div class="seg" id="bossModeSeg">${modeBtn('solo')}${modeBtn('squad')}</div>` : ''}</div>
@@ -11695,18 +11739,15 @@ function renderBossView(host) {
           ${victory}
           <p class="lbl" style="margin:12px 0 0">1 focus minute = 1 damage. ${view === 'squad' ? `Squad HP = Solo HP × (1 + 0.6 × each extra member)${st.formed ? `: ${fmtNum(BOSS_HP[b.id])} × ${(1 + 0.6 * (st.members.length - 1)).toFixed(1)}` : ''}.` : `Each boss has its own HP, from ${fmtNum(BOSS_HP.swarm)} (Easy) to ${fmtNum(BOSS_HP.dragon)} (Legendary): harder bosses give rarer rewards.`}${st.hp < (view === 'squad' ? squadHPFor(BOSS_HP[b.id], st.members.length) : BOSS_HP[b.id]) && !st.done ? ' This week’s HP is lower than usual, so no progress is lost with the new difficulty.' : ''} Solo and Squad are separate battles — win both this week to master the boss. Bosses that get away leave quietly.</p>
         </div>
-        <div class="card"><div class="row between" style="margin-bottom:8px"><h2 style="margin:0">Battle log</h2><span class="lbl">${view === 'squad' ? 'Squad' : 'Solo'}</span></div>${logHTML}</div>
-      </div>
-      <div class="stack">
         ${pendCard}
         ${squadCard}${squadTeaser}
+        <div class="card"><div class="row between" style="margin-bottom:8px"><h2 style="margin:0">Battle log</h2><span class="lbl">${view === 'squad' ? 'Squad' : 'Solo'}</span></div>${logHTML}</div>
         <div class="card"><h2>Rewards for ${esc(b.short)}</h2>
           ${rewardCell(BOSS_REWARDS.solo(b.id), `Solo victory · ${RARITY_LABEL[bossRarity(b.id, 'solo')]}`, 'Its own app theme, a special aura and a profile picture', rewardsClaimed(b.id, 'solo'))}
           ${rewardCell(BOSS_REWARDS.squad(b.id), `Squad victory · ${RARITY_LABEL[bossRarity(b.id, 'squad')]}`, 'Its name colour, a fancier squad aura and a golden profile picture', rewardsClaimed(b.id, 'squad'))}
           <div class="rp${rec.mastered ? ' got' : ''}"><div class="rp-h"><b>Both in one week</b>${rec.mastered ? '<span class="ok">✓ Earned</span>' : ''}</div><div class="rp-items">${masteredBadge(b, rec.mastered)}</div><div class="lbl">A “Mastered” badge in the Trophy Hall</div></div>
           <p class="lbl" style="margin:10px 0 0">It returns every 10 weeks: beat it again for coins and another star on its trophy.</p></div>
         <div class="card next-boss" style="--ba:${nb.a};--bb:${nb.b}"><div class="nb-art">${bossSVG(nb.id)}</div><div style="min-width:0"><div class="boss-kicker">Next week</div><div class="nb-name">${esc(nb.name)}</div>${tierBadge(nb.id)}<div class="lbl">Arrives Monday · in ${nbDays} day${nbDays === 1 ? '' : 's'}</div></div></div>
-      </div>
     </div>
     ${trophyHall(b.id)}`;
   writeLS(BOSS_SEEN_KEY, { wk: st.wk, [view]: st.dmg, [view === 'solo' ? 'squad' : 'solo']: seen.wk === st.wk ? +seen[view === 'solo' ? 'squad' : 'solo'] || 0 : 0 });
@@ -15173,7 +15214,7 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
 const APP_VERSION = '1.19.1';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
-  { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist. Also fixed: switchers such as the achievement categories no longer wrap onto two lines with a stretched highlight — they stay on one line and scroll sideways when they don’t fit.' },
+  { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist. Also fixed: switchers such as the achievement categories no longer wrap onto two lines with a stretched highlight — they stay on one line and scroll sideways when they don’t fit. On wide screens the cards on the Timer, Profile, Clan, Quests and Friends pages now fill two balanced columns (or one centred column when there are too few), instead of leaving a big empty space beside one column; the achievements list spreads across the page below the cards.' },
   { v: '1.19', t: 'Ranks for this season and streak leaderboards', d: 'Ranks show how much you study right now: every month is a season, and your counted focus hours (up to 14 h a day) take you from Bronze through Silver, Gold, Platinum and Diamond (three divisions each) to Master and Grandmaster. A new season starts on the 1st with a small head start from last season’s best. The end of a season pays coins and puts a season badge on your trophy shelf, and the first time you reach a rank you get its frame, aura or room poster. Rank badges show next to names on boards, friend lists, study tables and clans. The leaderboard has Ranks and Streaks (current and best) boards for friends and everyone.' },
   { v: '1.18', t: 'Study sessions without a clan, rewards for studying together, streak milestones, a new Pomeo, a weekly quest board, a monthly track, Pomeo’s stages and a collection log', d: 'The Friends tab now has Friends · Study sessions · Challenges. Host a public, friends-only or link study session (no clan needed), let people ask to join, invite friends, hand over or end it, and see who is studying now. Studying together pays: coins for new study partners, clan-session milestones with clan-only rewards, bonus Clan Points and 39 new achievements with real rewards, on a sortable achievements page. Streak milestones at 3, 7, 14, 30, 50, 100, 200 and 365 days give titles, the Ember theme, a Flame Pomeo picture, a trophy, a Flame ring, a Blaze frame, an Eternal flame aura and a Golden Pomeo statue, celebrated once after your block. Pomeo is redrawn: minimal and cute, everywhere, and he grows with your focus hours. New: a weekly quest board, a free monthly reward track, a collection log, and your monthly recap counts who you studied with. Fixes: recently used presets keep their order and favourites, and one challenge join per week.' },
   { v: '1.17', t: 'Plant XP, the Harvests basket, boosts, a garden tour, stronger pets with mutations, Finish early, endless daily rewards and user-reported fixes', d: 'Growth is now plant XP: every focus block feeds each growing plant a generous share (a common plant is ready in 2–3 blocks, 4–6 with four growing), and coin-bought ×1.5 / ×2 boosts speed it up. Harvested crops wait in the new Harvests tab with their weight, skins and a 1–5★ rarity: sell them one by one or in bulk, keep favourites, and get a festival bonus at weekends. A Pomeo-guided garden tour, daily garden tasks, compost, a trophy shelf, plant info cards, scenes unlocked by garden level and a livelier scene. Pets: three slots (garden levels 1 / 3 / 6), stronger capped buffs, every egg drinks every block in full, and a small deterministic chance of a Golden, Shiny, Rainbow, Shadow, Frost or Ember pet. Finish early logs the minutes you did; a garden glance card sits on the Timer; the logo takes you home. Daily rewards keep counting past Day 7 with a gift every 7th day. Fixes: blocks always water your plants, changing the daily goal keeps your streak, one challenge reward per preset per week, starting banners that suit every theme, smoother animations.' },
@@ -20661,9 +20702,7 @@ function renderClan() {
   const sum = LIVE.summary && LIVE.summary.home !== 'friends' ? liveSummaryHTML() : '';
   if (!inClan()) { body.innerHTML = sum + noClanHTML(); return; }
   const d = CLAN.doc, plainUI = minimal();
-  body.innerHTML = sum + clanHeaderHTML(d) + `<div class="clan-grid">
-    <div class="stack">${liveHTML()}${sessionsHTML()}${plainUI ? '' : questRaidHTML(d)}</div>
-    <div class="stack">${requestsHTML()}${membersHTML()}${feedHTML()}${plainUI ? '' : groupCardHTML('clan') + trophyHTML(d)}</div></div>`;
+  body.innerHTML = sum + clanHeaderHTML(d) + `<div class="mason clan-grid">${liveHTML()}${requestsHTML()}${sessionsHTML()}${membersHTML()}${plainUI ? '' : questRaidHTML(d)}${feedHTML()}${plainUI ? '' : groupCardHTML('clan') + trophyHTML(d)}</div>`;   // one balanced list of cards (v1.19.1)
   animateFills(body);
   if (inLive()) renderLiveClock();
 }
