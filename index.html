@@ -499,6 +499,20 @@ input[type="range"] { accent-color: var(--accent); width: 160px; }
 .rw-note { margin: 6px 0 0; }
 /* v1.19 ranks */
 .rk-b { display: inline-flex; vertical-align: -2px; margin-left: 4px; flex: none; } .rk-b svg { display: block; }
+/* v1.19.1: my rank next to my name — the header chip (opens the Ranks board) and the player card (shows my progress) */
+.rkchip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 7px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; cursor: pointer; flex: none; }
+.rkchip:hover { border-color: var(--muted); } .rkchip .rk-b { margin: 0; vertical-align: 0; }
+.lvchip .lv-rk { display: none; }
+@media (max-width: 400px) { :root:not([data-minimal]) .top .brand-deco { display: none; } }
+@media (max-width: 600px) { :root:not([data-minimal]) #appView .top .brand span:not(.brand-deco) { display: none; } }   /* up to 600 px the logo alone, so the rank fits beside the buttons */   /* the seasonal emoji makes room for the rank gem on small phones */
+@media (max-width: 480px) { #rankChip { display: none !important; } .lvchip .lv-rk { display: inline-flex; align-items: center; margin: -8px -6px -8px -2px; padding: 8px 6px 8px 2px; } .lvchip .lv-rk .rk-b { margin: 0; } }
+.pc-nrow { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.pc-rank { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px 2px 6px; border-radius: 999px; border: 1px solid var(--pc-line, var(--line));
+  background: color-mix(in srgb, var(--pc-tile, var(--surface)) 75%, transparent); color: var(--pc-fg, var(--text)); font-family: inherit; font-size: 12.5px; font-weight: 650;
+  line-height: 1.3; white-space: nowrap; cursor: pointer; flex: none; }
+button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-rank { cursor: default; } .pc-rank .rk-b { margin: 0; vertical-align: 0; }
+.rk-card { transition: box-shadow .35s var(--ease); } .rk-card.rk-flash { box-shadow: 0 0 0 3px color-mix(in srgb, var(--rk, var(--accent)) 55%, transparent); }
 .rk-b.big { margin: 0; } .rk-b.big svg { filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--rk, #888) 45%, transparent)); }
 .rank-line { margin: -6px 0 14px; padding: 8px 11px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); }
 .rank-line .rl-top { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13.5px; } .rank-line .rl-top .rk-b { margin-left: 0; }
@@ -3825,6 +3839,7 @@ body.first-load #todayBar { opacity: 0; }
     <button class="iconbtn hidden" id="bagBtn" aria-label="Your bag" title="Your bag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></svg><i class="tbadge hidden" id="bagDot" aria-label="New items"></i></button>
     <button class="coinpill hidden" id="coinPill" aria-label="Your coins — open the shop"></button>
     <button class="lvchip hidden" id="lvChip" aria-label="Your level — open your profile"></button>
+    <button class="rkchip hidden" id="rankChip" type="button"></button>
     <button class="iconbtn hidden" id="avatarBtn" aria-label="Profile and settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.66V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.66"/></svg></button>
   </div>
 </header>
@@ -8596,6 +8611,7 @@ function renderHeaderChip() {
   if (!USER) return;
   const on = S.settings.gamification;
   $('#lvChip').classList.toggle('hidden', !on);
+  renderRankChip();
   $('#coinPill').classList.toggle('hidden', !on);
   $('#avatarBtn').classList.toggle('hidden', on);
   $('#avatarBtn').innerHTML = hasAvatar(myAvatar()) ? avatarSVG(myAvatar(), 26) : USER_SVG;
@@ -8612,7 +8628,7 @@ function renderHeaderChip() {
   $('#lvChip').innerHTML = `<span class="gring" title="Today: ${goalPct}% of your daily goal"><svg viewBox="0 0 36 36" aria-hidden="true"><circle class="gt" cx="18" cy="18" r="16"/>` +
     `<circle class="gp" cx="18" cy="18" r="16" pathLength="100" stroke-dasharray="100" style="stroke-dashoffset:${100 - fromPct}"/></svg>` +
     withAura(badgeSVG(g.tier, { size: 20, frame: equippedId('frame'), avatar: myAvatar() }), g.streak.cur, myAura()) + '</span>' +
-    `<span${nameAttrs(equippedId('color'), 'uname')}>${esc(USER.guest ? 'You' : '@' + USER.username)}</span><span class="lvn">Lv ${g.lv.level}</span><i class="tbadge hidden" aria-hidden="true"></i>`;
+    `<span${nameAttrs(equippedId('color'), 'uname')}>${esc(USER.guest ? 'You' : '@' + USER.username)}</span><span class="lvn">Lv ${g.lv.level}</span>${hdrRankGem()}<i class="tbadge hidden" aria-hidden="true"></i>`;
   updateLoginDot();
   $('#lvChip').title = `${TITLE_TEXT[equippedId('title')] ? TITLE_TEXT[equippedId('title')] + ' · ' : ''}${g.tier.name} · Level ${g.lv.level} · ${fmtNum(g.lv.need - g.lv.into)} XP to level ${g.lv.level + 1}`;
   if (fromPct !== goalPct) { const gp = $('#lvChip .gp'); void gp.getBoundingClientRect(); requestAnimationFrame(() => { gp.style.strokeDashoffset = 100 - goalPct; }); }
@@ -11342,6 +11358,45 @@ function rankBadge(i, { size = 14, cls = '' } = {}) {
   const crown = m === 6 ? '<path d="M4.6 3.2 6 4.6 8 2.4 10 4.6 11.4 3.2 11 5.6H5Z" fill="#ffd166"/>' : m === 5 ? '<circle cx="8" cy="3.4" r="1.1" fill="#ffd166"/>' : '';
   const dots = pips ? Array.from({ length: pips }, (_, k) => `<circle cx="${8 + (k - (pips - 1) / 2) * 2.6}" cy="14.6" r=".9" fill="${R.col}"/>`).join('') : '';
   return `<span class="rk-b ${cls}" title="${esc(rankName(i))}" aria-label="${esc(rankName(i))}"><svg viewBox="0 0 16 16" width="${size}" height="${size}" aria-hidden="true">${crown}<path d="M8 4 13 7.6 8 13 3 7.6Z" fill="${R.col}"/><path d="M8 4 10.4 7.6 8 13 5.6 7.6Z" fill="${R.col2}" opacity=".75"/>${dots}</svg></span>`;
+}
+/* v1.19.1: my rank next to my name. Hidden in True Minimalist (like every rank badge) and before sign-in. */
+function renderRankChip() {
+  const el = $('#rankChip'); if (!el) return;
+  const show = !!USER && !minimal();
+  el.classList.toggle('hidden', !show);
+  if (!show) { el.innerHTML = ''; return; }
+  const r = myRank(), nm = rankName(r.idx);
+  const html = rankBadge(r.idx, { size: 15 }) + `<span class="rkn">${esc(nm)}</span>`;
+  if (el.innerHTML !== html) el.innerHTML = html;
+  el.setAttribute('aria-label', `Your rank: ${nm} — open the Ranks board`);
+  el.title = `${nm} · ${fmtH(r.min)} this season` + (r.next !== null ? ` · ${rankName(r.next)} in ${fmtH(r.left)}` : '');
+}
+/** On phones (≤ 480 px) the separate chip doesn't fit beside the header's buttons: the rank gem sits inside the level
+    chip instead (a tap on the gem still opens the Ranks board; the name is in its label). */
+function hdrRankGem() {
+  if (minimal() || !USER) return '';
+  const r = myRank(), nm = rankName(r.idx);
+  return `<span class="lv-rk" data-hdr-rank title="${esc(nm)} — open the Ranks board" aria-label="Rank: ${esc(nm)}">${rankBadge(r.idx, { size: 15 })}</span>`;
+}
+/** My rank on my own player card (a button there; a plain label in the Customise preview). */
+function myRankPill(ctx) {
+  if (minimal() || !USER) return '';
+  const r = myRank(), nm = rankName(r.idx), inner = rankBadge(r.idx, { size: 15 }) + `<span>${esc(nm)}</span>`;
+  return ctx === 'own' ? `<button type="button" class="pc-rank" data-myrank aria-label="Your rank: ${esc(nm)} — show your progress" title="${esc(nm)} · ${fmtH(r.min)} this season">${inner}</button>`
+    : `<span class="pc-rank">${inner}</span>`;
+}
+/** The header chip opens the Ranks board (a guest, who has no boards, gets the Rank card instead). */
+function openMyRank() {
+  if (!USER) return;
+  if (USER.guest) { showRankProgress(); return; }
+  if (S.ui.lbScope === 'clans') S.ui.lbScope = 'friends';
+  setBoardPeriod('season'); saveLocal();
+  if (S.ui.tab === 'board') renderBoard(); else showTab('board');
+}
+/** The Rank card on the profile (the progress to the next step), scrolled into view and briefly outlined. */
+function showRankProgress() {
+  if (S.ui.tab !== 'profile') showTab('profile');
+  setTimeout(() => { const c = $('#rankCard'); if (!c) return; try { c.scrollIntoView({ block: 'center', behavior: motion() === 'off' ? 'auto' : 'smooth' }); } catch (e) { /* older browsers */ } c.classList.add('rk-flash'); setTimeout(() => c.classList.remove('rk-flash'), 1600); }, 120);
 }
 const fmtH = m => (Math.floor(m / 6) / 10).toFixed(1).replace(/\.0$/, '') + ' h';
 /** Season rewards in the coin ledger: the earliest claim of each season pays its peak's coins, once. */
@@ -15052,9 +15107,10 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
    command palette, offline banner, pull to refresh, tab swipes, haptics.
    Everything here is stored on this device (localStorage); no new cloud data.
    ========================================================================== */
-const APP_VERSION = '1.19';
+const APP_VERSION = '1.19.1';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
+  { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist.' },
   { v: '1.19', t: 'Ranks for this season and streak leaderboards', d: 'Ranks show how much you study right now: every month is a season, and your counted focus hours (up to 14 h a day) take you from Bronze through Silver, Gold, Platinum and Diamond (three divisions each) to Master and Grandmaster. A new season starts on the 1st with a small head start from last season’s best. The end of a season pays coins and puts a season badge on your trophy shelf, and the first time you reach a rank you get its frame, aura or room poster. Rank badges show next to names on boards, friend lists, study tables and clans. The leaderboard has Ranks and Streaks (current and best) boards for friends and everyone.' },
   { v: '1.18', t: 'Study sessions without a clan, rewards for studying together, streak milestones, a new Pomeo, a weekly quest board, a monthly track, Pomeo’s stages and a collection log', d: 'The Friends tab now has Friends · Study sessions · Challenges. Host a public, friends-only or link study session (no clan needed), let people ask to join, invite friends, hand over or end it, and see who is studying now. Studying together pays: coins for new study partners, clan-session milestones with clan-only rewards, bonus Clan Points and 39 new achievements with real rewards, on a sortable achievements page. Streak milestones at 3, 7, 14, 30, 50, 100, 200 and 365 days give titles, the Ember theme, a Flame Pomeo picture, a trophy, a Flame ring, a Blaze frame, an Eternal flame aura and a Golden Pomeo statue, celebrated once after your block. Pomeo is redrawn: minimal and cute, everywhere, and he grows with your focus hours. New: a weekly quest board, a free monthly reward track, a collection log, and your monthly recap counts who you studied with. Fixes: recently used presets keep their order and favourites, and one challenge join per week.' },
   { v: '1.17', t: 'Plant XP, the Harvests basket, boosts, a garden tour, stronger pets with mutations, Finish early, endless daily rewards and user-reported fixes', d: 'Growth is now plant XP: every focus block feeds each growing plant a generous share (a common plant is ready in 2–3 blocks, 4–6 with four growing), and coin-bought ×1.5 / ×2 boosts speed it up. Harvested crops wait in the new Harvests tab with their weight, skins and a 1–5★ rarity: sell them one by one or in bulk, keep favourites, and get a festival bonus at weekends. A Pomeo-guided garden tour, daily garden tasks, compost, a trophy shelf, plant info cards, scenes unlocked by garden level and a livelier scene. Pets: three slots (garden levels 1 / 3 / 6), stronger capped buffs, every egg drinks every block in full, and a small deterministic chance of a Golden, Shiny, Rainbow, Shadow, Frost or Ember pet. Finish early logs the minutes you did; a garden glance card sits on the Timer; the logo takes you home. Daily rewards keep counting past Day 7 with a gift every 7th day. Fixes: blocks always water your plants, changing the daily goal keeps your streak, one challenge reward per preset per week, starting banners that suit every theme, smoother animations.' },
@@ -17789,7 +17845,9 @@ $('#shareInvite2').addEventListener('click', () => shareInvite($('#copyInvite'))
 $('#blockedList').addEventListener('click', e => { const b = e.target.closest('[data-unblock]'); if (b) unblockUser(b.dataset.unblock); });
 
 // Header shortcuts: coins open the Shop, the level badge (or avatar) opens Profile
-$('#lvChip').addEventListener('click', () => showTab('profile'));
+$('#lvChip').addEventListener('click', e => { if (e.target.closest('[data-hdr-rank]')) { uiSound('tick'); openMyRank(); return; } showTab('profile'); });   // the rank gem (phones) opens the Ranks board
+$('#rankChip').addEventListener('click', () => { uiSound('tick'); openMyRank(); });
+document.addEventListener('click', e => { if (e.target.closest('[data-myrank]')) { uiSound('tick'); showRankProgress(); } });
 $('#avatarBtn').addEventListener('click', () => showTab('profile'));
 $('#coinPill').addEventListener('click', () => showTab('shop'));
 $('#tab-profile').addEventListener('click', e => {
@@ -18427,7 +18485,7 @@ function cardHTML(d, ctx = 'own') {
   if (fold) return `<article class="pcard cs-${style.slice(5)}${mini ? ' pc-mini' : ''} pc-${ctx} pc-fold${open ? '' : ' pc-closed'}" style="${vars}" aria-label="Player card of ${name}">
     ${banner}
     <div class="pc-id"><div class="pc-av">${pic}</div><div class="pc-who">
-      <div${nameAttrs(mini ? '' : d.c, 'pc-name')}>${name}</div>${!mini && /^[A-Z0-9]{2,5}$/.test(d.ct || '') ? `<div class="pc-clan">🛡️ [${esc(d.ct)}]${d.cr && Object.values(CLAN_ROLES).includes(d.cr) ? ' · ' + esc(d.cr) : ''}</div>` : ''}
+      <div class="pc-nrow"><div${nameAttrs(mini ? '' : d.c, 'pc-name')}>${name}</div>${!mini && (ctx === 'own' || ctx === 'preview') ? myRankPill(ctx) : ''}</div>${!mini && /^[A-Z0-9]{2,5}$/.test(d.ct || '') ? `<div class="pc-clan">🛡️ [${esc(d.ct)}]${d.cr && Object.values(CLAN_ROLES).includes(d.cr) ? ' · ' + esc(d.cr) : ''}</div>` : ''}
       ${!mini && d.t ? `<div class="pc-title">${esc(TITLE_TEXT[d.t])}</div>` : ''}
       ${tier ? `<div class="pc-lv"><span class="pc-tier" style="--tc:${tier.color}">${badgeSVG(tier, { size: 16 })}${tier.name}</span><span>Level ${d.lv}</span></div>` : ''}</div></div>
     <button type="button" class="pc-toggle" data-pc-toggle aria-expanded="${open}"><span>${open ? 'Hide stats' : 'Show stats'}</span><i aria-hidden="true">▾</i></button>
@@ -18436,7 +18494,7 @@ function cardHTML(d, ctx = 'own') {
   return `<article class="pcard cs-${style.slice(5)}${mini ? ' pc-mini' : ''} pc-${ctx}" style="${vars}" aria-label="Player card of ${name}">
     ${banner}
     <div class="pc-id"><div class="pc-av">${pic}</div><div class="pc-who">
-      <div${nameAttrs(mini ? '' : d.c, 'pc-name')}>${name}</div>${!mini && /^[A-Z0-9]{2,5}$/.test(d.ct || '') ? `<div class="pc-clan">🛡️ [${esc(d.ct)}]${d.cr && Object.values(CLAN_ROLES).includes(d.cr) ? ' · ' + esc(d.cr) : ''}</div>` : ''}
+      <div class="pc-nrow"><div${nameAttrs(mini ? '' : d.c, 'pc-name')}>${name}</div>${!mini && (ctx === 'own' || ctx === 'preview') ? myRankPill(ctx) : ''}</div>${!mini && /^[A-Z0-9]{2,5}$/.test(d.ct || '') ? `<div class="pc-clan">🛡️ [${esc(d.ct)}]${d.cr && Object.values(CLAN_ROLES).includes(d.cr) ? ' · ' + esc(d.cr) : ''}</div>` : ''}
       ${!mini && d.t ? `<div class="pc-title">${esc(TITLE_TEXT[d.t])}</div>` : ''}
       ${tier ? `<div class="pc-lv"><span class="pc-tier" style="--tc:${tier.color}">${badgeSVG(tier, { size: 16 })}${tier.name}</span><span>Level ${d.lv}</span></div>` : ''}</div></div>
     ${tiles.length ? `<div class="pc-tiles">${tiles.join('')}</div>` : ''}
