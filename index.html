@@ -15214,7 +15214,7 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
 const APP_VERSION = '1.19.1';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
-  { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist. Also fixed: switchers such as the achievement categories no longer wrap onto two lines with a stretched highlight — they stay on one line and scroll sideways when they don’t fit. On wide screens the cards on the Timer, Profile, Clan, Quests and Friends pages now fill two balanced columns (or one centred column when there are too few), instead of leaving a big empty space beside one column; the achievements list spreads across the page below the cards.' },
+  { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist. Also fixed: switchers such as the achievement categories no longer wrap onto two lines with a stretched highlight — they stay on one line and scroll sideways when they don’t fit. On wide screens the cards on the Timer, Profile, Clan, Quests and Friends pages now fill two balanced columns (or one centred column when there are too few), instead of leaving a big empty space beside one column; the achievements list spreads across the page below the cards. Fixed: hosting a study session with a long preset (focus blocks over 120 min, such as 240 / 5 × 4) failed with a confusing clan message — sessions now take any preset the timer allows, and session errors talk about the session, not your clan.' },
   { v: '1.19', t: 'Ranks for this season and streak leaderboards', d: 'Ranks show how much you study right now: every month is a season, and your counted focus hours (up to 14 h a day) take you from Bronze through Silver, Gold, Platinum and Diamond (three divisions each) to Master and Grandmaster. A new season starts on the 1st with a small head start from last season’s best. The end of a season pays coins and puts a season badge on your trophy shelf, and the first time you reach a rank you get its frame, aura or room poster. Rank badges show next to names on boards, friend lists, study tables and clans. The leaderboard has Ranks and Streaks (current and best) boards for friends and everyone.' },
   { v: '1.18', t: 'Study sessions without a clan, rewards for studying together, streak milestones, a new Pomeo, a weekly quest board, a monthly track, Pomeo’s stages and a collection log', d: 'The Friends tab now has Friends · Study sessions · Challenges. Host a public, friends-only or link study session (no clan needed), let people ask to join, invite friends, hand over or end it, and see who is studying now. Studying together pays: coins for new study partners, clan-session milestones with clan-only rewards, bonus Clan Points and 39 new achievements with real rewards, on a sortable achievements page. Streak milestones at 3, 7, 14, 30, 50, 100, 200 and 365 days give titles, the Ember theme, a Flame Pomeo picture, a trophy, a Flame ring, a Blaze frame, an Eternal flame aura and a Golden Pomeo statue, celebrated once after your block. Pomeo is redrawn: minimal and cute, everywhere, and he grows with your focus hours. New: a weekly quest board, a free monthly reward track, a collection log, and your monthly recap counts who you studied with. Fixes: recently used presets keep their order and favourites, and one challenge join per week.' },
   { v: '1.17', t: 'Plant XP, the Harvests basket, boosts, a garden tour, stronger pets with mutations, Finish early, endless daily rewards and user-reported fixes', d: 'Growth is now plant XP: every focus block feeds each growing plant a generous share (a common plant is ready in 2–3 blocks, 4–6 with four growing), and coin-bought ×1.5 / ×2 boosts speed it up. Harvested crops wait in the new Harvests tab with their weight, skins and a 1–5★ rarity: sell them one by one or in bulk, keep favourites, and get a festival bonus at weekends. A Pomeo-guided garden tour, daily garden tasks, compost, a trophy shelf, plant info cards, scenes unlocked by garden level and a livelier scene. Pets: three slots (garden levels 1 / 3 / 6), stronger capped buffs, every egg drinks every block in full, and a small deterministic chance of a Golden, Shiny, Rainbow, Shadow, Frost or Ember pet. Finish early logs the minutes you did; a garden glance card sits on the Timer; the logo takes you home. Daily rewards keep counting past Day 7 with a gift every 7th day. Fixes: blocks always water your plants, changing the daily goal keeps your streak, one challenge reward per preset per week, starting banners that suit every theme, smoother animations.' },
@@ -18078,12 +18078,16 @@ $('#presetList').addEventListener('click', e => {
     renderAll();
   }
 });
+/* The limits of a timer preset (v1.19.1: one table for the preset editor and for study sessions; the Firestore rules for
+   studySessions accept exactly these — keep them in step). Clan sessions use the fixed CLAN_PATTERNS. */
+const PRESET_LIMITS = { focus: [1, 240], short: [1, 120], long: [1, 180], rounds: [1, 12] };
+for (const [k, id] of [['focus', '#pfFocus'], ['short', '#pfShort'], ['long', '#pfLong'], ['rounds', '#pfRounds']]) { $(id).min = PRESET_LIMITS[k][0]; $(id).max = PRESET_LIMITS[k][1]; }   // the editor's inputs follow PRESET_LIMITS
 $('#presetForm').addEventListener('submit', e => {
   e.preventDefault();
   const n = (id, lo, hi) => clamp(Math.round(+$(id).value) || lo, lo, hi);
   const data = {
     name: $('#pfName').value.trim() || 'Untitled preset',
-    focus: n('#pfFocus', 1, 240), short: n('#pfShort', 1, 120), long: n('#pfLong', 1, 180), rounds: n('#pfRounds', 1, 12),
+    focus: n('#pfFocus', ...PRESET_LIMITS.focus), short: n('#pfShort', ...PRESET_LIMITS.short), long: n('#pfLong', ...PRESET_LIMITS.long), rounds: n('#pfRounds', ...PRESET_LIMITS.rounds),
   };
   const id = $('#pfId').value;
   if (id) Object.assign(S.presets.find(p => p.id === id), data);
@@ -19306,6 +19310,14 @@ async function clanBonusFlush(items) {
 }
 const clanPoints = d => Math.max(0, clanEarned(d) - (d.spent || 0));
 const CLAN_TITLES = ['Group study', 'Silent study hour', 'Exam prep sprint', 'Homework hour', 'Revision session', 'Problem solving', 'Reading session', 'Mock test', 'Early birds', 'Night owls'];
+/** Why a preset can't be used for a study session (out of range or not whole numbers), or ''. */
+function sessPatternProblem(p) {
+  const v = k => +p[k], ok = k => Number.isFinite(v(k)) && v(k) >= PRESET_LIMITS[k][0] && v(k) <= PRESET_LIMITS[k][1];
+  if (!ok('focus')) return `Study sessions support focus blocks of ${PRESET_LIMITS.focus[0]}–${PRESET_LIMITS.focus[1]} min — pick a preset in that range`;
+  if (!ok('short')) return `Study sessions support breaks of up to ${PRESET_LIMITS.short[1]} min — pick a preset with a shorter break`;
+  if (!ok('rounds')) return `Study sessions support up to ${PRESET_LIMITS.rounds[1]} rounds — pick a preset with fewer rounds`;
+  return '';
+}
 const CLAN_PATTERNS = [
   { id: 'c25', name: '25 / 5 × 4', focus: 25, short: 5, rounds: 4 }, { id: 'c50', name: '50 / 10 × 2', focus: 50, short: 10, rounds: 2 },
   { id: 'c45', name: '45 / 10 × 3', focus: 45, short: 10, rounds: 3 }, { id: 'c90', name: '90 / 15 × 2', focus: 90, short: 15, rounds: 2 },
@@ -20385,6 +20397,13 @@ async function sessLoad(force) {
 function sessExpire(sid) { if (!cloudReady() || isPreview()) return; FB.updateDoc(sessRef(sid), { open: false, lobby: 'none', invited: [], endedAt: Date.now(), updatedAt: FB.serverTimestamp() }).catch(() => {}); }
 /** A friend hosting an open session right now (for the "Studying now · Ask to join" badge). */
 const sessHostedBy = uid => SESS.lobby.find(l => l.host === uid && sessOpen(l) && !(l.members || []).includes(USER.uid));
+/** Starting a session was refused. Rules before 1.19.1 took focus blocks of 5–120 min, breaks up to 30 and 8 rounds;
+    if the preset is outside that, say so (the site's rules may not be updated yet) instead of a vague error. */
+function sessCreateDenied() {
+  const p = activePreset();
+  if (+p.focus > 120 || +p.focus < 5 || +p.short > 30 || +p.rounds > 8) return 'Couldn’t start a session with this preset — try one with focus blocks of 5–120 min, breaks up to 30 min and up to 8 rounds';
+  return 'Couldn’t start the session — please try again';
+}
 /** Host a session. mode together|synced, vis friends|link|public, max 2–10, plan = ms (0 = now). */
 async function sessCreate({ title, mode = 'together', vis = 'friends', max = 6, plan = 0 }) {
   if (!sessReady()) throw new Error('Log in and connect to host a session');
@@ -20393,9 +20412,11 @@ async function sessCreate({ title, mode = 'together', vis = 'friends', max = 6, 
   if (bad) throw new Error(bad);
   if (mode === 'synced' && S.timer.status !== 'idle') throw new Error('Finish or reset your current timer first — a Synced timer takes over your timer');
   await clockOffset();
-  const p = activePreset(), sid = FB.doc(FB.collection(FB.db, 'studySessions')).id, code = vis === 'friends' ? '' : newClanCode();
+  const p = activePreset(), pp = sessPatternProblem(p);
+  if (pp) throw new Error(pp);   // before anything is written (v1.19.1)
+  const sid = FB.doc(FB.collection(FB.db, 'studySessions')).id, code = vis === 'friends' ? '' : newClanCode();
   const invited = vis === 'friends' ? friendsList().map(otherUid).slice(0, 100) : [];
-  const data = { title: title.trim().slice(0, 40), host: USER.uid, hostName: USER.username, pattern: { focus: p.focus, short: p.short, rounds: p.rounds }, mode: mode === 'synced' ? 'synced' : 'together',
+  const data = { title: title.trim().slice(0, 40), host: USER.uid, hostName: USER.username, pattern: { focus: Math.round(+p.focus), short: Math.round(+p.short), rounds: Math.round(+p.rounds) }, mode: mode === 'synced' ? 'synced' : 'together',
     startAt: FB.serverTimestamp(), pausedAt: mode === 'synced' ? Math.round(liveSrvNow()) : 0, pauseTotal: 0, shift: 0, open: true, counted: false,
     vis, lobby: vis === 'public' ? 'public' : vis === 'friends' ? 'friends' : 'none', max: clamp(Math.round(+max) || 6, 2, 10), members: [USER.uid], invited,
     plan: Math.max(0, Math.round(+plan) || 0), code, welcome: [], hostAt: FB.serverTimestamp(), createdAt: FB.serverTimestamp(), endedAt: 0, updatedAt: FB.serverTimestamp() };
@@ -20599,6 +20620,7 @@ function sessHostFormHTML() {
   const p = activePreset();
   return `<div class="card" id="sessHost"><h2>Host a study session</h2>
     <p class="lbl" style="margin:-4px 0 10px">No clan needed. Your current preset sets the rhythm: <b>${esc(p.name)}</b> (${p.focus}/${p.short} × ${p.rounds}).</p>
+    ${sessPatternProblem(p) ? `<p class="lbl warn-note" id="sessPresetWarn" style="margin:-4px 0 10px;color:var(--danger)">${esc(sessPatternProblem(p))}.</p>` : ''}
     <form id="sessForm" autocomplete="off">
       <div class="addrow"><input type="text" id="sessTitle" placeholder="What are you studying?" maxlength="40" value="${esc(S.ui.sessTitle || '')}"></div>
       <div class="seg" style="margin:10px 0" id="sessMode"><button type="button" data-smode="together" class="${S.ui.sessMode !== 'synced' ? 'active' : ''}">Focus together</button><button type="button" data-smode="synced" class="${S.ui.sessMode === 'synced' ? 'active' : ''}">Synced timer</button></div>
@@ -20657,17 +20679,17 @@ $('#friendsBody').addEventListener('click', async e => {
   if (isPreview()) { previewPrompt(b); return; }
   if (b.dataset.smode) { S.ui.sessMode = b.dataset.smode; if ($('#sessTitle')) S.ui.sessTitle = $('#sessTitle').value; saveLocal(); renderFriends(true); return; }
   if (b.dataset.srefresh !== undefined) { await sessLoad(true); renderFriends(true); return; }
-  if (b.dataset.sjoin) { clanAct(b, () => sessJoin(b.dataset.sjoin)); return; }
-  if (b.dataset.sask) { clanAct(b, () => sessJoin(b.dataset.sask)); return; }
+  if (b.dataset.sjoin) { sessAct(b, () => sessJoin(b.dataset.sjoin), { denied: 'Couldn’t join — the session may be full or closed' }); return; }
+  if (b.dataset.sask) { sessAct(b, () => sessJoin(b.dataset.sask), { denied: 'Couldn’t ask to join — the session may have closed' }); return; }
   if (b.dataset.scancel !== undefined) { sessCancelAsk(); return; }
-  if (b.dataset.sallow) { clanAct(b, () => sessAnswer(b.dataset.sallow, true)); return; }
-  if (b.dataset.sdeny) { clanAct(b, () => sessAnswer(b.dataset.sdeny, false)); return; }
-  if (b.dataset.skick) { clanAct(b, () => sessKick(b.dataset.skick)); return; }
-  if (b.dataset.shand) { clanAct(b, () => sessHandOver(b.dataset.shand)); return; }
-  if (b.dataset.sinvite) { clanAct(b, () => sessInvite(b.dataset.sinvite)); return; }
+  if (b.dataset.sallow) { sessAct(b, () => sessAnswer(b.dataset.sallow, true), { denied: 'Couldn’t let them in — the request may have been withdrawn or the table is full' }); return; }
+  if (b.dataset.sdeny) { sessAct(b, () => sessAnswer(b.dataset.sdeny, false), { denied: 'Couldn’t decline — the request may have been withdrawn' }); return; }
+  if (b.dataset.skick) { sessAct(b, () => sessKick(b.dataset.skick), { denied: 'Couldn’t remove them — they may have left already' }); return; }
+  if (b.dataset.shand) { sessAct(b, () => sessHandOver(b.dataset.shand), { denied: 'Couldn’t hand over hosting — they may have left' }); return; }
+  if (b.dataset.sinvite) { sessAct(b, () => sessInvite(b.dataset.sinvite), { denied: 'Couldn’t send the invite — try again in a moment' }); return; }
   if (b.dataset.scopy) { copyText(sessLink(b.dataset.scopy), { btn: b, what: 'Invite link' }); return; }
   if (b.dataset.sshare) { shareLink({ title: 'Study with me on Pomodorolist', text: 'Join my study session', url: sessLink(b.dataset.sshare), btn: b }); return; }
-  if (b.dataset.scode) { clanAct(b, () => sessRegenCode(b.dataset.scode === 'off')); return; }
+  if (b.dataset.scode) { sessAct(b, () => sessRegenCode(b.dataset.scode === 'off'), { denied: 'Couldn’t change the invite link — only the host can' }); return; }
 });
 $('#friendsBody').addEventListener('submit', async e => {
   if (e.target.id !== 'sessForm') return;
@@ -20678,7 +20700,7 @@ $('#friendsBody').addEventListener('submit', async e => {
   if (later && /^\d\d:\d\d$/.test(time)) { const [h, m] = time.split(':').map(Number); const d = new Date(); d.setHours(h, m, 0, 0); if (d.getTime() < Date.now() - 60000) d.setDate(d.getDate() + 1); plan = d.getTime(); }
   Object.assign(S.ui, { sessTitle: title, sessVis: $('#sessVis').value, sessMax: +$('#sessMax').value, sessLater: later, sessTime: time }); saveLocal();
   const btn = e.target.querySelector('[data-shost]');
-  clanAct(btn, () => sessCreate({ title, mode: S.ui.sessMode === 'synced' ? 'synced' : 'together', vis: $('#sessVis').value, max: +$('#sessMax').value, plan }), 'Session started');
+  sessAct(btn, () => sessCreate({ title, mode: S.ui.sessMode === 'synced' ? 'synced' : 'together', vis: $('#sessVis').value, max: +$('#sessMax').value, plan }), { ok: 'Session started', denied: sessCreateDenied });
 });
 
 /* ---------- Clan screen ---------- */
@@ -21045,6 +21067,21 @@ function confirmDlg({ title, body = '', ok = 'OK', danger = false, type = '' }) 
     dlg.showModal();
   });
 }
+/** Run a study-session action (not a clan one) with a busy button and the session's own messages. v1.19.1: these went
+    through clanAct, which said "refreshing your clan" and reloaded the clan even for a session that has nothing to do
+    with one. A refused write reloads the session list instead. */
+async function sessAct(btn, fn, { ok = '', denied = 'That didn’t go through — the session may have changed, so it’s been refreshed' } = {}) {
+  if (btn) btn.disabled = true;
+  try { const r = await fn(); if (ok) toast(ok, 2400, true, { now: true }); return r ?? true; }
+  catch (e) {
+    console.warn('session', e);
+    const no = e && e.code === 'permission-denied';
+    toast(no ? (typeof denied === 'function' ? denied(e) : denied) : e && e.message && !e.code ? e.message : 'Couldn’t do that — check your connection', 3600, false, { now: true });
+    if (no) { SESS.at = 0; if (S.ui.tab === 'friends') sessLoad(true).then(() => renderFriends(true)).catch(() => {}); }
+    return false;
+  }
+  finally { if (btn && btn.isConnected) btn.disabled = false; }
+}
 /** Run a clan action with a busy button and a friendly error. */
 async function clanAct(btn, fn, okMsg = '') {
   if (btn) btn.disabled = true;
@@ -21247,10 +21284,10 @@ $('#ibBody').addEventListener('click', e => {
   if (!b) return;
   e.stopPropagation();
   const li = e.target.closest('[data-ib]'), it = IB.find(x => li && x.id === li.dataset.ib), done = () => { if (it) { it.read = true; it.act = null; ibSave(); } };
-  if (b.dataset.ibsjoin) { done(); clanAct(b, async () => { S.ui.friendsView = 'sessions'; showTab('friends'); await sessJoin(b.dataset.ibsjoin); }); }
+  if (b.dataset.ibsjoin) { done(); sessAct(b, async () => { S.ui.friendsView = 'sessions'; showTab('friends'); await sessJoin(b.dataset.ibsjoin); }); }
   else if (b.dataset.ibsno) { done(); }
-  else if (b.dataset.ibsok) { clanAct(b, async () => { await sessAnswer(b.dataset.ibsok, true); done(); }); }
-  else if (b.dataset.ibsdeny) { clanAct(b, async () => { await sessAnswer(b.dataset.ibsdeny, false); done(); }); }
+  else if (b.dataset.ibsok) { sessAct(b, async () => { await sessAnswer(b.dataset.ibsok, true); done(); }, { denied: 'Couldn’t let them in — the request may have been withdrawn or the table is full' }); }
+  else if (b.dataset.ibsdeny) { sessAct(b, async () => { await sessAnswer(b.dataset.ibsdeny, false); done(); }, { denied: 'Couldn’t decline — the request may have been withdrawn' }); }
 }, true);
 $('#ibBody').addEventListener('click', e => {
   const ok = e.target.closest('[data-ibcok]'), no = e.target.closest('[data-ibcno]');
