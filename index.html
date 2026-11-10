@@ -596,6 +596,33 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .wq-bar i { display: block; height: 100%; width: 100%; background: var(--accent); border-radius: inherit; transition: transform .6s var(--ease, ease); }
 .wq-st { flex: none; font-weight: 700; font-size: 13px; color: var(--muted); } .wq-row.done .wq-st { color: var(--accent); }
 .tr-card { margin-top: 16px; }
+/* v1.20: the Study Pass */
+.pass-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; background: linear-gradient(135deg, color-mix(in srgb, var(--ea) 16%, var(--surface)), color-mix(in srgb, var(--eb) 12%, var(--surface))); }
+.pass-hero .ph-name { font-size: clamp(20px, 3vw, 26px); font-weight: 800; margin: 2px 0 6px; }
+.pass-hero .ph-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.pass-hero .pill.warn { background: color-mix(in srgb, var(--warn, #e0a030) 22%, transparent); color: var(--text); font-weight: 700; }
+@media (max-width: 560px) { .pass-hero { grid-template-columns: minmax(0, 1fr); } .pass-hero .btn { width: 100%; } }
+.pass-view { grid-template-columns: minmax(0, 1fr); }   /* .stack is a grid: without this the 30-tier row sizes the column to its full width */
+.pass-card { min-width: 0; }
+.pass-card h2 { margin: 0; }
+.pass-card .pc-sub { margin: 4px 0 10px; }
+.pass-bar { position: relative; height: 8px; border-radius: 999px; background: var(--heat0); overflow: hidden; margin: 8px 0 4px; }
+.pass-bar i { position: absolute; inset: 0; transform-origin: left; background: linear-gradient(90deg, var(--ea, var(--accent)), var(--eb, var(--accent))); }
+.pass-row { display: grid; grid-auto-flow: column; grid-auto-columns: 108px; gap: 8px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x proximity; scrollbar-width: thin; }
+.pt { scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; border: 1px solid var(--line); border-radius: 14px; text-align: center; min-height: 148px; background: var(--surface); }
+.pt .pt-n { font-size: 11px; font-weight: 800; color: var(--muted); }
+.pt .pt-ic { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: var(--heat0); font-size: 22px; overflow: hidden; }
+.pt .pt-ic svg { max-width: 42px; max-height: 42px; }
+.pt .pt-l { font-size: 11.5px; line-height: 1.25; min-height: 28px; overflow-wrap: anywhere; }
+.pt .pt-s { margin-top: auto; font-size: 11px; }
+.pt .btn { padding: 4px 10px; font-size: 12px; margin-top: auto; }
+.pt.big { border-color: color-mix(in srgb, var(--ea, var(--accent)) 55%, var(--line)); }
+.pt.ready { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent); }
+.pt.got { opacity: .62; }
+.pt.got .pt-ic { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.pt.prepaid { opacity: .55; }
+.pt.cur { outline: 2px dashed color-mix(in srgb, var(--ea, var(--accent)) 60%, transparent); outline-offset: 2px; }
+.ql-pass { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, var(--ea, var(--accent)) 10%, transparent); font-size: 13px; }
 .tr-line { position: relative; height: 6px; border-radius: 99px; background: var(--line); margin: 30px 12px 64px; }
 .tr-fill { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, #f2a65a, var(--accent)); transform-origin: 0 50%; }
 .tr-node { position: absolute; left: var(--x); top: 50%; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; width: 64px; }
@@ -7294,7 +7321,8 @@ function normalizeGame(g) {
       brew: map(c.brew),               // '<boss>|solo' | '<boss>|squad' -> ts (boss rewards claimed)
       quests: map(c.quests),           // '<event>:q1' … | '<event>:final' -> ts (questline rewards claimed)
       wq: map(c.wq),                   // v1.18 weekly quest board: '<week Monday>:<quest id>' -> ts
-      track: map(c.track),             // v1.18 monthly reward track: 'YYYY-MM:<tier>' -> ts
+      track: map(c.track),             // v1.18 monthly reward track: 'YYYY-MM:<tier>' -> ts (no new ones from November 2026: the Study Pass's Focus track took over)
+      pass: map(c.pass),               // v1.20 Study Pass: '<event>:p:<tier>' (Pass track) | '<event>:f:<tier>' (Focus track) -> ts
       evo: map(c.evo),                 // v1.18 Pomeo's stages reached: '1'…'5' -> ts
       season: map(c.season),           // v1.19 season rewards: 'YYYY-MM:<peak rank>' -> ts (the earliest per season pays)
       rkup: map(c.rkup),               // v1.19 rank-ups celebrated: 'YYYY-MM:<rank>' -> ts
@@ -7946,6 +7974,18 @@ for (const ev of EVENTS) for (const id of [...ev.rewards, ...ev.final]) {
   const r = EV_ITEMS.find(x => x[0] === id);
   ITEMS.push({ id, cat: r[1], name: r[2], desc: r[3], price: -1, ev: ev.id, rarity: ev.final.includes(id) ? 'legendary' : 'epic' });
 }
+// v1.20 Study Pass cosmetics: one set per event from the first pass on, in the event's colours (see STUDY PASS)
+const PASS_FROM = '2026-11-08';   // Monsoon Study: the first event with a Study Pass
+const passShort = ev => ev.name.replace(/^Pomeo’s /, '').replace(/^Rainy Season: /, '').replace(/ Grind$/, '').replace(/, New Goals$/, '');
+for (const ev of EVENTS) if (ev.start >= PASS_FROM) {
+  const sh = passShort(ev), how = `${ev.name} Study Pass`;
+  ITEMS.push(
+    { id: 'stamp_pass_' + ev.id, cat: 'stamp', name: `${sh} seal`, desc: `A ${sh} seal on finished blocks`, price: -1, pev: ev.id, rarity: 'rare', how: how + ' · Pass tier 10' },
+    { id: 'ti_pass_' + ev.id, cat: 'title', name: `${sh} Pass Holder`, desc: 'A title under your name', price: -1, pev: ev.id, rarity: 'epic', how: how + ' · Pass tier 15' },
+    { id: 'col_pass_' + ev.id, cat: 'color', name: `${sh} shimmer`, desc: `A three-tone ${sh} name colour`, price: -1, pev: ev.id, rarity: 'epic', how: how + ' · Pass tier 20' },
+    { id: 'au_pass_' + ev.id, cat: 'aura', name: `${sh} pass aura`, desc: 'The pass’s spinning aura', price: -1, pev: ev.id, rarity: 'legendary', how: how + ' · Pass tier 30' },
+    { id: 'stamp_passf_' + ev.id, cat: 'stamp', name: `${sh} focus seal`, desc: 'For every focus hour of the event', price: -1, pev: ev.id, rarity: 'epic', how: how + ' · Focus track, the last step' });
+}
 
 /* Completion stamps and player-card styles (v1.13). The free ones can be equipped by everyone; shop stamps are
    bought; boss and event ones unlock by themselves (see UNLOCKS) and go to the bag like other rewards. */
@@ -8202,7 +8242,7 @@ function earnedAt(t) {
   const cl = S.game.claims;
   for (const ts of Object.values(cl.goalDays)) if (ts <= t) c += GOAL_BONUS;
   for (const [m, ts] of Object.entries(cl.milestones)) if (ts <= t) c += STREAK_BONUS[m] || 0;
-  c += wqCoinsAt(t) + trackCoinsAt(t) + seasonCoinsAt(t);   // v1.18 weekly quests and the monthly track; v1.19 season rewards
+  c += wqCoinsAt(t) + trackCoinsAt(t) + seasonCoinsAt(t) + passCoinsAt(t);   // v1.18 weekly quests and the monthly track; v1.19 season rewards; v1.20 the Study Pass
   for (const [id, ts] of Object.entries(cl.achievements)) if (ts <= t && ACH_BY_ID[id]) c += ACH_BY_ID[id].coins;
   // Social: +10 per new friend, but at most 5 per Monday-to-Sunday week, so it can't be farmed.
   const perWeek = {};
@@ -8334,11 +8374,18 @@ function reconcileRewards(mode = 'quiet') {
       if (!cl.wq[k] && wqVal(q, mon) >= q.n) { cl.wq[k] = Math.min(now, +addDays(mon, 7) - 1); wqGive(q, k, cl.wq[k]); news.push({ type: 'wq', q, k }); }
     }
     for (const mk of [monthKey(now), monthKey(+new Date(new Date().getFullYear(), new Date().getMonth(), 0))]) {
+      if (mk > TRACK_LAST_MONTH) continue;   // v1.20: from November 2026 the Study Pass's Focus track replaces the monthly track
       const h = trackHours(mk);
       TRACK.forEach((t, i) => { const k = mk + ':' + i; if (!cl.track[k] && h >= t.h) { cl.track[k] = now; trackGive(t, k, now); news.push({ type: 'track', t, mk }); } });
     }
     const st = evoStage(g0.focusMs);
     for (let i = 1; i <= st; i++) if (!cl.evo[i]) { cl.evo[i] = now; news.push({ type: 'evo', s: i }); }
+    if (!cl.pass._from) cl.pass._from = now;   // v1.20: the day this account's passes start counting (the pass running now scales to the days left)
+    // v1.20: a Study Pass that has ended adds whatever was reached but not claimed (nothing reached is lost)
+    for (const ev of EVENTS) if (passEvent(ev) && evEnd(ev) <= now && evEnd(ev) > now - 120 * 864e5) {
+      const left = passClaimable(ev);
+      if (left.length) { const got = passClaim(ev, left, true); if (got.length) news.push({ type: 'passend', ev, n: got.length }); }
+    }
     // v1.19 ranks: finished seasons pay their peak once, the first time ever at a rank gives its cosmetic, rank-ups
     const tot = seasonTotals(), sk = seasonKeyNow();
     for (const mk of Object.keys(tot)) if (mk >= RANK_FROM && mk < sk && tot[mk] > 0 && !Object.keys(cl.season).some(k => k.split(':')[0] === mk)) {
@@ -8392,6 +8439,11 @@ function announce(news, mode) {
   const evo = news.filter(n => n.type === 'evo').map(n => n.s);
   if (evo.length && (mode === 'loud' || mode === 'initial')) announceEvo(Math.max(...evo));
   for (const n of news) if ((n.type === 'wq' || n.type === 'track') && (mode === 'loud' || mode === 'initial')) announceQuest(n);
+  for (const n of news) if (n.type === 'passend' && !isPreview()) {   // v1.20: a pass ended with rewards reached but not claimed — they were added
+    const t = `${n.ev.emoji} ${n.ev.name} Pass ended · ${n.n} reward${n.n === 1 ? '' : 's'} you reached ${n.n === 1 ? 'was' : 'were'} added for you`;
+    inboxAdd({ type: 'boss', key: 'passend:' + n.ev.id, title: t, go: { tab: 'quests' }, read: true });
+    if (!holdForFocus('toast', 'passend:' + n.ev.id, () => toast(t, 4200, true, { log: false }))) toast(t, 4200, true, { log: false });
+  }
   const miles = news.filter(n => n.type === 'streak').map(n => n.m);
   if (miles.length && mode === 'loud') showStreakMilestones(miles);   // one skippable celebration (v1.18)
   else if (miles.length && mode === 'initial') showStreakMilestones(miles, true);   // first load (an update, an import): a notice, not a dialog over the app
@@ -11547,6 +11599,153 @@ function wqGive(q, key, at) {
   if (q.seed && !has('wqs_' + key)) S.gbuys.push({ id: 'wqs_' + key, v: 1, item: 'seed_' + wqSeedOf(key), price: 0, at, slot: '', src: 'gift' });
   GD = null;
 }
+/* ==========================================================================
+   STUDY PASS (v1.20) — a free reward pass alongside each questline, from Monsoon Study (8 Nov 2026) on. Same dates,
+   same theme. Two rows:
+   · Pass track: 30 tiers of Pass XP. Pass XP = 1 per focus minute + 30 for a day's goal + 15 for the daily reward
+     + 40 per quest-board quest + 50 per questline quest, at most 180 a day (so it can't be finished in a few days of
+     grinding). 2,700 XP in all: a normal day (90 min, goal reached, daily reward, a couple of weekly quests) is ~146, so
+     about 18 days; the cap makes 15 days the fastest. An event shorter than 20 days scales the tiers down to fit.
+   · Focus track: 20 steps by focus hours during the event (1 h … 26 h), at most 14 h a day (the ranks' cap).
+   Progress comes from what every device already has (the synced session log and claims), so all devices agree.
+   Claims are ledger entries game.claims.pass['<event>:p|f:<tier>'] (add-only, merged across devices); coins come
+   from the ledger, produce/seeds/eggs/cosmetics are keyed by the same entry, so nothing pays twice. Claim any time
+   before the event ends; what you reached but didn't claim is added for you when it ends (nothing is lost).
+   The v1.18 monthly track is merged into the Focus track: no new monthly-track rewards from November 2026, everything
+   already claimed stays, and for Monsoon Study (which overlaps November) the first Focus steps worth what the November
+   track already paid are marked as paid — the same hours don't pay twice.
+   ========================================================================== */
+const PASS_TIERS = 30, PASS_FULL_XP = 2700, PASS_DAY_CAP = 180, PASS_LAST_CAP = 240, PASS_XP = { goal: 30, login: 15, wq: 40, quest: 50 };
+// Pace (v1.20): a pass counts the days you actually have — from the event's start, or, for the event running when this
+// account first opened 1.20 (or was created), from that day. The requirement is sized so a normal studier (90 min a
+// day, the daily goal, the daily reward, two quest-board quests a week ≈ 146 Pass XP a day) finishes about 2.5 days
+// before the end, never above the full 2,700 (30 × 90; a full-length event: ~19 days, 15 at the fastest).
+// Catch-up: on a day you study, 75% of the daily cap you didn't use goes into a bank; on a day you're behind the pace
+// line, the bank tops your Pass XP up (to the cap). In the last 7 days the cap is 240 while you're behind.
+const PASS_NORMAL_DAY = 146, PASS_LEAD = 2.5, PASS_ROLL = 0.75, PASS_FOCUS_NORMAL_H = 1.5;
+const FOCUS_H = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.5, 13, 14.5, 16, 17.5, 19, 20.5, 22, 24, 26], FOCUS_DAY_CAP = 840;
+const TRACK_LAST_MONTH = '2026-10';   // the monthly track pays for October 2026 and before; the pass from November
+const passEvent = ev => !!ev && ev.start >= PASS_FROM;
+const evDays = ev => Math.round((evEnd(ev) - evStart(ev)) / 864e5);
+/** The days this account's pass runs: [first day key, days available]. */
+function passWindow(ev) {
+  const fromTs = +(S.game.claims.pass || {})._from || 0, fromDay = fromTs ? dayKey(new Date(fromTs)) : '';
+  const start = fromDay > ev.start && fromDay <= ev.end ? fromDay : ev.start;   // only the event running when 1.20 (or the account) began
+  return [start, Math.round((evEnd(ev) - parseDay(start).getTime()) / 864e5)];
+}
+/** Pass XP for the whole pass, for `days` available (multiples of 30, so every tier is a whole number). */
+const passTotalXP = days => Math.max(30 * 30, Math.min(PASS_FULL_XP, Math.round(PASS_NORMAL_DAY * (days - PASS_LEAD) / 30) * 30));
+/** The Focus track's last step in hours for `days` available (1.5 h a day for a normal studier, at most 26 h). */
+const passFocusScale = days => Math.min(1, Math.max(0.25, PASS_FOCUS_NORMAL_H * (days - PASS_LEAD) / FOCUS_H[FOCUS_H.length - 1]));
+const passXpPerTier = ev => passTotalXP(passWindow(ev)[1]) / PASS_TIERS;
+const focusTierH = (ev, i) => Math.max(0.5, Math.round(FOCUS_H[i] * passFocusScale(passWindow(ev)[1]) * 2) / 2);
+/** The rewards of a tier (i from 1). Pass track: coins and produce, seeds every 5th, eggs, then the themed cosmetics. */
+function passReward(ev, track, i) {
+  if (track === 'p') {
+    const it = { 10: 'stamp_pass_', 15: 'ti_pass_', 20: 'col_pass_', 30: 'au_pass_' }[i];
+    if (it) return i === 30 ? { item: it + ev.id, coins: 100 } : { item: it + ev.id };
+    if (i === 25) return { egg: 'rare' };
+    if (i === 12) return { egg: 'common' };
+    if (i % 5 === 0) return { seed: 1 };
+    return i % 2 ? { coins: 20 + i } : { produce: 15 + i };
+  }
+  if (i === 20) return { item: 'stamp_passf_' + ev.id, coins: 40 };
+  if (i === 10) return { egg: 'common' };
+  if (i === 7 || i === 14) return { seed: 1 };
+  return i % 2 ? { coins: 10 + i } : { produce: 10 + i };
+}
+const passSeedOf = key => WQ_SEEDS[h32('ps' + key) % WQ_SEEDS.length];
+function passRewardText(r, key) {
+  const out = [];
+  if (r.item && ITEM_BY_ID[r.item]) out.push(ITEM_BY_ID[r.item].name);
+  if (r.coins) out.push(`${r.coins} coins`);
+  if (r.produce) out.push(`${r.produce} produce`);
+  if (r.seed) out.push(`${(GSP_BY_ID[passSeedOf(key)] || {}).name || 'A'} seed`);
+  if (r.egg) out.push(`a ${r.egg} egg`);
+  return out.join(' + ');
+}
+/** Rough worth of a reward in coins (only to match what the November track already paid). */
+const rewardWorth = r => (r.coins || 0) + (r.produce || 0) + (r.seed ? 30 : 0) + (r.egg ? (r.egg === 'rare' ? 150 : 100) : 0);
+let PASSC = null, PASSCkey = '';
+/** Progress in an event's pass: Pass XP (capped per day), the tier reached, focus hours (capped per day), the step reached. */
+function passState(ev) {
+  const cl = S.game.claims, list = S.sessions || [], last = list[list.length - 1];
+  const key = ev.id + '|' + list.length + ':' + (last ? last.id + ':' + last.end : '') + '|' + Object.keys(cl.login).length + '|' + Object.keys(cl.wq).length + '|' + Object.keys(cl.quests).length + '|' + Object.keys(cl.goalDays).length + '|' + Object.keys(cl.pass).length + '|' + S.settings.goalMin + '|' + dayKey(new Date());
+  if (PASSC && PASSCkey === key) return PASSC;
+  const [wStart, avail] = passWindow(ev);
+  const idx = game().idx, from = parseDay(wStart).getTime(), to = evEnd(ev), days = {}, tk = dayKey(new Date());
+  const add = (k, v) => { if (k >= wStart && k <= ev.end) days[k] = (days[k] || 0) + v; };
+  let focusMin = 0;
+  for (let d = parseDay(wStart); +d < to && +d <= Date.now(); d = addDays(d, 1)) {
+    const k = dayKey(d), m = (idx[k] || {}).total || 0;
+    if (m > 0) { add(k, Math.floor(m)); focusMin += Math.min(FOCUS_DAY_CAP, m); if (goalMetDay(idx, k)) add(k, PASS_XP.goal); }
+  }
+  for (const k of Object.keys(cl.login)) add(k, PASS_XP.login);
+  for (const ts of Object.values(cl.wq)) if (+ts >= from && +ts < to) add(dayKey(new Date(+ts)), PASS_XP.wq);
+  for (const [k, ts] of Object.entries(cl.quests)) if (k.startsWith(ev.id + ':') && !k.endsWith(':final') && +ts >= from && +ts < to) add(dayKey(new Date(+ts)), PASS_XP.quest);
+  // day by day through the window: the cap, the pace line, the catch-up bank
+  const total = passTotalXP(avail), per = total / PASS_TIERS;
+  let xp = 0, today = 0, bank = 0, boost = 0, todayCap = PASS_DAY_CAP, i = 0;
+  for (let d = parseDay(wStart); +d < to && +d <= Date.now(); d = addDays(d, 1), i++) {
+    const k = dayKey(d), e = days[k] || 0, cap = i >= avail - 7 ? PASS_LAST_CAP : PASS_DAY_CAP, base = Math.min(PASS_DAY_CAP, e), line = total * (i + 1) / Math.max(1, avail - PASS_LEAD);
+    let got = base;
+    if (e > 0 && xp + base < line) {   // behind the pace line: the bank tops it up, and in the last week the cap rises
+      const top = Math.min(cap, e) - base, fromBank = Math.min(bank, e, Math.max(0, line - xp - base), cap - base);
+      got = Math.min(cap, base + top + fromBank); bank -= Math.max(0, got - base - top); if (k === tk) boost = got - base;
+    }
+    if (e >= 15) bank += PASS_ROLL * Math.max(0, PASS_DAY_CAP - base);
+    xp += got;
+    if (k === tk) { today = got; todayCap = cap; }
+  }
+  const tier = Math.min(PASS_TIERS, Math.floor(xp / per)), hours = focusMin / 60;
+  let step = 0; for (let i = 0; i < FOCUS_H.length; i++) if (hours >= focusTierH(ev, i)) step = i + 1;
+  // what the v1.18 monthly track already paid for months this event overlaps (only Monsoon Study / November 2026)
+  let paid = 0;
+  for (const [k] of Object.entries(cl.track)) { const [mk, ti] = k.split(':'); if (mk > TRACK_LAST_MONTH && mk >= ev.start.slice(0, 7) && mk <= ev.end.slice(0, 7) && TRACK[+ti]) paid += rewardWorth(TRACK[+ti]); }
+  let pre = 0, acc = 0; while (pre < FOCUS_H.length && acc + rewardWorth(passReward(ev, 'f', pre + 1)) <= paid && !passReward(ev, 'f', pre + 1).item) { acc += rewardWorth(passReward(ev, 'f', pre + 1)); pre++; }
+  PASSC = { ev, xp, today, todayRaw: days[tk] || 0, todayCap, per, total, tier, hours, step, prepaid: pre, paidByTrack: paid, wStart, avail, bank: Math.round(bank), boost: Math.round(boost) };
+  PASSCkey = key;
+  return PASSC;
+}
+const passKey = (ev, track, i) => `${ev.id}:${track}:${i}`;
+/** Can this tier be claimed now (reached, not claimed, not paid by the monthly track)? */
+function passClaimable(ev, st = passState(ev)) {
+  const cl = S.game.claims.pass, out = [];
+  for (let i = 1; i <= st.tier; i++) if (!cl[passKey(ev, 'p', i)]) out.push(['p', i]);
+  for (let i = st.prepaid + 1; i <= st.step; i++) if (!cl[passKey(ev, 'f', i)]) out.push(['f', i]);
+  return out;
+}
+/** Give a tier's rewards (coins come from the ledger; the rest keyed by the claim, so a second device adds nothing). */
+function passGive(r, key, at) {
+  const has = id => (S.gbuys || []).some(b => b && b.id === id);
+  if (r.produce && !has('ps_' + key)) S.gbuys.push({ id: 'ps_' + key, v: 1, item: 'quest', price: 0, bonus: r.produce, at, slot: '', src: 'quest' });
+  if (r.seed && !has('pss_' + key)) S.gbuys.push({ id: 'pss_' + key, v: 1, item: 'seed_' + passSeedOf(key), price: 0, at, slot: '', src: 'gift' });
+  if (r.egg && !(S.eggs || []).some(e => e && e.id === 'egg_ps_' + key)) (S.eggs ||= []).push({ id: 'egg_ps_' + key, v: 1, kind: r.egg, src: 'gift', at, need: EGG_NEED[r.egg], w: {} });
+  if (r.item && ITEM_BY_ID[r.item] && !S.game.grants[r.item]) S.game.grants[r.item] = { src: 'pass:' + key, at };
+  GD = null; G = null;
+}
+/** Claim tiers (all reachable ones when `which` is empty). Returns what was claimed. */
+function passClaim(ev, which, quiet = false) {
+  if (!passEvent(ev) || isPreview()) return [];
+  const st = passState(ev), cl = S.game.claims.pass, now = Date.now(), at = Math.min(now, evEnd(ev) - 1), done = [];
+  for (const [track, i] of which && which.length ? which : passClaimable(ev, st)) {
+    const k = passKey(ev, track, i), reached = track === 'p' ? i <= st.tier : i <= st.step && i > st.prepaid;
+    if (!reached || cl[k]) continue;
+    cl[k] = at; passGive(passReward(ev, track, i), k, at); done.push([track, i]);
+  }
+  if (done.length) { PASSC = null; G = null; if (!quiet) save(); }
+  return done;
+}
+/** Coins from the pass ledger. */
+function passCoinsAt(t) {
+  let c = 0;
+  for (const [k, ts] of Object.entries(S.game.claims.pass || {})) {
+    if (+ts > t) continue;
+    const [eid, track, i] = k.split(':'), ev = EVENTS.find(x => x.id === eid);
+    if (ev && (track === 'p' || track === 'f') && +i >= 1 && +i <= (track === 'p' ? PASS_TIERS : FOCUS_H.length)) c += passReward(ev, track, +i).coins || 0;
+  }
+  return c;
+}
 /** Coins from the board: at most three quests a week count (two devices can't add a fourth). */
 function wqCoinsAt(t) {
   const per = {};
@@ -11599,10 +11798,64 @@ function renderBoardView(host) {
   const daysLeft = Math.ceil((+new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1) - Date.now()) / 864e5);
   host.innerHTML = `<div class="card wq-card"><div class="row between" style="flex-wrap:wrap;gap:6px"><h2 style="margin:0">This week’s quests</h2><span class="lbl">${left} day${left === 1 ? '' : 's'} left · new quests every Monday</span></div>
       <div class="wq-list">${rows}</div><p class="lbl" style="margin:8px 0 0">Rewards arrive by themselves when a quest is done. Everyone gets the same three quests each week.</p></div>
+    ${mk > TRACK_LAST_MONTH ? `<div class="card tr-card"><h2 style="margin:0">The monthly track is now the Study Pass</h2><p class="lbl" style="margin:6px 0 10px">Focus hours now fill the Study Pass’s Focus track during each questline — same free rewards, plus a Pass track with themed cosmetics. Everything you got from the monthly track stays yours.</p><button class="btn small" type="button" data-qview="pass">Open the Study Pass ›</button></div>` : `
     <div class="card tr-card"><div class="row between" style="flex-wrap:wrap;gap:6px"><h2 style="margin:0">${monthName(mk)} track${ev ? ` <span class="lbl">alongside ${esc(ev.label)}</span>` : ''}</h2><span class="lbl">${fmtNum(Math.floor(h * 10) / 10)} h this month · resets in ${daysLeft} day${daysLeft === 1 ? '' : 's'}</span></div>
       <div class="tr-line"><div class="tr-fill" style="transform:scaleX(${Math.min(1, h / last).toFixed(3)})"></div>${nodes}</div>
-      <p class="lbl" style="margin:8px 0 0">Free for everyone: focus hours this month unlock each step. It starts again on the 1st.</p></div>`;
+      <p class="lbl" style="margin:8px 0 0">Free for everyone: focus hours this month unlock each step. It starts again on the 1st.</p></div>`}`;
 }
+/** Quests › Study Pass: the event's two tracks. */
+function passIconHTML(r, key, g) {
+  if (r.item && ITEM_BY_ID[r.item]) return rewardPreview(ITEM_BY_ID[r.item], g);
+  if (r.egg) return '🥚'; if (r.seed) return '🌱'; if (r.produce) return '🧺';
+  return COIN_SVG;
+}
+function passTierHTML(ev, track, i, st, g, cl) {
+  const k = passKey(ev, track, i), r = passReward(ev, track, i), got = !!cl[k], pre = track === 'f' && i <= st.prepaid;
+  const reached = track === 'p' ? i <= st.tier : i <= st.step, cur = track === 'p' ? i === st.tier + 1 : i === st.step + 1;
+  const need = track === 'p' ? `${fmtNum(i * st.per)} XP` : `${focusTierH(ev, i - 1)} h`;
+  const big = !!r.item;
+  const stt = pre ? '<span class="pt-s lbl" title="Paid by the November monthly track">✓ paid</span>' : got ? '<span class="pt-s lbl ok">✓ Claimed</span>' : reached ? `<button class="btn small primary" type="button" data-pclaim="${track}:${i}">Claim</button>` : `<span class="pt-s lbl">${need}</span>`;
+  return `<div class="pt${big ? ' big' : ''}${pre ? ' prepaid' : got ? ' got' : reached ? ' ready' : ''}${cur ? ' cur' : ''}" role="listitem" aria-label="${track === 'p' ? 'Pass' : 'Focus'} tier ${i}: ${esc(passRewardText(r, k))}${got || pre ? ', claimed' : reached ? ', ready to claim' : ', needs ' + need}">
+    <span class="pt-n">${track === 'p' ? 'Tier' : 'Step'} ${i}</span><span class="pt-ic">${passIconHTML(r, k, g)}</span><span class="pt-l">${esc(passRewardText(r, k))}</span>${stt}</div>`;
+}
+function renderPassView(host) {
+  const ev = currentEvent(), g = game(), cl = S.game.claims.pass;
+  if (!passEvent(ev)) {
+    const nx = EVENTS.find(x => passEvent(x) && evStart(x) > Date.now());
+    host.innerHTML = `<div class="card">${sceneEmpty('wave', 'big-icon', `<h3 style="margin:8px 0 4px">No Study Pass right now</h3><p class="lbl" style="margin:0">${nx ? `The next one comes with ${nx.emoji} <b>${esc(nx.name)}</b> on ${parseDay(nx.start).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}.` : 'A new pass comes with the next questline.'}</p>`)}</div>`;
+    return;
+  }
+  const st = passState(ev), left = Math.max(1, Math.ceil((evEnd(ev) - Date.now()) / 864e5)), can = passClaimable(ev, st), soon = left <= 3;
+  const pPct = Math.min(1, st.xp / (PASS_TIERS * st.per)), fPct = Math.min(1, st.hours / focusTierH(ev, FOCUS_H.length - 1));
+  host.innerHTML = `<div class="stack pass-view" style="--ea:${ev.a};--eb:${ev.b}">
+    <div class="card pass-hero"><div><div class="boss-kicker">Study Pass · ${esc(ev.label)} · ${evRange(ev)}</div><div class="ph-name">${ev.emoji} ${esc(ev.name)} Pass</div>
+      <div class="ph-meta"><span class="pill${soon ? ' warn' : ''}">${soon ? `Ends in ${left} day${left === 1 ? '' : 's'}` : `${left} days left`}</span><span class="pill">Pass tier ${st.tier} / ${PASS_TIERS}</span><span class="pill">Focus ${st.step} / ${FOCUS_H.length}</span><span class="pill">Today ${fmtNum(st.today)} / ${st.todayCap} XP</span>${st.bank ? `<span class="pill" title="Catch-up: on days you study, 75% of the daily cap you don’t use is saved; it tops you up on days you’re behind">Catch-up ${fmtNum(st.bank)} XP</span>` : ''}</div>
+      <p class="lbl" style="margin:8px 0 0">${soon ? 'Almost over: anything you reach but don’t claim is added for you when it ends. ' : ''}Free, always — no money, ever. Claim each reward any time before ${parseDay(ev.end).toLocaleDateString([], { day: 'numeric', month: 'long' })}.</p></div>
+      ${can.length ? `<button class="btn primary" type="button" data-pclaimall>Claim all (${can.length})</button>` : ''}</div>
+    <div class="card pass-card"><div class="row between" style="gap:8px;flex-wrap:wrap"><h2>Pass track</h2><span class="lbl">${fmtNum(st.xp)} / ${fmtNum(PASS_TIERS * st.per)} Pass XP</span></div>
+      <div class="pass-bar"><i style="transform:scaleX(${pPct.toFixed(3)})"></i></div>
+      <p class="lbl pc-sub">Pass XP: 1 per focus minute, +${PASS_XP.goal} for your daily goal, +${PASS_XP.login} for the daily reward, +${PASS_XP.wq} per quest-board quest, +${PASS_XP.quest} per questline quest — up to ${PASS_DAY_CAP} a day (${PASS_LAST_CAP} in the last week if you’re behind). Behind? Catch-up XP saved from lighter days tops you up. ${st.wStart > ev.start ? `Your pass started ${parseDay(st.wStart).toLocaleDateString([], { day: 'numeric', month: 'short' })}, so it’s sized for the ${st.avail} days left. ` : ''}Themed rewards at tiers 10, 15, 20 and 30.</p>
+      <div class="pass-row" role="list" data-prow="p">${Array.from({ length: PASS_TIERS }, (_, k) => passTierHTML(ev, 'p', k + 1, st, g, cl)).join('')}</div></div>
+    <div class="card pass-card"><div class="row between" style="gap:8px;flex-wrap:wrap"><h2>Focus track</h2><span class="lbl">${fmtNum(Math.floor(st.hours * 10) / 10)} / ${focusTierH(ev, FOCUS_H.length - 1)} h</span></div>
+      <div class="pass-bar"><i style="transform:scaleX(${fPct.toFixed(3)})"></i></div>
+      <p class="lbl pc-sub">Just focus hours during ${esc(ev.name)} — up to 14 h a day count. Smaller, steadier rewards; the focus seal at the end.${st.prepaid ? ` The first ${st.prepaid} step${st.prepaid === 1 ? ' was' : 's were'} already paid by the November monthly track.` : ''}</p>
+      <div class="pass-row" role="list" data-prow="f">${Array.from({ length: FOCUS_H.length }, (_, k) => passTierHTML(ev, 'f', k + 1, st, g, cl)).join('')}</div></div></div>`;
+  // show where you are: each row scrolls to its current step
+  for (const row of host.querySelectorAll('.pass-row')) { const c = row.querySelector('.pt.cur') || row.querySelector('.pt.ready'); if (c) row.scrollLeft = Math.max(0, c.offsetLeft - row.clientWidth / 2 + c.offsetWidth / 2); }
+}
+document.addEventListener('click', e => {
+  const one = e.target.closest('[data-pclaim]'), all = e.target.closest('[data-pclaimall]');
+  if (!one && !all) return;
+  const ev = currentEvent(); if (!passEvent(ev)) return;
+  const which = one ? [[one.dataset.pclaim.split(':')[0], +one.dataset.pclaim.split(':')[1]]] : [];
+  const got = passClaim(ev, which);
+  if (!got.length) return;
+  uiSound('coin');
+  const items = got.map(([t, i]) => passReward(ev, t, i).item).filter(id => id && ITEM_BY_ID[id]);
+  toast(got.length === 1 ? `🎟️ ${passRewardText(passReward(ev, got[0][0], got[0][1]), passKey(ev, got[0][0], got[0][1]))}` : `🎟️ ${got.length} rewards claimed`, 3000, true, { now: true });
+  if (items.length) showRewardReveal({ kicker: 'Study Pass', title: ev.name, items, pal: [ev.a, ev.b], key: 'pass:' + got.map(x => x.join('')).join(',') });
+  renderQuests(); renderAll();
+});
 // ---- Pomeo's stages: lifetime focus hours ----
 const EVO = [{ h: 0, name: 'Seedling' }, { h: 10, name: 'Sprout' }, { h: 50, name: 'Bloom' }, { h: 150, name: 'Ripe' }, { h: 400, name: 'Radiant' }, { h: 1000, name: 'Golden' }];
 const evoStage = ms => { const h = (+ms || 0) / 3.6e6; let s = 0; EVO.forEach((e, i) => { if (h >= e.h) s = i; }); return s; };
@@ -11971,19 +12224,20 @@ const BOSS_SEEN_KEY = 'pomodorolist-boss-seen';
 function updateQuestDot() {
   const dot = $('#questDot');
   if (!dot) return;
-  dot.classList.toggle('hidden', !USER || minimal() || isPreview() || !rewardsReady() || !(pendingBossRewards().length || questClaimable()));
+  dot.classList.toggle('hidden', !USER || minimal() || isPreview() || !rewardsReady() || !(pendingBossRewards().length || questClaimable() || passClaimableNow()));
 }
 function renderQuests() {
   const el = $('#questBody');
   if (!el || !USER) return;
-  const view = ['quest', 'board'].includes(S.ui.questView) ? S.ui.questView : 'boss', ev = currentEvent();
+  const view = ['quest', 'board', 'pass'].includes(S.ui.questView) ? S.ui.questView : 'boss', ev = currentEvent();
   const bossPend = rewardsReady() && pendingBossRewards().length, qPend = rewardsReady() && questClaimable();
   el.innerHTML = `<div class="q-switch"><div class="seg" id="questSeg">
       <button data-qview="boss" class="${view === 'boss' ? 'active' : ''}">⚔️ Weekly boss${bossPend ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
       <button data-qview="quest" class="${view === 'quest' ? 'active' : ''}">${ev ? ev.emoji : '🗺️'} Questline${qPend ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
+      <button data-qview="pass" class="${view === 'pass' ? 'active' : ''}">🎟️ Study Pass${rewardsReady() && passClaimableNow() ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
       <button data-qview="board" class="${view === 'board' ? 'active' : ''}">📋 Quest board</button></div></div>
     <div id="qView"></div>`;
-  if (view === 'boss') renderBossView($('#qView')); else if (view === 'board') renderBoardView($('#qView')); else renderQuestline($('#qView'));
+  if (view === 'boss') renderBossView($('#qView')); else if (view === 'board') renderBoardView($('#qView')); else if (view === 'pass') renderPassView($('#qView')); else renderQuestline($('#qView'));
   animateIn(el);
   animateCounts(el);
   updateQuestDot();
@@ -15829,6 +16083,7 @@ function cmdList(q) {
     add('⚔️', 'Weekly boss', 'Quests', () => { S.ui.questView = 'boss'; showTab('quests'); }, 'boss battle squad solo trophy hall');
     const ev = currentEvent();
     if (ev) add(ev.emoji, `${ev.name} questline`, 'Quests', () => { S.ui.questView = 'quest'; showTab('quests'); loadEventBoard(); }, 'questline event quests');
+    if (passEvent(ev)) add('🎟️', `${ev.name} Study Pass`, 'Quests', () => { S.ui.questView = 'pass'; showTab('quests'); }, 'study pass tiers rewards focus track battle pass');
   }
   add('⌨️', 'Keyboard shortcuts', 'Help', () => $('#keysDlg').showModal(), 'keys help');
   add('🧘', minimal() ? 'Turn off True Minimalist' : 'Turn on True Minimalist', 'Settings', () => { setMinimal(!minimal()); toast(minimal() ? 'True Minimalist on' : 'True Minimalist off', 2000, true); }, 'true minimalist minimal simple plain gamification progression');
@@ -16264,6 +16519,7 @@ for (const b of BOSSES) {
 }
 for (const b of BOSSES) NAME_GRADS['col_b_' + b.id] = { ...b.grad, squad: true, lv: rewardLevel(b.id, 'squad') };   // lv 3+: moving, 4+: shimmer, 5+: glow
 for (const ev of EVENTS) NAME_GRADS['col_ev_' + ev.id] = EV_LOOK[ev.id].grad;
+for (const ev of EVENTS) if (ev.start >= PASS_FROM) { const g = EV_LOOK[ev.id].grad; NAME_GRADS['col_pass_' + ev.id] = { l: [g.l[g.l.length - 1], g.l[0], g.l[g.l.length - 1]], d: [g.d[g.d.length - 1], g.d[0], g.d[g.d.length - 1]] }; }   // v1.20
 /** Attributes for an element showing someone's name in their name colour (class merged with `cls`). */
 function nameAttrs(colId, cls = '') {
   const g = !minimal() && NAME_GRADS[colId], c = !minimal() && NAME_COLORS[colId];
@@ -16287,6 +16543,7 @@ for (const b of BOSSES) {
     SPECIAL_AURAS[id] = { cols: lv === 1 ? [b.a] : lv < 4 ? [b.a, b.b] : [b.a, b.b, b.c], name, lv, pulse: lv === 3, spin: lv >= 4, shim: lv >= 5 || id.endsWith('_sq'), flare: lv >= 6, sq: id.endsWith('_sq') };
 }
 for (const ev of EVENTS) { const cols = EV_LOOK[ev.id].aura; SPECIAL_AURAS['au_ev_' + ev.id] = { cols, name: (EV_ITEMS.find(x => x[0] === 'au_ev_' + ev.id) || [])[2] + ' aura', spin: cols.length > 2 }; }
+for (const ev of EVENTS) if (ev.start >= PASS_FROM) { const cols = [...new Set([...EV_LOOK[ev.id].aura, ev.a, ev.b])]; SPECIAL_AURAS['au_pass_' + ev.id] = { cols, name: ITEM_BY_ID['au_pass_' + ev.id].name, spin: true }; }   // v1.20
 
 
 // ---- Clan cosmetics (v1.14): name colours and auras unlocked by the clan's level, raid auras by its raids ----
@@ -16308,6 +16565,7 @@ for (const r of RAID_BOSSES) SPECIAL_AURAS['au_cr_' + r.id] = { cols: [r.a, r.b,
 const TITLE_TEXT = Object.fromEntries(EV_ITEMS.filter(x => x[1] === 'title').map(x => [x[0], x[2]]));
 for (const it of ITEMS) if (it.cat === 'title' && /^ti_(host|table_host|study_buddy|social_scholar|campus_legend|clan_scholar|five_star|market|s_roll|s_unbreak)$/.test(it.id)) TITLE_TEXT[it.id] = it.name;   // v1.18 (group, clan, garden and streak titles)
 Object.assign(TITLE_TEXT, { ti_gardener: 'Gardener', ti_greenthumb: 'Green Thumb', ti_harvestmoon: 'Harvest Moon' });   // garden looks (v1.16)
+for (const it of ITEMS) if (/^ti_pass_/.test(it.id)) TITLE_TEXT[it.id] = it.name;   // Study Pass titles (v1.20)
 const EV_FX = Object.fromEntries(EVENTS.filter(ev => EV_LOOK[ev.id].fx).map(ev => ['fx_ev_' + ev.id, EV_LOOK[ev.id].fx]));
 
 /** One stylesheet for every reward look, built from the data above. */
@@ -16974,7 +17232,8 @@ function demoDocs() {
     recent: [{ name: 'Physics', presetId: 'p-deep', ts: Date.now() - 3600e3 }, { name: 'Maths', presetId: 'p-classic', ts: Date.now() - 7200e3 }, { name: 'Chemistry', presetId: 'p-deep', ts: Date.now() - 864e5 }],
     pinned: [{ name: 'Physics', presetId: 'p-deep' }],
     game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb', title: 'ti_s_unbreak' },
-      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])) }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
+      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])),
+        pass: (() => { const ev = eventAt(Date.now()), o = {}; if (ev && ev.start >= PASS_FROM) { for (let i = 1; i <= 3; i++) o[`${ev.id}:p:${i}`] = Date.now() - (5 - i) * 864e5; for (let i = 1; i <= 2; i++) o[`${ev.id}:f:${i}`] = Date.now() - (5 - i) * 864e5; } return o; })() }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
     cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:14', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
     loadouts: [{ id: 'demo_lo1', name: 'Exam mode', look: { theme: 'th_ocean', avatar: 'av_owl', frame: 'frame_double', color: 'col_teal', aura: 'au_streak', pomhat: 'hat_grad', pomacc: 'acc_glasses', pomskin: 'skin_none', title: 'ti_none' } },
       { id: 'demo_lo2', name: 'Spooky', look: { avatar: 'av_bat', frame: 'frame_cobweb', aura: 'au_streak', pomhat: 'hat_none', pomacc: 'acc_none', pomskin: 'skin_none' } }],
@@ -17105,7 +17364,7 @@ const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-sremind]', '[data-hrsvp]', '[data-sjoin]', '[data-sask]', '[data-shost]', '[data-sinvite]', '[data-sallow]', '[data-sdeny]', '[data-skick]', '[data-shand]', '[data-scode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '[data-sell]', '[data-sellall]', '[data-fav]', '[data-compost]', '[data-gtask]', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
-  '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
+  '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-pclaim]', '[data-pclaimall]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
 const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-sjoin],[data-sask],[data-shost],[data-sinvite],[data-sallow],[data-sdeny],[data-skick],[data-shand],[data-scode],[data-sremind]', 'study live with friends'], ['[data-hrsvp]', 'join your clan’s sessions'], ['[data-sell],[data-sellall],[data-fav],[data-compost]', 'sell your harvests for produce'], ['[data-gtask]', 'claim garden tasks'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
@@ -17265,6 +17524,7 @@ function questClaimable() {
   const st = questState(ev);
   return st.qs.some(q => q.done && !q.claimed) || (st.finalDone && !st.finalClaimed);
 }
+const passClaimableNow = () => { const ev = currentEvent(); return !!(ev && passEvent(ev) && USER && !minimal() && passClaimable(ev).length); };   // v1.20
 let questClaiming = false;
 async function claimQuest(evId, qid) {
   const ev = EVENT_BY_ID[evId];
@@ -17318,7 +17578,8 @@ function renderQuestline(host) {
         <div class="ql-info"><div class="boss-kicker">${esc(ev.label)} · ${evRange(ev)}</div><div class="ql-name">${ev.emoji} ${esc(ev.name)}</div>
           <p class="ql-intro">${esc(ev.intro)}</p>
           <div class="ql-meta"><span class="pill">${left} day${left === 1 ? '' : 's'} left</span><span class="pill">${st.doneN} / ${st.qs.length} quests</span></div>
-          <div class="ql-bar"><i style="transform:scaleX(${(st.doneN / st.qs.length).toFixed(3)})"></i></div></div></div>
+          <div class="ql-bar"><i style="transform:scaleX(${(st.doneN / st.qs.length).toFixed(3)})"></i></div>
+          ${passEvent(ev) ? (() => { const ps = passState(ev); return `<div class="ql-pass"><span>🎟️ Study Pass · tier <b>${ps.tier}</b> / ${PASS_TIERS} · Focus <b>${ps.step}</b> / ${FOCUS_H.length}</span><button type="button" class="linkbtn" data-qview="pass">Open ›</button></div>`; })() : ''}</div></div>
       <div class="card"><div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Quest path</h2><span class="lbl">Counts from ${parseDay(ev.start).toLocaleDateString([], { day: 'numeric', month: 'short' })}</span></div>
         <ol class="ql-path">${st.qs.map((q, i) => questNode(ev, q, i, g)).join('')}
           <li class="qn final${st.finalClaimed ? ' claimed' : st.finalDone ? ' done' : ''}"><span class="qn-dot" aria-hidden="true">${st.finalClaimed ? '✓' : '🏆'}</span>
@@ -18522,6 +18783,10 @@ Object.assign(STAMP_ART, {   // garden looks (v1.16)
 });
 function stampArt(id) {
   if (STAMP_ART[id]) return STAMP_ART[id];
+  const ps = /^stamp_pass(f?)_(\w+)$/.exec(id || ''), pe = ps && EVENTS.find(ev => ev.id === ps[2]);
+  if (pe) return ps[1]   // v1.20: the Study Pass seals, in the event's colours with its emoji
+    ? `<circle cx="32" cy="32" r="28.5" fill="none" stroke="${pe.b}" stroke-width="3" stroke-dasharray="4 3"/><circle cx="32" cy="32" r="23" fill="${pe.b}" opacity=".2"/><circle cx="32" cy="32" r="23" fill="none" stroke="${pe.a}" stroke-width="1.6"/><text x="32" y="38" text-anchor="middle" font-size="19">${pe.emoji}</text><text x="32" y="53" text-anchor="middle" font-size="6.5" font-weight="800" fill="${pe.b}" letter-spacing=".6">FOCUS</text>`
+    : `<circle cx="32" cy="32" r="28.5" fill="none" stroke="${pe.a}" stroke-width="3"/><circle cx="32" cy="32" r="24" fill="${pe.a}" opacity=".22"/><circle cx="32" cy="32" r="24" fill="none" stroke="${pe.b}" stroke-width="1.6"/><text x="32" y="40" text-anchor="middle" font-size="22">${pe.emoji}</text><text x="32" y="15.5" text-anchor="middle" font-size="6.5" font-weight="800" fill="${pe.a}" letter-spacing=".6">PASS</text>`;
   const b = /^stamp_b_(\w+)$/.exec(id || '');
   const bb = b && BOSS_BY_ID[b[1]], art = bb && BOSS_ART[bb.id];
   if (art) return `<circle cx="32" cy="32" r="28.5" fill="none" stroke="${bb.a}" stroke-width="3"/><circle cx="32" cy="32" r="24" fill="${bb.c}" opacity=".55"/><circle cx="32" cy="32" r="24" fill="none" stroke="${bb.b}" stroke-width="1.2" stroke-dasharray="3 2"/><g transform="translate(12.5 12.5) scale(.325)">${art.body}${art.calm}</g>`;
