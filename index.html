@@ -9891,7 +9891,7 @@ async function postReact(id, e) {
 document.addEventListener('click', e => {
   const r = e.target.closest('[data-preact]');
   if (r) { const li = r.closest('[data-post]'); if (isPreview()) { previewPrompt(r); return; } if (li) postReact(li.dataset.post, r.dataset.preact); return; }
-  if (e.target.closest('[data-prefresh]')) { loadPosts(true); return; }
+  if (e.target.closest('[data-prefresh]')) { if (Date.now() - POST.at > 20000) loadPosts(true); else renderPostsPage(true); return; }   // a full reload at most every 20 s (each is up to 50 reads)
   const pf = e.target.closest('[data-pfilter]');
   if (pf) { S.ui.postFilter = pf.dataset.pfilter; saveLocal(); renderPostsPage(true); viewIn($('#postsBody .posts-cards') || $('#postsBody')); return; }
   if (e.target.closest('[data-psettings]')) { showTab('settings'); setTimeout(() => { const d = $('#postTypesBox'); if (d) d.open = true; const t = $('#setPosts'); if (t) { t.closest('.setting').scrollIntoView({ block: 'center', behavior: 'smooth' }); t.focus({ preventScroll: true }); } }, 120); return; }
@@ -16500,7 +16500,7 @@ const PTR_TABS = ['stats', 'friends', 'board', 'posts'];
 async function ptrRefresh(where) {
   if (where === 'inbox') { ibRefresh(); renderInbox(); return; }
   if (where === 'stats') { renderStats(); return; }
-  if (where === 'posts') { if (cloudReady()) await loadPosts(true); else renderPostsPage(true); return; }
+  if (where === 'posts') { if (cloudReady() && Date.now() - POST.at > 20000) await loadPosts(true); else renderPostsPage(true); return; }
   if (!cloudReady()) { if (where === 'friends') renderFriends(); else renderBoardTab(); return; }
   if (where === 'friends') { await loadFriendsPublic(true).catch(() => {}); SOC.challengesAt = 0; await loadChallenges(true).catch(() => {}); renderFriends(); }
   if (where === 'board') { SOC.lb = {}; renderBoardTab(); }
