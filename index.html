@@ -535,6 +535,32 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .rank-line .rl-next { margin-left: auto; }
 .rl-bar i { background: linear-gradient(90deg, var(--rk2, #f2d06b), var(--rk, var(--accent))) !important; }
 .rank-line .rl-bar i { background: var(--rk, var(--accent)) !important; }
+/* v1.20: the division hint and the rank ladder */
+.rk-hint { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin: 6px 0 2px; font-size: 12.5px; color: var(--muted); }
+.rk-hint b { color: var(--rk, var(--accent)); }
+.rk-hint .rh-step { padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); }
+.rk-hint .rh-step.on { border-color: var(--rk, var(--accent)); background: color-mix(in srgb, var(--rk, var(--accent)) 14%, transparent); color: var(--text); font-weight: 700; }
+.rk-open { cursor: pointer; }
+.rk-b[data-rk] { cursor: help; }
+.rkl-dlg { width: min(520px, calc(100vw - 24px)); }
+.rkl-dlg h2 { margin: 0 0 2px; }
+.rkl-list { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.rkl-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 10px; align-items: center; padding: 6px 8px; border-radius: 12px; }
+.rkl-row.cur { background: color-mix(in srgb, var(--rk) 12%, transparent); }
+.rkl-maj { display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--rk); }
+.rkl-maj .rk-b { margin: 0; }
+.rkl-divs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.rkl-divs.one { grid-template-columns: minmax(0, 1fr); }
+.rkl-div { position: relative; padding: 4px 8px; border: 1px solid var(--line); border-radius: 10px; font-size: 12px; line-height: 1.3; overflow: hidden; }
+.rkl-div b { display: block; font-size: 12.5px; }
+.rkl-div.done { border-color: color-mix(in srgb, var(--rk) 45%, var(--line)); }
+.rkl-div.me { border-color: var(--rk); box-shadow: 0 0 0 2px color-mix(in srgb, var(--rk) 35%, transparent); }
+.rkl-div.me::after { content: 'You'; position: absolute; top: 3px; right: 6px; font-size: 10px; font-weight: 800; color: var(--rk); }
+.rkl-div.nx { border-style: dashed; border-color: var(--rk); }
+.rkl-div .rkl-bar { display: block; height: 3px; margin-top: 4px; border-radius: 999px; background: var(--heat0); overflow: hidden; }
+.rkl-div .rkl-bar i { display: block; height: 100%; background: var(--rk); }
+.rkl-foot { margin: 12px 0 0; }
+@media (max-width: 420px) { .rkl-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
 .rk-card .rk-hero { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; } .rk-card .rk-name { font-size: 20px; font-weight: 800; color: var(--rk); }
 .rk-gifts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; } .rk-gift { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
 .rk-gift .rk-b { margin: 0; } .rk-gift.got { color: var(--text); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
@@ -4454,6 +4480,7 @@ body.first-load #todayBar { opacity: 0; }
 </div>
 
 <!-- Reminder editor -->
+<dialog id="rankLadderDlg" class="rkl-dlg" aria-labelledby="rklTitle"><div id="rklBody"></div><div class="btn-row" style="justify-content:flex-end;margin-top:12px"><button class="btn" type="button" id="rklBoard">Ranks board</button><button class="btn primary" type="button" id="rklClose">Close</button></div></dialog>
 <dialog id="sessHostDlg" class="hs-dlg" aria-labelledby="hsTitle"><div id="hsBody"></div></dialog>
 <dialog id="clanCreateDlg" class="clan-dlg" aria-labelledby="ccTitle">
   <h2 id="ccTitle">Create a clan</h2>
@@ -11594,8 +11621,63 @@ function rankBadge(i, { size = 14, cls = '' } = {}) {
   const m = rankMajor(i), R = RANK_MAJORS[m], pips = m < 5 ? (i % 3) + 1 : 0;
   const crown = m === 6 ? '<path d="M4.6 3.2 6 4.6 8 2.4 10 4.6 11.4 3.2 11 5.6H5Z" fill="#ffd166"/>' : m === 5 ? '<circle cx="8" cy="3.4" r="1.1" fill="#ffd166"/>' : '';
   const dots = pips ? Array.from({ length: pips }, (_, k) => `<circle cx="${8 + (k - (pips - 1) / 2) * 2.6}" cy="14.6" r=".9" fill="${R.col}"/>`).join('') : '';
-  return `<span class="rk-b ${cls}" title="${esc(rankName(i))}" aria-label="${esc(rankName(i))}"><svg viewBox="0 0 16 16" width="${size}" height="${size}" aria-hidden="true">${crown}<path d="M8 4 13 7.6 8 13 3 7.6Z" fill="${R.col}"/><path d="M8 4 10.4 7.6 8 13 5.6 7.6Z" fill="${R.col2}" opacity=".75"/>${dots}</svg></span>`;
+  return `<span class="rk-b ${cls}" data-rk="${i}" title="${esc(rankTip(i))}" aria-label="${esc(rankName(i))}"><svg viewBox="0 0 16 16" width="${size}" height="${size}" aria-hidden="true">${crown}<path d="M8 4 13 7.6 8 13 3 7.6Z" fill="${R.col}"/><path d="M8 4 10.4 7.6 8 13 5.6 7.6Z" fill="${R.col2}" opacity=".75"/>${dots}</svg></span>`;
 }
+/* ---------- v1.20: the division order (III → II → I) and the rank ladder ----------
+   Divisions count up from III (the lowest) to I, then the next rank starts again at III. People read "III" as the top,
+   so every badge says it in its tooltip, the Rank card shows the steps around you, and a tap opens the whole ladder. */
+const RANK_BOUNDS = i => [RANK_T[i], i < 16 ? RANK_T[i + 1] : null];
+/** The tooltip on a rank badge. */
+function rankTip(i) {
+  const m = rankMajor(i);
+  if (m >= 5) return `${rankName(i)} · tap for every rank`;
+  const nx = m < 4 ? RANK_MAJORS[m + 1].name + ' III' : 'Master';
+  return `${rankName(i)} · divisions go III → II → I, then ${nx} · tap for every rank`;
+}
+/** "Bronze III → II → I → Silver III", the current step marked (for the Rank card). */
+function rankHintHTML(idx) {
+  const m = rankMajor(idx);
+  if (m >= 5) return `<div class="rk-hint"><span class="rh-step${m === 5 ? ' on' : ''}">Master</span>→<span class="rh-step${m === 6 ? ' on' : ''}">Grandmaster</span></div>`;
+  const base = m * 3, nx = m < 4 ? `${RANK_MAJORS[m + 1].name} III` : 'Master';
+  return `<div class="rk-hint" aria-label="Divisions go III, II, I, then ${esc(nx)}"><b>${RANK_MAJORS[m].name}</b>${[0, 1, 2].map(k => `<span class="rh-step${base + k === idx ? ' on' : ''}">${['III', 'II', 'I'][k]}</span>`).join('→')}→<span class="rh-step">${esc(nx)}</span></div>`;
+}
+/** The whole ladder: every rank and division with its hours, where you are and what's next. */
+function rankLadderHTML() {
+  const r = myRank(), h = m => fmtH(m).replace(' h', '');
+  const rows = RANK_MAJORS.map((R, m) => {
+    const steps = m < 5 ? [m * 3, m * 3 + 1, m * 3 + 2] : [m === 5 ? 15 : 16];
+    const divs = steps.map(i => {
+      const [a, b] = RANK_BOUNDS(i), me = i === r.idx, done = i < r.idx, nx = i === r.next;
+      const range = b === null ? `${h(a)} h +` : `${h(a)}–${h(b)} h`;
+      const bar = me ? `<span class="rkl-bar"><i style="width:${(r.pct * 100).toFixed(0)}%"></i></span>` : '';
+      return `<div class="rkl-div${me ? ' me' : ''}${done ? ' done' : ''}${nx ? ' nx' : ''}"><b>${m < 5 ? ['III', 'II', 'I'][i % 3] : R.name}</b>${range}${bar}</div>`;
+    }).join('');
+    return `<li class="rkl-row${rankMajor(r.idx) === m ? ' cur' : ''}" style="--rk:${R.col}"><span class="rkl-maj">${rankBadge(steps[steps.length - 1], { size: 16 })}${R.name}</span><div class="rkl-divs${steps.length === 1 ? ' one' : ''}">${divs}</div></li>`;
+  }).join('');
+  return `<h2 id="rklTitle">Ranks · ${esc(seasonLabel(r.mk))} season</h2>
+    <p class="lbl" style="margin:0">Each rank has three divisions, from <b>III</b> (lowest) to <b>I</b> (highest), then the next rank starts at III. Hours are this season’s counted focus.</p>
+    <ul class="rkl-list">${rows}</ul>
+    <p class="lbl rkl-foot">You: <b>${esc(rankName(r.idx))}</b> · ${fmtH(r.min)} this season${r.next !== null ? ` · next: <b>${esc(rankName(r.next))}</b> in ${fmtH(r.left)}` : ' · the top rank'}${r.floor > r.raw ? ` · placed at ${esc(rankName(r.floor))} from last season` : ''}. At most 14 h a day count; a new season starts on the 1st (UTC).</p>`;
+}
+function openRankLadder() {
+  if (!USER || minimal() || !S.settings.gamification) return;
+  $('#rklBody').innerHTML = rankLadderHTML();
+  const d = $('#rankLadderDlg');
+  $('#rklBoard').classList.toggle('hidden', !!USER.guest);
+  if (!d.open) d.showModal();
+  uiSound('tick');
+}
+$('#rklClose').addEventListener('click', () => $('#rankLadderDlg').close());
+$('#rklBoard').addEventListener('click', () => { $('#rankLadderDlg').close(); openMyRank(); });
+// a tap on any rank badge that isn't part of a button (rows, boards, tables, the ladder itself) opens the ladder; the
+// Rank card and the Timer's rank line open it too. Capture phase: a row under the badge must not also open.
+document.addEventListener('click', e => {
+  const t = e.target;
+  if (!(t instanceof Element)) return;
+  const b = t.closest('.rk-b[data-rk]'), area = t.closest('[data-rkladder]');
+  if (b && !b.closest('button, a, #rankLadderDlg')) { e.stopPropagation(); e.preventDefault(); openRankLadder(); return; }   // (reading only: fine in the demo)
+  if (area && !t.closest('button:not([data-rkladder]), a')) { openRankLadder(); }
+}, true);
 /* v1.19.1: my rank next to my name. Hidden in True Minimalist (like every rank badge) and before sign-in. */
 function renderRankChip() {
   const el = $('#rankChip'); if (!el) return;
@@ -11619,7 +11701,7 @@ function hdrRankGem() {
 function myRankPill(ctx) {
   if (minimal() || !USER) return '';
   const r = myRank(), nm = rankName(r.idx), inner = rankBadge(r.idx, { size: 15 }) + `<span>${esc(nm)}</span>`;
-  return ctx === 'own' ? `<button type="button" class="pc-rank" data-myrank aria-label="Your rank: ${esc(nm)} — show your progress" title="${esc(nm)} · ${fmtH(r.min)} this season">${inner}</button>`
+  return ctx === 'own' ? `<button type="button" class="pc-rank" data-myrank aria-label="Your rank: ${esc(nm)} — show every rank" title="${esc(nm)} · ${fmtH(r.min)} this season">${inner}</button>`
     : `<span class="pc-rank">${inner}</span>`;
 }
 /** The header chip opens the Ranks board (a guest, who has no boards, gets the Rank card instead). */
@@ -11679,6 +11761,7 @@ function renderRankLine() {
   el.classList.toggle('hidden', !on);
   if (!on) { el.innerHTML = ''; return; }
   const r = myRank();
+  el.dataset.rkladder = ''; el.classList.add('rk-open'); el.title = rankTip(r.idx);
   el.innerHTML = `<div class="rl-top">${rankBadge(r.idx, { size: 18 })}<b>${esc(rankName(r.idx))}</b><span class="lbl">${fmtH(r.min)} this season</span><span class="lbl rl-next">${r.next !== null ? `${esc(rankName(r.next))} in ${fmtH(r.left)}` : 'Top rank'}</span></div>
     <div class="sn-bar rl-bar" style="--rk:${RANK_MAJORS[rankMajor(r.idx)].col}"><i style="transform:translateX(${(r.pct * 100 - 100).toFixed(1)}%)"></i></div>`;
 }
@@ -11687,8 +11770,9 @@ function rankCardHTML() {
   if (!S.settings.gamification || seasonKeyNow() < RANK_FROM) return '';
   const r = myRank(), R = RANK_MAJORS[rankMajor(r.idx)], days = Math.max(1, Math.ceil((seasonEnd(r.mk) - Date.now()) / 864e5));
   const last = seasonBadges()[0], items = Object.entries(RANK_ITEMS).map(([m, ids]) => ids.map(id => ITEM_BY_ID[id] ? `<span class="rk-gift${isOwned(id) ? ' got' : ''}">${rankBadge(+m === 6 ? 16 : +m === 5 ? 15 : +m * 3 + 2, { size: 13 })}${esc(ITEM_BY_ID[id].name)}</span>` : '').join('')).join('');
-  return `<div class="card rk-card" id="rankCard" style="--rk:${R.col};--rk2:${R.col2}"><div class="row between" style="gap:8px;flex-wrap:wrap"><h2 style="margin:0">Rank · ${esc(seasonLabel(r.mk))} season</h2><span class="lbl">${days} day${days === 1 ? '' : 's'} left</span></div>
-    <div class="rk-hero">${rankBadge(r.idx, { size: 44, cls: 'big' })}<div><div class="rk-name">${esc(rankName(r.idx))}</div><div class="lbl">${fmtH(r.min)} counted this season${r.floor > r.raw ? ` · placed at ${esc(rankName(r.floor))} from last season` : ''}</div></div></div>
+  return `<div class="card rk-card" id="rankCard" style="--rk:${R.col};--rk2:${R.col2}"><div class="row between" style="gap:8px;flex-wrap:wrap"><h2 style="margin:0">Rank · ${esc(seasonLabel(r.mk))} season</h2><span class="row" style="gap:8px"><span class="lbl">${days} day${days === 1 ? '' : 's'} left</span><button type="button" class="linkbtn" data-rkladder>All ranks ›</button></span></div>
+    <div class="rk-hero rk-open" data-rkladder>${rankBadge(r.idx, { size: 44, cls: 'big' })}<div><div class="rk-name">${esc(rankName(r.idx))}</div><div class="lbl">${fmtH(r.min)} counted this season${r.floor > r.raw ? ` · placed at ${esc(rankName(r.floor))} from last season` : ''}</div></div></div>
+    ${rankHintHTML(r.idx)}
     <div class="sn-bar rl-bar"><i style="transform:translateX(${(r.pct * 100 - 100).toFixed(1)}%)"></i></div>
     <div class="lbl">${r.next !== null ? `${esc(rankName(r.next))} in ${fmtH(r.left)}` : 'Grandmaster — the top rank'} · at most 14 h a day count · a new season starts on the 1st (UTC)</div>
     ${last ? `<div class="lbl" style="margin-top:6px">Last season (${esc(seasonLabel(last.mk))}): ${esc(rankName(last.p))} · +${SEASON_COINS[rankMajor(last.p)]} coins</div>` : ''}
@@ -18085,7 +18169,7 @@ $('#blockedList').addEventListener('click', e => { const b = e.target.closest('[
 // Header shortcuts: coins open the Shop, the level badge (or avatar) opens Profile
 $('#lvChip').addEventListener('click', e => { if (e.target.closest('[data-hdr-rank]')) { uiSound('tick'); openMyRank(); return; } showTab('profile'); });   // the rank gem (phones) opens the Ranks board
 $('#rankChip').addEventListener('click', () => { uiSound('tick'); openMyRank(); });
-document.addEventListener('click', e => { if (e.target.closest('[data-myrank]')) { uiSound('tick'); showRankProgress(); } });
+document.addEventListener('click', e => { if (e.target.closest('[data-myrank]')) openRankLadder(); });   // v1.20: the ladder shows your progress and every step
 $('#avatarBtn').addEventListener('click', () => showTab('profile'));
 $('#coinPill').addEventListener('click', () => showTab('shop'));
 $('#tab-profile').addEventListener('click', e => {
