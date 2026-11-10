@@ -29,7 +29,13 @@
     { "collectionGroup": "rankStats", "queryScope": "COLLECTION", "fields": [
       { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "streakDay", "order": "ASCENDING" }, { "fieldPath": "streak", "order": "DESCENDING" } ] },
     { "collectionGroup": "rankStats", "queryScope": "COLLECTION", "fields": [
-      { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "bestStreak", "order": "DESCENDING" } ] }
+      { "fieldPath": "global", "order": "ASCENDING" }, { "fieldPath": "bestStreak", "order": "DESCENDING" } ] },
+    { "collectionGroup": "posts", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "aud", "arrayConfig": "CONTAINS" }, { "fieldPath": "at", "order": "DESCENDING" } ] },
+    { "collectionGroup": "posts", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "aud", "arrayConfig": "CONTAINS" }, { "fieldPath": "author", "order": "ASCENDING" }, { "fieldPath": "at", "order": "ASCENDING" } ] },
+    { "collectionGroup": "posts", "queryScope": "COLLECTION", "fields": [
+      { "fieldPath": "aud", "arrayConfig": "CONTAINS" }, { "fieldPath": "author", "order": "ASCENDING" }, { "fieldPath": "at", "order": "DESCENDING" } ] }
   ],
   "fieldOverrides": []
 }

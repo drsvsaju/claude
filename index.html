@@ -596,6 +596,32 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .wq-bar i { display: block; height: 100%; width: 100%; background: var(--accent); border-radius: inherit; transition: transform .6s var(--ease, ease); }
 .wq-st { flex: none; font-weight: 700; font-size: 13px; color: var(--muted); } .wq-row.done .wq-st { color: var(--accent); }
 .tr-card { margin-top: 16px; }
+/* v1.20: Posts */
+.post-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+/* v1.20 Posts section: a hero with the filters, then the feed in day cards (the shared balanced columns) */
+.posts-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 16px; align-items: start; margin-bottom: 16px; }
+.posts-hero h1 { margin: 0 0 4px; font-size: clamp(22px, 3vw, 28px); }
+.posts-hero p { margin: 0; }
+.posts-hero .ph-act { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.posts-hero .seg { grid-column: 1 / -1; justify-self: start; }
+.posts-hero .po-off { grid-column: 1 / -1; margin: 0; }
+@media (max-width: 560px) { .posts-hero { grid-template-columns: minmax(0, 1fr); } .posts-hero .ph-act { justify-content: flex-start; } }
+.post-day h2 { margin: 0 0 4px; font-size: 15px; color: var(--muted); font-weight: 700; letter-spacing: .02em; }
+.post-day .post-list { gap: 0; }
+.post-day .post { border: 0; border-radius: 0; background: none; padding: 12px 0; border-top: 1px solid var(--line); }
+.post-day .post:first-child { border-top: 0; }
+.post { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.post .po-top { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.post .po-txt { margin-top: 2px; overflow-wrap: anywhere; }
+.post .po-txt .po-ic { margin-right: 4px; }
+.post .po-time { font-size: 12px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+.post .po-react { grid-column: 2; display: flex; gap: 6px; flex-wrap: wrap; }
+.po-react button { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; background: none; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+.po-react button.on { border-color: var(--accent); background: var(--accent-soft); }
+.po-react button:disabled { cursor: default; opacity: .8; }
+.po-react b { font-weight: 700; font-size: 12px; }
+.post-types { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px 14px; padding: 8px 0 4px; }
+.pt-opt { display: flex; align-items: center; gap: 6px; font-size: 14px; }
 /* v1.20: the Study Pass */
 .pass-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; background: linear-gradient(135deg, color-mix(in srgb, var(--ea) 16%, var(--surface)), color-mix(in srgb, var(--eb) 12%, var(--surface))); }
 .pass-hero .ph-name { font-size: clamp(20px, 3vw, 26px); font-weight: 800; margin: 2px 0 6px; }
@@ -4018,6 +4044,7 @@ body.first-load #todayBar { opacity: 0; }
   </div>
   <div class="nv-grp" role="group" aria-labelledby="nvhSocial"><div class="nv-h" id="nvhSocial">Social</div>
     <button type="button" title="Friends (7)" data-tab="friends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="nv-l">Friends</span><i class="tbadge hidden" id="friendsBadge" aria-label="New activity"></i></button>
+    <button type="button" title="Posts (O)" data-tab="posts" id="postsTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M7.5 9h9M7.5 12.5h9M7.5 16h5"/></svg><span class="nv-l">Posts</span><i class="tbadge hidden" id="postsBadge" aria-label=""></i></button>
     <button type="button" title="Study sessions (J)" data-tab="sessions" id="sessTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14h18"/><path d="M5 14l-1 6M19 14l1 6"/><path d="M8 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM16 10.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/><path d="M10.5 14v-1M13.5 14v-1"/></svg><span class="nv-l">Study sessions</span><i class="tbadge hidden" id="sessBadge" aria-label=""></i></button>
     <button type="button" title="Clan (9)" data-tab="clan" id="clanTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="M9 12l2 2 4-4"/></svg><span class="nv-l">Clan</span><i class="tbadge hidden" id="clanDot" aria-label="Clan activity"></i></button>
     <button type="button" title="Leaderboard (5)" data-tab="board" id="boardTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg><span class="nv-l">Leaderboard</span></button>
@@ -4212,6 +4239,11 @@ body.first-load #todayBar { opacity: 0; }
       </div>
     </div>
     <div id="friendsBody"></div>
+  </section>
+
+  <!-- ================================ POSTS (v1.20: their own section) ================================ -->
+  <section class="tab" id="tab-posts">
+    <div id="postsBody"></div>
   </section>
 
   <!-- ================================ STUDY SESSIONS (v1.19.1: their own section, was Friends › Study sessions) ================================ -->
@@ -4427,6 +4459,11 @@ body.first-load #todayBar { opacity: 0; }
             <div><div>Show my activity to friends</div><div class="desc">Last 12 weeks, recent sessions and “focusing now”</div></div>
             <input type="checkbox" id="setShareAct" aria-label="Show my activity to friends">
           </div>
+          <div class="setting" data-k="posts feed share friends privacy achievements automatic">
+            <div><div>Share posts with friends</div><div class="desc">Automatic posts when you reach something (a streak, a rank, a boss…) — never any text you write</div></div>
+            <input type="checkbox" id="setPosts" aria-label="Share posts with friends">
+          </div>
+          <details class="setting-more" id="postTypesBox" data-k="posts types choose what gets posted"><summary class="lbl">Choose what gets posted</summary><div class="post-types" id="postTypes"></div></details>
           <div class="setting" data-k="session names share privacy">
             <div><div>Share session names with friends</div><div class="desc">If off, friends see “Focus session”</div></div>
             <input type="checkbox" id="setShareNames" aria-label="Share session names with friends">
@@ -4764,6 +4801,7 @@ body.first-load #todayBar { opacity: 0; }
     <span><kbd>1</kbd>–<kbd>9</kbd></span><span>On the Timer with a checklist: tick that subtask. Otherwise 1–9 switch tabs.</span>
     <span><kbd>Shift</kbd>+<kbd>1</kbd>–<kbd>9</kbd></span><span>Always switch tabs: Timer · Reminders · Quests · Stats · Leaderboard · Shop · Friends · Profile · Clan</span>
     <kbd>0</kbd><span>Garden</span>
+    <kbd>O</kbd><span>Posts</span>
     <kbd>J</kbd><span>Study sessions</span>
     <span><kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd></span><span>Command palette: jump to any screen, setting or action</span>
     <kbd>?</kbd><span>Show this sheet</span>
@@ -5994,7 +6032,7 @@ function afterFirstLoad() {
   updateBagDot(); updateQuestDot(); renderFestive();
   maybeOfferMigration();
   initSocial();
-  clanStart().then(() => { watchClanLive(); liveResume(); maybeOpenClanLink(); maybeOpenSessionLink(); });
+  clanStart().then(() => { watchClanLive(); liveResume(); maybeOpenClanLink(); maybeOpenSessionLink(); postsStart(); postsPeekStart(); });   // postsStart: v1.20 posts only what happens from now on
 }
 
 /* ==========================================================================
@@ -6654,9 +6692,13 @@ function logSession(focusedMs, end, early = false, otMin = 0) {
   if (gw && gw.ripe.length) setTimeout(() => toast(`${gw.ripe.length === 1 ? mutNames(gw.ripe[0]).map(n => n + ' ').join('') + speciesOf(gw.ripe[0]).name + ' is' : gw.ripe.length + ' plants are'} ready to harvest 🌱${gw.ripe.some(p => wmOf(p).length) && gw.ripe.length > 1 ? ' — with a focus-weather mutation' : ''}`, 3600, true, { go: { tab: 'garden' } }), 1500);
   if (gw && gw.hatched && gw.hatched.length) announceHatched(gw.hatched);   // the reveal waits for the end-of-block feedback, then the focus queue (v1.16)
   announce(news, 'loud');
+  postsFromNews(news);   // v1.20 posts: what this block just unlocked
+  if (s.live && Array.isArray(s.mates) && s.mates.length) makePost('session', s.live, s.mates.length, { mates: s.mates });   // studied together (the same check as the together rewards)
+  { const before = (game().focusMs - s.duration) / 3.6e6, after = game().focusMs / 3.6e6; for (const H of POST_HOURS) if (before < H && after >= H) makePost('hours', 'h' + H, H); }
   socialAfterSession();
   const levelAfter = game().lv.level;
   if (levelBefore && levelAfter > levelBefore) setTimeout(() => showLevelUp(levelBefore, levelAfter), 700);
+  if (levelBefore && levelAfter > levelBefore) { const tierUp = TIERS.some(t => t.min > levelBefore && t.min <= levelAfter); if (tierUp || Math.floor(levelAfter / 10) > Math.floor(levelBefore / 10)) makePost('level', 'L' + levelAfter, levelAfter); }   // a new badge, or every 10 levels (v1.20)
 }
 
 /* ==========================================================================
@@ -7976,9 +8018,11 @@ for (const ev of EVENTS) for (const id of [...ev.rewards, ...ev.final]) {
 }
 // v1.20 Study Pass cosmetics: one set per event from the first pass on, in the event's colours (see STUDY PASS)
 const PASS_FROM = '2026-11-08';   // Monsoon Study: the first event with a Study Pass
+/** "Monsoon Study Pass", "Christmas Study Pass": the pass's name, without saying Study twice. */
+const passName = ev => /\bStudy$/.test(ev.name) ? ev.name + ' Pass' : ev.name + ' Study Pass';
 const passShort = ev => ev.name.replace(/^Pomeo’s /, '').replace(/^Rainy Season: /, '').replace(/ Grind$/, '').replace(/, New Goals$/, '');
 for (const ev of EVENTS) if (ev.start >= PASS_FROM) {
-  const sh = passShort(ev), how = `${ev.name} Study Pass`;
+  const sh = passShort(ev), how = passName(ev);
   ITEMS.push(
     { id: 'stamp_pass_' + ev.id, cat: 'stamp', name: `${sh} seal`, desc: `A ${sh} seal on finished blocks`, price: -1, pev: ev.id, rarity: 'rare', how: how + ' · Pass tier 10' },
     { id: 'ti_pass_' + ev.id, cat: 'title', name: `${sh} Pass Holder`, desc: 'A title under your name', price: -1, pev: ev.id, rarity: 'epic', how: how + ' · Pass tier 15' },
@@ -8440,7 +8484,7 @@ function announce(news, mode) {
   if (evo.length && (mode === 'loud' || mode === 'initial')) announceEvo(Math.max(...evo));
   for (const n of news) if ((n.type === 'wq' || n.type === 'track') && (mode === 'loud' || mode === 'initial')) announceQuest(n);
   for (const n of news) if (n.type === 'passend' && !isPreview()) {   // v1.20: a pass ended with rewards reached but not claimed — they were added
-    const t = `${n.ev.emoji} ${n.ev.name} Pass ended · ${n.n} reward${n.n === 1 ? '' : 's'} you reached ${n.n === 1 ? 'was' : 'were'} added for you`;
+    const t = `${n.ev.emoji} ${passName(n.ev)} ended · ${n.n} reward${n.n === 1 ? '' : 's'} you reached ${n.n === 1 ? 'was' : 'were'} added for you`;
     inboxAdd({ type: 'boss', key: 'passend:' + n.ev.id, title: t, go: { tab: 'quests' }, read: true });
     if (!holdForFocus('toast', 'passend:' + n.ev.id, () => toast(t, 4200, true, { log: false }))) toast(t, 4200, true, { log: false });
   }
@@ -9051,9 +9095,11 @@ function renderHeaderChip() {
   $('#shopTabBtn').classList.toggle('hidden', !on);
   $('#questTabBtn').classList.toggle('hidden', !on);
   $('#gardenTabBtn').classList.toggle('hidden', !on);
+  $('#postsTabBtn').classList.toggle('hidden', !on);   // v1.20: Posts is a game extra too (hidden in True Minimalist)
+  updatePostsBadge();
   updateBagDot();
   updateGardenDot();
-  if (!on) { updateLoginDot(); if (['shop', 'quests', 'bag', 'garden', 'room'].includes(S.ui.tab)) showTab('timer'); return; }
+  if (!on) { updateLoginDot(); if (['shop', 'quests', 'bag', 'garden', 'room', 'posts'].includes(S.ui.tab)) showTab('timer'); return; }
   const g = game();
   const goalPct = Math.min(100, Math.round(((g.idx[dayKey(new Date())] || {}).total || 0) / S.settings.goalMin * 100));
   const fromPct = lastGoalPct ?? goalPct;
@@ -9640,8 +9686,232 @@ function publishPresence() {
   writePublic('presence', { visible: !!s.shareActivity, now });
 }
 
+/* ==========================================================================
+   POSTS (v1.20) — a feed of automatic posts: the app writes them from a fixed list of types when something happens;
+   nobody can type anything. posts/{type}_{uid}_{ref}: the id is fixed by what the post is about, so a reload, a second
+   device, an offline sync or a re-render can never post the same thing twice (the rules refuse a second write).
+   · No history: only things that happen from this version on (settings.postsFrom, at most two days old).
+   · At most 10 posts a day per device, at most 3 at once; bursts of achievements show as one card.
+   · Who sees it: the post carries its audience (aud = the author's friends when it was posted, and the author), so a
+     friend's whole feed is ONE query (aud contains me, newest first, 50) — the same at 5 friends or 100. Blocking or
+     unfriending takes that person out of your recent posts' audience; the feed only ever shows your current friends.
+   · Reactions: 🔥 👏 💪 ⭐, one per person per post (r.<uid>), friends only. No comments.
+   · Posts older than 30 days aren't shown, and the author's app deletes them (a few a day).
+   ========================================================================== */
+const POST_TYPES = {
+  ach:     { ic: '🏅', name: 'Achievements' },
+  streak:  { ic: '🔥', name: 'Streak milestones' },
+  rank:    { ic: '⬆️', name: 'Rank-ups' },
+  level:   { ic: '⭐', name: 'Levels and new badges' },
+  session: { ic: '📚', name: 'Study sessions with friends' },
+  boss:    { ic: '⚔️', name: 'Weekly boss victories' },
+  quest:   { ic: '🗺️', name: 'Questlines and Study Passes' },
+  harvest: { ic: '🌱', name: 'Giant and 5★ harvests' },
+  pet:     { ic: '🐣', name: 'Rare and mutated pets' },
+  clan:    { ic: '🛡️', name: 'Clan level-ups and raids' },
+  hours:   { ic: '⏱️', name: 'Focus-hour milestones' },
+  evo:     { ic: '🍅', name: 'Pomeo’s stages' },
+};
+const POSTS_DAY_CAP = 10, POSTS_TTL = 30 * 864e5, POSTS_REFRESH = 3 * 60000, POST_HOURS = [50, 100, 250, 500, 1000, 2000, 5000], POST_EMOJI = ['🔥', '👏', '💪', '⭐'];
+const POST = { list: null, at: 0, busy: false, mine: {}, burst: 0, burstAt: 0, cleanAt: 0 };
+/** Posts follow "Share activity" until the person sets Posts themselves (someone who opted out of sharing isn't opted in). */
+const postsWanted = () => S.settings.posts === undefined ? S.settings.shareActivity !== false : S.settings.posts !== false;
+const postsOn = () => !!USER && !USER.guest && postsWanted() && !minimal();   // True Minimalist hides Posts and pauses posting
+const postTypeOn = t => postsOn() && !(S.settings.postOff || {})[t];
+/** The day this account started posting (set once, synced): nothing from before it is ever posted. */
+function postsStart() { if (USER && !USER.guest && !isPreview() && !S.settings.postsFrom) { S.settings.postsFrom = Date.now(); save(); } }
+const postRef = r => String(r).replace(/[^A-Za-z0-9_.-]/g, '-').slice(0, 60);
+/** Post something that just happened. Returns true when a new post was written. */
+async function makePost(type, ref, n = 0, { mates = [], at = Date.now() } = {}) {
+  if (!POST_TYPES[type] || !postTypeOn(type) || isPreview() || !socialReady() || !cloudReady()) return false;
+  const from = +S.settings.postsFrom || 0;
+  if (!from || at < from - 60000 || Date.now() - at > 2 * 864e5) return false;   // never history
+  if (Date.now() - POST.burstAt > 5000) { POST.burst = 0; POST.burstAt = Date.now(); }
+  if (POST.burst >= 3) return false;   // at most 3 at once
+  const day = dayKey(new Date()), pd = S.ui.postDay && S.ui.postDay.d === day ? S.ui.postDay.n : 0;
+  if (pd >= POSTS_DAY_CAP) return false;
+  ref = postRef(ref);
+  const id = `${type}_${USER.uid}_${ref}`;
+  if (POST.mine[id]) return false;
+  POST.mine[id] = 1; POST.burst++;
+  const bl = SOC.blocked || {}, aud = [USER.uid, ...friendsList().map(otherUid).filter(u => u && !bl[u])].slice(0, 151);
+  const doc = { author: USER.uid, authorName: USER.username, type, ref, n: Math.max(0, Math.min(1e6, Math.round(+n || 0))), aud, day, at: FB.serverTimestamp() };
+  if (mates.length) doc.mates = mates.filter(u => typeof u === 'string' && /^[A-Za-z0-9]{1,40}$/.test(u)).slice(0, 6);
+  S.ui.postDay = { d: day, n: pd + 1 }; saveLocal();
+  try { await FB.setDoc(FB.doc(FB.db, 'posts', id), doc); POST.at = 0; return true; }
+  catch (e) { return false; }   // already posted (another device, an earlier visit): the rules refuse a second write
+}
+/** Take people out of the audience of my recent posts (blocked, or no longer friends). */
+async function postsDropAudience(uids) {
+  if (!uids.length || !cloudReady() || isPreview()) return;
+  try {
+    const qs = await FB.getDocs(FB.query(FB.collection(FB.db, 'posts'), FB.where('aud', 'array-contains', USER.uid), FB.where('author', '==', USER.uid), FB.orderBy('at', 'desc'), FB.limit(50)));
+    for (const d of qs.docs) { const x = d.data(); if (x.author !== USER.uid) continue; const aud = (x.aud || []).filter(u => !uids.includes(u)); if (aud.length !== (x.aud || []).length) FB.updateDoc(d.ref, { aud }).catch(() => {}); }
+  } catch (e) { console.warn('posts audience', e && e.code); }
+}
+/** My posts older than 30 days are deleted (at most 20 a day). */
+async function postsCleanup() {
+  if (!cloudReady() || isPreview() || Date.now() - Math.max(POST.cleanAt || 0, +S.ui.postClean || 0) < 864e5) return;
+  POST.cleanAt = S.ui.postClean = Date.now(); saveLocal();   // once a day per device, across reloads
+  try {
+    const qs = await FB.getDocs(FB.query(FB.collection(FB.db, 'posts'), FB.where('aud', 'array-contains', USER.uid), FB.where('author', '==', USER.uid), FB.orderBy('at', 'asc'), FB.limit(20)));   // (the rules read posts by their audience: the query must say so)
+    for (const d of qs.docs) { const t = tsMs(d.data().at); if (t && Date.now() - t > POSTS_TTL) FB.deleteDoc(d.ref).catch(() => {}); }
+  } catch (e) { console.warn('posts cleanup', e && e.code); }
+}
+/** The feed: posts whose audience includes me, newest first, the last 30 days, from me and my current friends. */
+async function loadPosts(force) {
+  if (!socialReady() || POST.busy || (!force && POST.list && Date.now() - POST.at < POSTS_REFRESH)) return POST.list;
+  POST.busy = true;
+  try {
+    const qs = await FB.getDocs(FB.query(FB.collection(FB.db, 'posts'), FB.where('aud', 'array-contains', USER.uid), FB.orderBy('at', 'desc'), FB.limit(50)));
+    const fr = new Set(friendsList().map(otherUid));
+    POST.list = qs.docs.map(d => ({ id: d.id, ...d.data(), at: tsMs(d.data().at) || Date.now() })).filter(x => (x.author === USER.uid || fr.has(x.author)) && Date.now() - x.at < POSTS_TTL && POST_TYPES[x.type]);
+    POST.at = Date.now(); POST.err = null;
+    POST.newest = postsNewest(POST.list); if (S.ui.tab === 'posts') postsMarkSeen(); else updatePostsBadge();
+    prefetchLooks([...new Set(POST.list.map(x => x.author))], () => { if (S.ui.tab === 'posts') renderPostsPage(true); });
+  } catch (e) { console.warn('posts', e && e.code); if (!POST.list) POST.list = []; POST.err = /index/i.test(e && e.message || '') ? 'index' : 'net'; }
+  finally { POST.busy = false; }
+  if (S.ui.tab === 'posts') renderPostsPage(true);
+  setTimeout(postsCleanup, 4000);
+  return POST.list;
+}
+/** What a post says (no free text: everything comes from the type, the number and our own tables). */
+function postText(x, group) {
+  const rk = i => esc(rankName(Math.max(0, Math.min(16, +i || 0))));
+  switch (x.type) {
+    case 'ach': { const as = (group || [x]).map(p => ACH_BY_ID[p.ref.split('.')[0]]).filter(Boolean).map(a => `<b>${esc(a.name)}</b>`); return as.length > 1 ? `unlocked ${as.length} achievements: ${as.slice(0, -1).join(', ')} and ${as[as.length - 1]}` : `unlocked ${as[0] || 'an achievement'}`; }
+    case 'streak': return `reached a <b>${fmtNum(x.n)}-day</b> streak`;
+    case 'rank': return `ranked up to ${rankBadge(+x.n, { size: 14 })} <b>${rk(x.n)}</b>`;
+    case 'level': { const t = TIERS.slice().reverse().find(t => +x.n >= t.min); return `reached <b>level ${fmtNum(x.n)}</b>${t && t.min === +x.n ? ` — the <b>${esc(t.name)}</b> badge` : ''}`; }
+    case 'session': {   // a mate's name shows only to their friends, and only if they posted the same table themselves (their own setting allows it)
+      const fr = new Set(friendsList().map(otherUid)), m = x.mates || [], you = m.includes(USER.uid) && x.author !== USER.uid;
+      const shown = m.filter(u => u !== USER.uid && fr.has(u) && POST.list && POST.list.some(p => p.type === 'session' && p.author === u && p.ref === x.ref)).map(u => `@${esc(friendNameOf(u))}`);
+      const named = [...(you ? ['you'] : []), ...shown], others = m.length - shown.length - (you ? 1 : 0);
+      return `studied together${named.length ? ' with ' + named.join(', ') : ''}${others > 0 ? `${named.length ? ' and' : ' with'} ${others} other${others === 1 ? '' : 's'}` : ''}`; }
+    case 'boss': { const b = BOSSES[+x.n] || null, sq = /-squad$/.test(x.ref); return `defeated <b>${b ? esc(b.name) : 'the weekly boss'}</b>${sq ? ' with their squad' : ' solo'}`; }
+    case 'quest': { const ev = EVENTS.find(e => e.id === x.ref.replace(/-pass$/, '')); return /-pass$/.test(x.ref) ? `completed the <b>${ev ? esc(passName(ev)) : 'Study Pass'}</b> 🎟️` : `finished the <b>${ev ? ev.emoji + ' ' + esc(ev.name) : ''}</b> questline`; }
+    case 'harvest': { const [sp] = x.ref.split('.'), spn = (GSP_BY_ID[sp] || {}).name || 'crop'; return +x.n >= 100 ? `harvested a <b>Giant ${esc(spn)}</b>` : `harvested a <b>5★ ${esc(spn)}</b>`; }
+    case 'pet': { const [pm, pid] = x.ref.split('.'), pet = PET_BY_ID[pid]; return pet ? `hatched a <b>${esc(petMutName(pet, PET_MUTS[pm] ? pm : ''))}</b>${pet.rarity !== 'common' ? ` (${esc(RARITY_LABEL[pet.rarity] || pet.rarity)})` : ''}` : 'hatched a pet'; }
+    case 'clan': return /-raid-/.test(x.ref) ? 'helped their clan beat the monthly raid boss' : `their clan reached <b>level ${fmtNum(x.n)}</b>`;
+    case 'hours': return `hit <b>${fmtNum(x.n)} hours</b> of focus`;
+    case 'evo': return `their Pomeo grew into <b>${esc((EVO[+x.n] || {}).name || 'a new stage')}</b>`;
+  }
+  return '';
+}
+function postCardHTML(x, group) {
+  const L = personLook(x.author, x.authorName), me = x.author === USER.uid, r = x.r || {}, mine = r[USER.uid];
+  const counts = POST_EMOJI.map(e => [e, Object.values(r).filter(v => v === e).length]);
+  const txt = postText(x, group), joined = /^[’']/.test(txt);
+  return `<li class="post" data-post="${esc(x.id)}">${lookPic(L, 40)}<div><div class="po-top">${lookName(L)}${me ? ' <span class="lbl">(you)</span>' : ''}<span class="po-time">${postAgo(x.at)}</span></div>
+    <div class="po-txt"><span class="po-ic" aria-hidden="true">${POST_TYPES[x.type].ic}</span>${joined ? '' : ' '}${txt}</div></div>
+    <div class="po-react" role="group" aria-label="Reactions">${counts.map(([e, n]) => `<button type="button" data-preact="${e}"${mine === e ? ' class="on" aria-pressed="true"' : ' aria-pressed="false"'}${me ? ' disabled' : ''} aria-label="${e} ${n}">${e}${n ? `<b>${n}</b>` : ''}</button>`).join('')}</div></li>`;
+}
+const postAgo = t => { const m = Math.max(0, Math.round((Date.now() - t) / 60000)); return m < 1 ? 'just now' : m < 60 ? `${m}m` : m < 1440 ? `${Math.round(m / 60)}h` : `${Math.round(m / 1440)}d`; };
+/** The newest post from a friend (not me) in a list — what the sidebar dot compares with the last visit. */
+function postsNewest(list) { const fr = new Set(friendsList().map(otherUid)); return Math.max(0, ...(list || []).filter(x => x.author !== USER.uid && fr.has(x.author) && Date.now() - x.at < POSTS_TTL).map(x => x.at)); }
+function updatePostsBadge() {
+  const b = $('#postsBadge');
+  if (!b) return;
+  const on = !!USER && !USER.guest && !minimal() && S.ui.tab !== 'posts' && (POST.newest || 0) > (+S.ui.postsSeen || 0);
+  b.classList.toggle('hidden', !on);
+  b.setAttribute('aria-label', on ? 'New posts from friends' : '');
+}
+function postsMarkSeen() { S.ui.postsSeen = Math.max(Date.now(), POST.newest || 0); saveLocal(); updatePostsBadge(); }
+/** A light check for the dot: the five newest posts I can read (5 reads), at sign-in and every 15 minutes while the app is open. */
+async function postsPeek() {
+  if (!USER || USER.guest || minimal() || (!socialReady() && !isPreview()) || S.ui.tab === 'posts' || document.hidden) return;
+  try {
+    const qs = await FB.getDocs(FB.query(FB.collection(FB.db, 'posts'), FB.where('aud', 'array-contains', USER.uid), FB.orderBy('at', 'desc'), FB.limit(5)));
+    POST.newest = Math.max(POST.newest || 0, postsNewest(qs.docs.map(d => ({ ...d.data(), at: tsMs(d.data().at) || 0 }))));
+  } catch (e) { /* offline, or the index is still building */ }
+  updatePostsBadge();
+}
+let postsPeekTimer = 0;
+function postsPeekStart() { clearInterval(postsPeekTimer); setTimeout(postsPeek, 4000); postsPeekTimer = setInterval(postsPeek, 15 * 60000); }
+const POST_FILTERS = [['all', 'All'], ['friends', 'Friends'], ['clan', 'Clan'], ['you', 'You']];
+let postsClanAsked = false;
+function postsFiltered(list, f) {
+  if (f === 'you') return list.filter(x => x.author === USER.uid);
+  if (f === 'friends') { const fr = new Set(friendsList().map(otherUid)); return list.filter(x => x.author !== USER.uid && fr.has(x.author)); }
+  if (f === 'clan') {
+    if (!CLAN.id) return [];
+    if (!CLAN.members && !postsClanAsked) { postsClanAsked = true; clanLoadDetails().then(() => { if (S.ui.tab === 'posts') renderPostsPage(true); }).catch(() => {}); }
+    const cm = new Set((CLAN.members || []).map(m => m.id));
+    return list.filter(x => cm.has(x.author) || (x.type === 'clan' && x.author === USER.uid));
+  }
+  return list;
+}
+/** Posts: a hero (what this is, the filters, the posting switch), then the feed newest first in day cards. */
+function renderPostsPage(fromLoad) {
+  const body = $('#postsBody');
+  if (!body) return;
+  if (!USER || USER.guest) {
+    body.innerHTML = `<div class="card empty-card">${pomeoScene('wave') || ''}<h3>Your friends’ wins</h3><p class="muted">Log in to see what your friends reach — a streak, a rank, a boss — and cheer them on.</p><button class="btn primary" id="guestLogin">Log in to see posts</button></div>`;
+    return;
+  }
+  if (localOnly || (!socialReady() && !isPreview())) { body.innerHTML = `<div class="card empty-card"><p class="muted">${localOnly ? 'Posts need an internet connection. Your timer and stats still work offline.' : ''}</p>${localOnly ? '' : skelRows(3)}</div>`; return; }
+  if (!fromLoad || !POST.list) loadPosts();
+  const f = POST_FILTERS.some(([k]) => k === S.ui.postFilter) ? S.ui.postFilter : 'all';
+  const list = POST.list === null ? null : postsFiltered(POST.list, f);
+  // a burst of achievements (same author, within two hours) shows as one post
+  const cards = []; let grp = null;
+  for (const x of list || []) {
+    if (x.type === 'ach' && grp && grp[0].author === x.author && Math.abs(grp[grp.length - 1].at - x.at) < 2 * 3600e3) { grp.push(x); continue; }
+    if (x.type === 'ach') { grp = [x]; cards.push(grp); } else { grp = null; cards.push([x]); }
+  }
+  // newest first, in day cards: Today · Yesterday · This week · Earlier
+  const t0 = +startOfDay(new Date()), day = at => at >= t0 ? 0 : at >= t0 - 864e5 ? 1 : at >= t0 - 6 * 864e5 ? 2 : 3;
+  const DAYS = ['Today', 'Yesterday', 'This week', 'Earlier'], groups = [[], [], [], []];
+  for (const g of cards) groups[day(g[0].at)].push(g);
+  const on = postsWanted(), nOff = Object.keys(S.settings.postOff || {}).filter(k => POST_TYPES[k]).length;
+  const empty = f === 'you' ? ['Nothing from you yet', on ? 'When you reach something — a streak, a rank, a boss — it’s posted here for your friends.' : 'Your posting is off, so nothing of yours is shared.']
+    : f === 'clan' && !CLAN.id ? ['No clan yet', 'Join or start a clan to see your clanmates’ wins here.']
+    : ['Nothing yet — your friends’ wins will show up here', 'A streak, a rank-up, a boss, a Giant harvest… posted by the app, never written. React with ' + POST_EMOJI.join(' ') + '.'];
+  body.innerHTML = `<div class="card posts-hero"><div><h1>Posts</h1><p class="muted">Wins from you and your friends, the last 30 days — automatic, nobody writes anything.</p></div>
+      <div class="ph-act"><button class="btn small" type="button" data-psettings title="Choose what gets posted">${on ? `Posting on${nOff ? ` · ${POST_TYPES_N - nOff} of ${POST_TYPES_N}` : ''}` : 'Posting off'} ⚙</button><button class="linkbtn" data-prefresh title="Refresh" aria-label="Refresh">↻</button></div>
+      <div class="seg" id="postSeg" role="tablist" aria-label="Show">${POST_FILTERS.map(([k, n]) => `<button type="button" data-pfilter="${k}" role="tab" aria-selected="${k === f}"${k === f ? ' class="active"' : ''}>${n}</button>`).join('')}</div>
+      ${on ? '' : '<p class="lbl po-off">Your posting is off — friends don’t see your wins. You still see theirs.</p>'}
+      ${POST.err === 'index' ? '<p class="lbl po-off">Posts are getting ready — try again in a few minutes.</p>' : ''}</div>
+    ${list === null ? `<div class="card">${skelRows(3)}</div>`
+      : !cards.length ? `<div class="card">${sceneEmpty('wave', 'big-icon', `<h3 style="margin:8px 0 4px">${esc(empty[0])}</h3><p class="lbl" style="margin:0">${esc(empty[1])}</p>`)}</div>`
+      : `<div class="mason posts-cards">${groups.map((gs, i) => gs.length ? `<div class="card post-day"><h2>${DAYS[i]}</h2><ul class="post-list">${gs.map(g => postCardHTML(g[0], g.length > 1 ? g : null)).join('')}</ul></div>` : '').join('')}</div>`}`;
+  syncSegs();
+}
+const POST_TYPES_N = Object.keys(POST_TYPES).length;
+const renderPosts = renderPostsPage;   // (the name the feed had while it lived under Friends)
+async function postReact(id, e) {
+  const x = (POST.list || []).find(p => p.id === id);
+  if (!x || x.author === USER.uid || !POST_EMOJI.includes(e)) return;
+  const prev = (x.r || {})[USER.uid], next = prev === e ? null : e;
+  x.r = { ...(x.r || {}) }; if (next) x.r[USER.uid] = next; else delete x.r[USER.uid];
+  renderPostsPage(true);
+  try { await FB.updateDoc(FB.doc(FB.db, 'posts', id), { ['r.' + USER.uid]: next || FB.deleteField() }); uiSound('tick'); }
+  catch (err) { if (prev) x.r[USER.uid] = prev; else delete x.r[USER.uid]; renderPostsPage(true); toast(err && err.code === 'permission-denied' ? 'Couldn’t react — you can react to your friends’ posts' : 'Couldn’t react — check your connection'); }
+}
+document.addEventListener('click', e => {
+  const r = e.target.closest('[data-preact]');
+  if (r) { const li = r.closest('[data-post]'); if (isPreview()) { previewPrompt(r); return; } if (li) postReact(li.dataset.post, r.dataset.preact); return; }
+  if (e.target.closest('[data-prefresh]')) { loadPosts(true); return; }
+  const pf = e.target.closest('[data-pfilter]');
+  if (pf) { S.ui.postFilter = pf.dataset.pfilter; saveLocal(); renderPostsPage(true); viewIn($('#postsBody .posts-cards') || $('#postsBody')); return; }
+  if (e.target.closest('[data-psettings]')) { showTab('settings'); setTimeout(() => { const d = $('#postTypesBox'); if (d) d.open = true; const t = $('#setPosts'); if (t) { t.closest('.setting').scrollIntoView({ block: 'center', behavior: 'smooth' }); t.focus({ preventScroll: true }); } }, 120); return; }
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'setPosts') { S.settings.posts = e.target.checked; save(); renderPrivacy(); if (S.ui.tab === 'posts') renderPostsPage(true); return; }
+  if (e.target.dataset && e.target.dataset.posttype) { const o = { ...(S.settings.postOff || {}) }; if (e.target.checked) delete o[e.target.dataset.posttype]; else o[e.target.dataset.posttype] = true; S.settings.postOff = o; save(); }
+});
+/** Things that happened, turned into posts (called right after they happen — never for history). */
+function postsFromNews(news) {
+  for (const n of news.filter(n => n.type === 'rankup')) makePost('rank', `${seasonKeyNow()}-${n.idx}`, n.idx);
+  for (const n of news.filter(n => n.type === 'streak' && n.m >= 7)) makePost('streak', 'm' + n.m, n.m);
+  for (const n of news.filter(n => n.type === 'evo')) makePost('evo', 'e' + n.s, n.s);
+  for (const n of news.filter(n => n.type === 'ach')) makePost('ach', n.a.id, 0);
+}
+
 /* ---------- Friend requests ---------- */
+let postsFriendSet = null;
 function onFriendshipsChanged() {
+  { const now = new Set(friendsList().map(otherUid)); if (postsFriendSet) { const gone = [...postsFriendSet].filter(u => !now.has(u)); if (gone.length) postsDropAudience(gone); } postsFriendSet = now; }   // v1.20: an ex-friend leaves my posts' audience
   const n = incoming().length;
   updateFriendsDot();
   $('#reqCount').textContent = n || '';
@@ -9696,6 +9966,7 @@ async function blockUser(uid, name) {
   if (!confirm(`Block @${name}? They won’t be able to send you requests or see your profile, and you’ll stop being friends.`)) return;
   try {
     await FB.setDoc(FB.doc(FB.db, 'users', USER.uid, 'blocked', uid), { name, at: Date.now() });
+    postsDropAudience([uid]);   // v1.20: blocked people never see my posts
     const f = SOC.friendships.find(x => x.users.includes(uid));
     if (f) await FB.deleteDoc(FB.doc(FB.db, 'friendships', f.id));
     SOC.friend = null;
@@ -10036,7 +10307,7 @@ function renderFriends(fromLoad) {
     return;
   }
   if (SOC.friend) { renderFriendProfile(fromLoad); return; }
-  let view = S.ui.friendsView === 'challenges' ? 'challenges' : 'friends';   // (Study sessions moved to their own section in v1.19.1)
+  let view = S.ui.friendsView === 'challenges' ? 'challenges' : 'friends';   // (Study sessions and Posts have their own sections: v1.19.1, v1.20)
   if (!gameOn && view === 'challenges') view = 'friends';
   if (S.ui.friendsView !== view) S.ui.friendsView = view;
   $$('#friendsSeg button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
@@ -10406,6 +10677,8 @@ function renderPrivacy() {
   if (!USER || USER.guest) { card.classList.add('hidden'); return; }
   card.classList.remove('hidden');
   $('#setShareAct').checked = S.settings.shareActivity;
+  $('#setPosts').checked = postsWanted();
+  $('#postTypes').innerHTML = Object.entries(POST_TYPES).map(([k, v]) => `<label class="pt-opt"><input type="checkbox" data-posttype="${k}"${(S.settings.postOff || {})[k] ? '' : ' checked'}${postsWanted() ? '' : ' disabled'}> ${v.ic} ${esc(v.name)}</label>`).join('');
   $('#setShareNames').checked = S.settings.shareNames;
   $('#setGlobal').checked = S.settings.globalBoard;
   $('#inviteDesc').textContent = `Friend code @${USER.username}`;
@@ -10420,7 +10693,7 @@ function renderPrivacy() {
    ========================================================================== */
 const scrollMem = {};
 function showTab(tab) {
-  if ((tab === 'shop' || tab === 'quests' || tab === 'bag' || tab === 'garden' || tab === 'room') && !S.settings.gamification) tab = 'timer';
+  if ((tab === 'shop' || tab === 'quests' || tab === 'bag' || tab === 'garden' || tab === 'room' || tab === 'posts') && !S.settings.gamification) tab = 'timer';
   if (S.ui.tab === 'bag' && tab !== 'bag') leaveBag();
   hideTip();
   if (!$('#tab-' + tab)) tab = 'timer';
@@ -10445,6 +10718,7 @@ function showTab(tab) {
   if (tab === 'clan') { renderClan(); clanLoadDetails(); }
   if (tab === 'friends') { SOC.friend = null; SOC.unread = false; updateFriendsDot(); renderFriends(); }
   if (tab === 'sessions') { SESS.unread = false; renderSessionsPage(); updateSessBadge(); }
+  if (tab === 'posts') { postsMarkSeen(); renderPostsPage(); }
   const y = scrollMem[tab] || 0;   // restore once the tab has laid out (charts can grow it a moment later)
   window.scrollTo({ top: y, behavior: 'instant' });
   if (y) [60, 250].forEach(ms => setTimeout(() => { if (S.ui.tab === tab && Math.abs(window.scrollY - y) > 4) window.scrollTo({ top: y, behavior: 'instant' }); }, ms));
@@ -11458,6 +11732,7 @@ function checkBoss() {
   G = null;
   save();
   for (const st of won) announceVictory(st);
+  for (const st of won) makePost('boss', bkey(st.wk, st.mode), Math.max(0, BOSSES.indexOf(st.boss)));   // v1.20
   setTimeout(() => checkUnlocks(), 2500);   // a boss emblem stamp (and Champion when it's Mastered), after the victory
   renderHeaderChip();
   updateQuestDot();
@@ -11734,6 +12009,7 @@ function passClaim(ev, which, quiet = false) {
     cl[k] = at; passGive(passReward(ev, track, i), k, at); done.push([track, i]);
   }
   if (done.length) { PASSC = null; G = null; if (!quiet) save(); }
+  if (done.some(([t, i]) => t === 'p' && i === PASS_TIERS)) makePost('quest', ev.id + '-pass', PASS_TIERS);   // v1.20: completed the Study Pass
   return done;
 }
 /** Coins from the pass ledger. */
@@ -11828,7 +12104,7 @@ function renderPassView(host) {
   const st = passState(ev), left = Math.max(1, Math.ceil((evEnd(ev) - Date.now()) / 864e5)), can = passClaimable(ev, st), soon = left <= 3;
   const pPct = Math.min(1, st.xp / (PASS_TIERS * st.per)), fPct = Math.min(1, st.hours / focusTierH(ev, FOCUS_H.length - 1));
   host.innerHTML = `<div class="stack pass-view" style="--ea:${ev.a};--eb:${ev.b}">
-    <div class="card pass-hero"><div><div class="boss-kicker">Study Pass · ${esc(ev.label)} · ${evRange(ev)}</div><div class="ph-name">${ev.emoji} ${esc(ev.name)} Pass</div>
+    <div class="card pass-hero"><div><div class="boss-kicker">Study Pass · ${esc(ev.label)} · ${evRange(ev)}</div><div class="ph-name">${ev.emoji} ${esc(passName(ev))}</div>
       <div class="ph-meta"><span class="pill${soon ? ' warn' : ''}">${soon ? `Ends in ${left} day${left === 1 ? '' : 's'}` : `${left} days left`}</span><span class="pill">Pass tier ${st.tier} / ${PASS_TIERS}</span><span class="pill">Focus ${st.step} / ${FOCUS_H.length}</span><span class="pill">Today ${fmtNum(st.today)} / ${st.todayCap} XP</span>${st.bank ? `<span class="pill" title="Catch-up: on days you study, 75% of the daily cap you don’t use is saved; it tops you up on days you’re behind">Catch-up ${fmtNum(st.bank)} XP</span>` : ''}</div>
       <p class="lbl" style="margin:8px 0 0">${soon ? 'Almost over: anything you reach but don’t claim is added for you when it ends. ' : ''}Free, always — no money, ever. Claim each reward any time before ${parseDay(ev.end).toLocaleDateString([], { day: 'numeric', month: 'long' })}.</p></div>
       ${can.length ? `<button class="btn primary" type="button" data-pclaimall>Claim all (${can.length})</button>` : ''}</div>
@@ -13490,6 +13766,7 @@ function announceHatched(list) {
   for (const e of list) {
     const pet = PET_BY_ID[e.pet];
     if (!pet) continue;
+    { const pm = petMutOf(e); if (pm || pet.rarity !== 'common') makePost('pet', `${pm || 'x'}.${pet.id}.${e.id}`, pm ? 1 : 0); }   // v1.20
     inboxAdd({ type: 'event', key: 'egg:' + e.id, title: `🐣 A ${pet.name} hatched in your garden`, go: { tab: 'garden' }, read: true });
     setTimeout(() => showHatch(e), 5200);   // several hatches in one block queue behind the open dialog
   }
@@ -14277,6 +14554,7 @@ function openSpotDlg(spot) {
 }
 function harvestMoment(p, host) {
   const sp = speciesOf(p), m = p.m;
+  if (p.giant || cropStars(p) >= 5) makePost('harvest', `${p.sp}.${p.id}`, p.giant ? 100 : 5);   // v1.20
   if (host && motion() !== 'off') {
     host.classList.add('harvesting');
     burstParticles(host, m ? 16 : 8);
@@ -15199,6 +15477,7 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (k === 'j') { e.preventDefault(); showTab('sessions'); return; }   // Study sessions (v1.19.1)
+  if (k === 'o') { const b = $('#postsTabBtn'); if (b && !b.classList.contains('hidden')) { e.preventDefault(); showTab('posts'); } return; }   // Posts (v1.20)
   if (k === 't') { e.preventDefault(); focusSubAdd(); return; }
   if (k === 'n') { e.preventDefault(); showTab('timer'); setTimeout(() => $('#nameInput').focus(), 30); return; }
   if (S.ui.tab !== 'timer') return;
@@ -15797,9 +16076,10 @@ addEventListener('resize', () => $$('.catrow').forEach(updateFades));
    command palette, offline banner, pull to refresh, tab swipes, haptics.
    Everything here is stored on this device (localStorage); no new cloud data.
    ========================================================================== */
-const APP_VERSION = '1.19.1';
+const APP_VERSION = '1.20';
 const VER_KEY = 'pomodorolist-seen-version';
 const CHANGELOG = [
+  { v: '1.20', t: 'Overtime, the Study Pass, Posts and the rank ladder', d: 'Overtime is on: when a focus block reaches 0 the end sound plays and the timer keeps counting up (+mm:ss) until you tap Stop or Break — the whole block, planned plus overtime, is logged once and counts everywhere (up to 240 minutes). After 10 minutes with no tap or key it asks “Were you still focusing?”, and “Turn off overtime” under the timer switches it off (Settings › Timer too). Each questline now has a free Study Pass under Quests: a Pass track of 30 tiers filled by focus minutes, your daily goal, the daily reward and quests, and a Focus track of 20 steps filled by focus hours — claim each reward when you like; anything you reach but don’t claim is added for you when the event ends. A pass that was already running when you got 1.20 is sized to the days left, and catch-up XP from lighter days helps you finish. The monthly reward track is now part of the Study Pass (everything you claimed stays). Posts, a new section next to Friends (press O), shows what you and your friends reach — a streak, a rank-up, a boss, a Giant harvest — automatically, never any text anyone writes; react with 🔥 👏 💪 ⭐. Choose what gets posted, or switch posting off, in Settings › Friends & privacy. The Rank card shows the divisions around you (Gold III → II → I → Platinum III), and tapping any rank badge opens the full rank ladder with every rank’s hours.' },
   { v: '1.19.1', t: 'Leaderboard fix and your rank next to your name', d: 'Fixed: on the Leaderboard, the Focus time button could open the Ranks board after you had visited Ranks or Streaks (even after a reload). Each board now goes back to its own last view. The Monthly focus board is gone — the Ranks board (this season = this month) replaces it. Your rank now shows next to your name in the header and on your player card: tap it in the header for the Ranks board, or on the card for your progress. Hidden in True Minimalist. Also fixed: switchers such as the achievement categories no longer wrap onto two lines with a stretched highlight — they stay on one line and scroll sideways when they don’t fit. On wide screens the cards on the Timer, Profile, Clan, Quests and Friends pages now fill two balanced columns (or one centred column when there are too few), instead of leaving a big empty space beside one column; the achievements list spreads across the page below the cards. Fixed: hosting a study session with a long preset (focus blocks over 120 min, such as 240 / 5 × 4) failed with a confusing clan message — sessions now take any preset the timer allows, and session errors talk about the session, not your clan. Study sessions now have their own section (sidebar: Friends · Study sessions · Clan · Leaderboard, or press J): live tables with who’s inside and the seats left, a step-by-step Host sheet that shows the preset it uses, upcoming sessions with reminders and your clan’s RSVPs, your history, and a dot when a friend is studying or someone asks to join. The Clan page is back to its familiar layout, with Activity and Clan session milestones that fold away. Fixed: on wide screens one card column could start lower than the other, and a clan leader could see “joined the clan — just now” again after opening the app on a new device.' },
   { v: '1.19', t: 'Ranks for this season and streak leaderboards', d: 'Ranks show how much you study right now: every month is a season, and your counted focus hours (up to 14 h a day) take you from Bronze through Silver, Gold, Platinum and Diamond (three divisions each) to Master and Grandmaster. A new season starts on the 1st with a small head start from last season’s best. The end of a season pays coins and puts a season badge on your trophy shelf, and the first time you reach a rank you get its frame, aura or room poster. Rank badges show next to names on boards, friend lists, study tables and clans. The leaderboard has Ranks and Streaks (current and best) boards for friends and everyone.' },
   { v: '1.18', t: 'Study sessions without a clan, rewards for studying together, streak milestones, a new Pomeo, a weekly quest board, a monthly track, Pomeo’s stages and a collection log', d: 'The Friends tab now has Friends · Study sessions · Challenges. Host a public, friends-only or link study session (no clan needed), let people ask to join, invite friends, hand over or end it, and see who is studying now. Studying together pays: coins for new study partners, clan-session milestones with clan-only rewards, bonus Clan Points and 39 new achievements with real rewards, on a sortable achievements page. Streak milestones at 3, 7, 14, 30, 50, 100, 200 and 365 days give titles, the Ember theme, a Flame Pomeo picture, a trophy, a Flame ring, a Blaze frame, an Eternal flame aura and a Golden Pomeo statue, celebrated once after your block. Pomeo is redrawn: minimal and cute, everywhere, and he grows with your focus hours. New: a weekly quest board, a free monthly reward track, a collection log, and your monthly recap counts who you studied with. Fixes: recently used presets keep their order and favourites, and one challenge join per week.' },
@@ -15927,6 +16207,7 @@ function ibGo(it) {
   $('#inboxDlg').close();
   if (g.action === 'login') { showTab('profile'); setTimeout(() => { if (loginOn() && !loginToday().claimed) openLoginDlg(); }, 250); return; }
   if (g.tab === 'friends' && g.view === 'sessions') { showTab('sessions'); return; }   // inbox items saved before 1.19.1
+  if (g.tab === 'friends' && g.view === 'posts') { showTab('posts'); return; }   // (Posts briefly lived under Friends while 1.20 was built)
   if (g.view) S.ui.friendsView = g.view;
   if (g.gview) S.ui.gardenView = g.gview;   // a garden view, e.g. the Harvests tab (v1.17)
   if (g.tab) showTab(g.tab);
@@ -16048,8 +16329,8 @@ function goSetting(row) {
    ========================================================================== */
 function cmdList(q) {
   const L = [], add = (ic, t, g, run, k = '') => L.push({ ic, t, g, run, k });
-  const tabs = [['timer', '⏱️', 'Timer'], ['reminders', '🔔', 'Reminders'], ['quests', '⚔️', 'Quests'], ['stats', '📊', 'Stats'], ['garden', '🌱', 'Garden'], ['board', '🏆', 'Leaderboard'], ['shop', '🛍️', 'Shop'], ['friends', '👥', 'Friends'], ['sessions', '📚', 'Study sessions'], ['profile', '👤', 'Profile'], ['settings', '⚙️', 'Settings'], ['about', 'ℹ️', 'About']];
-  for (const [id, ic, n] of tabs) if (!(['quests', 'shop', 'garden'].includes(id) && !S.settings.gamification)) add(ic, n, 'Go to', () => showTab(id), id === 'board' ? 'ranks leaderboard' : id === 'garden' ? 'plants seeds harvest' : id === 'sessions' ? 'study together live host join table' : '');
+  const tabs = [['timer', '⏱️', 'Timer'], ['reminders', '🔔', 'Reminders'], ['quests', '⚔️', 'Quests'], ['stats', '📊', 'Stats'], ['garden', '🌱', 'Garden'], ['board', '🏆', 'Leaderboard'], ['shop', '🛍️', 'Shop'], ['friends', '👥', 'Friends'], ['posts', '📣', 'Posts'], ['sessions', '📚', 'Study sessions'], ['profile', '👤', 'Profile'], ['settings', '⚙️', 'Settings'], ['about', 'ℹ️', 'About']];
+  for (const [id, ic, n] of tabs) if (!(['quests', 'shop', 'garden', 'posts'].includes(id) && !S.settings.gamification)) add(ic, n, 'Go to', () => showTab(id), id === 'board' ? 'ranks leaderboard' : id === 'garden' ? 'plants seeds harvest' : id === 'sessions' ? 'study together live host join table' : id === 'posts' ? 'feed wins reactions friends news' : '');
   add('📥', 'Inbox', 'Open', openInbox, 'notifications messages');
   const t = S.timer;
   add(t.status === 'running' ? '⏸️' : '▶️', t.status === 'running' ? 'Pause timer' : t.status === 'paused' ? 'Resume timer' : 'Start timer', 'Timer', () => { showTab('timer'); $('#mainBtn').click(); }, 'start pause resume focus');
@@ -16083,7 +16364,7 @@ function cmdList(q) {
     add('⚔️', 'Weekly boss', 'Quests', () => { S.ui.questView = 'boss'; showTab('quests'); }, 'boss battle squad solo trophy hall');
     const ev = currentEvent();
     if (ev) add(ev.emoji, `${ev.name} questline`, 'Quests', () => { S.ui.questView = 'quest'; showTab('quests'); loadEventBoard(); }, 'questline event quests');
-    if (passEvent(ev)) add('🎟️', `${ev.name} Study Pass`, 'Quests', () => { S.ui.questView = 'pass'; showTab('quests'); }, 'study pass tiers rewards focus track battle pass');
+    if (passEvent(ev)) add('🎟️', passName(ev), 'Quests', () => { S.ui.questView = 'pass'; showTab('quests'); }, 'study pass tiers rewards focus track battle pass');
   }
   add('⌨️', 'Keyboard shortcuts', 'Help', () => $('#keysDlg').showModal(), 'keys help');
   add('🧘', minimal() ? 'Turn off True Minimalist' : 'Turn on True Minimalist', 'Settings', () => { setMinimal(!minimal()); toast(minimal() ? 'True Minimalist on' : 'True Minimalist off', 2000, true); }, 'true minimalist minimal simple plain gamification progression');
@@ -16215,10 +16496,11 @@ function quietRetry(err) {
    PHONES: pull to refresh, swipe between tabs, swipe-to-dismiss helper
    ========================================================================== */
 const coarse = matchMedia('(pointer: coarse)');
-const PTR_TABS = ['stats', 'friends', 'board'];
+const PTR_TABS = ['stats', 'friends', 'board', 'posts'];
 async function ptrRefresh(where) {
   if (where === 'inbox') { ibRefresh(); renderInbox(); return; }
   if (where === 'stats') { renderStats(); return; }
+  if (where === 'posts') { if (cloudReady()) await loadPosts(true); else renderPostsPage(true); return; }
   if (!cloudReady()) { if (where === 'friends') renderFriends(); else renderBoardTab(); return; }
   if (where === 'friends') { await loadFriendsPublic(true).catch(() => {}); SOC.challengesAt = 0; await loadChallenges(true).catch(() => {}); renderFriends(); }
   if (where === 'board') { SOC.lb = {}; renderBoardTab(); }
@@ -17299,6 +17581,18 @@ function demoDocs() {
   docs['studySessions/demo_sess2'] = { title: 'Mock test marathon', host: 'demo_f4', hostName: 'Princess_cupcake', pattern: { focus: 50, short: 10, rounds: 3 }, mode: 'synced', startAt: ts(Date.now() - 5 * 60000), pausedAt: 0, pauseTotal: 0, shift: 0, open: true, counted: false, vis: 'friends', lobby: 'friends', max: 4, members: ['demo_f4'], invited: ['demo'], plan: 0, code: '', hostAt: ts(Date.now() - 5 * 60000), createdAt: ts(Date.now() - 5 * 60000), endedAt: 0, updatedAt: ts(Date.now() - 60000) };
   // v1.19.1: a planned table for later today (Upcoming: Remind me)
   docs['studySessions/demo_sess3'] = { title: 'Physics problem set', host: 'demo_f3', hostName: 'Justin', pattern: { focus: 50, short: 10, rounds: 2 }, mode: 'together', startAt: ts(Date.now() - 2 * 60000), pausedAt: 0, pauseTotal: 0, shift: 0, open: true, counted: false, vis: 'friends', lobby: 'friends', max: 5, members: ['demo_f3'], invited: ['demo'], plan: Date.now() + 150 * 60000, code: '', hostAt: ts(Date.now() - 2 * 60000), createdAt: ts(Date.now() - 2 * 60000), endedAt: 0, updatedAt: ts(Date.now() - 2 * 60000), welcome: [] };
+  // v1.20: a sample Posts feed (the demo reads it; reacting shows the preview prompt)
+  { const aud = ['demo', 'demo_f1', 'demo_f2', 'demo_f3', 'demo_f4', 'demo_f5'], ev = eventAt(Date.now());
+    const P = (type, author, name, ref, n, mins, r = {}, extra = {}) => { docs[`posts/${type}_${author}_${ref}`] = { author, authorName: name, type, ref, n, aud, day: dayKey(new Date(Date.now() - mins * 6e4)), at: ts(Date.now() - mins * 6e4), r, ...extra }; };
+    P('rank', 'demo_f1', 'James', seasonKeyNow() + '-7', 7, 25, { demo: '🔥', demo_f2: '👏' });
+    P('streak', 'demo_f4', 'Princess_cupcake', 'm30', 30, 70, { demo_f1: '💪', demo_f3: '🔥', demo_f2: '🔥' });
+    P('session', 'demo_f2', 'siverieg', 'demo_sess_old', 2, 140, { demo_f1: '⭐' }, { mates: ['demo', 'demo_f1'] });
+    P('ach', 'demo_f3', 'Justin', 'g_host', 0, 200); P('ach', 'demo_f3', 'Justin', 'g_p5', 0, 203);
+    P('boss', 'demo', 'demo_scholar', dayKey(weekMonday()) + '-solo', 2, 300, { demo_f1: '🔥', demo_f4: '👏' });
+    if (ev && ev.start >= PASS_FROM) P('quest', 'demo_f1', 'James', ev.id + '-pass', 30, 600, { demo: '⭐' });
+    P('harvest', 'demo_f4', 'Princess_cupcake', 'sunflower.demo1', 100, 900);
+    P('hours', 'demo_f2', 'siverieg', 'h250', 250, 1500, { demo: '👏' });
+    P('evo', 'demo_f5', 'lenvixty', 'e3', 3, 2000); }
   docs['challenges/demo_c1'] = { preset: 'h10', weekKey: wk, creator: 'demo_f4', members: ['demo_f4', 'demo', 'demo_f1'], invited: ['demo'], names: { demo_f4: 'Princess_cupcake', demo: 'demo_scholar', demo_f1: 'James' },
     progress: { demo_f4: 410, demo: Math.round(myWeek), demo_f1: 280 }, createdAt: ts(Date.now() - 2 * 864e5) };
   Object.assign(docs, demoClanDocs(ts, wk));
@@ -17364,7 +17658,7 @@ const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-sremind]', '[data-hrsvp]', '[data-sjoin]', '[data-sask]', '[data-shost]', '[data-sinvite]', '[data-sallow]', '[data-sdeny]', '[data-skick]', '[data-shand]', '[data-scode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '[data-sell]', '[data-sellall]', '[data-fav]', '[data-compost]', '[data-gtask]', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
-  '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-pclaim]', '[data-pclaimall]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
+  '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-pclaim]', '[data-pclaimall]', '[data-preact]', '#setPosts', '[data-posttype]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
 const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-sjoin],[data-sask],[data-shost],[data-sinvite],[data-sallow],[data-sdeny],[data-skick],[data-shand],[data-scode],[data-sremind]', 'study live with friends'], ['[data-hrsvp]', 'join your clan’s sessions'], ['[data-sell],[data-sellall],[data-fav],[data-compost]', 'sell your harvests for produce'], ['[data-gtask]', 'claim garden tasks'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
@@ -17547,6 +17841,7 @@ async function claimQuest(evId, qid) {
     setTimeout(() => toast('🥚 A rare pet egg joined your garden’s queue — focus to hatch it', 3600, true, { go: { tab: 'garden' } }), 3000);
   }
   save();
+  if (qid === 'final') makePost('quest', ev.id, ev.quests.length, { at });   // v1.20: finished the questline
   showRewardReveal({ kicker: qid === 'final' ? `${ev.name} · final reward` : `${ev.name} · quest ${qid.slice(1)} of ${ev.quests.length}`,
     title: qid === 'final' ? 'Questline complete! 🏆' : q.title, items, pal: [ev.a, ev.b] });
   inboxAdd({ type: 'event', key: 'quest:' + key, title: `${ev.emoji} ${items.map(i => ITEM_BY_ID[i].name).join(' + ')} added to your bag`, go: { tab: 'bag' }, read: true });
@@ -18224,6 +18519,7 @@ function tourSteps() {
     { tab: 'board', text: 'Leaderboard: see how your focus compares with friends.' },
     on && { tab: 'shop', text: 'Shop: spend coins on themes, sounds and outfits for me.' },
     { tab: 'friends', text: 'Friends: add friends, send kudos, see who’s focusing.' },
+    on && { tab: 'posts', text: 'Posts: your friends’ wins — a streak, a rank, a boss. Cheer them on with 🔥 👏 💪 ⭐.' },
     { tab: 'sessions', text: 'Study sessions: join a friend’s table or host your own — no clan needed.' },
     { tab: 'clan', text: 'Clan: your study group — plan sessions and study live together.' },
     on && { tab: 'quests', text: 'Quests: a new boss every week — every focus minute is a hit.' },
@@ -20462,6 +20758,7 @@ async function flushContrib() {
     clanBonusFlush((res.items || []).filter(x => x.grp));   // bonus Clan Points for studying together (v1.18)
     if (res.level > res.levelFrom) {
       clanFeed('level', res.level);
+      makePost('clan', `${CLAN.id}-L${res.level}`, res.level);   // v1.20
       inboxAdd({ type: 'clan', key: 'clanlv:' + id + ':' + res.level, title: `${CLAN.doc.name} reached level ${res.level}! 🎉`, body: 'New clan cosmetics may be unlocked in your bag', go: { tab: 'clan' } });
       toast(`🛡️ ${CLAN.doc.name} reached clan level ${res.level}!`, 3600, true);
     }
@@ -20550,6 +20847,7 @@ async function clanClaimRaid() {
   CLAN.rallied = rally;
   G = null;
   clanFeed('raid', 0);
+  makePost('clan', `${CLAN.id}-raid-${monthKey(Date.now())}`, 0);   // v1.20
   return true;
 }
 
