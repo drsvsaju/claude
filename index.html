@@ -561,6 +561,16 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .rkl-div .rkl-bar i { display: block; height: 100%; background: var(--rk); }
 .rkl-foot { margin: 12px 0 0; }
 @media (max-width: 420px) { .rkl-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+/* v1.20: overtime — after a focus block ends the timer counts up */
+#ring.ot .prog { stroke: var(--warn, #e0a030); }
+#ring.ot .time { color: var(--warn, #c98a1a); }
+:root[data-motion="full"] #ring.ot .ring-glow { animation: otGlow 2.4s ease-in-out infinite; }
+@keyframes otGlow { 50% { opacity: .55; } }
+.phase-label.ot { color: var(--warn, #c98a1a); }
+.ot-line { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin: -2px 0 8px; font-size: 13px; color: var(--muted); text-align: center; }
+.ot-line .linkbtn { color: var(--accent); padding: 0; }
+.ot-dlg { width: min(440px, calc(100vw - 24px)); }
+.sess .ot-tag, .ot-tag { font-size: 11px; font-weight: 700; color: var(--warn, #c98a1a); margin-left: 6px; white-space: nowrap; }
 .rk-card .rk-hero { display: flex; align-items: center; gap: 12px; margin: 10px 0 4px; } .rk-card .rk-name { font-size: 20px; font-weight: 800; color: var(--rk); }
 .rk-gifts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; } .rk-gift { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
 .rk-gift .rk-b { margin: 0; } .rk-gift.got { color: var(--text); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
@@ -4023,6 +4033,7 @@ body.first-load #todayBar { opacity: 0; }
               <div class="ring-sub" id="ringSub"></div>
             </div>
           </div>
+          <div class="ot-line hidden" id="otLine" aria-live="polite"></div>
           <div class="controls">
             <button class="btn" id="resetBtn" title="Reset (double-reset returns to round 1)">Reset</button>
             <button class="btn primary" id="mainBtn"><span class="mb-lbl">Start</span></button>
@@ -4230,6 +4241,10 @@ body.first-load #todayBar { opacity: 0; }
         <div class="setting" data-k="auto start break automatic">
           <div><div>Auto-start next phase</div><div class="desc">Begin breaks and focus blocks automatically</div></div>
           <input type="checkbox" id="setAuto" aria-label="Auto-start next phase">
+        </div>
+        <div class="setting" data-k="overtime extra time keep going count up after focus">
+          <div><div>Overtime after focus ends</div><div class="desc">When a focus block ends, keep counting up until you tap Stop — the extra minutes count too (up to 4 h a block)</div></div>
+          <input type="checkbox" id="setOvertime" aria-label="Overtime after focus ends">
         </div>
         <div class="setting" data-k="keyboard shortcuts keys hotkeys">
           <div><div>Keyboard shortcuts</div><div class="desc">Press <kbd>?</kbd> to see them all, <kbd>Ctrl</kbd>+<kbd>K</kbd> for the command palette</div></div>
@@ -4480,6 +4495,11 @@ body.first-load #todayBar { opacity: 0; }
 </div>
 
 <!-- Reminder editor -->
+<dialog id="otIdleDlg" class="ot-dlg" aria-labelledby="otIdleTitle">
+  <h2 id="otIdleTitle" style="margin:0 0 6px">Were you still focusing?</h2>
+  <p class="muted" id="otIdleBody" style="margin:0"></p>
+  <div class="btn-row" style="justify-content:flex-end;margin-top:14px;flex-wrap:wrap"><button class="btn" type="button" id="otIdleNo"></button><button class="btn primary" type="button" id="otIdleYes">Yes, count it</button></div>
+</dialog>
 <dialog id="rankLadderDlg" class="rkl-dlg" aria-labelledby="rklTitle"><div id="rklBody"></div><div class="btn-row" style="justify-content:flex-end;margin-top:12px"><button class="btn" type="button" id="rklBoard">Ranks board</button><button class="btn primary" type="button" id="rklClose">Close</button></div></dialog>
 <dialog id="sessHostDlg" class="hs-dlg" aria-labelledby="hsTitle"><div id="hsBody"></div></dialog>
 <dialog id="clanCreateDlg" class="clan-dlg" aria-labelledby="ccTitle">
@@ -5535,7 +5555,7 @@ const NAME_PALETTE = ['#2f8f83', '#5b7fd6', '#d08a3c', '#b45f8c', '#6a9a4a', '#8
 function defaultState() {
   return {
     version: 2,
-    settings: { goalMin: 60, weekStart: 1, sound: true, notify: true, theme: 'auto', autoStart: false, gamification: true, ambientVolume: 0.5,
+    settings: { goalMin: 60, weekStart: 1, sound: true, notify: true, theme: 'auto', autoStart: false, overtime: true, gamification: true, ambientVolume: 0.5,
                 shareActivity: true, shareNames: true, globalBoard: false,
                 pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, shopDot: true, dailyTip: true,
                 bossMode: 'solo', shortcuts: true, revIntervals: [1, 3, 7, 21, 45],
@@ -6390,6 +6410,7 @@ function startTimer() {
       togetherBlockStart();
     }
   }
+  if (t.ot) { t.ot.from = now; t.ot.act = now; }   // resuming overtime (v1.20)
   t.endAt = now + t.remaining;
   t.status = 'running';
   save();
@@ -6399,6 +6420,7 @@ function startTimer() {
 function pauseTimer() {
   const t = S.timer;
   if (recentGesture()) { uiClaim(); haptic(10); uiSound('pause', { always: true }); }
+  if (t.ot) { t.ot.acc = otMs(); t.ot.from = Date.now(); }   // overtime: bank what has run (v1.20)
   t.remaining = Math.max(0, t.endAt - Date.now());
   t.status = 'paused';
   saveLocal();
@@ -6417,6 +6439,84 @@ function advancePhase() {
 }
 
 const EARLY_MIN_MS = 5 * 60000;   // "Finish early" logs the minutes focused from 5 minutes on (v1.17)
+
+/* ---------- Overtime (v1.20) ----------
+   With the setting on (the default), a focus block that reaches 0 plays the end sound as usual and then counts UP:
+   S.timer.ot = { from, acc, act } — `from` is when the current running stretch began (the planned end, so a sleeping
+   tab still counts), `acc` the overtime banked before a pause, `act` the last sign of the user (a tap or key, or the
+   start of overtime). Stop (or Break) logs ONE block: the planned minutes plus the overtime, so everything that counts
+   focus minutes counts it too. The whole block is capped at 240 min — the preset and rules limits (a 4-hour session) —
+   so no write is ever refused. If overtime has run 10 minutes past the last sign of the user, the app asks "Were you
+   still focusing?" (only while the tab is visible; until then nothing is logged and the cap waits for the answer).
+   Not in a Synced timer (the host runs the shared timer) or the tutorial's demo block. Per device, like the timer. */
+const OT_TOTAL_MS = 240 * 60000, OT_IDLE_MS = 10 * 60000;
+const otOn = () => S.settings.overtime !== false;
+const otSynced = () => !!(S.timer.live && S.timer.live.mode !== 'together');
+let otLastAct = Date.now();
+for (const type of ['pointerdown', 'keydown', 'wheel', 'touchstart']) document.addEventListener(type, e => { if (!e.isTrusted) return; otLastAct = Date.now(); const t = S.timer; if (t && t.ot && t.status === 'running' && !$('#otIdleDlg').open) t.ot.act = otLastAct; }, { capture: true, passive: true });
+/** Room left for overtime in this block (ms). */
+const otMaxMs = () => Math.max(0, OT_TOTAL_MS - (+S.timer.planned || 0));
+/** Overtime counted up to `at` (ms), capped. */
+function otMs(at = Date.now()) {
+  const o = S.timer.ot; if (!o) return 0;
+  return Math.min(otMaxMs(), Math.max(0, (+o.acc || 0) + (S.timer.status === 'running' ? Math.max(0, at - o.from) : 0)));
+}
+/** May this focus block go into overtime when it reaches 0? */
+const otEligible = () => { const t = S.timer; return otOn() && t.phase === 'focus' && !otSynced() && !t.demo && otMaxMs() >= 60000; };   // (t.demo: the tutorial's 1-minute block)
+/** The block reached 0: the end sound, then count up. */
+function otEnter() {
+  const t = S.timer, end = t.endAt;
+  t.ot = { from: end, acc: 0, act: Math.max(otLastAct, end) };
+  t.remaining = 0;
+  if (!endSoundRang(end)) playEndSound();
+  notify('Focus block done', 'Overtime is running — tap Stop when you’re finished.');
+  haptic([20, 60, 20]);
+  saveLocal();
+  renderTimer();
+}
+/** End an overtime block. why: 'stop' | 'break' | 'cap' | 'off' | 'away' (log up to the last sign of the user). */
+function otStop(why) {
+  const t = S.timer, o = t.ot;
+  if (!o || t.phase !== 'focus') return;
+  const now = Date.now(), max = otMaxMs();
+  let ot, end;
+  if (why === 'away') { const upto = Math.min(now, Math.max(o.act, o.from)); ot = Math.min(max, (+o.acc || 0) + (t.status === 'running' ? Math.max(0, upto - o.from) : 0)); end = t.status === 'running' ? upto : now; }
+  else { ot = otMs(now); end = t.status === 'running' && ot >= max ? o.from + (max - (+o.acc || 0)) : now; }
+  t.otDone = { ms: Math.round(ot), end: Math.round(Math.min(end, now)) };
+  if ($('#otIdleDlg').open) $('#otIdleDlg').close();
+  finishPhase(why === 'break' ? 'otbreak' : 'complete');
+  if (why === 'cap') toast(`Overtime stopped at ${fmtMin(OT_TOTAL_MS / 60000)} — the block is logged`, 4200, true, { now: true });
+  if (why === 'off') toast('Overtime off — turn it back on in Settings', 3200, true, { now: true });
+}
+/** Overtime has run 10 minutes past the last sign of the user (asked only while the tab is visible). */
+function otAsk() {
+  const t = S.timer, o = t.ot, d = $('#otIdleDlg');
+  if (!o || d.open) return;
+  $('#otIdleBody').textContent = `Overtime has run ${fmtMin(Math.round(otMs() / 60000))} so far, ${fmtMin(Math.max(1, Math.round((Date.now() - o.act) / 60000)))} of it since you last used the app.`;
+  $('#otIdleNo').textContent = `No — log up to ${fmtHM(Math.max(o.act, o.from))}`;
+  d.showModal();
+}
+$('#otIdleYes').addEventListener('click', () => { const t = S.timer; $('#otIdleDlg').close(); if (!t.ot) return; t.ot.act = Date.now(); saveLocal(); if (t.status === 'running' && otMs() >= otMaxMs()) otStop('cap'); else renderTimer(); });
+$('#otIdleNo').addEventListener('click', () => { $('#otIdleDlg').close(); otStop('away'); });
+/** Every tick while counting up: the cap, the "still focusing?" question. */
+function otTick() {
+  const t = S.timer, o = t.ot;
+  if (!o || t.status !== 'running') return;
+  const idle = Date.now() - o.act >= OT_IDLE_MS;
+  if (idle) { if (!document.hidden) otAsk(); return; }   // nothing is logged until the answer
+  if (otMs() >= otMaxMs()) otStop('cap');
+}
+/** One-time tip for people who used the app before 1.20: after their first block in this version (never during one). */
+function otTipAfterBlock(hadOt) {
+  if (S.settings.otTip || isPreview()) return;
+  S.settings.otTip = Date.now();   // synced: once per account
+  save();
+  if (!S.sessions.some(x => x && +x.end < OT_RELEASE)) return;   // a new account: the overtime display explains itself
+  const msg = hadOt ? 'New in 1.20: Overtime — when a block ends the timer keeps counting until you tap Stop, and the extra minutes count. Turn it off in Settings.' : 'New in 1.20: Overtime — when a block ends, the timer can keep counting until you tap Stop. It’s on; turn it off in Settings.';
+  const show = () => toast(msg, 7000, true, { log: false, go: { tab: 'settings' } });
+  if (!holdForFocus('tip', 'ottip', show)) show();   // a tip: it comes back before Pomeo's chatter
+}
+const OT_RELEASE = Date.UTC(2026, 10, 10);   // v1.20
 /**
  * End the current phase.
  * reason: 'complete' (timer ran out), 'skip', 'early' (Finish early: log what was focused) or 'reset'.
@@ -6425,18 +6525,22 @@ const EARLY_MIN_MS = 5 * 60000;   // "Finish early" logs the minutes focused fro
 function finishPhase(reason) {
   const t = S.timer;
   const wasFocus = t.phase === 'focus', endedAt = t.endAt;
+  const otd = wasFocus && t.ot ? (t.otDone || { ms: otMs(), end: Date.now() }) : null;   // an overtime block: planned + overtime, one log (v1.20)
+  if (otd && reason !== 'otbreak' && reason !== 'complete') reason = 'complete';   // Skip / Finish early / Reset in overtime still log the finished block
+  const otBreak = reason === 'otbreak'; if (otBreak) reason = 'complete';
+  t.ot = null; t.otDone = null;
   let tooShort = false;
   if (reason === 'early' && wasFocus && t.status !== 'idle' && t.planned - remainingMs() < EARLY_MIN_MS) { toast(`Under ${EARLY_MIN_MS / 60000} minutes — nothing logged`); reason = 'reset'; tooShort = true; }
   if (reason === 'complete') motionComplete(wasFocus);
 
   if (wasFocus && t.status !== 'idle') {
     const rem = reason === 'complete' ? 0 : remainingMs();
-    const focused = t.planned - rem;
+    const focused = t.planned - rem + (otd ? Math.max(0, otd.ms) : 0);
     // For natural completion use endAt, so the log is exact even if the tab was asleep.
-    const end = reason === 'complete' ? t.endAt : Date.now();
+    const end = otd ? Math.max(t.endAt, otd.end) : reason === 'complete' ? t.endAt : Date.now();
     if (focused >= 0.8 * t.planned || (reason === 'early' && focused >= EARLY_MIN_MS)) {
       FG.ending = true;
-      try { logSession(focused, end, reason === 'early' && focused < t.planned); } finally { FG.ending = false; }
+      try { logSession(focused, end, reason === 'early' && focused < t.planned, otd ? Math.round(otd.ms / 60000) : 0); } finally { FG.ending = false; }
       focusEnded();
       const fx = equippedId('effect');
       setTimeout(() => playEffect(fx), reason === 'complete' && motion() === 'full' ? 700 : 0);
@@ -6464,17 +6568,18 @@ function finishPhase(reason) {
 
   if (reason === 'complete' && wasFocus) { setTimeout(pomeoBreakStart, 5600); setTimeout(offerBreakCards, 11500); }   // flashcards: offered on the break, never during focus
   if (reason === 'complete') {
-    if (!endSoundRang(endedAt)) playEndSound();   // the booked chime may have rung already (on time, in a background tab)
-    if (wasFocus) notify('Focus complete', `Nice work on “${t.name || 'Untitled'}”. Time for a break.`);
-    else notify('Break over', 'Ready for the next focus block?');
-    if (S.settings.autoStart && !(t.live && t.live.mode !== 'together')) { startTimer(); return; }
+    if (!otd && !endSoundRang(endedAt)) playEndSound();   // the booked chime may have rung already (on time, in a background tab); an overtime block rang when it reached 0
+    if (wasFocus && !otd) notify('Focus complete', `Nice work on “${t.name || 'Untitled'}”. Time for a break.`);
+    else if (!wasFocus) notify('Break over', 'Ready for the next focus block?');
+    if (wasFocus) setTimeout(() => otTipAfterBlock(!!otd), 1500);
+    if ((S.settings.autoStart || otBreak) && !(t.live && t.live.mode !== 'together')) { startTimer(); return; }
   }
   save();
   renderAll();
 }
 
 /** Record a completed focus block locally and in the cloud. */
-function logSession(focusedMs, end, early = false) {
+function logSession(focusedMs, end, early = false, otMin = 0) {
   const t = S.timer;
   const name = currentName();
   ensureName(name);
@@ -6486,6 +6591,7 @@ function logSession(focusedMs, end, early = false) {
     duration: Math.round(focusedMs),
     planned: t.planned,
     ...(early ? { early: 1 } : {}),   // finished early: the minutes focused count, the history shows the mark (v1.17)
+    ...(otMin > 0 ? { ot: otMin } : {}),   // minutes of overtime in this block (v1.20; the duration includes them)
     preset: activePreset().name,
     stamp: equippedId('stamp'),
     ...(t.live && (t.live.mode !== 'together' || (LIVE.blockMates && LIVE.blockMates.size)) ? { live: t.live.lid, clan: t.live.cid, stamp: 'stamp_together' } : t.live ? { live: t.live.lid, clan: t.live.cid } : {}),
@@ -6512,10 +6618,10 @@ function logSession(focusedMs, end, early = false) {
   else if (USER && !USER.guest) S.pendingSessions.push(s);
   G = null;
   const news = reconcileRewards('collect');
-  const earlyText = early ? `Finished early · ${fmtMin(focusedMs / 60000)} of ${fmtMin(t.planned / 60000)}` : '';
-  if (!S.settings.gamification) { toast(early ? `${earlyText} · ${name}` : `Logged ${fmtMin(focusedMs / 60000)} · ${name}`); socialAfterSession(); return; }
+  const earlyText = early ? `Finished early · ${fmtMin(focusedMs / 60000)} of ${fmtMin(t.planned / 60000)}` : otMin > 0 ? `${fmtMin(focusedMs / 60000)} with ${fmtMin(otMin)} overtime` : '';
+  if (!S.settings.gamification) { toast(earlyText ? `${earlyText} · ${name}` : `Logged ${fmtMin(focusedMs / 60000)} · ${name}`); socialAfterSession(); return; }
   const goalDays = news.filter(n => n.type === 'goal').length;
-  toast(`${early ? earlyText + ' · ' : ''}+${xpForSession(s)} XP · +${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins${goalDays ? ' · daily goal reached' : ''}`);
+  toast(`${earlyText ? earlyText + ' · ' : ''}+${xpForSession(s)} XP · +${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins${goalDays ? ' · daily goal reached' : ''}`);
   setTimeout(() => uiSound('coin'), 900);
   floatUp([[`+${xpForSession(s)} XP`], [`+${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins`, 'coin'], ...(victoryOf(dayKey(weekMonday()), bossView()) ? [] : [[`⚔️ −${Math.round(focusedMs / 60000)} HP`]]), ...(gw && gw.mins ? [[`🌱 +${gw.mins} min water`]] : [])]);
   if (gw && gw.ripe.length) setTimeout(() => toast(`${gw.ripe.length === 1 ? mutNames(gw.ripe[0]).map(n => n + ' ').join('') + speciesOf(gw.ripe[0]).name + ' is' : gw.ripe.length + ' plants are'} ready to harvest 🌱${gw.ripe.some(p => wmOf(p).length) && gw.ripe.length > 1 ? ' — with a focus-weather mutation' : ''}`, 3600, true, { go: { tab: 'garden' } }), 1500);
@@ -6679,14 +6785,14 @@ const ICON_MUTE  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 /** Fast path, called several times a second. */
 function renderClock() {
-  const rem = remainingMs(), planned = plannedMs();
+  const rem = remainingMs(), planned = plannedMs(), ot = S.timer.ot && S.timer.phase === 'focus';
   const progress = planned ? 1 - rem / planned : 0;
-  setTimeDigits(fmtClock(rem));
+  setTimeDigits(ot ? '+' + fmtClock(otMs()) : fmtClock(rem));
   if (!ringRAF) paintRing();   // while running, a requestAnimationFrame loop draws the ring every frame
   updateFavicon(clamp(progress, 0, 1));
   const t = S.timer;
   const label = t.phase === 'focus' ? 'Focus' : t.phase === 'short' ? 'Break' : 'Long break';
-  const title = t.status === 'idle' ? 'Pomodorolist' : `${fmtClock(rem)} · ${label}${t.status === 'paused' ? ' (paused)' : ''}`;
+  const title = t.status === 'idle' ? 'Pomodorolist' : ot ? `+${fmtClock(otMs())} · Overtime${t.status === 'paused' ? ' (paused)' : ''}` : `${fmtClock(rem)} · ${label}${t.status === 'paused' ? ' (paused)' : ''}`;
   if (document.title !== title) document.title = title;
 }
 
@@ -6696,8 +6802,11 @@ function renderTimer() {
   renderLiveBar();
   const isBreak = t.phase !== 'focus';
   const label = t.phase === 'focus' ? 'Focus' : t.phase === 'short' ? 'Short break' : 'Long break';
-  $('#phaseLabel').textContent = label + (t.status === 'paused' ? ' · paused' : '');
+  const ot = !!(t.ot && !isBreak);
+  $('#phaseLabel').textContent = (ot ? 'Overtime' : label) + (t.status === 'paused' ? ' · paused' : '');
   $('#phaseLabel').classList.toggle('break', isBreak);
+  $('#phaseLabel').classList.toggle('ot', ot);
+  $('#ring').classList.toggle('ot', ot);
   $('#ring').classList.toggle('break', isBreak);
   $('#ring').classList.toggle('breathing', isBreak && t.status === 'running');
 
@@ -6707,11 +6816,17 @@ function renderTimer() {
     `<span class="${i < done ? 'done' : (i === t.round - 1 && t.phase === 'focus' ? 'current' : '')}"></span>`).join('');
 
   $('#ringSub').textContent = t.phase === 'focus' ? (currentName() === 'Untitled' ? p.name : currentName()) : p.name;
-  setMainBtn(t.status === 'running' ? 'Pause' : t.status === 'paused' ? 'Resume' : (isBreak ? 'Start break' : 'Start'), t.status === 'running');
-  const early = !isBreak && t.status !== 'idle' && !(t.live && t.live.mode !== 'together');   // Finish early (v1.17): end now and log the minutes focused
-  $('#skipBtn').textContent = early ? 'Finish early' : 'Skip';
-  $('#skipBtn').title = early ? `End the block now and log the minutes focused (from ${EARLY_MIN_MS / 60000} minutes); Reset abandons it` : 'Skip this phase';
+  setMainBtn(ot ? 'Stop' : t.status === 'running' ? 'Pause' : t.status === 'paused' ? 'Resume' : (isBreak ? 'Start break' : 'Start'), t.status === 'running' && !ot);
+  const early = !ot && !isBreak && t.status !== 'idle' && !(t.live && t.live.mode !== 'together');   // Finish early (v1.17): end now and log the minutes focused
+  $('#skipBtn').textContent = ot ? 'Break' : early ? 'Finish early' : 'Skip';
+  $('#skipBtn').title = ot ? 'Log the block and start your break now' : early ? `End the block now and log the minutes focused (from ${EARLY_MIN_MS / 60000} minutes); Reset abandons it` : 'Skip this phase';
   $('#skipBtn').classList.toggle('early', early);
+  $('#resetBtn').textContent = ot ? (t.status === 'paused' ? 'Resume' : 'Pause') : 'Reset';   // in overtime the block is already done: nothing to reset
+  $('#resetBtn').title = ot ? (t.status === 'paused' ? 'Resume overtime' : 'Pause overtime') : 'Reset (double-reset returns to round 1)';
+  const otl = $('#otLine');
+  if (ot) { otl.innerHTML = `<span>Block done — the extra minutes count until you tap <b>Stop</b> (up to ${fmtMin(OT_TOTAL_MS / 60000)} a block)</span><button type="button" class="linkbtn" id="otOff">Turn off overtime</button>`; otl.classList.remove('hidden'); }
+  else if (otOn() && otSynced() && !isBreak) { otl.innerHTML = '<span>Overtime is off in a Synced timer — the host runs the shared timer</span>'; otl.classList.remove('hidden'); }
+  else { otl.innerHTML = ''; otl.classList.add('hidden'); }
   $('#muteBtn').innerHTML = S.settings.sound ? ICON_SOUND : ICON_MUTE;
   $('#muteBtn').title = S.settings.sound ? 'Sound on — click to mute' : 'Muted — click for sound';
   if (document.body.classList.toggle('zen', extraOn('x_zen') && t.status === 'running' && t.phase === 'focus') !== zenWas) { zenWas = !zenWas; fitAllMasons(); }
@@ -7021,7 +7136,7 @@ function renderStats() {
       ? `<ul class="sesslist">${daySessions.slice().reverse().map(s => `
           <li><span class="t">${fmtTime(s.start)}–${fmtTime(s.end)}</span>
             <span class="dot" style="background:${esc(colorFor(s.name))}"></span>
-            <span class="nm" title="${esc(s.preset || '')}">${esc(s.name)}${s.early ? `<span class="early" title="Finished early · ${fmtMin(s.duration / 60000)} of ${fmtMin((s.planned || s.duration) / 60000)}">early</span>` : ''}${S.energy[s.id] ? `<span class="en" title="Focus: ${ENERGY[S.energy[s.id]].t}">${ENERGY[S.energy[s.id]].e}</span>` : ''}${S.notes[s.id] ? `<span class="note">“${esc(S.notes[s.id])}”</span>` : ''}${s.subtasks && s.subtasks.length ? `<details class="subdet"><summary>${s.subtasks.filter(x => x.d).length}/${s.subtasks.length} subtasks</summary><ul>${s.subtasks.map(x => `<li class="${x.d ? 'ok' : 'no'}">${esc(x.t)}</li>`).join('')}</ul></details>` : ''}</span>
+            <span class="nm" title="${esc(s.preset || '')}">${esc(s.name)}${s.early ? `<span class="early" title="Finished early · ${fmtMin(s.duration / 60000)} of ${fmtMin((s.planned || s.duration) / 60000)}">early</span>` : ''}${s.ot ? `<span class="ot-tag" title="${fmtMin(s.ot)} of overtime after the block ended">+${fmtMin(s.ot)}</span>` : ''}${S.energy[s.id] ? `<span class="en" title="Focus: ${ENERGY[S.energy[s.id]].t}">${ENERGY[S.energy[s.id]].e}</span>` : ''}${S.notes[s.id] ? `<span class="note">“${esc(S.notes[s.id])}”</span>` : ''}${s.subtasks && s.subtasks.length ? `<details class="subdet"><summary>${s.subtasks.filter(x => x.d).length}/${s.subtasks.length} subtasks</summary><ul>${s.subtasks.map(x => `<li class="${x.d ? 'ok' : 'no'}">${esc(x.t)}</li>`).join('')}</ul></details>` : ''}</span>
             ${stampOn() ? `<span class="st-mini" title="Stamp: ${esc(ITEM_BY_ID[sessionStamp(s)].name)}">${stampSVG(sessionStamp(s), 22)}</span>` : ''}<span class="d">${fmtMin(s.duration / 60000)}</span>
             <button class="linkbtn" data-del="${esc(s.id)}" title="Delete this session" aria-label="Delete">✕</button></li>`).join('')}</ul>`
       : sceneEmpty('read', '', 'No focus blocks on this day.', 'margin-top:12px');
@@ -7079,6 +7194,7 @@ function renderSettings() {
   $('#setSound').checked = st.sound;
   $('#setNotify').checked = st.notify;
   $('#setAuto').checked = st.autoStart;
+  $('#setOvertime').checked = st.overtime !== false;
   $('#setMinimal').checked = minimal();
   $('#setAtmo').checked = st.atmosphere !== false;
   $('#setFestive').checked = st.festive !== false;
@@ -9466,7 +9582,7 @@ function publishPresence() {
   const t = S.timer, s = S.settings;
   let now = null;
   if (s.shareActivity && t.status !== 'idle') {
-    now = { name: t.phase === 'focus' ? (s.shareNames ? currentName().slice(0, 80) : 'Focus session') : 'Break', phase: t.phase, status: t.status,
+    now = { name: t.phase === 'focus' ? (s.shareNames ? currentName().slice(0, 80) : 'Focus session') : 'Break', phase: t.phase, status: t.ot && t.status === 'running' && t.phase === 'focus' ? 'overtime' : t.status,   // "overtime" (v1.20): older apps show nothing for it, as before
       endAt: t.status === 'running' ? t.endAt : 0, left: t.status === 'paused' ? Math.round(t.remaining / 60000) : 0 };
   }
   writePublic('presence', { visible: !!s.shareActivity, now });
@@ -9627,6 +9743,8 @@ function presenceText(p) {
     return n.phase === 'focus' ? `${n.name} – ${left} min left` : `On a break – ${left} min left`;
   }
   if (n.status === 'paused' && p.updatedAt && Date.now() - p.updatedAt.toMillis() < 3 * 3600e3) return `${n.phase === 'focus' ? n.name : 'Break'} – paused`;
+  // v1.20: counting up after the block's end (status "overtime", written when it starts; within the 4-hour block limit)
+  if (n.status === 'overtime' && p.updatedAt && Date.now() - p.updatedAt.toMillis() < 4 * 3600e3) return `${n.name} – overtime`;
   return '';
 }
 
@@ -17982,10 +18100,12 @@ $('#mainBtn').addEventListener('click', () => {
   if (performance.now() - mainBtnAt < 400) return;   // a double-click (or a bounced tap) used to start and immediately pause
   mainBtnAt = performance.now();
   if (liveButton('main')) return;
+  if (S.timer.ot && S.timer.phase === 'focus') { otStop('stop'); return; }   // overtime: Stop logs the block (v1.20)
   if (S.timer.status === 'running') pauseTimer(); else startTimer();
 });
-$('#skipBtn').addEventListener('click', () => { if (!liveButton('skip')) finishPhase(S.timer.phase === 'focus' && S.timer.status !== 'idle' ? 'early' : 'skip'); });   // during a focus block the button is "Finish early" (v1.17)
-$('#resetBtn').addEventListener('click', () => { if (!liveButton('reset')) finishPhase('reset'); });
+$('#skipBtn').addEventListener('click', () => { if (S.timer.ot && S.timer.phase === 'focus') { otStop('break'); return; } if (!liveButton('skip')) finishPhase(S.timer.phase === 'focus' && S.timer.status !== 'idle' ? 'early' : 'skip'); });   // during a focus block the button is "Finish early" (v1.17)
+$('#resetBtn').addEventListener('click', () => { if (S.timer.ot && S.timer.phase === 'focus') { if (S.timer.status === 'running') pauseTimer(); else startTimer(); return; } if (!liveButton('reset')) finishPhase('reset'); });   // overtime: Pause / Resume (v1.20)
+document.addEventListener('click', e => { if (e.target.closest('#otOff')) { S.settings.overtime = false; save(); otStop('off'); } });
 $('#muteBtn').addEventListener('click', () => {
   S.settings.sound = !S.settings.sound;
   if (S.settings.sound) { kickAudio(); playEndSound(); } else stopPreview();
@@ -18071,6 +18191,7 @@ $('#setWeek').addEventListener('change', e => { S.settings.weekStart = +e.target
 $('#setTheme').addEventListener('change', e => { S.settings.theme = e.target.value; applyTheme(); save(); });
 $('#setSound').addEventListener('change', e => { S.settings.sound = e.target.checked; if (e.target.checked) kickAudio(); else stopPreview(); save(); renderTimer(); });
 $('#setAuto').addEventListener('change', e => { S.settings.autoStart = e.target.checked; save(); });
+$('#setOvertime').addEventListener('change', e => { S.settings.overtime = e.target.checked; save(); renderTimer(); });
 $('#setAmbVol').addEventListener('input', e => setAmbientVolume(e.target.value));
 $$('.setting').forEach(row => {
   const cb = row.querySelectorAll('input[type="checkbox"]');
@@ -18328,7 +18449,8 @@ function tick() {
   renderGreeting();
   const t = S.timer;
   if (t.live && t.live.mode !== 'together') { liveSync(); renderLiveClock(); }
-  if (t.status === 'running' && !(t.live && t.live.mode !== 'together') && Date.now() >= t.endAt) { finishPhase('complete'); return; }
+  if (t.status === 'running' && t.ot) otTick();   // counting up (v1.20)
+  else if (t.status === 'running' && !(t.live && t.live.mode !== 'together') && Date.now() >= t.endAt) { if (otEligible()) otEnter(); else finishPhase('complete'); return; }
   if (t.live && t.live.mode === 'together' && LIVE.lid) togetherTick();
   renderClock();
   renderAtmo();
@@ -21965,7 +22087,7 @@ function togetherTick() {
   if (t.status === 'running' && t.phase === 'focus') for (const p of livePeople()) if (p.id !== USER.uid && p.st === 'focus') { LIVE.blockMates.add(p.id); LIVE.mates.add(p.id); }
   for (const el of document.querySelectorAll('.lv-cd[data-end]')) { const end = +el.dataset.end; el.textContent = fmtClock(Math.max(0, end - liveSrvNow())); }
   const mine = $('#lvMine');
-  if (mine) mine.textContent = fmtClock(remainingMs());
+  if (mine) mine.textContent = t.ot && t.phase === 'focus' ? '+' + fmtClock(otMs()) : fmtClock(remainingMs());   // overtime counts up (v1.20)
 }
 /** A focus block started: count who focuses with me from now on. */
 function togetherBlockStart() { if (inTogether()) LIVE.blockMates = new Set(livePeople().filter(p => p.id !== USER.uid && p.st === 'focus').map(p => p.id)); }
