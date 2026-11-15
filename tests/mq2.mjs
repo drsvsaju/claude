@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 390, height: 800 }, hasTouch: true, isMobile: true });
+const p = await ctx.newPage(); await p.goto('http://localhost:8000/index.html');
+await p.evaluate(() => { localStorage.setItem('pomodorolist-guest', '1'); localStorage.setItem('pomodorolist-onboarded:guest', '1'); });
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#appView:not(.hidden)'); await new Promise(r => setTimeout(r, 1200));
+console.log(await p.evaluate(() => { showTab('settings'); const e = $('#exportBtn'), cs = getComputedStyle(e); 
+  const rules = []; for (const sh of document.styleSheets) for (const r of sh.cssRules) if (r.media && /coarse/.test(r.media.mediaText)) rules.push(r.media.mediaText + ' :: ' + r.cssRules.length + ' rules, first: ' + (r.cssRules[0] && r.cssRules[0].cssText.slice(0, 80)));
+  return `minHeight=${cs.minHeight} h=${e.getBoundingClientRect().height} matches=${matchMedia('(pointer: coarse)').matches}\n` + rules.join('\n'); }));
+await b.close();

@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx.addInitScript(() => { localStorage.setItem('pomodorolist-tour-done', '1'); localStorage.setItem('pomodorolist-intro-seen', '1'); localStorage.setItem('pomodorolist-login-later', String(Date.now())); });
+const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#authView:not(.hidden)'); await p.click('#previewBtn'); await p.waitForSelector('#appView:not(.hidden)'); await p.waitForTimeout(2600);
+await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); S.ui.remView = 'cards'; showTab('reminders'); }); await p.waitForTimeout(500);
+await p.screenshot({ path: 'shot-cards-list.png' });
+await p.evaluate(() => openDeckDlg(S.decks[0].id)); await p.waitForTimeout(400); await p.screenshot({ path: 'shot-cards-deck.png' });
+await p.evaluate(() => { $('#deckDlg').close(); startReview(''); }); await p.waitForTimeout(400); await p.screenshot({ path: 'shot-cards-review1.png' });
+await p.evaluate(() => { RV.flipped = true; renderReview(); }); await p.waitForTimeout(700); await p.screenshot({ path: 'shot-cards-review2.png' });
+await p.evaluate(() => closeReview());
+await p.setViewportSize({ width: 390, height: 844 }); await p.evaluate(() => startReview('')); await p.waitForTimeout(400); await p.screenshot({ path: 'shot-cards-phone.png' });
+console.log('errors', JSON.stringify(errs)); await b.close();

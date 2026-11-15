@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx.addInitScript(() => { localStorage.setItem('pomodorolist-tour-done', '1'); localStorage.setItem('pomodorolist-intro-seen', '1'); localStorage.setItem('pomodorolist-login-later', String(Date.now())); localStorage.setItem('pomodorolist-onboarded:guest', '1');
+  const now = Date.now(), sessions = []; for (let d = 1; d <= 80; d++) for (let k = 0; k < 3; k++) { const st = now - d * 864e5 + (9 + k * 3) * 3600e3; sessions.push({ id: 's' + d + '_' + k, name: 'Physics', start: st, end: st + 50 * 60000, duration: 50 * 60000, planned: 50 * 60000, preset: 'Classic 25/5' }); } localStorage.setItem('focus-app-v1', JSON.stringify({ sessions })); });
+const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#authView:not(.hidden)'); await p.click('#guestBtn'); await p.waitForSelector('#appView:not(.hidden)'); await p.waitForTimeout(2600);
+await p.evaluate(() => { window.confirm = () => true; document.querySelectorAll('dialog[open]').forEach(d => d.close()); buyItem('trail_stars'); buyItem('th_aurora'); eqSet('theme', 'th_aurora'); applyCosmetics(); showTab('timer'); S.timer.phase = 'focus'; S.timer.status = 'idle'; startTimer(); });
+await p.waitForTimeout(1800); await p.screenshot({ path: 'shot-drop-aurora-stars.png' });
+await p.evaluate(() => { $('#resetBtn').click(); buyItem('th_candy'); eqSet('theme', 'th_candy'); S.settings.theme = 'light'; applyCosmetics(); S.ui.shopCat = 'stamp'; showTab('shop'); }); await p.waitForTimeout(500); await p.screenshot({ path: 'shot-drop-candy-stamps.png' });
+await p.evaluate(() => { S.ui.shopCat = 'trail'; renderShop(); }); await p.waitForTimeout(400); await p.screenshot({ path: 'shot-drop-trails.png' });
+await p.evaluate(() => { eqSet('theme', 'th_coffee'); S.game.purchases.cf = { item: 'th_coffee', price: 0, at: Date.now() }; G = null; applyCosmetics(); S.ui.shopCat = 'room'; renderShop(); window.scrollTo(0, 900); }); await p.waitForTimeout(400); await p.screenshot({ path: 'shot-drop-coffee-room.png' });
+console.log('errors', JSON.stringify(errs)); await b.close();

@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx.addInitScript(() => { localStorage.setItem('pomodorolist-tour-done', '1'); localStorage.setItem('pomodorolist-intro-seen', '1'); localStorage.setItem('pomodorolist-login-later', String(Date.now())); localStorage.setItem('pomodorolist-onboarded:guest', '1'); localStorage.setItem('pomodorolist-seen-version', '9.9'); });
+const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 200)); });
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#authView:not(.hidden)'); await p.click('#guestBtn'); await p.waitForSelector('#appView:not(.hidden)'); await new Promise(r => setTimeout(r, 2500));
+const r = await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); showTab('garden'); const e = eggActive(); S.eggs.push({ id: 't1', v: 1, kind: 'rare', src: 'focus', at: Date.now(), need: 420, w: { x: 420 }, h: Date.now(), pet: 'fox' }); petEquip('fox'); renderGarden(); showHatch(S.eggs.find(x => x.id === 't1')); return { egg: e && e.id, card: !!$('.gd-egg'), txt: $('.gd-egg .lbl').textContent, pets: $$('.gd-pet').length, dlg: $('#eggDlg').open, title: $('#egTitle').textContent }; });
+await new Promise(r => setTimeout(r, 1800));
+await p.screenshot({ path: 'shot116-hatch.png' });
+await p.evaluate(() => { $('#eggDlg').close(); openPetsDlg(); });
+await new Promise(r => setTimeout(r, 500));
+await p.screenshot({ path: 'shot116-pets.png' });
+await p.evaluate(() => { $('#gdDlg').close(); S.ui.gardenView = 'almanac'; renderGarden(); });
+await new Promise(r => setTimeout(r, 900));
+await p.evaluate(() => $('.gd-petgrid').scrollIntoView());
+await p.screenshot({ path: 'shot116-almanac.png' });
+console.log(JSON.stringify(r)); console.log('errors', errs); await b.close();

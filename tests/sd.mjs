@@ -1,0 +1,15 @@
+import { chromium } from 'playwright';
+import fs from 'fs';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const src = fs.readFileSync('audit.mjs', 'utf8'); const seedSrc = src.slice(src.indexOf('const seed = '), src.indexOf('const check = '));
+const LONG = 'Organic Chemistry – Aldehydes, Ketones and Carboxylic Acids (revision part 2)';
+const seed = eval(seedSrc.replace('const seed = ', '(').replace(/;\s*$/, ')'));
+const ctx = await b.newContext({ viewport: { width: 768, height: 1024 }, hasTouch: true });
+const p = await ctx.newPage(); await p.goto('http://localhost:8000/index.html'); await p.evaluate(seed, LONG);
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#appView:not(.hidden)'); await new Promise(r => setTimeout(r, 1500));
+await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(x => x.close()); S.ui.statsView = 'day'; showTab('stats'); });
+await new Promise(r => setTimeout(r, 800));
+console.log(await p.evaluate(() => { const li = $('.sesslist li'), ul = li.parentElement, card = li.closest('.card'); const f = e => `${e.tagName}.${e.className} w=${Math.round(e.getBoundingClientRect().width)} min=${getComputedStyle(e).minWidth} disp=${getComputedStyle(e).display}`; return [f(card), f(ul), f(li), ...[...li.children].map(f)].join('\n'); }));
+console.log(await p.evaluate(() => [...$$('.sesslist li')].filter(li => li.getBoundingClientRect().right > innerWidth).map(li => li.outerHTML.slice(0, 600)).slice(0, 1).join('\n')));
+const li = await p.$('.sesslist li'); await li.scrollIntoViewIfNeeded(); await p.screenshot({ path: 'sd-768.png' });
+await b.close();

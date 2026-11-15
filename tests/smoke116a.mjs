@@ -1,0 +1,10 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx.addInitScript(() => { localStorage.setItem('pomodorolist-tour-done', '1'); localStorage.setItem('pomodorolist-intro-seen', '1'); localStorage.setItem('pomodorolist-login-later', String(Date.now())); localStorage.setItem('pomodorolist-onboarded:guest', '1'); localStorage.setItem('pomodorolist-seen-version', '9.9'); });
+const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 200)); });
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#authView:not(.hidden)'); await p.click('#guestBtn'); await p.waitForSelector('#appView:not(.hidden)'); await new Promise(r => setTimeout(r, 2500));
+const r = await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); S.ui.gardenView = 'seeds'; showTab('garden'); const g = garden(); return { feat: featuredSeeds().map(s => s.id), daily: dailySeed().id, slot: seedSlot(), secs: $$('.gd-shop-sec').length, featCards: $$('.gd-feat .gd-item').length, always: $$('.gd-shop-sec:last-child .gd-item').length, excl: $$('.gd-item.excl').length, restock: $('[data-restock="slot"]').textContent, dailyTxt: $('[data-restock="daily"]').textContent, produce: g.produce, seen: localStorage.getItem('pomodorolist-seedslot'), dot: !$('#gardenDot').classList.contains('hidden') }; });
+console.log(JSON.stringify(r));
+await p.screenshot({ path: 'shot116-seeds.png', fullPage: true });
+console.log('errors', errs); await b.close();

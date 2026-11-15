@@ -1,0 +1,31 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx.addInitScript(() => { localStorage.setItem('pomodorolist-tour-done', '1'); localStorage.setItem('pomodorolist-intro-seen', '1'); localStorage.setItem('pomodorolist-login-later', String(Date.now())); localStorage.setItem('pomodorolist-onboarded:guest', '1');
+  const now = Date.now(), sessions = []; for (let d = 1; d <= 60; d++) for (let k = 0; k < 3; k++) { const st = now - d * 864e5 + (9 + k * 3) * 3600e3; sessions.push({ id: 's' + d + '_' + k, name: 'Physics', start: st, end: st + 50 * 60000, duration: 50 * 60000, planned: 50 * 60000, preset: 'Classic 25/5' }); }
+  localStorage.setItem('focus-app-v1', JSON.stringify({ sessions })); });
+const p = await ctx.newPage(); const errs = [];
+p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); });
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#authView:not(.hidden)'); await p.click('#guestBtn'); await p.waitForSelector('#appView:not(.hidden)');
+await p.waitForTimeout(2600); await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(d => d.close()));
+console.log('coins', await p.evaluate(() => game().balance));
+await p.evaluate(() => showTab('room')); await p.waitForTimeout(600);
+await p.screenshot({ path: 'shot-room-1.png' });
+console.log('room default', await p.evaluate(() => ({ tab: S.ui.tab, nav: $('#tabs [data-tab].active') && $('#tabs [data-tab].active').dataset.tab, layout: roomLayout(), svg: !!$('#rmScene svg.rm-svg'), pomeo: !!$('.rm-pomeo') })));
+// buy a few items with coins
+console.log('buy', await p.evaluate(() => { window.confirm = () => true; const c0 = game().balance; const r = ['wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_fish'].map(id => { buyItem(id); return isOwned(id); }); return { r, spent: c0 - game().balance, layout: roomLayout(), prefs: Object.keys(S.roomPrefs) }; }));
+await p.evaluate(() => { S.ui.shopCat = 'room'; showTab('shop'); }); await p.waitForTimeout(500); await p.screenshot({ path: 'shot-room-shop.png' });
+await p.evaluate(() => showTab('room')); await p.waitForTimeout(500); await p.screenshot({ path: 'shot-room-2.png' });
+console.log('set', await p.evaluate(() => { saveRoomSet('Cosy'); roomRemove('pet'); roomRemove('lamp'); const a = roomLayout(); applyRoomSet(S.roomSets[0].id); return { a: [a.pet, a.lamp], after: [roomLayout().pet, roomLayout().lamp], sets: S.roomSets.length }; }));
+await p.evaluate(() => { S.ui.bagCat = 'room'; showTab('bag'); }); await p.waitForTimeout(500); await p.screenshot({ path: 'shot-room-bag.png' });
+console.log('bag', await p.evaluate(() => ({ cat: !!$('#bagCats [data-bcat="room"]'), cards: $$('#bagList .bag-item').length, placed: $$('#bagList .bag-item.equipped').length, remove: $$('#bagList [data-rremove]').length })));
+await p.evaluate(() => showTab('room')); await p.waitForTimeout(300);
+const png = await p.evaluate(async () => { const b = await roomPNG(); return b.size; });
+console.log('png bytes', png);
+await p.evaluate(() => openRoomShare()); await p.waitForTimeout(500); await p.screenshot({ path: 'shot-room-share.png' });
+await p.evaluate(() => $('#rmShareDlg').close());
+await p.setViewportSize({ width: 390, height: 844 }); await p.waitForTimeout(400); await p.screenshot({ path: 'shot-room-phone.png', fullPage: true });
+console.log('hscroll', await p.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1));
+console.log('events', await p.evaluate(() => EVENTS.map(ev => ev.id + ':' + ev.final.length).join(' ')));
+console.log('errors', JSON.stringify(errs));
+await b.close();

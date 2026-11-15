@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, colorScheme: 'dark' });
+await ctx.addInitScript(() => { localStorage.setItem('pomodorolist-tour-done', '1'); localStorage.setItem('pomodorolist-onboarded:guest', '1'); localStorage.setItem('pomodorolist-glass', 'full'); });
+const p = await ctx.newPage(); p.on('pageerror', e => console.log('ERR', e.message));
+await p.goto('http://localhost:8000/index.html'); await p.click('#guestBtn'); await p.waitForTimeout(2200);
+await p.screenshot({ path: 'g7-login.png' });
+await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); const now = Date.now(); for (let i = 0; i < 6; i++) { const st = now - i * 3 * 3600e3 - 3600e3; S.sessions.push({ id: 'g' + i, name: ['Physics', 'Maths', 'Bio'][i % 3], start: st, end: st + [15, 30, 60, 95, 25, 50][i] * 60000, duration: [15, 30, 60, 95, 25, 50][i] * 60000, planned: 0, preset: '' }); } S.exams.push({ id: 'e', name: 'JEE Main', date: dayKey(addDays(new Date(), 94)), added: now - 864e5 * 3 }); save(); renderAll(); showTab('quests'); });
+await p.waitForTimeout(900); await p.screenshot({ path: 'g7-quests.png' });
+await p.evaluate(() => showTab('stats')); await p.waitForTimeout(600); await p.evaluate(() => $('#gardenSlot').scrollIntoView()); await p.waitForTimeout(300); await p.screenshot({ path: 'g7-garden.png' });
+await p.evaluate(() => { showTab('timer'); window.scrollTo(0, 0); }); await p.waitForTimeout(500);
+await p.evaluate(() => { const ex = $('#examCard'); window.scrollTo(0, ex.getBoundingClientRect().top + scrollY - 80); }); await p.waitForTimeout(300); await p.screenshot({ path: 'g7-exam.png' });
+await b.close();

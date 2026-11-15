@@ -1,0 +1,11 @@
+#!/bin/sh
+# Rebuild the main test site from the repo, load the repo rules, clear the emulator, run the given suites one by one.
+cd "$(dirname "$0")"
+sh ../v1143/site.sh || exit 1
+cp /home/user/claude/firestore.rules firestore.rules
+sleep 3
+curl -s -X DELETE localhost:9099/emulator/v1/projects/demo-pomo/accounts > /dev/null; curl -s -X DELETE "localhost:8080/emulator/v1/projects/demo-pomo/databases/(default)/documents" > /dev/null
+for t in "$@"; do
+  case $t in v120*) timeout 1500 node $t.mjs > out-$t.txt 2>&1 ;; *) timeout 1500 node --import ./ot-classic.mjs $t.mjs > out-$t.txt 2>&1 ;; esac   # v1.20: classic suites keep Overtime off (ot-classic.mjs)
+  echo "$t exit=$? $(grep -o "errors \[.*" out-$t.txt | tail -1 | cut -c1-120) $(grep -c '^✗' out-$t.txt) failed"
+done

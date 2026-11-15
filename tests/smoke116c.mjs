@@ -1,0 +1,17 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+await ctx.addInitScript(() => { localStorage.setItem('pomodorolist-tour-done', '1'); localStorage.setItem('pomodorolist-intro-seen', '1'); localStorage.setItem('pomodorolist-login-later', String(Date.now())); localStorage.setItem('pomodorolist-onboarded:guest', '1'); localStorage.setItem('pomodorolist-seen-version', '9.9'); });
+const p = await ctx.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text().slice(0, 200)); });
+await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#authView:not(.hidden)'); await p.click('#previewBtn'); await p.waitForSelector('#appView:not(.hidden)'); await new Promise(r => setTimeout(r, 2600));
+const r = await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); S.ui.gardenView = 'garden'; showTab('garden'); const g = garden(); return { log: !!document.querySelector('.gd-loglist'), rows: document.querySelectorAll('.gd-loglist li').length, rec: gardenRecords().best, h4: g.harvested.find(x => x.id === 'demo_h4') && kgOf(g.harvested.find(x => x.id === 'demo_h4')), big: bigField() }; });
+console.log(JSON.stringify(r));
+await p.screenshot({ path: 'shot116-log.png', fullPage: true });
+await p.evaluate(() => { const g = garden(); showGiant(g.harvested.find(x => x.id === 'demo_h4')); });
+await new Promise(r => setTimeout(r, 900));
+await p.screenshot({ path: 'shot116-giant.png' });
+await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); S.ui.gardenView = 'almanac'; showTab('garden'); });
+await new Promise(r => setTimeout(r, 400));
+await p.screenshot({ path: 'shot116-alm3.png', fullPage: true });
+console.log('errors', JSON.stringify(errs));
+await b.close();
