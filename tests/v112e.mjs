@@ -1,5 +1,6 @@
 // v1.12 layout audit: boss arena (Solo + Squad), Trophy Hall, questline, bag (empty + full), reward reveal, event banner
 // at 360 / 390 / 768 / 1280 px: no sideways scroll, nothing sticking out or clipped, tap targets ≥ 44 px on touch screens.
+// v2.0: the touch-target and field-height audits include the library's controls (ui-select, ui-date, ui-time, ui-num, ui-color) and skip their inner parts.
 import { chromium } from 'playwright';
 import fs from 'fs';
 const FBDIR = new URL('./node_modules/firebase/', import.meta.url).pathname;
@@ -29,12 +30,12 @@ const check = touch => {
     if (own && el.scrollWidth > el.clientWidth + 1 && (cs.overflowX === 'hidden' || cs.overflowX === 'clip') && cs.textOverflow !== 'ellipsis') out.push([sig(el), `text clipped without ellipsis: "${el.textContent.trim().slice(0, 30)}"`]);
     // text running out of its box (overflow visible) into neighbours
     if (own && cs.overflowX === 'visible' && el.scrollWidth > el.clientWidth + 2 && cs.display !== 'inline' && el.clientWidth > 0) out.push([sig(el), `text overflows its box: "${el.textContent.trim().slice(0, 30)}"`]);
-    if (touch && el.matches('button, a[href], select, summary, [role=button], input:not([type=hidden]):not([type=range])') && !el.disabled) {
+    if (touch && el.matches('button, a[href], select, summary, [role=button], input:not([type=hidden]):not([type=range]), ui-select, ui-date, ui-time, ui-num, ui-color') && !el.disabled && !(el.parentElement && el.parentElement.closest('ui-num, ui-tags, ui-select, ui-date, ui-time, ui-color'))) {
       let h = r.height, w = r.width;
       const pa = getComputedStyle(el, '::after'); if (pa.content !== 'none' && pa.position === 'absolute') { w = Math.max(w, parseFloat(pa.width) || 0); h = Math.max(h, parseFloat(pa.height) || 0); }
       const lab = el.closest('label, .setting, .tut-switch'); // a whole row that toggles counts as the target
       if (lab && el.matches('input[type=checkbox]') && (lab.matches('label') || lab.dataset.rowToggle !== undefined)) { const lr = lab.getBoundingClientRect(); h = lr.height; w = lr.width; }
-      if (el.matches('input[type=text], input[type=number], input[type=date], input[type=time], input:not([type]), select, textarea')) { if (h < 40) out.push([sig(el), `field only ${Math.round(h)}px tall`]); }
+      if (el.matches('input[type=text], input[type=number], input[type=date], input[type=time], input:not([type]), select, textarea, ui-select, ui-date, ui-time, ui-num:not([bare])') && !(el.parentElement && el.parentElement.closest('ui-num, ui-tags, ui-select, ui-date, ui-time, ui-color'))) { if (h < 40) out.push([sig(el), `field only ${Math.round(h)}px tall`]); }
       else if (h < 43.5 || w < 43.5) out.push([sig(el), `tap target ${Math.round(w)}×${Math.round(h)} (“${(el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 18)}”)`]);
     }
   }
