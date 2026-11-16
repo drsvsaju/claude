@@ -125,7 +125,7 @@ body {
 }
 button, input, select { font: inherit; color: inherit; }
 ::selection { background: var(--sel, rgba(79, 179, 165, .35)); color: inherit; }
-h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; }
+h2 { font-size: var(--fs-14, 14px); font-weight: 600; letter-spacing: 0; color: var(--text); margin: 0 0 12px; line-height: 1.3; }   /* v2.0: a card's title, in sentence case */
 .muted { color: var(--muted); }
 .row { display: flex; align-items: center; gap: 10px; }
 .between { justify-content: space-between; }
@@ -4262,6 +4262,22 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
   .ui-sw::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; }   /* 39 px circles, 44 px targets (they sit 47 px apart) */
   .ui-num-b:not(.plant):not(.rem-check) { height: 44px; } .ui-num-well { height: 52px; }
 }
+/* ----- dialog shell (v2.0): every dialog has a title in the same place and a close button; on a phone it is a sheet ----- */
+dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--t-1, var(--text)); line-height: 1.3; margin: 0 0 12px; padding-right: 40px; min-height: 26px; }
+.dlg-xw { position: sticky; top: 0; z-index: 6; height: 0; display: flex; justify-content: flex-end; pointer-events: none; }
+.dlg-x { all: unset; box-sizing: border-box; pointer-events: auto; flex: none; display: grid; place-items: center; width: 32px; height: 32px; margin: -6px -6px 0 0; border-radius: 50%; background: var(--pop-bg, var(--surface)); color: var(--t-2, var(--muted)); cursor: pointer; }
+.dlg-x:hover { background: linear-gradient(var(--hover), var(--hover)), var(--pop-bg, var(--surface)); color: var(--t-1, var(--text)); }
+.dlg-x:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+.dlg-x svg { width: 16px; height: 16px; }
+@media (pointer: coarse) { .dlg-x:not(.plant):not(.rem-check) { width: 44px; height: 44px; min-height: 0; margin: -12px -12px 0 0; } }
+@media (max-width: 640px) {
+  /* a phone dialog rises from the bottom edge, full width, within thumb reach (the palette, the tutorial, the garden tour and the library's own sheets place themselves) */
+  dialog:not(.ui-pop, .sheet, .cmd, .tut, .gt-dlg) { margin: auto 0 0; width: 100%; max-width: 100%; box-sizing: border-box; max-height: 88dvh; border-radius: var(--r-22, 22px) var(--r-22, 22px) 0 0; border-width: 1px 0 0; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+  :root[data-motion="full"] dialog[open]:not(.ui-pop, .sheet, .cmd, .tut, .gt-dlg) { animation: uiSheetIn var(--d-3, 320ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)) backwards; }
+  :root[data-motion="full"] dialog.closing:not(.ui-pop, .sheet, .cmd, .tut, .gt-dlg) { animation: uiSheetOut .17s ease-in forwards; }
+  .dlg-x:not(.plant):not(.rem-check) { width: 44px; height: 44px; min-height: 0; margin: -12px -10px 0 0; }   /* a full-size target on a phone */
+  dialog .dlg-title { padding-right: 44px; min-height: 30px; }
+}
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -5650,6 +5666,7 @@ const UI = (() => {
 
   /* ---------- which dialog is on top (a panel must live inside it: everything outside a modal dialog is inert) ---------- */
   const stack = [];
+  let shell = () => null;   // (set below, where dialogs are patched)
   const topDialog = () => { for (let i = stack.length - 1; i >= 0; i--) if (stack[i].open && stack[i].isConnected) return stack[i]; const ds = document.querySelectorAll('dialog[open]'); return ds.length ? ds[ds.length - 1] : null; };
   if (typeof HTMLDialogElement !== 'undefined' && !HTMLDialogElement.prototype._uiShow) {
     const P = HTMLDialogElement.prototype, show = P.showModal;
@@ -5663,10 +5680,33 @@ const UI = (() => {
       if (!h.id) h.id = 'dlgName' + (++dlgN);
       d.setAttribute('aria-labelledby', h.id);
     };
+    /* The dialog shell (v2.0): the heading that names the dialog takes the dialog-title look, and the dialog gets a close
+       button at its top right (the same as Esc: a dialog that refuses Esc refuses this too). Dialogs that must be
+       answered, or that bring their own close button, get none. */
+    const NO_X = '.cf-dlg, .ot-dlg, .cmd, .tut, .ui-pop, .sheet, .gt-dlg, #migrateDlg';
+    shell = d => {
+      const lb = d.getAttribute('aria-labelledby'), t = lb ? document.getElementById(lb.split(/\s+/).pop()) : null;
+      if (t && /^H[123]$/.test(t.tagName) && !t.classList.contains('dlg-title')) t.classList.add('dlg-title');
+      let x = d.querySelector(':scope > .dlg-xw');
+      if (d.matches(NO_X) || d.querySelector('[aria-label^="Close"]:not(.dlg-x), [data-coll-close], [data-cdclose]')) { if (x) x.remove(); return null; }
+      if (!x) {
+        x = document.createElement('div'); x.className = 'dlg-xw';
+        x.innerHTML = `<button type="button" class="dlg-x" aria-label="Close">${IC.x}</button>`;
+        x.firstChild.addEventListener('click', () => { if (d.dispatchEvent(new Event('cancel', { cancelable: true }))) d.close(); });
+      }
+      if (d.firstElementChild !== x) d.prepend(x);
+      return x;
+    };
     P.showModal = function (...a) {
       if (!this.open) this._uiFrom = document.activeElement;   // focus goes back here when it closes
-      const r = show.apply(this, a);
-      try { nameDialog(this); } catch (e) { /* naming is best-effort */ }
+      let x = null; try { x = shell(this); } catch (e) { /* the shell is best-effort */ }
+      if (x) x.style.display = 'none';   // (so the first focus goes where it always went, not to the close button)
+      const was = this.open, r = show.apply(this, a);
+      if (x) x.style.display = '';
+      try { nameDialog(this); shell(this); } catch (e) { /* naming is best-effort */ }
+      /* A dialog opens at its top: the browser scrolls to whatever takes the first focus, which in a long dialog is often
+         a button in its footer (the title was cut off). A field that took focus stays in view. */
+      try { const f = document.activeElement; if (!was && !(f && this.contains(f) && f.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"]'))) this.scrollTop = 0; } catch (e) { /* best-effort */ }
       const i = stack.indexOf(this); if (i >= 0) stack.splice(i, 1); stack.push(this);
       return r;
     };
@@ -5962,7 +6002,7 @@ const UI = (() => {
   }
   if (typeof customElements !== 'undefined' && !customElements.get('ui-select')) customElements.define('ui-select', UISelect);
 
-  return { pop, closePop, get popOpen() { return !!cur; }, topDialog, cfg, RENDER, IC, h, nid, fire, pad2, isPhone, typeAhead, UISelect };
+  return { pop, closePop, get popOpen() { return !!cur; }, topDialog, cfg, RENDER, IC, h, nid, fire, pad2, isPhone, typeAhead, UISelect, shell: d => shell(d) };
 })();
 
 /* ---------- UI LIBRARY: the other value controls (<ui-num> <ui-date> <ui-time> <ui-color> <ui-tags>) ---------- */
@@ -6494,6 +6534,7 @@ const UI = (() => {
   function scan(root = document) {
     if (!root.querySelectorAll) return;
     root.querySelectorAll('input[type="range"]').forEach(range);
+    document.querySelectorAll('dialog[open]').forEach(d => { try { UI.shell(d); } catch (e) {} });   // a dialog that redrew itself gets its close button back
     root.querySelectorAll('input[type="checkbox"]:not([role]):not([data-check])').forEach(c => { if (!c.closest('.daychips, .sub-check, .hs-seats')) c.setAttribute('role', 'switch'); });   // (those are drawn as chips / ticks: several can be on, so they stay checkboxes)
   }
   let queued = false;
