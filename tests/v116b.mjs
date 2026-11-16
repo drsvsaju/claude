@@ -14,7 +14,7 @@ async function guest(w = 1280, opts = {}) {
   p.on('dialog', d => d.accept());
   p.on('pageerror', e => errs.push(tag + ': ' + e.message)); p.on('console', m => { if (m.type() === 'error' && !/Failed to load resource|WebChannel|firestore/i.test(m.text())) errs.push(tag + ' console: ' + m.text().slice(0, 160)); });
   await p.goto('http://localhost:8000/index.html'); await p.waitForSelector('#authView:not(.hidden)');
-  if (!opts.noLogin) { await p.click('#guestBtn'); await p.waitForSelector('#appView:not(.hidden)'); await wait(2500); await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(d => d.close())); }
+  if (!opts.noLogin) { await p.click('#guestBtn'); await p.waitForSelector('#appView:not(.hidden)'); await wait(2500); await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); S.settings.gardenTour = true; }); }   // v2.0: no garden tour in this suite (its retry timer could land inside an instant test block, and every later pop-up then waits behind it)
   return { ctx, p, ev: (f, a) => p.evaluate(f, a) };
 }
 const closeAll = d => d.ev(() => document.querySelectorAll('dialog[open]').forEach(x => x.close()));
