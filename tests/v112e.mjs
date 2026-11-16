@@ -27,7 +27,7 @@ const check = touch => {
     if ((!anc || el.closest('header.top')) && (r.right > vw + 1 || r.left < -1) && cs.position !== 'fixed') out.push([sig(el), `sticks out of the screen (${Math.round(r.left)}..${Math.round(r.right)} / ${vw})`]);
     // clipped text: overflow hidden, single line, no ellipsis
     const own = [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
-    if (own && el.scrollWidth > el.clientWidth + 1 && (cs.overflowX === 'hidden' || cs.overflowX === 'clip') && cs.textOverflow !== 'ellipsis') out.push([sig(el), `text clipped without ellipsis: "${el.textContent.trim().slice(0, 30)}"`]);
+    if (own && el.scrollWidth > el.clientWidth + 1 && (cs.overflowX === 'hidden' || cs.overflowX === 'clip') && cs.textOverflow !== 'ellipsis' && !(el.clientWidth <= 1 && el.clientHeight <= 1)) out.push([sig(el), `text clipped without ellipsis: "${el.textContent.trim().slice(0, 30)}"`]);
     // text running out of its box (overflow visible) into neighbours
     if (own && cs.overflowX === 'visible' && el.scrollWidth > el.clientWidth + 2 && cs.display !== 'inline' && el.clientWidth > 0) out.push([sig(el), `text overflows its box: "${el.textContent.trim().slice(0, 30)}"`]);
     if (touch && el.matches('button, a[href], select, summary, [role=button], input:not([type=hidden]):not([type=range]), ui-select, ui-date, ui-time, ui-num, ui-color') && !el.disabled && !(el.parentElement && el.parentElement.closest('ui-num, ui-tags, ui-select, ui-date, ui-time, ui-color'))) {

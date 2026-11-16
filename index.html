@@ -6587,7 +6587,7 @@ UI.cfg.suggest = el => {
     if (k === 'nametag') return [...new Set(Object.values(S.names).map(x => x && x.tag).filter(Boolean))].sort().slice(0, 30);   // Session card: the tags already in use
     if (k === 'todotag') return [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.todos.map(x => x.tag)].filter(Boolean))].slice(0, 30);
     if (k === 'decksubject') return [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 30);
-    if (k === 'plan') return [...new Set([...Object.entries(S.names).flatMap(([n, x]) => [n, x.tag]), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 40);
+    if (k === 'plan') { const used = new Set([...document.querySelectorAll('#plRows input[name="name"]')].filter(x => x !== el).map(x => x.value.trim().toLowerCase()).filter(Boolean)); return [...new Set([...Object.entries(S.names).flatMap(([n, x]) => [n, x.tag]), ...S.decks.map(d => d.subject)].filter(Boolean))].filter(x => !used.has(String(x).toLowerCase())).slice(0, 40); }   // (not the subjects already in another row)
   } catch (e) { /* the state is not loaded yet */ }
   return [];
 };
@@ -6620,7 +6620,7 @@ UI.RENDER.preset = (() => {
       const rec = os.filter(o => o.dataset.fav !== '1' && o.dataset.recent !== undefined && o.dataset.recent !== '').sort((a, b) => (+a.dataset.recent || 0) - (+b.dataset.recent || 0)).slice(0, 3);
       const rest = os.filter(o => !fav.includes(o) && !rec.includes(o));
       const key = 'focus / break × rounds';   // what the numbers on the right mean, said once at the top
-      return [{ label: 'Favourites', hint: key, items: fav }, { label: 'Recent', hint: fav.length ? '' : key, items: rec }, { label: fav.length || rec.length ? 'All presets' : '', hint: fav.length || rec.length ? '' : key, items: rest }];
+      return [{ label: 'Favourites', hint: key, items: fav }, { label: 'Recent', hint: fav.length ? '' : key, items: rec }, { label: fav.length || rec.length ? 'All presets' : 'Presets', hint: fav.length || rec.length ? '' : key, items: rest }];   // (always a heading, so the key is always there)
     },
     footer: [
       { label: 'New preset', icon: UI.IC.plus, run: sel => { const f = UI.cfg.preset.create; if (f) f(sel); } },

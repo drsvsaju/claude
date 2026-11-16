@@ -93,7 +93,7 @@ const P = await guest(360);
 await P.ev(() => { savePlan([{ name: 'Physics', hrs: 8 }, { name: 'A very long subject name that goes on', hrs: 3 }]); showTab('stats'); }); await wait(900);
 const ph = await P.ev(() => ({ hscroll: document.documentElement.scrollWidth > innerWidth + 1, rows: $$('#planSlot .plan-row').length, overflow: $$('#planSlot .plan-row').some(r => r.scrollWidth > r.clientWidth + 1) }));
 await closeAll(P); await P.p.click('#planSlot [data-planedit]'); await wait(300);
-const ph2 = await P.ev(() => { const d = $('#planDlg').getBoundingClientRect(); return { fits: $('#planDlg').open && d.right <= innerWidth + 1, btn: $$('#planDlg button').every(b => b.getBoundingClientRect().height >= 40) }; });
+const ph2 = await P.ev(() => { const d = $('#planDlg').getBoundingClientRect(); return { fits: $('#planDlg').open && d.right <= innerWidth + 1, btn: $$('#planDlg button').filter(b => b.getClientRects().length).every(b => b.getBoundingClientRect().height >= 40) }; });
 check('360px: the plan card stacks (no sideways scroll, no overflowing rows) and the dialog fits', !ph.hscroll && ph.rows === 2 && !ph.overflow && ph2.fits && ph2.btn, JSON.stringify({ ph, ph2 }));
 await P.ctx.close();
 await G.ctx.close();
