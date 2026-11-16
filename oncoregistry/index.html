@@ -7,22 +7,28 @@
 <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%229%22%20fill%3D%22%232f8f83%22%2F%3E%3C%2Fsvg%3E">
 <meta name="description" content="Research data collection for oncology: pseudonymised case record forms, team access, audit trail, survival dashboard and analysis-ready exports.">
 <script>
-  // Apply the saved theme before first paint (no flash of the wrong theme).
-  try { const t = JSON.parse(localStorage.getItem('oncoregistry-theme') || '"auto"'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+  // Theme, glass, animations and the collapsed sidebar before first paint (no flash), as in the Focus app.
+  try {
+    const r = document.documentElement, j = k => JSON.parse(localStorage.getItem(k) || 'null');
+    const t = j('oncoregistry-theme'); if (t === 'light' || t === 'dark') r.setAttribute('data-theme', t);
+    const g = j('oncoregistry-glass') || 'lite'; if (g !== 'off') r.dataset.glass = g;
+    const m = j('oncoregistry-motion'); r.dataset.motion = m || (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'reduced' : 'full');
+    if (j('oncoregistry-navmini')) r.classList.add('nav-mini');
+  } catch (e) {}
 </script>
 <style>
 /* ==========================================================================
    THEME TOKENS
-   Same visual language as the Focus app (Pomodorolist): warm off-white,
-   one calm accent (teal by default, changeable in Settings), light by
-   default, dark via the system setting or an explicit choice in Settings.
-   Chart series colours are a validated colour-blind-safe set.
+   The Focus app's (Pomodorolist v1.20) colour roles: warm off-white, one calm
+   accent (teal by default, changeable in Settings), light by default, dark via
+   the system setting or an explicit choice. Chart series colours are a
+   validated colour-blind-safe set.
    ========================================================================== */
 :root {
   --bg: #f6f6f3;
   --surface: #ffffff;
   --text: #1f2322;
-  --muted: #6c7471;
+  --muted: #626a67;
   --line: #e5e5df;
   --accent: #2f8f83;
   --accent-soft: rgba(47, 143, 131, .12);
@@ -30,7 +36,7 @@
   --heat0: #ecedea;
   --danger: #b94a3f;
   --danger-soft: rgba(185, 74, 63, .10);
-  --warn: #c07a2c;
+  --warn: #b06a1f;
   --warn-soft: rgba(192, 122, 44, .13);
   --good: #2c7a3f;
   --good-soft: rgba(44, 122, 63, .11);
@@ -58,6 +64,28 @@
 }
 
 /* ==========================================================================
+   DESIGN TOKENS (as the Focus app's v1.7 block): one spacing scale, radii,
+   shadows, type sizes and icon size for every screen; motion tokens.
+   ========================================================================== */
+:root {
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px;
+  --r-sm: 10px; --r-md: 14px; --r-lg: 16px; --r-pill: 999px;
+  --sh-1: 0 1px 2px rgba(0, 0, 0, .04), 0 6px 16px -10px rgba(0, 0, 0, .22);
+  --sh-2: 0 20px 44px -18px rgba(0, 0, 0, .45);
+  --fs-xs: 12px; --fs-sm: 13px; --fs-md: 15px; --fs-lg: 17px; --fs-xl: 22px;
+  --icon: 18px; --card-pad: 18px; --navw: 224px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --spring: cubic-bezier(.34, 1.5, .64, 1);
+  --spring-soft: cubic-bezier(.3, 1.25, .5, 1);
+  --lift: 0 8px 18px -10px rgba(0, 0, 0, .3);
+  --shine: rgba(255, 255, 255, .5);
+}
+:root.nav-mini { --navw: 72px; }
+:root[data-theme="dark"] { --lift: 0 10px 22px -10px rgba(0, 0, 0, .75); --shine: rgba(255, 255, 255, .13); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lift: 0 10px 22px -10px rgba(0, 0, 0, .75); --shine: rgba(255, 255, 255, .13); } }
+@media (max-width: 640px) { :root { --card-pad: 16px; } }
+
+/* ==========================================================================
    BASE
    ========================================================================== */
 * { box-sizing: border-box; }
@@ -69,40 +97,47 @@ body {
 }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: var(--accent); }
-h1 { font-size: 24px; font-weight: 300; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: var(--fs-xl); font-weight: 650; margin: 0; letter-spacing: -.01em; }
 h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; }
 h3 { font-size: 16px; font-weight: 600; margin: 0; }
 .muted { color: var(--muted); }
-.small { font-size: 13px; }
+.small { font-size: var(--fs-sm); }
 .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .between { justify-content: space-between; }
 .grow { flex: 1; }
 .hidden { display: none !important; }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .92em; background: var(--heat0); padding: 1px 5px; border-radius: 5px; }
-.lbl { font-size: 12px; color: var(--muted); }
-.desc { font-size: 12px; color: var(--muted); }
+code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; background: var(--heat0); padding: 1px 6px; border-radius: 6px; }
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; }
+.lbl, .desc, .field { font-size: var(--fs-xs); line-height: 1.45; color: var(--muted); }
+.desc { margin-top: 2px; }
 .big { font-size: 30px; font-weight: 300; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .big small { font-size: 14px; color: var(--muted); margin-left: 4px; }
+:where(button, a[href], [role="button"], summary, input, select, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Header + tabs (same layout as the Focus app) */
+/* ---------- Header: logo, sync, search, inbox, level chip ---------- */
 .top {
-  position: sticky; top: 0; z-index: 20;
+  position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
+  padding: 10px 16px; padding-top: max(10px, env(safe-area-inset-top));
   background: var(--bg); border-bottom: 1px solid var(--line);
 }
-.top-left { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.brand { font-weight: 600; display: flex; align-items: center; gap: 8px; letter-spacing: .01em; text-decoration: none; color: var(--text); white-space: nowrap; margin-right: 6px; }
-.brand i { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
-.tabs { display: flex; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; flex: none; }
-.tabs a { position: relative; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; border-radius: 999px; color: var(--muted); cursor: pointer; white-space: nowrap; }
-.tabs a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-.tabs a svg { display: none; width: 18px; height: 18px; }
-.tbadge {
-  position: absolute; top: -3px; right: -3px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px;
-  background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; font-style: normal;
-}
+.hdr-left { display: flex; align-items: center; gap: 4px; min-width: 0; flex-wrap: nowrap; }
+.brand { display: flex; align-items: center; gap: 8px; background: none; border: 0; color: inherit; font: inherit; font-weight: 600; letter-spacing: .01em;
+  cursor: pointer; padding: 4px 8px 4px 4px; margin-left: -4px; border-radius: 12px; min-height: 44px; min-width: 44px; text-decoration: none; white-space: nowrap; }
+.brand:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.brand .logo { width: 26px; height: 26px; display: inline-flex; flex: none; }
+.brand .logo svg { width: 100%; height: 100%; display: block; }
+:root[data-motion="full"] .brand:active .logo { transform: scale(.92); }
+:root.nav-mini .top .brand span { display: none; }
+.nav-cur { display: none; font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.nav-cur::before { content: "·"; margin: 0 8px 0 2px; }
+.hdr-right { display: flex; align-items: center; gap: 8px; }
+.hdr-right .iconbtn { position: relative; width: 36px; height: 36px; }
+.hdr-count { position: absolute; top: -4px; right: -5px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff;
+  font: 700 10.5px/17px system-ui, sans-serif; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+:root[data-motion="full"] .hdr-count:not(.hidden) { animation: dotPop .4s var(--spring) both; }
+@keyframes dotPop { from { transform: scale(0); } }
 .sync { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin-left: 6px; white-space: nowrap; }
 .sync i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
 .sync.syncing i { background: var(--muted); animation: pulse .8s ease-in-out infinite alternate; }
@@ -110,7 +145,7 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .sync.error i { background: var(--danger); }
 @keyframes pulse { to { opacity: .25; } }
 .lvchip {
-  display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding: 2px 10px 2px 3px;
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 11px 3px 3px; min-height: 36px;
   border: 1px solid var(--line); background: var(--surface); border-radius: 999px; cursor: pointer;
   font-size: 12px; color: var(--muted); white-space: nowrap; text-decoration: none;
 }
@@ -118,85 +153,202 @@ code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fo
 .lvchip svg { flex: none; }
 .lvchip .uname { color: var(--text); font-weight: 600; max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 .lvchip .lvn { font-variant-numeric: tabular-nums; }
-.lvchip .avatar { width: 22px; height: 22px; font-size: 11px; }
+.lvchip .avatar { width: 28px; height: 28px; font-size: 11px; }
+.offline-bar { position: sticky; top: var(--hdrh, 57px); z-index: 9; text-align: center; font-size: 13px; padding: 6px 16px; background: var(--warn-soft); color: var(--text); border-bottom: 1px solid var(--line); }
 
-main { max-width: 1080px; margin: 0 auto; padding: 20px 16px 56px; }
-.ctx:empty { display: none; }
+/* ---------- Navigation (as Focus v1.14.3+): a sidebar on wide screens, a ☰ slide-in menu on tablets,
+   a bottom bar + More on phones. Labels either fit in full or aren't shown. ---------- */
+#navBurger { display: none; }
+#appView { position: relative; z-index: 1; }   /* above the glass wash; the menu and its scrim share this layer (as Focus) */
+.shell { display: flex; align-items: flex-start; }
+.shell > main { flex: 1 1 auto; min-width: 0; width: 100%; }
+.sidenav { display: flex; flex-direction: column; gap: 1px; background: var(--bg); overscroll-behavior: contain; }
+.nv-top { display: none; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 4px 10px 12px; }
+.nv-grp { display: flex; flex-direction: column; gap: 1px; }
+.nv-grp + .nv-grp { margin-top: 6px; }
+.nv-h { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 10px 12px 5px; white-space: nowrap; }
+.nv-solo { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 10px !important; }
+.sidenav [data-tab], .nv-collapse {
+  position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 42px; padding: 9px 12px; border: 0; border-radius: 11px;
+  background: none; color: var(--muted); font: inherit; font-size: 14.5px; text-align: left; cursor: pointer; white-space: nowrap; text-decoration: none;
+  transition: background-color .15s, color .15s;
+}
+.sidenav [data-tab] svg, .nv-collapse svg { width: 20px; height: 20px; flex: none; }
+.sidenav [data-tab]:hover, .nv-collapse:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
+.sidenav [data-tab].active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.sidenav [data-tab].active::before { content: ""; position: absolute; left: -10px; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
+.sidenav [data-tab]:focus-visible, .nv-collapse:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.nv-badge { margin-left: auto; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--danger); color: #fff; font: 700 11px/20px system-ui, sans-serif; text-align: center; }
+.nv-study { margin: 2px 4px 8px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--text) 4%, transparent); font-size: 13px; line-height: 1.35; }
+.nv-study b { display: block; font-size: 13.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nv-study a { font-size: 12px; text-decoration: none; }
+.nv-foot { margin-top: auto; padding-top: 10px; }
+.nv-collapse svg { transition: transform .25s var(--ease); }
+:root.nav-mini .nv-collapse svg { transform: scaleX(-1); }
+.nav-scrim { position: fixed; inset: 0; z-index: 58; background: rgba(10, 14, 20, .38); opacity: 0; pointer-events: none; transition: opacity .22s var(--ease); }
+.nav-scrim.on { opacity: 1; pointer-events: auto; }
+.btmbar { display: none; }
+@media (min-width: 1180px) {
+  .sidenav { position: sticky; top: var(--hdrh, 57px); flex: none; width: var(--navw); height: calc(100vh - var(--hdrh, 57px)); height: calc(100dvh - var(--hdrh, 57px));
+    padding: 14px 10px 12px; overflow-y: auto; overflow-x: hidden; border-right: 1px solid var(--line); z-index: 9; transition: width .22s var(--ease); }
+  .shell > main { max-width: 1080px; margin: 0 auto; }
+  :root.nav-mini .sidenav :is(.nv-l, .nv-h, .nv-study, .nv-badge) { display: none; }
+  :root.nav-mini .sidenav [data-tab], :root.nav-mini .nv-collapse { justify-content: center; padding-left: 0; padding-right: 0; }
+  :root.nav-mini .nv-grp + .nv-grp { border-top: 1px solid var(--line); padding-top: 6px; }
+}
+@media (max-width: 1179px) {
+  .sidenav { position: fixed; z-index: 59; left: 0; top: 0; bottom: 0; width: min(296px, 86vw); padding: max(14px, env(safe-area-inset-top)) 10px calc(14px + env(safe-area-inset-bottom));
+    overflow-y: auto; border-right: 1px solid var(--line); background: var(--surface); box-shadow: 18px 0 40px -18px rgba(0, 0, 0, .35);
+    transform: translateX(-104%); visibility: hidden; transition: transform .26s var(--ease), visibility 0s linear .26s; }
+  body.nav-open .sidenav { transform: none; visibility: visible; transition: transform .26s var(--ease); }
+  .nv-top { display: flex; }
+  .nv-foot { display: none; }
+  .sidenav [data-tab] { min-height: 46px; font-size: 15px; }
+}
+@media (min-width: 641px) and (max-width: 1179px) { #navBurger { display: inline-grid; } .nav-cur { display: inline; } }
+@media (min-width: 641px) and (max-width: 760px) { .nav-cur { display: none; } }
+:root[data-motion="off"] :is(.sidenav, .nav-scrim, .nv-collapse svg) { transition: none !important; }
+@media (max-width: 640px) {
+  .btmbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: flex; justify-content: space-around;
+    border-top: 1px solid var(--line); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: var(--surface);
+  }
+  .btmbar button {
+    position: relative; z-index: 1; flex: 1 1 0; min-width: 0; display: inline-flex; flex-direction: column; align-items: center; gap: 3px; border: 0; background: none;
+    padding: 4px 1px; border-radius: 12px; color: var(--muted); cursor: pointer; font-size: 11px; white-space: nowrap; min-height: 44px;
+  }
+  .btmbar button svg { width: 22px; height: 22px; flex: none; }
+  .btmbar button.active { color: var(--accent); font-weight: 600; }
+  .btmbar.has-ind > .seg-ind { background: transparent; top: 6px; bottom: auto; height: 30px; }
+  .btmbar > .seg-ind::before { content: ""; position: absolute; left: 50%; top: 0; width: 56px; height: 30px; margin-left: -28px; border-radius: 999px; background: var(--accent-soft); }
+  .btmbar .tbadge { position: absolute; top: 2px; right: calc(50% - 20px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--danger); color: #fff; font: 700 10px/16px system-ui, sans-serif; }
+  main { padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important; }
+  .toasts { bottom: calc(84px + env(safe-area-inset-bottom)) !important; }
+  .brand span, .sync b { display: none; }
+}
+
+/* ---------- Page frame ---------- */
+main { max-width: 1080px; margin: 0 auto; padding: 22px 20px 56px; }
+.greet { color: var(--muted); font-size: 15px; margin: 0 0 14px; }
 .ctx { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; font-size: 14px; color: var(--muted); }
+.ctx:empty { display: none; }
 .ctx a { text-decoration: none; }
 .ctx b { color: var(--text); font-weight: 600; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
-.card + .card { margin-top: 16px; }
-.stack { display: grid; gap: 16px; align-content: start; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--card-pad); }
+.card + .card { margin-top: var(--sp-4); }
+.stack { display: grid; gap: var(--sp-4); align-content: start; }
 .stack > .card + .card { margin-top: 0; }
-.grid-2 { display: grid; gap: 16px; grid-template-columns: 1fr; }
-.grid-2 { grid-template-columns: minmax(0, 1fr); }
+.grid-2 { display: grid; gap: var(--sp-4); grid-template-columns: minmax(0, 1fr); }
 .grid-2 > *, .stack > *, .dgrid > * { min-width: 0; }
 @media (min-width: 860px) { .grid-2 { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; } }
+.head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.head > * { min-width: 0; }
 .banner { border-radius: 12px; padding: 10px 14px; font-size: 14px; background: var(--warn-soft); }
 .banner.info { background: var(--accent-soft); }
 .banner.danger { background: var(--danger-soft); }
-.empty { color: var(--muted); font-size: 14px; }
-.empty-card { text-align: center; padding: 32px 18px; }
+.empty-card { text-align: center; padding: 34px 18px; }
 .empty-card h3 { margin: 8px 0 4px; }
 .big-icon { color: var(--accent); }
+/* Empty states (Focus v1.7): line illustration · one sentence · one action */
+.empty:not(.card) { text-align: center; padding: var(--sp-4) var(--sp-2); color: var(--muted); font-size: var(--fs-sm); }
+.empty:not(.card)::before {
+  content: ""; display: block; width: 38px; height: 38px; margin: 0 auto var(--sp-2); background: currentColor; opacity: .55;
+  -webkit-mask: var(--empty-ic) center / contain no-repeat; mask: var(--empty-ic) center / contain no-repeat;
+}
+.empty { --empty-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Crect x='8' y='7' width='24' height='28' rx='3'/%3E%3Cpath d='M14 15h12M14 21h12M14 27h7'/%3E%3C/svg%3E"); }
+.empty.e-inbox { --empty-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 22l5-12h18l5 12v10H6z'/%3E%3Cpath d='M6 22h9a5 5 0 0 0 10 0h9'/%3E%3C/svg%3E"); }
+.empty.e-people { --empty-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Ccircle cx='15' cy='14' r='5'/%3E%3Cpath d='M6 32c0-5 4-9 9-9s9 4 9 9'/%3E%3Ccircle cx='28' cy='16' r='4'/%3E%3Cpath d='M26 24c5 0 8 3 8 8'/%3E%3C/svg%3E"); }
+.empty.e-check { --empty-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='20' cy='20' r='13'/%3E%3Cpath d='M14 20.5l4 4 8-9'/%3E%3C/svg%3E"); }
+.empty.e-cal { --empty-ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Crect x='7' y='9' width='26' height='24' rx='3'/%3E%3Cpath d='M7 16h26M14 6v6M26 6v6'/%3E%3C/svg%3E"); }
+.empty .btn { margin-top: var(--sp-3); }
 
-/* Buttons (pill-shaped, as in the Focus app) */
+/* ---------- Buttons (pill-shaped): press, hover lift, ripple ---------- */
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   white-space: nowrap; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
-  padding: 9px 18px; cursor: pointer; transition: border-color .15s, background .15s; text-decoration: none; color: var(--text); font-size: 14px;
+  padding: 9px 18px; cursor: pointer; text-decoration: none; color: var(--text); font-size: 14px; min-height: 40px;
+  transition: transform .22s var(--spring), box-shadow .22s var(--ease), border-color .15s, background-color .15s, color .15s;
 }
 .btn:hover { border-color: var(--muted); }
 .btn:disabled { opacity: .4; cursor: default; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; padding: 10px 24px; }
 .btn.primary:hover { filter: brightness(1.06); }
 .btn.primary.big-btn { padding: 12px 30px; min-width: 150px; font-size: 15px; }
-.btn.small { padding: 5px 12px; font-size: 13px; }
+.btn.small { padding: 5px 12px; font-size: 13px; min-height: 32px; }
 .btn.danger { color: var(--danger); }
 .btn.danger.solid { background: var(--danger); border-color: var(--danger); color: #fff; }
 .btn.ghost { border-color: transparent; background: none; }
-.linkbtn { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 4px 6px; text-decoration: none; }
+.linkbtn { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 4px 8px; border-radius: 8px; text-decoration: none; }
 .linkbtn:hover { color: var(--text); }
 .iconbtn {
   width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface);
-  display: inline-grid; place-items: center; cursor: pointer; color: var(--muted); flex: none;
+  display: inline-grid; place-items: center; cursor: pointer; color: var(--muted); flex: none; padding: 0;
+  transition: transform .2s var(--spring), border-color .15s, background-color .15s, color .2s;
 }
 .iconbtn:hover { color: var(--text); }
-.btn:focus-visible, .tabs a:focus-visible, .opts button:focus-visible, .mchips button:focus-visible, .vseg button:focus-visible, .iconbtn:focus-visible {
-  outline: 3px solid var(--accent-soft); outline-offset: 1px; border-color: var(--accent);
+.iconbtn svg { width: var(--icon); height: var(--icon); }
+:root:not([data-motion="off"]) :is(.btn, .iconbtn, .chip, .seg button, .opts button, .mchips button):not(:disabled):active { transform: scale(.96); transition-duration: .08s; }
+@media (hover: hover) {
+  :root[data-motion="full"] :is(.btn, .iconbtn):not(:disabled):hover { transform: translateY(-1px); box-shadow: var(--lift); }
+  :root[data-motion="full"] :is(.btn, .iconbtn):not(:disabled):active { transform: scale(.96); box-shadow: none; }
 }
+.rip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.rip-dot { position: absolute; border-radius: 50%; background: currentColor; opacity: .22; transform: scale(0); animation: rip .6s var(--ease) forwards; }
+@keyframes rip { to { transform: scale(1); opacity: 0; } }
 
-/* Segmented view switcher (Focus "seg") */
-.vseg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; flex-wrap: wrap; }
-.vseg button { border: 0; background: none; padding: 6px 14px; border-radius: 999px; color: var(--muted); cursor: pointer; }
-.vseg button.active { background: var(--accent); color: var(--on-accent); font-weight: 600; }
-.vseg .cnt:not(:empty) { margin-left: 6px; font-size: 11px; padding: 0 6px; border-radius: 999px; background: var(--danger); color: #fff; }
-.head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+/* ---------- Segmented switchers: a pill that slides to the selected option (Focus v1.19.1) ---------- */
+.seg { position: relative; display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px;
+  flex-wrap: nowrap; max-width: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; }
+.seg::-webkit-scrollbar { display: none; }
+.seg > button { position: relative; z-index: 1; flex-shrink: 0; white-space: nowrap; border: 0; background: none; padding: 6px 14px; border-radius: 999px; color: var(--muted); cursor: pointer;
+  transition: color .2s, transform .2s var(--spring); }
+.seg > button:focus-visible { outline-offset: -2px; }
+.seg > button.active { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.seg.has-ind > button.active { background: transparent; }
+.seg .cnt:not(:empty) { margin-left: 6px; font-size: 11px; padding: 0 6px; border-radius: 999px; background: var(--danger); color: #fff; }
+.seg-ind { position: absolute; left: 0; top: 0; width: 0; height: 0; border-radius: 999px; background: var(--accent); z-index: 0; pointer-events: none;
+  transition: transform .42s var(--spring-soft), width .42s var(--spring-soft), height .42s var(--spring-soft), opacity .2s; }
 .range-nav { display: flex; align-items: center; gap: 8px; }
 .range-nav .lbl2 { min-width: 150px; text-align: center; font-weight: 600; }
 
-/* Form fields */
-.field, label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], input[type=search], select, textarea {
-  width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-height: 40px;
+/* ---------- Form fields ---------- */
+label { display: block; font-size: var(--fs-xs); color: var(--muted); margin-bottom: 6px; }
+input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], input[type=search], input:not([type]), select, textarea {
+  width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; min-height: 42px;
 }
 textarea { min-height: 76px; resize: vertical; }
 input:focus, select:focus, textarea:focus { outline: 3px solid var(--accent-soft); border-color: var(--accent); }
 input:disabled, select:disabled, textarea:disabled { background: var(--heat0); color: var(--text); opacity: 1; }
-input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
-.check { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--text); cursor: pointer; margin: 0; }
-.check input { margin-top: 2px; flex: none; }
-.hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+/* Every checkbox is a switch (Focus v1.7) */
+input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none; width: 42px; height: 24px; margin: 0; flex: none; cursor: pointer;
+  border-radius: 999px; background: var(--line); position: relative; transition: background-color .25s var(--ease);
+}
+input[type="checkbox"]::before {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .38s var(--spring);
+}
+input[type="checkbox"]:checked { background: var(--accent); }
+input[type="checkbox"]:checked::before { transform: translateX(18px); }
+input[type="checkbox"]:active::before { transform: scale(.88); }
+input[type="checkbox"]:checked:active::before { transform: translateX(18px) scale(.88); }
+input[type="checkbox"]:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+input[type="checkbox"]:disabled { opacity: .5; cursor: default; }
+.check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text); cursor: pointer; margin: 0; }
+.hint { font-size: var(--fs-xs); color: var(--muted); margin-top: 5px; }
 .pw { position: relative; }
 .pw input { padding-right: 68px; }
 .pw button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 4px 8px; }
 .pw button:hover { color: var(--text); }
+.search-in { position: relative; }
+.search-in svg { position: absolute; left: 14px; top: 50%; width: 17px; height: 17px; margin-top: -8.5px; color: var(--muted); pointer-events: none; }
+.search-in input { padding-left: 40px; border-radius: 999px; background: var(--surface); }
 
-/* Answer choices in the case record form (tap-friendly on phones) */
+/* Answer choices in the case record form (tap-friendly) */
 .opts, .mchips { display: flex; flex-wrap: wrap; gap: 6px; }
 .opts button, .mchips button {
   border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 13px; cursor: pointer; font-size: 14px; min-height: 36px;
+  transition: background-color .15s, border-color .15s, color .15s, transform .2s var(--spring);
 }
 .opts button:hover, .mchips button:hover { border-color: var(--muted); }
 .opts button[aria-pressed="true"], .mchips button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
@@ -204,12 +356,13 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .opts button:disabled:not([aria-pressed="true"]), .mchips button:disabled:not([aria-pressed="true"]) { opacity: .55; }
 .mchips button { padding: 4px 12px; min-height: 32px; font-size: 13px; }
 
-/* Chips (recently opened patients) */
+/* Chips (recently opened) */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  position: relative; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
   border: 1px solid var(--line); background: var(--bg); border-radius: 999px;
   padding: 5px 4px 5px 12px; cursor: pointer; font-size: 14px; color: var(--text); text-decoration: none;
+  transition: transform .2s var(--spring), border-color .15s;
 }
 .chip:hover { border-color: var(--muted); }
 .chip .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
@@ -218,55 +371,70 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .chip.pinned { border-color: var(--accent); }
 .chip.pinned .pin { color: var(--accent); }
 
-/* Pills */
+/* Pills, avatar, progress */
 .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--heat0); color: var(--muted); white-space: nowrap; }
 .pill.draft { background: var(--warn-soft); color: var(--warn); }
 .pill.complete { background: var(--accent-soft); color: var(--accent); }
 .pill.verified { background: var(--good-soft); color: var(--good); }
 .pill.role { background: var(--accent-soft); color: var(--accent); text-transform: capitalize; }
 .avatar { width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 13px; flex: none; }
-
-/* Progress bars */
 .progress { height: 8px; background: var(--heat0); border-radius: 999px; overflow: hidden; margin-top: 8px; }
-.progress i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .4s; }
+.progress i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .6s var(--ease); }
 .compbar { display: inline-block; width: 60px; height: 6px; border-radius: 3px; background: var(--heat0); overflow: hidden; vertical-align: middle; margin-right: 6px; }
 .compbar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+/* Loading skeletons */
+.skel { position: relative; overflow: hidden; display: block; background: var(--heat0); border-radius: 8px; }
+.skel::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, var(--shine), transparent); }
+:root:not([data-motion="off"]) .skel::after { animation: skel 1.3s ease-in-out infinite; }
+@keyframes skel { to { transform: translateX(100%); } }
+.skel-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; }
+.skel.circ { width: 30px; height: 30px; border-radius: 50%; flex: none; }
+.skel.line { height: 10px; flex: 1; }
+.skel.short { flex: 0 0 14%; margin-left: auto; }
+.skel.block { height: 150px; border-radius: 12px; }
+.boot-in { display: flex; align-items: center; gap: 10px; }
+.boot-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+:root:not([data-motion="off"]) .boot-dot { animation: glow 1.2s ease-in-out infinite; opacity: .4; }
+@keyframes glow { 50% { opacity: 1; } }
 
 /* ==========================================================================
    LOGIN / SIGN-UP
    ========================================================================== */
-.boot, .auth { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; }
+.boot, .auth { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px; position: relative; z-index: 1; }
 .boot { color: var(--muted); }
 .auth-card { width: min(410px, 100%); padding: 28px 24px 22px; }
-.auth-brand { font-size: 22px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-.auth-brand i { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.auth-brand { font-size: 22px; font-weight: 650; display: flex; align-items: center; gap: 10px; }
+.auth-brand .logo { width: 32px; height: 32px; display: inline-flex; }
 .auth-card .lead { color: var(--muted); font-size: 14px; margin: 6px 0 20px; }
-.auth-card .vseg { display: flex; width: 100%; margin-bottom: 6px; }
-.auth-card .vseg button { flex: 1; }
-.auth-form label.field { margin-top: 12px; }
+.auth-card .seg { display: flex; width: 100%; margin-bottom: 6px; }
+.auth-card .seg button { flex: 1; }
+.auth-form label { margin-top: 12px; }
 .auth-error { color: var(--danger); font-size: 14px; min-height: 21px; margin: 12px 0 10px; }
 .auth-form .btn.primary { width: 100%; padding: 12px; }
 .auth-foot { text-align: center; margin-top: 14px; display: grid; gap: 4px; }
-.auth-warn, .auth-note { margin-top: 16px; font-size: 13px; line-height: 1.45; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); }
-.auth-note { background: none; padding: 0; color: var(--muted); font-size: 12px; }
+.auth-warn { margin-top: 16px; font-size: 13px; line-height: 1.45; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); }
+.auth-note { margin: 16px 0 0; color: var(--muted); font-size: 12px; }
 
 /* ==========================================================================
    TODAY (home of a study)
    ========================================================================== */
 .streak-nums { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0 16px; }
-.quick { text-align: center; padding: 26px 18px 22px; }
+.quick { text-align: center; padding: 26px 18px 22px; position: relative; overflow: hidden; }
 .quick .big-num { font-size: clamp(52px, 13vw, 72px); font-weight: 300; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .quick .ring { position: relative; width: min(64vw, 230px); aspect-ratio: 1; margin: 10px auto 18px; }
 .quick .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .quick .ring .track { fill: none; stroke: var(--line); stroke-width: 7; }
-.quick .ring .prog { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset .6s ease; }
+.quick .ring .prog { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset .9s var(--ease); }
+:root[data-motion="full"] .quick .ring.done .prog { filter: drop-shadow(0 0 6px var(--accent)); }
 .quick .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .quick .phase { font-weight: 600; color: var(--accent); letter-spacing: .02em; }
 .goto { display: flex; gap: 8px; margin-top: 16px; }
 .goto input { flex: 1; min-width: 0; }
 .plist { list-style: none; margin: 0; padding: 0; }
-.plist li { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); cursor: pointer; }
-.plist li:first-child { border-top: 0; }
+.plist li { display: flex; align-items: center; gap: 12px; padding: 9px 8px; margin: 0 -8px; border-top: 1px solid var(--line); cursor: pointer; border-radius: 10px; transition: background-color .15s; }
+.plist li:first-child { border-top-color: transparent; }
+.plist li:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
 .plist li:hover .nm { color: var(--accent); }
 .plist .nm { font-family: ui-monospace, Menlo, Consolas, monospace; font-weight: 600; font-size: 14px; white-space: nowrap; }
 .plist .who { flex: 1; min-width: 0; }
@@ -278,7 +446,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
    PATIENTS
    ========================================================================== */
 .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
-.toolbar input[type=search] { flex: 1 1 220px; width: auto; }
+.toolbar .search-in { flex: 1 1 240px; }
 .toolbar select { width: auto; flex: 0 1 180px; }
 .tablewrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -288,26 +456,26 @@ td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle
 td.mono { white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
 tbody tr.link { cursor: pointer; }
-tbody tr.link:hover td { background: var(--bg); }
+tbody tr.link:hover td { background: color-mix(in srgb, var(--accent) 5%, transparent); }
 th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 
 /* ==========================================================================
    PATIENT RECORD
    ========================================================================== */
-.rec-h { position: sticky; top: 61px; z-index: 15; background: var(--bg); padding: 10px 0 12px; border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.rec-h { position: sticky; top: var(--hdrh, 57px); z-index: 8; padding: 12px 20px; margin: -22px -20px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
 .rec-h .row { gap: 8px 12px; }
-.rec-h h1 { font-weight: 400; }
+.rec-h h1 { font-weight: 500; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 21px; }
 .rec-h .back { text-decoration: none; font-size: 14px; }
 .comp { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .comp .compbar { width: 90px; }
 .dirty { font-size: 13px; color: var(--warn); font-weight: 600; }
-.rec-body { display: grid; grid-template-columns: 210px 1fr; gap: 20px; align-items: start; }
-.secnav { position: sticky; top: 150px; display: flex; flex-direction: column; gap: 2px; }
-.secnav a { display: flex; justify-content: space-between; gap: 6px; text-decoration: none; color: var(--muted); padding: 7px 12px; border-radius: 999px; font-size: 14px; }
-.secnav a:hover { background: var(--surface); color: var(--text); }
-.secnav a b { font-size: 11px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 999px; padding: 0 7px; line-height: 18px; height: 18px; }
+.rec-body { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 20px; align-items: start; }
+.secnav { position: sticky; top: calc(var(--hdrh, 57px) + 96px); display: flex; flex-direction: column; gap: 2px; }
+.secnav a { display: flex; justify-content: space-between; align-items: center; gap: 6px; text-decoration: none; color: var(--muted); padding: 7px 12px; border-radius: 11px; font-size: 14px; transition: background-color .15s, color .15s; }
+.secnav a:hover { background: color-mix(in srgb, var(--text) 6%, transparent); color: var(--text); }
+.secnav a b { font-size: 11px; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 999px; padding: 0 7px; line-height: 18px; height: 18px; flex: none; }
 .secnav a b.ok { color: var(--good); background: var(--good-soft); }
-.sec { scroll-margin-top: 160px; }
+.sec { scroll-margin-top: calc(var(--hdrh, 57px) + 110px); }
 .sec + .sec { margin-top: 16px; }
 .sec-h { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .sec-h h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
@@ -318,14 +486,13 @@ th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .fld > label { color: var(--text); font-size: 13px; font-weight: 500; }
 .fld.req > label::after { content: " *"; color: var(--danger); }
 .fld .msg { font-size: 12px; margin-top: 3px; }
-.fld.miss .msg { color: var(--warn); }
+.fld.miss .msg, .fld.warn .msg { color: var(--warn); }
 .fld.err .msg { color: var(--danger); }
-.fld.warn .msg { color: var(--warn); }
 .fld.err input, .fld.err select { border-color: var(--danger); }
-.fld output, .calc { display: block; padding: 9px 12px; background: var(--heat0); border-radius: 10px; min-height: 40px; font-variant-numeric: tabular-nums; }
-.item { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--bg); }
+.fld output, .calc { display: block; padding: 10px 12px; background: var(--heat0); border-radius: 10px; min-height: 42px; font-variant-numeric: tabular-nums; }
+.item { border: 1px solid var(--line); border-radius: var(--r-md); padding: 14px; background: color-mix(in srgb, var(--bg) 70%, transparent); }
 .item + .item { margin-top: 10px; }
-.item .opts button, .item .mchips button, .item input, .item select, .item textarea { background: var(--surface); }
+.item :is(.opts button, .mchips button, input, select, textarea) { background: var(--surface); }
 .item-h { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
 .item-h .sum { color: var(--muted); font-size: 13px; flex: 1; min-width: 120px; }
 .items + .btn { margin-top: 12px; }
@@ -339,7 +506,7 @@ th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .tiles4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 @media (min-width: 640px) { .tiles4 { grid-template-columns: repeat(4, 1fr); } }
-.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 14px; }
 .tile .v { font-size: 24px; font-weight: 300; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .tile .s, .tile .l { font-size: 12px; color: var(--muted); }
 @media (max-width: 480px) { .tile .v { font-size: 20px; } .tile { padding: 12px 10px; } }
@@ -348,10 +515,12 @@ th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .hbar { display: grid; grid-template-columns: minmax(90px, 40%) 1fr auto; gap: 7px 10px; align-items: center; font-size: 13px; }
 .hbar .lab { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hbar .track { height: 8px; background: var(--heat0); border-radius: 999px; overflow: hidden; }
-.hbar .bar { height: 100%; background: var(--accent); border-radius: 999px; min-width: 2px; }
+.hbar .bar { height: 100%; background: var(--accent); border-radius: 999px; min-width: 2px; transform-origin: left; }
+:root[data-motion="full"] .anim .hbar .bar { animation: barX .6s var(--ease) both; }
 .hbar .val { color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .cols { display: flex; align-items: flex-end; gap: 3px; height: 140px; border-bottom: 1px solid var(--line); }
-.cols div { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 1px; }
+.cols div { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 1px; transform-origin: bottom; }
+:root[data-motion="full"] .anim .cols div { animation: barUp .6s var(--ease) both; animation-delay: calc(var(--i, 0) * 18ms); }
 .cols div:hover, .hbar .bar:hover { opacity: .8; }
 .colx { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 4px; }
 .kmctl { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -363,16 +532,20 @@ svg.km { width: 100%; height: auto; display: block; overflow: visible; }
 svg.km text { fill: var(--muted); font-size: 11px; }
 svg.km .gridl { stroke: var(--line); stroke-width: 1; }
 svg.km .axis { stroke: var(--line); }
+:root[data-motion="full"] svg.km path.curve { stroke-dasharray: 1; stroke-dashoffset: 1; animation: drawIn 1.1s var(--ease) forwards; }
 .chart { width: 100%; height: auto; display: block; }
-.chart .axis { fill: var(--muted); font-size: 11px; }
-.chart .axis-b { fill: var(--text); font-size: 11px; }
+.chart .axis { fill: var(--muted); font-size: 11.5px; }
+.chart .axis-b { fill: var(--text); font-size: 11.5px; }
 .chart .grid { stroke: var(--line); stroke-width: 1; }
 .chart .goal { stroke: var(--accent); stroke-dasharray: 4 4; stroke-width: 1.2; opacity: .8; }
 .chart [data-tip] { cursor: pointer; }
 .chart [data-tip]:hover { opacity: .8; }
+.chart.bars rect[data-tip] { transform-box: fill-box; transform-origin: bottom; }
+:root[data-motion="full"] .chart.anim.bars rect[data-tip] { animation: barUp .6s var(--ease) both; animation-delay: calc(var(--i, 0) * 26ms); }
+:root[data-motion="full"] .chart.anim .goal { animation: fadeIn .5s .35s both; }
 #tip {
   position: fixed; z-index: 100; pointer-events: none; background: var(--surface); color: var(--text);
-  border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.14);
+  border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; font-size: 12px; box-shadow: var(--sh-2);
   max-width: 260px; opacity: 0; transition: opacity .1s;
 }
 #tip.show { opacity: 1; }
@@ -384,12 +557,12 @@ svg.km .axis { stroke: var(--line); }
 .sesslist .d { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
 
 /* ==========================================================================
-   PROFILE — levels, badges, achievements (Focus app progression)
+   PROFILE — levels, badges, achievements · TEAM leaderboard
    ========================================================================== */
 .prog-hero { display: flex; gap: 20px; align-items: center; }
 .prog-hero .tiername { color: var(--tier); font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
 .xpbar { height: 8px; background: var(--heat0); border-radius: 999px; overflow: hidden; margin: 10px 0 6px; }
-.xpbar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .5s; }
+.xpbar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .6s var(--ease); }
 .tiergrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 10px; }
 .tier { text-align: center; padding: 12px 4px 10px; border: 1px solid var(--line); border-radius: 12px; font-size: 13px; }
 .tier svg { display: block; margin: 0 auto 6px; }
@@ -411,12 +584,10 @@ svg.km .axis { stroke: var(--line); }
 .ach .ac { font-size: 12px; color: var(--accent); white-space: nowrap; }
 .ptsrule { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; font-size: 13px; }
 .ptsrule b { font-variant-numeric: tabular-nums; text-align: right; color: var(--accent); }
-
-/* Team leaderboard (Focus leaderboard style) */
 .lb { list-style: none; margin: 0; padding: 0; }
-.lb li { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 10px; }
+.lb li { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 12px; }
 .lb li + li { margin-top: 2px; }
-.lb .rk { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 600; color: var(--muted); flex: none; font-variant-numeric: tabular-nums; }
+.lb .rk { position: relative; overflow: hidden; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 600; color: var(--muted); flex: none; font-variant-numeric: tabular-nums; }
 .lb .who { flex: 1; min-width: 0; }
 .lb .nm { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lb .sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -424,33 +595,113 @@ svg.km .axis { stroke: var(--line); }
 .lb .top1 .rk { background: rgba(201,162,39,.16); color: #a8861d; }
 .lb .top2 .rk { background: rgba(140,150,160,.18); color: #7d8790; }
 .lb .top3 .rk { background: rgba(176,112,58,.16); color: #a2662f; }
+.lb :is(.top1, .top2, .top3) .rk::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, var(--shine) 50%, transparent 65%); transform: translateX(-120%); }
+:root[data-motion="full"] .lb :is(.top1, .top2, .top3) .rk::after { animation: medal 5s ease-in-out infinite; }
+:root[data-motion="full"] .lb .top2 .rk::after { animation-delay: .5s; }
+:root[data-motion="full"] .lb .top3 .rk::after { animation-delay: 1s; }
+@keyframes medal { 0%, 62% { transform: translateX(-120%); } 82%, 100% { transform: translateX(120%); } }
 .lb li.me { background: var(--accent-soft); }
 .lb-note { margin-top: 12px; font-size: 13px; color: var(--muted); }
 
 /* ==========================================================================
-   SETTINGS
+   SETTINGS (Focus v1.20 layout: a search box, then grouped cards of rows)
    ========================================================================== */
-.setting { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
-.setting:first-of-type { border-top: 0; padding-top: 4px; }
-.setting input[type=number], .setting select { width: 170px; flex: none; }
+.set-wrap { max-width: 760px; margin: 0 auto; }
+.set-search { margin-bottom: 16px; }
+.set-grp + .set-grp { margin-top: 16px; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; min-height: 56px; border-top: 1px solid var(--line); }
+.set-grp h2 + .setting, .setting:first-child { border-top: 0; padding-top: 4px; }
+.setting > :first-child { min-width: 0; }
+.setting > :last-child:not(:first-child) { flex: none; }
+.setting select, .setting input[type=number] { width: 180px; }
+.setting.hit { background: var(--accent-soft); margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 10px; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .acct-name { font-weight: 600; word-break: break-all; }
 .swatches { display: flex; gap: 8px; flex: none; }
-.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); cursor: pointer; }
+.swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); cursor: pointer; padding: 0; }
 .swatch.on { box-shadow: 0 0 0 2px var(--text); }
 .form2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px 16px; }
 .form2 .full { grid-column: 1 / -1; }
 .cf-list .cf { display: flex; align-items: center; gap: 8px; padding: 9px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .cf-list .cf:first-child { border-top: 0; }
+.changes h3 { font-size: 15px; margin: 14px 0 4px; }
+.changes ul { margin: 4px 0 0; padding-left: 20px; font-size: 14px; }
+.changes li + li { margin-top: 3px; }
 
-/* Dialogs (Focus dialog look) */
-.modal-back { position: fixed; inset: 0; background: rgba(0, 0, 0, .35); z-index: 50; display: grid; place-items: center; padding: 16px; }
-.modal { background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius); width: 100%; max-width: 560px; max-height: calc(100vh - 32px); overflow: auto; padding: 22px; animation: dlgIn .25s ease-out; }
-.modal.wide { max-width: 860px; }
-.modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
-.modal .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
-.menu { position: absolute; right: 0; top: calc(100% + 6px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.14); padding: 5px; min-width: 210px; z-index: 30; }
-.menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
+/* ==========================================================================
+   DIALOGS · SHEETS · COMMAND PALETTE · MENUS · TOASTS
+   Native <dialog>: scale up from 95% with a blurred backdrop; close plays a
+   short exit (the patched close() adds .closing for 170 ms), as in Focus.
+   ========================================================================== */
+dialog { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); color: var(--text); padding: 22px;
+  width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); overflow: auto; box-shadow: var(--sh-2); }
+dialog.wide { width: min(860px, calc(100vw - 32px)); }
+dialog h3 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+dialog .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+dialog::backdrop { background: rgba(10, 12, 12, .32); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+:root[data-motion="full"] dialog[open] { animation: dlgIn .36s var(--spring-soft) both; }
+:root[data-motion="reduced"] dialog[open] { animation: fadeIn .2s both; }
+:root:not([data-motion="off"]) dialog[open]::backdrop { animation: fadeIn .3s both; }
+:root:not([data-motion="off"]) dialog.closing { animation: dlgOut .17s var(--ease) both; }
+:root:not([data-motion="off"]) dialog.closing::backdrop { animation: fadeOut .17s both; }
+@keyframes dlgIn { from { opacity: 0; transform: scale(.95); } }
+@keyframes dlgOut { to { opacity: 0; transform: scale(.97); } }
+@keyframes fadeIn { from { opacity: 0; } }
+@keyframes fadeOut { to { opacity: 0; } }
+@keyframes drawIn { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes barUp { from { transform: scaleY(0); } }
+@keyframes barX { from { transform: scaleX(0); } }
+/* Side sheet (inbox, More): from the right on wide screens, a bottom sheet on phones */
+dialog.sheet { margin: 0 0 0 auto; height: 100dvh; max-height: 100dvh; width: min(420px, 100vw); border-radius: 20px 0 0 20px; padding: 0; display: flex; flex-direction: column; border-right: 0; }
+dialog.sheet:not([open]) { display: none; }
+:root[data-motion="full"] dialog.sheet[open] { animation: sheetIn .4s var(--spring-soft) both; }
+:root:not([data-motion="off"]) dialog.sheet.closing { animation: sheetOut .2s var(--ease) both; }
+@keyframes sheetIn { from { transform: translateX(40px); opacity: 0; } }
+@keyframes sheetOut { to { transform: translateX(40px); opacity: 0; } }
+@media (max-width: 640px) {
+  dialog.sheet { margin: auto 0 0; width: 100vw; max-width: 100vw; height: auto; max-height: 88dvh; border-radius: 20px 20px 0 0; border-bottom: 0; }
+  @keyframes sheetIn { from { transform: translateY(60px); opacity: 0; } }
+  @keyframes sheetOut { to { transform: translateY(60px); opacity: 0; } }
+}
+.sheet-head { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-4) var(--sp-4) var(--sp-2); }
+.sheet-head h2 { margin: 0; flex: 1; font-size: var(--fs-lg); text-transform: none; letter-spacing: 0; color: var(--text); }
+.sheet-body { flex: 1; overflow-y: auto; padding: 0 var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+.ib-group { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: var(--sp-4) 0 var(--sp-1); }
+.ib-list { list-style: none; margin: 0; padding: 0; }
+.ib-item { position: relative; display: flex; align-items: flex-start; gap: var(--sp-3); padding: 10px var(--sp-2); border-radius: var(--r-md); cursor: pointer; transition: background-color .15s; }
+.ib-item:hover { background: var(--accent-soft); }
+.ib-item .ib-ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--heat0); font-size: 16px; }
+.ib-item .ib-main { flex: 1; min-width: 0; }
+.ib-item .ib-t { font-size: 14px; overflow-wrap: anywhere; }
+.ib-item.unread .ib-t { font-weight: 600; }
+.ib-item .ib-s { font-size: var(--fs-xs); color: var(--muted); margin-top: 1px; }
+.ib-item .ib-acts { display: flex; gap: 6px; margin-top: 8px; }
+.ib-item .ib-dot { position: absolute; left: 0; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: var(--accent); }
+.ib-item:not(.unread) .ib-dot { display: none; }
+.more-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-bottom: 8px; }
+.more-grid a, .more-grid button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 6px; border-radius: var(--r-md); border: 1px solid var(--line);
+  background: var(--bg); color: var(--text); text-decoration: none; font: inherit; font-size: 13px; cursor: pointer; }
+.more-grid svg { width: 22px; height: 22px; color: var(--accent); }
+/* Command palette (Ctrl/⌘ K) */
+dialog.cmd { margin: 12vh auto auto; width: min(560px, calc(100vw - 24px)); padding: 0; overflow: hidden; }
+.cmd-in { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
+.cmd-in svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
+.cmd-in input { border: 0; background: none; padding: 6px 0; font-size: 16px; outline: none; min-height: 0; }
+.cmd-in input:focus { outline: none; border: 0; }
+:root[data-glass] .cmd-in input { background: none; }
+.cmd-list { list-style: none; margin: 0; padding: var(--sp-2); max-height: min(420px, 60vh); overflow-y: auto; }
+.cmd-list li { display: flex; align-items: center; gap: var(--sp-3); padding: 9px var(--sp-3); border-radius: var(--r-sm); cursor: pointer; font-size: 14px; }
+.cmd-list li .g { margin-left: auto; font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
+.cmd-list li .ci { width: 22px; text-align: center; flex: none; opacity: .85; }
+.cmd-list li.sel { background: var(--accent-soft); color: var(--text); }
+.cmd-list li mark { background: none; color: var(--accent); font-weight: 700; }
+.cmd-list .none { color: var(--muted); padding: 14px; cursor: default; }
+.cmd-foot { display: flex; gap: var(--sp-3); padding: var(--sp-2) var(--sp-4); border-top: 1px solid var(--line); font-size: var(--fs-xs); color: var(--muted); }
+@media (max-width: 640px) { dialog.cmd { margin-top: 8vh; } .cmd-foot { display: none; } }
+.keys { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px; align-items: center; }
+.menu { position: absolute; right: 0; top: calc(100% + 6px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--sh-2); padding: 5px; min-width: 210px; z-index: 30; }
+:root[data-motion="full"] .menu { animation: dlgIn .25s var(--spring-soft) both; transform-origin: top right; }
+.menu button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: 9px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; }
 .menu button:hover { background: var(--bg); }
 .menu button.danger { color: var(--danger); }
 .rel { position: relative; }
@@ -458,12 +709,11 @@ svg.km .axis { stroke: var(--line); }
 .audit-e:first-child { border-top: 0; }
 .audit-e table { font-size: 12px; margin-top: 6px; }
 .audit-e td { padding: 3px 8px 3px 0; border: 0; vertical-align: top; word-break: break-word; }
-
-/* Level-up moment (from the Focus app) */
-.lvdlg { text-align: center; max-width: 340px; padding: 26px 24px 22px; }
+/* Level-up moment (Focus) */
+dialog.lvdlg { text-align: center; width: min(340px, calc(100vw - 32px)); padding: 26px 24px 22px; }
 .lv-badge { position: relative; display: grid; place-items: center; height: 124px; margin-bottom: 6px; }
 .lv-badge svg { animation: pop .7s cubic-bezier(.2, .9, .3, 1.25) both; }
-.lv-badge svg.draw * { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.1s .2s ease-out forwards; }
+.lv-badge svg.draw * { stroke-dasharray: 1; stroke-dashoffset: 1; animation: drawIn 1.1s .2s ease-out forwards; }
 .tierup .lv-badge::before, .tierup .lv-badge::after {
   content: ""; position: absolute; left: 50%; top: 50%; width: 112px; height: 112px; margin: -56px 0 0 -56px;
   border-radius: 50%; border: 1.5px solid var(--tier); opacity: 0; animation: burst 1.7s .35s ease-out;
@@ -474,17 +724,101 @@ svg.km .axis { stroke: var(--line); }
 .lv-title { font-size: 30px; font-weight: 300; margin: 2px 0 4px; }
 .lv-sub { color: var(--muted); font-size: 14px; margin-bottom: 18px; }
 @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes draw { to { stroke-dashoffset: 0; } }
 @keyframes burst { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.9); opacity: 0; } }
-@keyframes dlgIn { from { transform: translateY(8px); opacity: 0; } }
-
-/* Toast */
-.toast {
-  position: fixed; left: 50%; bottom: max(24px, env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px);
-  background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 14px; font-size: 14px; text-align: center;
-  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 200; max-width: calc(100vw - 32px);
+/* Toasts: slide in, stack, slide out; Undo button (Focus v1.7) */
+.toasts {
+  position: fixed; left: 50%; bottom: max(22px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 80;
+  display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; width: max-content; max-width: calc(100vw - 32px);
 }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+dialog .toasts { position: fixed; }
+.toast-item {
+  display: flex; align-items: center; gap: 8px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 14px;
+  font-size: 14px; text-align: center; box-shadow: 0 10px 26px -12px rgba(0, 0, 0, .45);
+  opacity: 0; transform: translateY(16px) scale(.97); transition: transform .38s var(--spring-soft), opacity .22s var(--ease);
+}
+.toast-item.in { opacity: 1; transform: none; }
+.toast-item.out { opacity: 0; transform: translateY(10px) scale(.97); }
+.toast-item.has-undo { pointer-events: auto; padding-right: 8px; }
+.toast-item .undo { border: 0; background: color-mix(in srgb, var(--bg) 18%, transparent); color: var(--bg); font: inherit; font-weight: 600; padding: 4px 12px; border-radius: 999px; cursor: pointer; }
+:root[data-motion="reduced"] .toast-item { transform: none !important; }
+.ok-check { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.ok-check path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+:root:not([data-motion="off"]) .ok-check path { animation: drawIn .45s .12s var(--ease) both; }
+
+/* ==========================================================================
+   MOTION SWITCHES — <html data-motion="full | reduced | off"> (Settings → Animations)
+   ========================================================================== */
+:root[data-motion="off"] *, :root[data-motion="off"] *::before, :root[data-motion="off"] *::after { animation: none !important; transition: none !important; }
+:root[data-motion="reduced"] *, :root[data-motion="reduced"] *::before, :root[data-motion="reduced"] *::after {
+  transition-property: opacity, color, background-color, border-color, stroke-dashoffset, fill !important;
+}
+:root[data-motion="full"] .view-in { animation: pageIn .3s var(--ease) both; }
+:root[data-motion="reduced"] .view-in { animation: fadeIn .25s both; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(8px); } }
+:root[data-motion="full"] .stagger > * { animation: itemIn .34s var(--ease) both; animation-delay: calc(var(--i, 0) * 30ms); }
+:root[data-motion="reduced"] .stagger > * { animation: fadeIn .3s both; }
+@keyframes itemIn { from { opacity: 0; transform: translateY(10px); } }
+.shake { animation: shake .42s var(--ease); }
+@keyframes shake { 15% { transform: translateX(-7px); } 35% { transform: translateX(6px); } 55% { transform: translateX(-4px); } 75% { transform: translateX(2px); } }
+
+/* ==========================================================================
+   GLOSSED INTERFACE (Settings → Appearance). <html data-glass="full | lite">
+   Frosted translucent surfaces over a soft colour wash built from the accent,
+   exactly as the Focus app; Lite is the default. <html data-glass-solid> (no
+   backdrop-filter, or reduced transparency asked for) uses solid surfaces.
+   ========================================================================== */
+#glassBg { display: none; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+#glassBg i { position: absolute; border-radius: 50%; width: 70vmax; height: 70vmax; }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  :root { --gb-a: 42%; --glass-fill: 58%; --glass-blur: 22px; --glass-sat: 175%; --glass-edge: rgba(255, 255, 255, .55); --glass-hi: rgba(255, 255, 255, .7); --glass-glow: rgba(255, 255, 255, .25); --glass-shadow: 0 12px 32px -16px rgba(20, 30, 40, .28); }
+  :root[data-theme="dark"] { --gb-a: 30%; --glass-fill: 55%; --glass-edge: rgba(255, 255, 255, .13); --glass-hi: rgba(255, 255, 255, .16); --glass-glow: rgba(255, 255, 255, .05); --glass-shadow: 0 14px 34px -14px rgba(0, 0, 0, .7); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --gb-a: 30%; --glass-fill: 55%; --glass-edge: rgba(255, 255, 255, .13); --glass-hi: rgba(255, 255, 255, .16); --glass-glow: rgba(255, 255, 255, .05); --glass-shadow: 0 14px 34px -14px rgba(0, 0, 0, .7); } }
+  :root[data-glass="lite"] { --glass-blur: 10px; --glass-sat: 130%; --glass-fill: 80%; }
+  :root[data-glass] #glassBg { display: block; }
+  :root[data-glass] #glassBg .g1 { left: -25vmax; top: -30vmax; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) var(--gb-a), transparent), transparent); }
+  :root[data-glass] #glassBg .g2 { right: -30vmax; top: -10vmax; background: radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, var(--accent) 45%, #ff7aa8) var(--gb-a), transparent), transparent); }
+  :root[data-glass] #glassBg .g3 { left: 0; bottom: -40vmax; background: radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, var(--accent) 40%, #ffc65c) var(--gb-a), transparent), transparent); }
+  :root[data-glass] #glassBg .g4 { right: -20vmax; bottom: -35vmax; background: radial-gradient(closest-side, color-mix(in srgb, color-mix(in srgb, var(--accent) 45%, #6a8cff) var(--gb-a), transparent), transparent); }
+  :root[data-glass="full"][data-motion="full"] #glassBg i { animation: drift 38s ease-in-out infinite alternate; }
+  :root[data-glass="full"][data-motion="full"] #glassBg .g2 { animation-duration: 46s; animation-delay: -12s; }
+  :root[data-glass="full"][data-motion="full"] #glassBg .g3 { animation-duration: 52s; animation-delay: -20s; }
+  @keyframes drift { 50% { transform: translate(6vmax, 4vmax) scale(1.08); } 100% { transform: translate(-4vmax, 7vmax) scale(.95); } }
+  :root[data-glass] :is(.card, .tile, dialog, .seg, .lvchip, .menu), :root[data-glass] .top::before {
+    background-color: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
+    border-color: var(--glass-edge);
+    box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 22px -6px var(--glass-glow), var(--glass-shadow);
+  }
+  :root[data-glass] :is(.card, .tile, dialog, .menu), :root[data-glass] .top::before {
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
+  :root[data-glass] .seg { box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); }
+  /* the header's glass lives on a pseudo-element (a backdrop-filter on the header would trap the fixed bottom bar) */
+  :root[data-glass] .top { background: transparent; border-bottom-color: var(--glass-edge); }
+  :root[data-glass] .top::before { content: ""; position: absolute; inset: 0; z-index: -1; box-shadow: inset 0 -1px 0 var(--glass-edge); }
+  :root[data-glass] .sidenav { background-color: color-mix(in srgb, var(--surface) 55%, transparent); border-color: var(--glass-edge); }
+  :root[data-glass] .rec-h { background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
+  :root[data-glass] :is(.btn:not(.primary):not(.danger.solid), .iconbtn, .chip) {
+    background-color: color-mix(in srgb, var(--surface) 42%, transparent); border-color: var(--glass-edge);
+    box-shadow: inset 0 1px 0 var(--glass-hi), 0 4px 12px -8px rgba(0, 0, 0, .25);
+  }
+  :root[data-glass] .btn.primary { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), inset 0 -8px 16px -10px rgba(0, 0, 0, .25), 0 8px 20px -10px var(--accent); }
+  :root[data-glass] :is(input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], input[type=search], input:not([type]), select, textarea) { background-color: color-mix(in srgb, var(--surface) 60%, transparent); }
+  :root[data-glass] .item { background: color-mix(in srgb, var(--bg) 40%, transparent); }
+  @media (max-width: 640px) {
+    :root[data-glass] .btmbar { background-color: color-mix(in srgb, var(--surface) var(--glass-fill), transparent); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); border-top-color: var(--glass-edge); }
+  }
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root[data-glass] .sidenav { -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); }
+    @media (max-width: 1179px) { :root[data-glass] .sidenav { background-color: color-mix(in srgb, var(--surface) 92%, transparent); } }
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root[data-glass] :is(.card, .tile, dialog, .seg, .menu, .btmbar), :root[data-glass] .top::before { background-color: color-mix(in srgb, var(--surface) 93%, transparent); }
+  }
+  :root[data-glass][data-glass-solid] :is(.card, .tile, dialog, .seg, .menu, .btmbar, .sidenav), :root[data-glass][data-glass-solid] .top::before {
+    background-color: color-mix(in srgb, var(--surface) 95%, transparent); -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+  :root[data-glass][data-glass-solid="rt"] #glassBg { display: none; }
+}
 
 /* Blank paper CRF */
 .paper .pf { break-inside: avoid; padding: 6px 0; border-bottom: 1px dotted var(--line); font-size: 13px; }
@@ -492,86 +826,90 @@ svg.km .axis { stroke: var(--line); }
 .paper .box { display: inline-block; margin-right: 12px; white-space: nowrap; }
 .paper .line { display: inline-block; min-width: 220px; border-bottom: 1px solid var(--muted); height: 1.1em; vertical-align: bottom; }
 
-@media (max-width: 860px) {
-  .tabs a span { display: none; }
-  .tabs a svg { display: block; }
-  .tabs a { padding: 7px 10px; }
-}
+/* ---------- Responsive ---------- */
 @media (max-width: 760px) {
-  .rec-body { grid-template-columns: 1fr; }
-  .secnav { position: sticky; top: 61px; z-index: 12; flex-direction: row; overflow-x: auto; background: var(--bg); padding: 8px 0; margin: -8px 0 0; scrollbar-width: none; }
+  .rec-body { grid-template-columns: minmax(0, 1fr); }
+  .secnav { position: sticky; top: var(--hdrh, 57px); z-index: 7; flex-direction: row; overflow-x: auto; background: var(--bg); padding: 8px 0; margin: -8px 0 0; scrollbar-width: none; }
   .secnav::-webkit-scrollbar { display: none; }
-  .secnav a { white-space: nowrap; background: var(--surface); border: 1px solid var(--line); }
+  .secnav a { white-space: nowrap; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; }
   .rec-h { position: relative; top: 0; }
   .fld.w-2 { grid-column: auto; }
+  .setting { flex-wrap: wrap; }
+  .setting select, .setting input[type=number] { width: 100%; }
 }
 @media (max-width: 520px) {
-  .brand span { display: none; }
+  main { padding: 16px 14px 48px; }
+  .rec-h { margin: -16px -14px 14px; padding: 10px 14px; }
   .lvchip .uname { display: none; }
-  .lvchip { margin-left: 4px; padding-right: 8px; }
-  .tabs a { padding: 6px 9px; }
-  .setting { flex-wrap: wrap; }
+  .lvchip { padding-right: 9px; }
 }
-@media (max-width: 400px) { .sync b { display: none; } .lvchip .lvn { display: none; } .lvchip { padding-right: 3px; } }
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; animation: none !important; }
-  .lv-badge svg.draw * { stroke-dashoffset: 0; }
+@media (max-width: 400px) { .lvchip .lvn { display: none; } .lvchip { padding-right: 3px; } }
+/* 44px tap targets on touch screens */
+@media (pointer: coarse) {
+  .btn, .iconbtn, .seg > button, .opts button, .linkbtn { min-height: 44px; }
+  .iconbtn { width: 44px; height: 44px; }
+  .hdr-right .iconbtn { width: 40px; height: 40px; }
+  .mchips button, .chip { min-height: 40px; }
 }
+@media (prefers-reduced-motion: reduce) { .lv-badge svg.draw * { stroke-dashoffset: 0; } }
 @media print {
-  .top, .secnav, .noprint, .toast, .ctx, .rec-h .btn, .item-h .btn, .items + .btn { display: none !important; }
+  .top, .sidenav, .btmbar, .secnav, .noprint, .toasts, .ctx, #glassBg, .rec-h .btn, .item-h .btn, .items + .btn { display: none !important; }
   body { background: #fff; color: #000; }
   main { max-width: none; padding: 0; }
-  .card { border: 0; padding: 0; }
+  .card { border: 0; padding: 0; box-shadow: none !important; background: none !important; }
   .rec-body { display: block; }
   .rec-h { position: static; border: 0; }
   .sec { break-inside: avoid-page; }
   .fgrid { grid-template-columns: repeat(3, 1fr); }
 }
+@media (min-width: 1180px) { .ctx.m-only { display: none; } }
 </style>
+
 </head>
 <body>
+<div id="glassBg" aria-hidden="true"><i class="g1"></i><i class="g2"></i><i class="g3"></i><i class="g4"></i></div>
 
 <!-- ================================ BOOT (while Firebase loads) ================================ -->
-<div class="boot" id="bootView">Loading…</div>
+<div class="boot" id="bootView"><div class="boot-in"><span class="boot-dot"></span>Loading OncoRegistry…</div></div>
 
 <!-- ================================ LOGIN / SIGN UP ================================ -->
 <section class="auth hidden" id="authView">
   <div class="card auth-card">
-    <div class="auth-brand"><i></i>OncoRegistry</div>
+    <div class="auth-brand"><span class="logo" data-logo></span>OncoRegistry</div>
     <p class="lead">Research data collection for oncology studies — case record forms, team access, audit trail and survival analysis.</p>
 
     <div id="authMain">
-      <div class="vseg" id="authSeg" role="tablist">
+      <div class="seg" id="authSeg" role="tablist">
         <button type="button" data-mode="login" class="active">Log in</button>
         <button type="button" data-mode="signup">Create account</button>
       </div>
       <form class="auth-form" id="authForm" novalidate>
         <div id="nameWrap" class="hidden">
-          <label class="field" for="authName">Full name</label>
+          <label for="authName">Full name</label>
           <input id="authName" type="text" autocomplete="name" placeholder="Dr A. Kumar">
         </div>
-        <label class="field" for="authEmail">E-mail</label>
+        <label for="authEmail">E-mail</label>
         <input id="authEmail" type="email" autocomplete="email" autocapitalize="none" spellcheck="false" required>
-        <label class="field" for="authPass">Password</label>
+        <label for="authPass">Password</label>
         <div class="pw">
           <input id="authPass" type="password" autocomplete="current-password" required>
           <button type="button" data-toggle="authPass">Show</button>
         </div>
         <div id="confirmWrap" class="hidden">
-          <label class="field" for="authPass2">Confirm password</label>
+          <label for="authPass2">Confirm password</label>
           <div class="pw">
             <input id="authPass2" type="password" autocomplete="new-password">
             <button type="button" data-toggle="authPass2">Show</button>
           </div>
           <div class="hint">At least 8 characters.</div>
         </div>
-        <label class="check" style="margin-top:14px"><input type="checkbox" id="authKeep" checked> <span>Keep me signed in <span class="muted">(untick on shared computers)</span></span></label>
+        <label class="check" style="margin-top:16px"><input type="checkbox" id="authKeep" checked> <span>Keep me signed in <span class="muted">(off on shared computers)</span></span></label>
         <div class="auth-error" id="authError" role="alert" aria-live="polite"></div>
         <button class="btn primary" id="authSubmit" type="submit">Log in</button>
       </form>
       <div class="auth-foot">
         <button class="linkbtn" id="forgotLink" type="button">Forgot password?</button>
-        <button class="linkbtn" id="demoBtn" type="button">Try the demo (synthetic patients, this device only)</button>
+        <button class="linkbtn" id="demoBtn" type="button">Try the demo (synthetic patients — nothing is saved)</button>
       </div>
       <div id="configWarn" class="auth-warn hidden">
         <b>Cloud sync isn’t set up yet.</b> Paste your <code>firebaseConfig</code> into the “FIREBASE CONFIG” section of <code>index.html</code> (see README). Until then only the demo works.
@@ -595,18 +933,64 @@ svg.km .axis { stroke: var(--line); }
 <!-- ================================ APP ================================ -->
 <div id="appView" class="hidden">
   <header class="top">
-    <div class="top-left">
-      <a class="brand" href="#/" title="My studies"><i></i><span>OncoRegistry</span></a>
+    <div class="hdr-left">
+      <button class="iconbtn" id="navBurger" type="button" aria-label="Menu" aria-controls="tabs" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <a class="brand" href="#/" title="My studies"><span class="logo" data-logo></span><span>OncoRegistry</span></a>
       <span class="sync" id="syncStatus" title=""><i></i><b>Synced</b></span>
+      <span class="nav-cur" id="navCur"></span>
+    </div>
+    <div class="hdr-right">
+      <button class="iconbtn" id="cmdBtn" type="button" aria-label="Search and commands (Ctrl+K)" title="Search and commands (Ctrl K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button>
+      <button class="iconbtn" id="inboxBtn" type="button" aria-label="Inbox" title="Inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span class="hdr-count hidden" id="inboxCount"></span></button>
       <a class="lvchip hidden" id="lvChip" aria-label="Your level and progress"></a>
     </div>
-    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
   </header>
-  <main id="main"></main>
+  <div class="offline-bar hidden" id="offlineBar" role="status">You’re offline — changes are kept on this device and sync when you’re back online.</div>
+  <div class="shell">
+    <nav class="sidenav" id="tabs" aria-label="Sections"></nav>
+    <main id="main"><div id="ctx" class="ctx"></div><div id="view"></div></main>
+  </div>
+  <div class="nav-scrim" id="navScrim"></div>
+  <nav class="btmbar" id="btmbar" aria-label="Sections"></nav>
 </div>
 
+<!-- Inbox: invitations, follow-ups due, and what happened recently -->
+<dialog class="sheet" id="inboxDlg" aria-labelledby="inboxTitle">
+  <div class="sheet-head"><h2 id="inboxTitle">Inbox</h2><button class="linkbtn" id="inboxRead">Mark all read</button><button class="iconbtn" data-dclose aria-label="Close">✕</button></div>
+  <div class="sheet-body" id="inboxBody"></div>
+</dialog>
+
+<!-- More (phones): the sections that aren't on the bottom bar -->
+<dialog class="sheet" id="moreDlg" aria-labelledby="moreTitle">
+  <div class="sheet-head"><h2 id="moreTitle">More</h2><button class="iconbtn" data-dclose aria-label="Close">✕</button></div>
+  <div class="sheet-body" id="moreBody"></div>
+</dialog>
+
+<!-- Command palette -->
+<dialog class="cmd" id="cmdDlg" aria-label="Search and commands">
+  <div class="cmd-in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+    <input id="cmdInput" type="text" placeholder="Search patients, pages, actions…" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="cmdList"><kbd>Esc</kbd></div>
+  <ul class="cmd-list" id="cmdList" role="listbox"></ul>
+  <div class="cmd-foot"><span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span>Type a Study ID or number to jump to a patient</span></div>
+</dialog>
+
+<!-- Keyboard shortcuts -->
+<dialog id="keysDlg" aria-labelledby="keysTitle">
+  <h3 id="keysTitle">Keyboard shortcuts</h3>
+  <div class="keys">
+    <span><kbd>Ctrl</kbd> <kbd>K</kbd></span><span>Search patients, pages and actions</span>
+    <span><kbd>/</kbd></span><span>Open a patient (Today) or search (Patients)</span>
+    <span><kbd>N</kbd></span><span>Register a patient</span>
+    <span><kbd>Ctrl</kbd> <kbd>S</kbd></span><span>Save the open record</span>
+    <span><kbd>G</kbd> then <kbd>T</kbd> · <kbd>P</kbd> · <kbd>D</kbd> · <kbd>M</kbd></span><span>Go to Today · Patients · Dashboard · Team</span>
+    <span><kbd>I</kbd></span><span>Inbox</span>
+    <span><kbd>?</kbd></span><span>This list</span>
+  </div>
+  <div class="actions"><button class="btn primary" data-dclose>Close</button></div>
+</dialog>
+
 <div id="tip" role="tooltip"></div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="toasts" id="toast" role="status" aria-live="polite"></div>
 <datalist id="dl-regimens"></datalist>
 <datalist id="dl-ctcae"></datalist>
 <datalist id="dl-histo"></datalist>
@@ -660,26 +1044,10 @@ const fmtTs = t => t ? new Date(t).toLocaleString([], { day: '2-digit', month: '
 const fmt1 = n => n == null || isNaN(n) ? '–' : (Math.round(n * 10) / 10).toFixed(1);
 const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
 const ms = v => v == null ? 0 : typeof v === 'number' ? v : v.toMillis ? v.toMillis() : v.seconds ? v.seconds * 1000 : 0;
-const readJSON = (k, f) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : f; } catch (e) { return f; } };
-const writeLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { console.warn(e); } };
-
-// Toasts queue up so a burst (save, goal reached, achievement) reads one at a time — as in the Focus app.
-const toastQueue = [];
-let toastBusy = false;
-function toast(msg, ms = 2800) {
-  if (toastQueue.some(t => t.msg === msg)) return;
-  toastQueue.push({ msg, ms });
-  if (toastQueue.length > 5) toastQueue.shift();
-  if (!toastBusy) nextToast();
-}
-function nextToast() {
-  const el = $('#toast'), t = toastQueue.shift();
-  if (!t) { toastBusy = false; return; }
-  toastBusy = true;
-  el.textContent = t.msg;
-  el.classList.add('show');
-  setTimeout(() => { el.classList.remove('show'); setTimeout(nextToast, 260); }, t.ms);
-}
+// The demo never writes to the browser (as the Focus app's preview): while it runs, settings live in DEMO_MEM.
+let DEMO_MEM = null;
+const readJSON = (k, f) => { if (DEMO_MEM && k in DEMO_MEM) return clone(DEMO_MEM[k]); try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : f; } catch (e) { return f; } };
+const writeLS = (k, v) => { if (DEMO_MEM) { DEMO_MEM[k] = clone(v); return; } try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { console.warn(e); } };
 
 async function sha256(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
@@ -1231,8 +1599,8 @@ const Cloud = {
 const Demo = {
   db: null,
   subs: new Set(),
-  load() { this.db = readJSON(DEMO_KEY, null); if (!this.db) { this.db = seedDemo(); this.persist(); } },
-  persist() { writeLS(DEMO_KEY, this.db); },
+  load() { this.db = seedDemo(); },      // fresh synthetic data each time; nothing is read from or written to the browser
+  persist() {},
   changed() { this.persist(); queueMicrotask(() => this.subs.forEach(fn => fn())); },
   sub(fn) { this.subs.add(fn); fn(); return () => this.subs.delete(fn); },
   watchStudies(cb) { return this.sub(() => cb(Object.values(this.db.studies).map(clone))); },
@@ -1394,7 +1762,7 @@ function onPatients(list) {
     if (!EDIT) return renderRecord();
     if (!p) { if (!EDIT.dirty) renderRecord(); return; }
     if (p.rev > EDIT.baseRev) {
-      if (!EDIT.dirty) { startEdit(p); renderRecord(true); toast(`${p.sid} was updated by ${p.updatedByName || 'a colleague'}`); }
+      if (!EDIT.dirty) { startEdit(p); renderRecord(true); toast(`${p.sid} was updated by ${p.updatedByName || 'a colleague'}`, 3200, false, { log: true, ic: '✏️', pid: p.id }); }
       else { EDIT.conflict = p; renderConflict(); }
     }
   } else if (APP.view === 'patients') renderPatients(true);
@@ -1404,83 +1772,244 @@ function onPatients(list) {
 }
 
 /* ==========================================================================
-   RENDER — shell: header (brand · sync · level chip · tabs), study line,
-   dialogs, tooltips. Every view renders into #view.
+   RENDER — shell, built like the Focus app (Pomodorolist v1.20):
+   header (logo · sync · search · inbox · level chip), a grouped sidebar on
+   wide screens, a ☰ slide-in menu on tablets, a bottom bar + More on phones.
+   Every view renders into #view.
    ========================================================================== */
+const APP_VERSION = '1.2';
+const CHANGELOG = [
+  { v: '1.2', date: 'November 2026', items: [
+    'The Focus app’s 1.20 look: grouped sidebar (collapsible), ☰ menu on tablets, bottom bar + More on phones',
+    'Glossed Interface (Off · Lite · Full) and an Animations setting (Full · Reduced · Off)',
+    'Command palette (Ctrl K): jump to any patient, page, setting or action',
+    'Inbox: invitations, follow-ups due and what happened recently',
+    'Searchable, grouped Settings; What’s new; keyboard shortcuts (?)',
+    'Sliding switchers, switches, animated dialogs and sheets, Undo when you remove an entry',
+    'The demo no longer writes anything to the browser',
+  ] },
+  { v: '1.1', date: 'October 2026', items: [
+    'Today home: daily goal, streak, follow-ups due, drafts, recently opened',
+    'Profile: levels, badges, achievements and your activity charts; Team leaderboard',
+    'Theme and accent colour preferences',
+  ] },
+  { v: '1.0', date: 'October 2026', items: [
+    'Case record forms, team roles and invitations, audit trail, verify & lock',
+    'Survival dashboard, analysis-ready exports, printable blank CRF',
+  ] },
+];
+const LOGO_SVG = `<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--accent)"/><path fill="#fff" d="M16 6.5c-2.9 0-4.8 2.2-4.8 4.9 0 2.4 1.5 4.7 3.2 7l-4.9 7.7 2.9 1.6 3.6-5.8 3.6 5.8 2.9-1.6-4.9-7.7c1.7-2.3 3.2-4.6 3.2-7 0-2.7-1.9-4.9-4.8-4.9Zm0 2.9c1.1 0 1.9.9 1.9 2.1 0 1.3-.9 2.8-1.9 4.3-1-1.5-1.9-3-1.9-4.3 0-1.2.8-2.1 1.9-2.1Z"/></svg>`;
 const NAV_ICONS = {
   studies: '<path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/>',
   today: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M9 3v4M15 3v4M9 14.5l2 2 4-4"/>',
-  patients: '<path d="M4 7h16M4 12h16M4 17h10"/>',
+  patients: '<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
   dash: '<path d="M5 20V11M12 20V5M19 20v-6"/>',
+  export: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19h14"/>',
   team: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="9.5" r="2.5"/><path d="M15.5 14.2A4.5 4.5 0 0 1 21 18.5"/>',
   profile: '<path d="M12 3.5 19.4 7.75v8.5L12 20.5 4.6 16.25v-8.5Z"/><circle cx="12" cy="12" r="3"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>',
+  more: '<circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  collapse: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9 4.5v15M15.5 10 13.5 12l2 2"/>',
+  inbox: '<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/>',
+  keys: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>',
 };
 const navSVG = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NAV_ICONS[k]}</svg>`;
+const PAGE_NAME = { today: 'Today', patients: 'Patients', record: 'Patient record', dash: 'Dashboard', export: 'Export', team: 'Team', profile: 'Profile', settings: 'Settings', crf: 'Blank CRF', studies: 'My studies', prefs: 'Settings' };
+const inStudy = () => !!(APP.sid && APP.study && APP.role);
+const navKey = () => APP.view === 'dash' && UI.dashView === 'export' ? 'export' : APP.view === 'record' ? 'patients' : APP.view === 'crf' ? 'export' : APP.view === 'prefs' ? 'settings' : APP.view;
 
+let lastShown = '';
 function render() {
-  if (!$('#view')) $('#view').innerHTML = '<div id="ctx" class="ctx"></div><div id="view"></div>';
   renderNav();
   const v = APP.view;
+  const key = (APP.sid || '') + '|' + v + '|' + (APP.pid || '');
+  APP.anim = key !== lastShown;   // animate lists and charts only when a page is opened, never on background refreshes
+  lastShown = key;
+  const view = $('#view');
+  if (APP.anim) { view.classList.remove('view-in'); void view.offsetWidth; view.classList.add('view-in'); }
   $('#ctx').innerHTML = '';
-  if (v === 'studies') return renderStudies();
-  if (v === 'prefs') return renderSettings();
-  if (!APP.studyLoaded) { $('#view').innerHTML = `<p class="muted">Loading study…</p>`; return; }
-  if (!APP.study || !APP.role) {
-    $('#view').innerHTML = `<div class="card empty-card"><h3>Not available</h3><p class="muted">This study doesn’t exist or you are not a member of it.</p><a class="btn" href="#/">← My studies</a></div>`;
-    return;
+  $('#ctx').className = 'ctx';
+  if (v === 'studies') renderStudies();
+  else if (v === 'prefs') renderSettings();
+  else if (!APP.studyLoaded) view.innerHTML = skeletonHTML();
+  else if (!APP.study || !APP.role) view.innerHTML = `<div class="card empty-card"><h3>Not available</h3><p class="muted">This study doesn’t exist or you are not a member of it.</p><a class="btn" href="#/">← My studies</a></div>`;
+  else {
+    if (v !== 'record' && v !== 'crf') { $('#ctx').classList.add('m-only'); $('#ctx').innerHTML = `<a href="#/">My studies</a><span>/</span><b>${esc(APP.study.name)}</b><span class="pill role">${esc(APP.role)}</span>`; }
+    if (v === 'today') renderToday();
+    else if (v === 'patients') renderPatients();
+    else if (v === 'record') renderRecord();
+    else if (v === 'dash') renderDash();
+    else if (v === 'team') renderTeam();
+    else if (v === 'profile') renderProfile();
+    else if (v === 'settings') renderSettings();
+    else if (v === 'crf') renderCRF();
   }
-  if (v !== 'record' && v !== 'crf') $('#ctx').innerHTML = `<a href="#/">My studies</a><span>/</span><b>${esc(APP.study.name)}</b><span class="pill role">${esc(APP.role)}</span>`;
-  if (v === 'today') renderToday();
-  else if (v === 'patients') renderPatients();
-  else if (v === 'record') renderRecord();
-  else if (v === 'dash') renderDash();
-  else if (v === 'team') renderTeam();
-  else if (v === 'profile') renderProfile();
-  else if (v === 'settings') renderSettings();
-  else if (v === 'crf') renderCRF();
+  afterRender();
+}
+/** Runs after any view (re)draws: switcher pills, list entrances. */
+function afterRender() {
+  queueSegs();
+  if (APP.anim) { animateIn($('#view')); APP.anim = false; }
+}
+function skeletonHTML() {
+  return `<div class="card">${Array.from({ length: 5 }, () => '<div class="skel-row"><span class="skel circ"></span><span class="skel line"></span><span class="skel line short"></span></div>').join('')}</div>`;
+}
+/** Lists stagger in and charts grow — only when a view is opened (Focus animateIn). */
+function animateIn(root) {
+  if (!root || motion() === 'off') return;
+  root.querySelectorAll('.plist, .lb, .achlist, .sesslist, .tiles, .tiles4, .tiergrid, .chips, .hbar, .cf-list').forEach(l => {
+    l.classList.add('stagger');
+    [...l.children].forEach((c, i) => c.style.setProperty('--i', Math.min(i, 14)));
+  });
+  root.querySelectorAll('.chart, .dgrid, #kmCard, .cols').forEach(c => c.classList.add('anim'));
 }
 
-/** Tabs (icons only on phones), sync status and the level chip — the Focus app header. */
+/** Sidebar (grouped), tablet menu, phone bottom bar, the page name on tablets and the header chip. */
 function renderNav() {
-  const inStudy = !!(APP.sid && APP.study && APP.role);
-  const v = APP.view;
-  const items = inStudy
-    ? [['today', 'Today'], ['patients', 'Patients'], ['dash', 'Dashboard'], ['team', 'Team'], ['profile', 'Profile'], ['settings', 'Settings']]
-    : [['studies', 'Studies'], ['settings', 'Settings']];
-  const active = k => inStudy ? (k === v || (k === 'patients' && v === 'record') || (k === 'dash' && v === 'crf')) : (k === 'studies' ? v === 'studies' : v === 'prefs');
-  const href = k => inStudy ? '#/' + sidPath(k) : k === 'studies' ? '#/' : '#/settings';
-  const dueN = inStudy && APP.patientsLoaded ? dueList().length : 0;
-  const nav = items.map(([k, l]) => `<a href="${href(k)}" class="${active(k) ? 'active' : ''}" aria-label="${l}" title="${l}">${navSVG(k)}<span>${l}</span>${k === 'today' && dueN ? `<i class="tbadge" title="${dueN} due for follow-up">${dueN > 99 ? '99+' : dueN}</i>` : ''}</a>`).join('');
-  if ($('#tabs').innerHTML !== nav) $('#tabs').innerHTML = nav;
+  const study = inStudy(), cur = navKey();
+  const dueN = study && APP.patientsLoaded ? dueList().length : 0;
+  const href = k => study ? '#/' + sidPath(k) : k === 'studies' ? '#/' : '#/settings';
+  const item = (k, l, badge = 0) => `<a href="${href(k)}" data-tab="${k}" class="${cur === k ? 'active' : ''}"${cur === k ? ' aria-current="page"' : ''} title="${l}">${navSVG(k)}<span class="nv-l">${l}</span>${badge ? `<span class="nv-badge" title="${badge} due for follow-up">${badge > 99 ? '99+' : badge}</span>` : ''}</a>`;
+  const groups = study ? [
+    ['Study', [['today', 'Today', dueN], ['patients', 'Patients']]],
+    ['Analysis', [['dash', 'Dashboard'], ['export', 'Export']]],
+    ['Team', [['team', 'Team'], ['profile', 'Profile']]],
+  ] : [['Registry', [['studies', 'My studies']]]];
+  const nav = `
+    <div class="nv-top"><a class="brand" href="#/"><span class="logo">${LOGO_SVG}</span><span>OncoRegistry</span></a><button class="iconbtn" data-navclose aria-label="Close menu">✕</button></div>
+    ${study ? `<div class="nv-study"><span class="lbl">Study · ${esc(APP.study.code)}</span><b title="${esc(APP.study.name)}">${esc(APP.study.name)}</b><a href="#/">Switch study</a></div>` : ''}
+    ${groups.map(([h, items]) => `<div class="nv-grp"><div class="nv-h">${h}</div>${items.map(([k, l, b]) => item(k, l, b)).join('')}</div>`).join('')}
+    <div class="nv-grp nv-solo">${item('settings', 'Settings')}</div>
+    <div class="nv-foot"><button class="nv-collapse" id="navCollapse" type="button" aria-label="${document.documentElement.classList.contains('nav-mini') ? 'Expand' : 'Collapse'} the sidebar">${navSVG('collapse')}<span class="nv-l">Collapse</span></button></div>`;
+  const side = $('#tabs');
+  if (side.dataset.html !== nav) { side.innerHTML = nav; side.dataset.html = nav; }
+  const bar = study ? [['today', 'Today', dueN], ['patients', 'Patients'], ['dash', 'Dashboard'], ['team', 'Team'], ['more', 'More']]
+    : [['studies', 'Studies'], ['settings', 'Settings'], ['more', 'More']];
+  const onBar = bar.some(b => b[0] === cur);
+  const btm = bar.map(([k, l, b]) => `<button type="button" data-go="${k}" class="${cur === k || (k === 'more' && !onBar) ? 'active' : ''}" aria-label="${l}">${navSVG(k)}<span>${l}</span>${b ? `<i class="tbadge">${b > 99 ? '99+' : b}</i>` : ''}</button>`).join('');
+  const bb = $('#btmbar');
+  if (bb.dataset.html !== btm) { bb.innerHTML = btm; bb.dataset.html = btm; }
+  $('#navCur').textContent = study ? `${APP.study.code} · ${PAGE_NAME[APP.view] || ''}` : PAGE_NAME[APP.view] || '';
+  document.title = (APP.view === 'record' && APP.pid ? APP.pid + ' · ' : study ? PAGE_NAME[APP.view] + ' · ' : '') + 'OncoRegistry';
   renderLvChip();
   renderSync();
+  renderInboxCount();
+  queueSegs();
+}
+function setNavOpen(on) {
+  document.body.classList.toggle('nav-open', on);
+  $('#navScrim').classList.toggle('on', on);
+  $('#navBurger').setAttribute('aria-expanded', on);
+}
+function bindShell() {
+  $$('[data-logo]').forEach(el => { el.innerHTML = LOGO_SVG; });
+  $('#navBurger').onclick = () => setNavOpen(!document.body.classList.contains('nav-open'));
+  $('#navScrim').onclick = () => setNavOpen(false);
+  $('#tabs').addEventListener('click', e => {
+    if (e.target.closest('[data-navclose]')) return setNavOpen(false);
+    if (e.target.closest('#navCollapse')) {
+      const mini = document.documentElement.classList.toggle('nav-mini');
+      writeLS('oncoregistry-navmini', mini);
+      $('#tabs').dataset.html = '';
+      renderNav();
+      return;
+    }
+    const a = e.target.closest('a[data-tab]');
+    if (a && a.dataset.tab === 'export') { UI.dashView = 'export'; saveUI(); }
+    else if (a && a.dataset.tab === 'dash' && UI.dashView === 'export') { UI.dashView = 'overview'; saveUI(); }
+    if (a && a.getAttribute('href') === location.hash && (a.dataset.tab === 'export' || a.dataset.tab === 'dash')) render();
+    if (e.target.closest('a')) setNavOpen(false);
+  });
+  $('#btmbar').addEventListener('click', e => {
+    const b = e.target.closest('button[data-go]');
+    if (!b) return;
+    const k = b.dataset.go;
+    if (k === 'more') return openMore();
+    if (k === 'studies') return go('');
+    if (k === 'settings' && !inStudy()) return go('settings');
+    if (k === 'dash') { UI.dashView = UI.dashView === 'export' ? 'overview' : UI.dashView; saveUI(); }
+    go(sidPath(k));
+  });
+  $('#cmdBtn').onclick = openCmd;
+  $('#inboxBtn').onclick = openInbox;
+  $('#inboxRead').onclick = () => { INBOX.forEach(i => { i.read = true; }); saveInbox(); renderInbox(); };
+  // static dialogs: ✕ / Close buttons and a click on the backdrop close them
+  document.addEventListener('click', e => { const b = e.target.closest('[data-dclose]'); if (b) b.closest('dialog').close(); });
+  $$('dialog.sheet, #cmdDlg, #keysDlg').forEach(d => d.addEventListener('mousedown', e => { if (e.target === d && outside(e, d)) d.close(); }));
+  $('#cmdInput').addEventListener('input', () => { CMD.sel = 0; renderCmd(); });
+  $('#cmdInput').addEventListener('keydown', cmdKey);
+  $('#cmdList').addEventListener('click', e => { const li = e.target.closest('li[data-ci]'); if (li) runCmd(+li.dataset.ci); });
+  $('#cmdList').addEventListener('mousemove', e => { const li = e.target.closest('li[data-ci]'); if (li && +li.dataset.ci !== CMD.sel) { CMD.sel = +li.dataset.ci; paintCmdSel(); } });
+  new ResizeObserver(() => document.documentElement.style.setProperty('--hdrh', $('.top').offsetHeight + 'px')).observe($('.top'));
+  addEventListener('resize', queueSegs);
+  new MutationObserver(queueSegs).observe($('#view'), { childList: true, subtree: true });   // a redrawn switcher gets its pill
+  addEventListener('online', renderOffline);
+  addEventListener('offline', renderOffline);
+}
+const outside = (e, d) => { const r = d.getBoundingClientRect(); return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom; };
+function renderOffline() { $('#offlineBar').classList.toggle('hidden', !USER || USER.demo || navigator.onLine); renderSync(); }
+
+/* ---------- More (phones) ---------- */
+function openMore() {
+  const study = inStudy();
+  const tiles = study ? [['profile', 'Profile', '#/' + sidPath('profile')], ['export', 'Export', '#/' + sidPath('export')], ['settings', 'Settings', '#/' + sidPath('settings')],
+    ['studies', 'My studies', '#/'], ['inbox', 'Inbox', ''], ['search', 'Search', '']] : [['inbox', 'Inbox', ''], ['search', 'Search', ''], ['keys', 'Shortcuts', '']];
+  $('#moreBody').innerHTML = (study ? `<div class="nv-study" style="margin:0 0 12px"><span class="lbl">Study · ${esc(APP.study.code)}</span><b>${esc(APP.study.name)}</b></div>` : '') +
+    `<div class="more-grid">${tiles.map(([k, l, h]) => h ? `<a href="${h}" data-more="${k}">${navSVG(k)}${l}</a>` : `<button type="button" data-more="${k}">${navSVG(k)}${l}</button>`).join('')}</div>`;
+  $('#moreBody').onclick = e => {
+    const t = e.target.closest('[data-more]');
+    if (!t) return;
+    if (t.dataset.more === 'export') { UI.dashView = 'export'; saveUI(); }
+    $('#moreDlg').close();
+    if (t.dataset.more === 'inbox') setTimeout(openInbox, 180);
+    if (t.dataset.more === 'search') setTimeout(openCmd, 180);
+    if (t.dataset.more === 'keys') setTimeout(() => $('#keysDlg').showModal(), 180);
+  };
+  $('#moreDlg').showModal();
 }
 
-/* Dialogs */
+/* ---------- Dialog plumbing (Focus): close plays a short exit; re-opening while closing keeps it open ---------- */
+(() => {
+  const P = HTMLDialogElement.prototype, nativeClose = P.close, nativeShow = P.showModal, timers = new WeakMap();
+  P.close = function (v) {
+    if (!this.open || motion() === 'off') return nativeClose.call(this, v);
+    if (timers.has(this)) return;
+    this.classList.add('closing');
+    timers.set(this, setTimeout(() => { timers.delete(this); this.classList.remove('closing'); nativeClose.call(this, v); }, 170));
+  };
+  P.showModal = function () {
+    if (timers.has(this)) { clearTimeout(timers.get(this)); timers.delete(this); this.classList.remove('closing'); if (this.open) return; }
+    if (this.open) return;
+    return nativeShow.call(this);
+  };
+})();
+/** A dialog built from HTML, removed when closed. Buttons with data-close close it. */
 function modal(html, { wide = false, cls = '', onClose } = {}) {
-  const back = document.createElement('div');
-  back.className = 'modal-back';
-  back.innerHTML = `<div class="modal ${wide ? 'wide' : ''} ${cls}" role="dialog" aria-modal="true">${html}</div>`;
-  document.body.appendChild(back);
-  const close = () => { back.remove(); document.removeEventListener('keydown', onKey); if (onClose) onClose(); };
-  const onKey = e => { if (e.key === 'Escape') close(); };
-  document.addEventListener('keydown', onKey);
-  back.addEventListener('mousedown', e => { if (e.target === back) close(); });
-  $$('[data-close]', back).forEach(b => b.addEventListener('click', close));
-  const first = $('input:not([type=hidden]),select,textarea', back);
+  const dlg = document.createElement('dialog');
+  dlg.className = [wide ? 'wide' : '', cls].filter(Boolean).join(' ');
+  dlg.innerHTML = html;
+  document.body.appendChild(dlg);
+  let done = false;
+  const close = () => dlg.close();
+  dlg.addEventListener('close', () => { if (done) return; done = true; dlg.remove(); if (onClose) onClose(); });
+  dlg.addEventListener('mousedown', e => { if (e.target === dlg && outside(e, dlg)) close(); });
+  $$('[data-close]', dlg).forEach(b => b.addEventListener('click', close));
+  dlg.showModal();
+  const first = $('input:not([type=hidden]):not([type=checkbox]),select,textarea', dlg);
   if (first) setTimeout(() => first.focus(), 30);
-  return { el: back.firstElementChild, close };
+  return { el: dlg, close };
 }
 function confirmBox(title, body, okLabel = 'OK', danger = false, typed = '') {
   return new Promise(res => {
+    let val = false;
     const m = modal(`<h3>${esc(title)}</h3><div>${body}</div>
       ${typed ? `<label style="margin-top:12px" for="cbTyped">Type <b>${esc(typed)}</b> to confirm</label><input id="cbTyped" type="text" autocomplete="off">` : ''}
       <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn ${danger ? 'danger solid' : 'primary'}" id="cbOk">${esc(okLabel)}</button></div>`,
-      { onClose: () => res(false) });
+      { onClose: () => res(val) });
     const ok = $('#cbOk', m.el);
     if (typed) { ok.disabled = true; $('#cbTyped', m.el).addEventListener('input', e => { ok.disabled = e.target.value.trim() !== typed; }); }
-    ok.addEventListener('click', () => { res(true); m.close(); });
+    ok.addEventListener('click', () => { val = true; m.close(); });
   });
 }
 function promptBox(title, label, okLabel = 'OK') {
@@ -1489,11 +2018,125 @@ function promptBox(title, label, okLabel = 'OK') {
     const m = modal(`<h3>${esc(title)}</h3><label for="pbIn">${esc(label)}</label><textarea id="pbIn"></textarea>
       <div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="pbOk">${esc(okLabel)}</button></div>`,
       { onClose: () => res(val) });
-    $('#pbOk', m.el).addEventListener('click', () => { const v = $('#pbIn', m.el).value.trim(); if (!v) return; val = v; m.close(); });
+    $('#pbOk', m.el).addEventListener('click', () => { const v = $('#pbIn', m.el).value.trim(); if (!v) return shake($('#pbIn', m.el)); val = v; m.close(); });
+  });
+}
+function shake(el) {
+  if (!el || motion() !== 'full') return;
+  el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 450);
+}
+
+/* ---------- Toasts: a stack that slides; a check mark for success; Undo (Focus v1.7) ---------- */
+const CHECK_SVG = '<svg class="ok-check" viewBox="0 0 24 24" aria-hidden="true"><path pathLength="1" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function toastHost() {
+  const host = $('#toast'), dlg = [...document.querySelectorAll('dialog[open]')].filter(d => !d.classList.contains('closing')).pop() || document.body;
+  if (host.parentElement !== dlg) dlg.appendChild(host);
+  return host;
+}
+/** toast(msg, ms, ok, { undo, log, ic, pid }) — undo: a function, shows an Undo button; log: also keep it in the inbox. */
+function toast(msg, ms = 2800, ok = false, opt = {}) {
+  const host = toastHost();
+  if ([...host.children].some(c => c.dataset.msg === msg && !c.classList.contains('out'))) return;
+  if (opt.log) inboxLog(msg, opt);
+  const el = document.createElement('div');
+  el.className = 'toast-item' + (opt.undo ? ' has-undo' : '');
+  el.dataset.msg = msg;
+  if (ok) el.innerHTML = CHECK_SVG;
+  el.appendChild(document.createTextNode(msg));
+  if (opt.undo) {
+    const b = document.createElement('button');
+    b.className = 'undo'; b.type = 'button'; b.textContent = 'Undo';
+    b.onclick = () => { opt.undo(); dismissToast(el); };
+    el.appendChild(b);
+    ms = Math.max(ms, 5000);
+  }
+  glideToasts(host, () => host.appendChild(el));
+  const live = [...host.children].filter(c => !c.classList.contains('out'));
+  if (live.length > 3) dismissToast(live[0]);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('in')));
+  setTimeout(() => dismissToast(el), ms);
+}
+function dismissToast(el) {
+  if (!el.isConnected || el.classList.contains('out')) return;
+  el.classList.add('out');
+  setTimeout(() => { if (el.parentNode) glideToasts(el.parentNode, () => el.remove()); }, 240);
+}
+function glideToasts(host, change) {
+  const kids = [...host.children], before = kids.map(c => c.getBoundingClientRect().top);
+  change();
+  if (motion() !== 'full') return;
+  kids.forEach((c, i) => {
+    if (!c.isConnected) return;
+    const dy = before[i] - c.getBoundingClientRect().top;
+    if (Math.abs(dy) > 1) c.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
   });
 }
 
-/* Tooltip for charts: any element with data-tip */
+/* ---------- Tap ripple on buttons (Full animations) ---------- */
+document.addEventListener('pointerdown', e => {
+  const b = e.target.closest('.btn, .chip');
+  if (!b || b.disabled || motion() !== 'full') return;
+  let host = b.querySelector(':scope > .rip');
+  if (!host) { host = document.createElement('span'); host.className = 'rip'; b.appendChild(host); }
+  const r = b.getBoundingClientRect(), size = Math.max(r.width, r.height) * 2.2;
+  const dot = document.createElement('span');
+  dot.className = 'rip-dot';
+  dot.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+  host.appendChild(dot);
+  setTimeout(() => dot.remove(), 650);
+}, { passive: true });
+
+/* ---------- Segmented switchers: a pill that slides to the selected option ----------
+   One routine for every switcher (.seg) and the phone's bottom bar. A re-rendered switcher
+   starts its pill where the previous one with the same id was, so it still slides. */
+const SEGPOS = new Map();
+let segQueued = false;
+function queueSegs() { if (!segQueued) { segQueued = true; requestAnimationFrame(() => { segQueued = false; syncSegs(); }); } }
+function syncSegs() {
+  $$('.seg, .btmbar').forEach(seg => {
+    const act = seg.querySelector(':scope > button.active:not(.hidden)');
+    let ind = seg.querySelector(':scope > .seg-ind');
+    if (!act || !seg.getClientRects().length || !act.offsetWidth) { if (ind) ind.style.opacity = 0; return; }
+    const side = seg.classList.contains('btmbar');
+    const p = { x: act.offsetLeft, y: act.offsetTop, w: act.offsetWidth, h: act.offsetHeight };
+    const place = q => {
+      ind.style.width = q.w + 'px';
+      if (!side) ind.style.height = q.h + 'px';
+      ind.style.transform = `translate(${q.x}px, ${side ? 0 : q.y}px)`;
+      ind.style.opacity = 1;
+    };
+    if (!ind) {
+      ind = document.createElement('span');
+      ind.className = 'seg-ind';
+      seg.prepend(ind);
+      seg.classList.add('has-ind');
+      ind.style.transition = 'none';
+      place((seg.id && SEGPOS.get(seg.id)) || p);
+      void ind.offsetWidth;
+      ind.style.transition = '';
+      if (!side && seg.scrollWidth > seg.clientWidth) seg.scrollLeft = Math.max(0, p.x - (seg.clientWidth - p.w) / 2);
+    }
+    place(p);
+    if (seg.id) SEGPOS.set(seg.id, p);
+  });
+}
+/** A segmented view switcher. items: [[value, label, extraHTML?]] */
+function vseg(id, items, cur) {
+  return `<div class="seg" id="${id}" role="tablist">${items.map(([v, l, x]) => `<button type="button" data-v="${v}" class="${v === cur ? 'active' : ''}" role="tab" aria-selected="${v === cur}">${l}${x || ''}</button>`).join('')}</div>`;
+}
+function bindSeg(id, fn) {
+  const el = $('#' + id);
+  if (el) el.addEventListener('click', e => {
+    const b = e.target.closest('button[data-v]');
+    if (!b || b.classList.contains('active')) return;
+    APP.anim = true;   // a new sub-view animates in like a page
+    fn(b.dataset.v);
+    afterRender();
+  });
+}
+
+/* ---------- Chart tooltips: any element with data-tip ---------- */
 document.addEventListener('mouseover', e => {
   const t = e.target.closest('[data-tip]');
   const tip = $('#tip');
@@ -1509,23 +2152,214 @@ document.addEventListener('mousemove', e => {
   tip.style.top = Math.max(8, e.clientY - h - 12) + 'px';
 });
 
-/** A segmented view switcher (Focus "seg"). items: [[value, label, extraHTML?]] */
-function vseg(id, items, cur) {
-  return `<div class="vseg" id="${id}" role="tablist">${items.map(([v, l, x]) => `<button type="button" data-v="${v}" class="${v === cur ? 'active' : ''}" role="tab" aria-selected="${v === cur}">${l}${x || ''}</button>`).join('')}</div>`;
+/* ---------- Keyboard: Ctrl/⌘ K palette · / search · N register · G then T/P/D/M · I inbox · ? shortcuts · Ctrl S save ---------- */
+let gPending = 0;
+document.addEventListener('keydown', e => {
+  if (!USER) return;
+  const typing = e.target.matches && e.target.matches('input,textarea,select,[contenteditable]');
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+    e.preventDefault();
+    const d = $('#cmdDlg');
+    if (d.open && !d.classList.contains('closing')) d.close(); else openCmd();   // one that is still closing re-opens
+    return;
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && APP.view === 'record' && EDIT) { e.preventDefault(); if (canEdit() && !EDIT.doc.locked) saveRecord(); return; }
+  if (e.key === 'Escape' && document.body.classList.contains('nav-open')) { setNavOpen(false); return; }
+  if (typing || e.ctrlKey || e.metaKey || e.altKey || document.querySelector('dialog[open]')) return;
+  const k = e.key.toLowerCase();
+  if (gPending && Date.now() - gPending < 1200 && inStudy()) {
+    gPending = 0;
+    const to = { t: 'today', p: 'patients', d: 'dash', m: 'team', s: 'settings', r: 'profile' }[k];
+    if (to) { e.preventDefault(); if (to === 'dash' && UI.dashView === 'export') { UI.dashView = 'overview'; saveUI(); } go(sidPath(to)); }
+    return;
+  }
+  if (k === 'g') { gPending = Date.now(); return; }
+  if (e.key === '?') { e.preventDefault(); $('#keysDlg').showModal(); return; }
+  if (k === 'i') { e.preventDefault(); openInbox(); return; }
+  if (e.key === '/') { const s = $('#gotoIn') || $('#pSearch'); if (s) { e.preventDefault(); s.focus(); } else { e.preventDefault(); openCmd(); } return; }
+  if (k === 'n' && APP.study && canEdit() && (APP.view === 'today' || APP.view === 'patients')) { e.preventDefault(); registerDialog(); }
+});
+
+/* ==========================================================================
+   INBOX — invitations, follow-ups due in this study, and a log of what
+   happened (achievements, level-ups, colleagues' changes). Kept per user on
+   this device; never in the demo.
+   ========================================================================== */
+let INBOX = [];
+const inboxKey = () => 'oncoregistry-inbox:' + (USER ? USER.uid : '');
+function loadInbox() { INBOX = readJSON(inboxKey(), []); if (!Array.isArray(INBOX)) INBOX = []; }
+function saveInbox() { writeLS(inboxKey(), INBOX.slice(0, 60)); renderInboxCount(); }
+function inboxLog(t, { ic = '🔔', pid = '' } = {}) {
+  INBOX.unshift({ id: uid(), ic, t, at: Date.now(), sid: APP.sid || '', study: APP.study ? APP.study.code : '', pid, read: false });
+  INBOX = INBOX.slice(0, 60);
+  saveInbox();
+  if ($('#inboxDlg').open) renderInbox();
 }
-function bindSeg(id, fn) {
-  const el = $('#' + id);
-  if (el) el.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) fn(b.dataset.v); });
+const inboxCount = () => APP.invites.length + INBOX.filter(i => !i.read).length;
+function renderInboxCount() {
+  const el = $('#inboxCount');
+  if (!el) return;
+  const n = USER ? inboxCount() : 0;
+  el.textContent = n > 99 ? '99+' : n;
+  el.classList.toggle('hidden', !n);
+}
+function openInbox() { if (!USER) return; renderInbox(); $('#inboxDlg').showModal(); }
+function renderInbox() {
+  const study = inStudy();
+  const due = study && APP.patientsLoaded ? dueList() : [];
+  const drafts = study ? [...APP.patients.values()].filter(p => !p.locked && p.status !== 'complete' && (p.createdBy === USER.uid || p.updatedBy === USER.uid)).length : 0;
+  const ago = t => { const m = Math.round((Date.now() - t) / 6e4); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : fmtTs(t); };
+  const inv = APP.invites.map(i => `<li class="ib-item unread"><span class="ib-dot"></span><span class="ib-ic">✉️</span><div class="ib-main">
+      <div class="ib-t">Invitation to <b>${esc(i.studyName)}</b> as ${esc(i.role)}</div><div class="ib-s">from ${esc(i.invitedByName || 'the PI')}</div>
+      <div class="ib-acts"><button class="btn small primary" data-ibaccept="${esc(i.id)}">Accept</button><button class="btn small" data-ibdecline="${esc(i.id)}">Decline</button></div></div></li>`).join('');
+  const here = study ? [
+    due.length ? `<li class="ib-item" data-ibgo="due"><span class="ib-ic">📅</span><div class="ib-main"><div class="ib-t">${due.length} patient${due.length === 1 ? '' : 's'} due for follow-up</div><div class="ib-s">No contact for ${PREFS.fuDays}+ days · ${esc(APP.study.code)}</div></div></li>` : '',
+    drafts ? `<li class="ib-item" data-ibgo="drafts"><span class="ib-ic">📝</span><div class="ib-main"><div class="ib-t">${drafts} of your record${drafts === 1 ? ' is' : 's are'} still a draft</div><div class="ib-s">Open Today to finish them</div></div></li>` : '',
+  ].join('') : '';
+  const log = INBOX.map(i => `<li class="ib-item${i.read ? '' : ' unread'}" data-iblog="${esc(i.id)}"><span class="ib-dot"></span><span class="ib-ic">${i.ic}</span><div class="ib-main">
+      <div class="ib-t">${esc(i.t)}</div><div class="ib-s">${esc(i.study ? i.study + ' · ' : '')}${ago(i.at)}</div></div></li>`).join('');
+  $('#inboxBody').innerHTML = `
+    ${inv ? `<div class="ib-group">Invitations</div><ul class="ib-list">${inv}</ul>` : ''}
+    ${here ? `<div class="ib-group">In this study</div><ul class="ib-list">${here}</ul>` : ''}
+    <div class="ib-group">Recent</div>${log ? `<ul class="ib-list">${log}</ul>` : `<p class="empty e-inbox">Nothing yet. Achievements, level-ups and colleagues’ changes appear here.</p>`}`;
+  $('#inboxBody').onclick = async e => {
+    const acc = e.target.closest('[data-ibaccept]'), dec = e.target.closest('[data-ibdecline]'), goEl = e.target.closest('[data-ibgo]'), lg = e.target.closest('[data-iblog]');
+    if (acc) {
+      const i = APP.invites.find(x => x.id === acc.dataset.ibaccept);
+      acc.disabled = true;
+      try { await Store.acceptInvite(i); $('#inboxDlg').close(); toast('Joined ' + i.studyName, 2600, true); go('s/' + encodeURIComponent(i.studyId) + '/today'); } catch (err) { acc.disabled = false; }
+    } else if (dec) Store.deleteInvite(dec.dataset.ibdecline);
+    else if (goEl) {
+      $('#inboxDlg').close();
+      if (goEl.dataset.ibgo === 'due') showDue(); else go(sidPath('today'));
+    } else if (lg) {
+      const it = INBOX.find(x => x.id === lg.dataset.iblog);
+      if (!it) return;
+      it.read = true;
+      saveInbox();
+      if (it.pid && it.sid) { $('#inboxDlg').close(); go(`s/${encodeURIComponent(it.sid)}/p/${encodeURIComponent(it.pid)}`); }
+      else renderInbox();
+    }
+  };
+  renderInboxCount();
 }
 
-/* Keyboard shortcuts: / search · N register patient · Ctrl+S save (in a record) */
-document.addEventListener('keydown', e => {
-  const typing = e.target.matches && e.target.matches('input,textarea,select,[contenteditable]');
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && APP.view === 'record' && EDIT) { e.preventDefault(); if (canEdit() && !EDIT.doc.locked) saveRecord(); return; }
-  if (typing || e.ctrlKey || e.metaKey || e.altKey || $('.modal-back')) return;
-  if (e.key === '/') { const s = $('#gotoIn') || $('#pSearch'); if (s) { e.preventDefault(); s.focus(); } }
-  if ((e.key === 'n' || e.key === 'N') && APP.study && canEdit() && (APP.view === 'today' || APP.view === 'patients')) { e.preventDefault(); registerDialog(); }
-});
+/* ==========================================================================
+   COMMAND PALETTE — Ctrl/⌘ K (or the search button). Patients, pages,
+   actions and settings, ranked by a fuzzy match (as the Focus app).
+   ========================================================================== */
+function cmdList(q) {
+  const L = [], add = (ic, t, g, run, k = '') => L.push({ ic, t, g, run, k });
+  const study = inStudy(), st = APP.study;
+  if (study) {
+    const pq = q.trim().toUpperCase().replace(/\s+/g, '');
+    if (/^\d{1,5}$/.test(pq)) { const pid = `${st.code}-${pad(+pq, 4)}`; if (APP.patients.has(pid)) add('🧾', `Open ${pid}`, 'Exact', () => { location.hash = recordHref(pid); }, pid); }
+    if (q.trim().length >= 2) {
+      const ql = q.trim().toLowerCase();
+      [...APP.patients.values()].filter(p => { const d = p.d || {}; return [p.sid, d.initials, psiteLabel(d), d.histo, d.stage].some(x => x && String(x).toLowerCase().includes(ql)); })
+        .slice(0, 8).forEach(p => { const d = p.d || {}; add('🧾', `${p.sid} · ${[psiteLabel(d), d.stage].filter(Boolean).join(' ')}`, 'Patient', () => { location.hash = recordHref(p.id); }, [p.sid, d.initials, d.histo, psiteLabel(d)].join(' ')); });
+    }
+    const pg = (ic, t, to, k = '', fn) => add(ic, t, 'Go to', fn || (() => go(sidPath(to))), k);
+    pg('📅', 'Today', 'today', 'home goal streak due follow-up drafts');
+    pg('🗂️', 'Patients', 'patients', 'list records search');
+    pg('📊', 'Dashboard', 'dash', 'charts overview', () => { UI.dashView = 'overview'; saveUI(); go(sidPath('dash')); });
+    pg('📉', 'Survival curves (Kaplan–Meier)', 'dash', 'km os pfs survival log-rank', () => { UI.dashView = 'survival'; saveUI(); go(sidPath('dash')); });
+    pg('⬇️', 'Export', 'dash', 'csv download stata spss r', () => { UI.dashView = 'export'; saveUI(); go(sidPath('export')); });
+    pg('🏆', 'Leaderboard', 'team', 'points team ranking', () => { UI.teamView = 'board'; saveUI(); go(sidPath('team')); });
+    pg('👥', 'Team members', 'team', 'invite roles members', () => { UI.teamView = 'members'; saveUI(); go(sidPath('team')); });
+    pg('🏅', 'Profile', 'profile', 'level badges achievements activity');
+    pg('🧾', 'Study & form settings', 'settings', 'sections custom fields mrn sites iec', () => { UI.settingsView = 'study'; saveUI(); go(sidPath('settings')); });
+    pg('🕓', 'Audit trail', 'settings', 'history changes log', () => { UI.settingsView = 'audit'; saveUI(); go(sidPath('settings')); });
+    if (canEdit()) add('➕', 'Register a patient', 'Action', registerDialog, 'new patient add enrol');
+    add('📅', 'Patients due for follow-up', 'Action', showDue, 'due overdue contact');
+    add('🖨️', 'Print the blank CRF', 'Action', () => go(sidPath('crf')), 'paper form print');
+    add('⬇️', 'Download patients CSV', 'Action', () => { if (APP.patientsLoaded) exportPatients(); }, 'export csv data');
+    add('📖', 'Download the data dictionary', 'Action', () => exportDictionary(), 'codebook variables');
+    if (isAdmin()) add('✉️', 'Invite a colleague', 'Action', () => { UI.teamView = 'members'; saveUI(); go(sidPath('team')); setTimeout(() => { const i = $('#invEmail'); if (i) i.focus(); }, 300); }, 'invite team email');
+  }
+  for (const s of APP.studies) if (s.id !== APP.sid) add('📁', `Open study: ${s.name}`, 'Study', () => go(`s/${encodeURIComponent(s.id)}/today`), s.code);
+  add('📁', 'My studies', 'Go to', () => go(''), 'home studies switch');
+  add('📥', 'Inbox', 'Open', openInbox, 'notifications invitations');
+  add('🌓', 'Toggle dark mode', 'Appearance', () => { PREFS.theme = isDark() ? 'light' : 'dark'; savePrefs(); toast(`Theme: ${PREFS.theme}`, 1800, true); if (APP.view === 'settings' || APP.view === 'prefs') renderSettings(); }, 'theme dark light night');
+  for (const lv of ['off', 'lite', 'full']) if (lv !== DEV.glass) add('✨', `Glossed Interface: ${GLASS_NAMES[lv]}`, 'Appearance', () => { setDev('glass', lv); toast(`Glossed Interface: ${GLASS_NAMES[lv]}`, 1800, true); }, 'glossed interface glass gloss blur frosted');
+  for (const mo of ['full', 'reduced', 'off']) if (mo !== motion()) add('🎞️', `Animations: ${mo[0].toUpperCase() + mo.slice(1)}`, 'Appearance', () => { setDev('motion', mo); toast(`Animations: ${mo}`, 1800, true); }, 'motion animations');
+  for (const [k, n] of [['goal', 'Daily goal'], ['workdays', 'Working days'], ['fu', 'Follow-up due after'], ['theme', 'Theme'], ['accent', 'Accent colour'], ['glass', 'Glossed Interface'], ['motion', 'Animations'], ['prog', 'Progression'], ['account', 'Log out']])
+    add('⚙️', n, 'Setting', () => goSetting(k), 'settings preferences');
+  add('⌨️', 'Keyboard shortcuts', 'Help', () => $('#keysDlg').showModal(), 'keys help');
+  add('✨', 'What’s new', 'Help', openWhatsNew, 'changelog version about');
+  return L;
+}
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+/** Fuzzy score: every query character in order; bonus for word starts and runs. */
+function fuzzy(q, s) {
+  q = norm(q); s = norm(s);
+  if (!q) return { score: 1, idx: [] };
+  if (s.includes(q)) { const i = s.indexOf(q); return { score: 100 - i + (i === 0 || s[i - 1] === ' ' ? 30 : 0), idx: Array.from({ length: q.length }, (_, k) => i + k) }; }
+  let si = 0, score = 0, run = 0; const idx = [];
+  for (const ch of q) {
+    if (ch === ' ') continue;
+    const j = s.indexOf(ch, si);
+    if (j < 0) return null;
+    run = j === si ? run + 1 : 0;
+    score += 1 + run * 2 + (j === 0 || s[j - 1] === ' ' ? 4 : 0);
+    idx.push(j); si = j + 1;
+  }
+  return { score, idx };
+}
+let CMD = { items: [], sel: 0 };
+function renderCmd() {
+  const q = $('#cmdInput').value.trim();
+  CMD.items = cmdList(q).map(c => {
+    const a = fuzzy(q, c.t), b = q ? fuzzy(q, c.k) : null;
+    const best = a && (!b || a.score >= b.score) ? a : b ? { score: b.score - 5, idx: [] } : null;
+    return best ? { ...c, ...best, hi: a ? a.idx : [], score: best.score + (c.g === 'Exact' ? 500 : c.g === 'Patient' && q ? 40 : 0) } : null;
+  }).filter(Boolean).sort((x, y) => y.score - x.score).slice(0, q ? 14 : 10);
+  CMD.sel = Math.min(CMD.sel, Math.max(0, CMD.items.length - 1));
+  $('#cmdList').innerHTML = CMD.items.length ? CMD.items.map((c, i) => {
+    const hi = new Set(c.hi), txt = [...c.t].map((ch, k) => hi.has(k) ? `<mark>${esc(ch)}</mark>` : esc(ch)).join('');
+    return `<li role="option" id="cmd-${i}" data-ci="${i}" class="${i === CMD.sel ? 'sel' : ''}" aria-selected="${i === CMD.sel}"><span class="ci" aria-hidden="true">${c.ic}</span><span>${txt}</span><span class="g">${esc(c.g)}</span></li>`;
+  }).join('') : '<li class="none">No matches. Try a Study ID, “survival”, “export”, “dark”.</li>';
+  paintCmdSel();
+}
+function paintCmdSel() {
+  $$('#cmdList li[data-ci]').forEach(li => { const on = +li.dataset.ci === CMD.sel; li.classList.toggle('sel', on); li.setAttribute('aria-selected', on); });
+  $('#cmdInput').setAttribute('aria-activedescendant', CMD.items.length ? 'cmd-' + CMD.sel : '');
+  const s = $('#cmdList .sel'); if (s) s.scrollIntoView({ block: 'nearest' });
+}
+function openCmd() {
+  if (!USER) return;
+  $('#cmdInput').value = '';
+  CMD.sel = 0;
+  renderCmd();
+  $('#cmdDlg').showModal();
+  setTimeout(() => $('#cmdInput').focus(), 20);
+}
+function cmdKey(e) {
+  if (e.key === 'ArrowDown') { e.preventDefault(); CMD.sel = Math.min(CMD.items.length - 1, CMD.sel + 1); paintCmdSel(); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); CMD.sel = Math.max(0, CMD.sel - 1); paintCmdSel(); }
+  else if (e.key === 'Enter') { e.preventDefault(); runCmd(CMD.sel); }
+}
+function runCmd(i) {
+  const c = CMD.items[i];
+  if (!c) return;
+  $('#cmdDlg').close();
+  setTimeout(c.run, 60);
+}
+/** Open Settings → Preferences and point at one row. */
+function goSetting(k) {
+  if (inStudy()) { UI.settingsView = 'prefs'; saveUI(); go(sidPath('settings')); } else go('settings');
+  setTimeout(() => {
+    const row = $(`.setting[data-k="${k}"]`);
+    if (!row) return;
+    row.scrollIntoView({ behavior: motion() === 'full' ? 'smooth' : 'auto', block: 'center' });
+    row.classList.add('hit');
+    setTimeout(() => row.classList.remove('hit'), 1800);
+  }, 120);
+}
+function openWhatsNew() {
+  modal(`<h3>What’s new in OncoRegistry</h3><div class="changes">${CHANGELOG.map(c => `<h3>${c.v} <span class="lbl">· ${esc(c.date)}</span></h3><ul>${c.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('')}</div>
+    <div class="actions"><button class="btn primary" data-close>Close</button></div>`);
+}
 
 /* ==========================================================================
    STUDIES (home)
@@ -1574,7 +2408,6 @@ function renderStudies() {
 }
 async function resetDemo() {
   if (!(await confirmBox('Reset demo data?', 'All demo studies, patients and activity on this device are replaced with fresh synthetic data.', 'Reset'))) return;
-  localStorage.removeItem(DEMO_KEY);
   Demo.load();
   Demo.changed();
   toast('Demo data reset');
@@ -1660,7 +2493,7 @@ function renderPatients(dataOnly) {
         ${canEdit() ? `<button class="btn primary" id="newPatient">+ Register patient</button>` : ''}
       </div>
       <div class="toolbar">
-        <input type="search" id="pSearch" placeholder="Search Study ID, initials, histology, regimen…${st.mrnLookup ? ' (Enter = hospital ID)' : ''}" value="${esc(f.q)}" aria-label="Search patients">
+        <div class="search-in">${navSVG('search')}<input type="search" id="pSearch" placeholder="Search Study ID, initials, histology, regimen…${st.mrnLookup ? ' (Enter = hospital ID)' : ''}" value="${esc(f.q)}" aria-label="Search patients"></div>
         <select id="fSite" aria-label="Filter by site"><option value="">All sites</option>${(st.sites || []).map(s => `<option ${f.site === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>
         <select id="fStatus" aria-label="Filter by status"><option value="">Any status</option>${Object.entries(STATUS_LABEL).map(([k, v]) => `<option value="${k}" ${f.status === k ? 'selected' : ''}>${v}</option>`).join('')}<option value="due" ${f.status === 'due' ? 'selected' : ''}>Due for follow-up</option></select>
         <select id="fPsite" aria-label="Filter by primary site"><option value="">All primary sites</option>${PSITES.map(([k, v]) => `<option value="${k}" ${f.psite === k ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select>
@@ -1680,9 +2513,9 @@ function renderPatients(dataOnly) {
 function renderPatientRows() {
   const el = $('#ptable');
   if (!el) return;
-  if (!APP.patientsLoaded) { el.innerHTML = `<p class="empty">Loading…</p>`; return; }
+  if (!APP.patientsLoaded) { el.innerHTML = skeletonHTML().replace('class="card"', 'style="padding:6px 10px"'); return; }
   const list = filteredPatients();
-  if (!APP.patients.size) { el.innerHTML = `<div class="empty"><p><b>No patients registered yet.</b></p>${canEdit() ? '<p>Press “Register patient” to allot the first Study ID.</p>' : ''}</div>`; return; }
+  if (!APP.patients.size) { el.innerHTML = `<div class="empty e-people"><b>No patients registered yet.</b>${canEdit() ? '<br>Press “Register patient” (or N) to allot the first Study ID.<br><button class="btn primary" id="emptyNew">+ Register patient</button>' : ''}</div>`; const en = $('#emptyNew'); if (en) en.onclick = registerDialog; return; }
   if (!list.length) { el.innerHTML = `<p class="empty">No patients match these filters.</p>`; return; }
   const arrow = k => APP.sort.k === k ? (APP.sort.dir > 0 ? ' ↑' : ' ↓') : '';
   const rows = list.slice(0, APP.showRows).map(p => {
@@ -1769,7 +2602,7 @@ function registerDialog() {
         verifiedBy: '', verifiedByName: '', verifiedAt: null,
       }, { action: 'create', by: USER.uid, byName: USER.name, changes: [], note: '' });
       m.close();
-      toast(`Registered ${pid}`);
+      toast(`Registered ${pid}`, 2600, true);
       go(`s/${encodeURIComponent(APP.sid)}/p/${encodeURIComponent(pid)}`);
     } catch (e) {
       ok.disabled = false;
@@ -1970,12 +2803,14 @@ function bindRecord() {
     } else if (b.dataset.del) {
       const [rep, i] = b.dataset.del.split('.');
       const sec = SECTIONS.find(s => s.repeat === rep);
-      confirmBox(`Remove ${sec.itemLabel.toLowerCase()} ${+i + 1}?`, 'It is removed when you save.', 'Remove', true).then(ok => {
-        if (!ok) return;
-        EDIT.doc.rep[rep].splice(+i, 1);
-        markDirty();
+      const [gone] = EDIT.doc.rep[rep].splice(+i, 1), pid = EDIT.pid;
+      markDirty();
+      rerenderSection(rep);
+      toast(`${sec.itemLabel} ${+i + 1} removed — saved when you press Save`, 5000, false, { undo: () => {
+        if (!EDIT || EDIT.pid !== pid) return;
+        EDIT.doc.rep[rep].splice(+i, 0, gone);
         rerenderSection(rep);
-      });
+      } });
     }
   });
   $('#secnav').addEventListener('click', e => {
@@ -2150,7 +2985,7 @@ async function saveRecord(opt = {}) {
       if (EDIT && EDIT.pid === pid) { const cur = APP.patients.get(pid); if (cur) { startEdit(cur); renderRecord(true); } }
     }
   });
-  toast(navigator.onLine || USER.demo ? `${pid} saved` : `${pid} saved on this device — it will sync when you are online`);
+  toast(navigator.onLine || USER.demo ? `${pid} saved` : `${pid} saved on this device — it will sync when you are online`, 2600, true);
   if (opt.locked != null || opt.status) renderRecord(true); else { $$('input[data-mrn]').forEach(i => { i.value = ''; }); renderHeaderStatus(); refreshDynamic(); }
 }
 
@@ -2411,7 +3246,7 @@ function renderDashOverview(el) {
     </div>
     <div class="card">
       <h2>Registrations per month</h2>
-      <div class="cols">${months.map(m => { const n = byMonth.get(m) || 0; return `<div style="height:${100 * n / maxM}%" data-tip="<b>${mLabel(m)}</b><br>${n} registered"></div>`; }).join('')}</div>
+      <div class="cols">${months.map(m => { const n = byMonth.get(m) || 0; return `<div style="height:${100 * n / maxM}%;--i:${months.indexOf(m)}" data-tip="<b>${mLabel(m)}</b><br>${n} registered"></div>`; }).join('')}</div>
       <div class="colx"><span>${mLabel(months[0])}</span><span>${mLabel(months[12])}</span><span>${mLabel(months[23])}</span></div>
     </div>
     <div class="dgrid">
@@ -2524,7 +3359,7 @@ function kmSVG(groups) {
     let d = `M${sc.x(0)},${sc.y(1)}`;
     for (const p of st) d += `H${sc.x(p.t)}V${sc.y(p.S)}`;
     d += `H${sc.x(end)}`;
-    s += `<path d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
+    s += `<path class="curve" pathLength="1" d="${d}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`;
     for (const c of g.fit.cens) s += `<line x1="${sc.x(c.t)}" x2="${sc.x(c.t)}" y1="${sc.y(c.S) - 4}" y2="${sc.y(c.S) + 4}" stroke="${col}" stroke-width="1.5"/>`;
   });
   // Number at risk
@@ -2959,9 +3794,9 @@ function afterActivity(first) {
   } else {
     if (PREFS.progression) {
       if (g.lv.level > ACT.lastLevel) showLevelUp(ACT.lastLevel, g.lv.level);
-      for (const id of achDone(g)) if (!ACT.lastAch.has(id)) toast('Achievement unlocked · ' + ACHIEVEMENTS.find(a => a.id === id).name, 3600);
+      for (const id of achDone(g)) if (!ACT.lastAch.has(id)) toast('Achievement unlocked · ' + ACHIEVEMENTS.find(a => a.id === id).name, 3600, true, { log: true, ic: '🏅' });
     }
-    if (g.today >= PREFS.goal && readJSON(goalKey, '') !== today()) { writeLS(goalKey, today()); toast(`Daily goal reached · ${g.today} records today`, 3600); }
+    if (g.today >= PREFS.goal && readJSON(goalKey, '') !== today()) { writeLS(goalKey, today()); toast(`Daily goal reached · ${g.today} records today`, 3600, true, { log: true, ic: '🎯' }); }
     ACT.lastLevel = g.lv.level;
     ACT.lastAch = new Set(achDone(g));
   }
@@ -3030,6 +3865,12 @@ function dueList() {
   }
   return out.sort((a, b) => b.since - a.since);
 }
+/** Patients list filtered to those due for follow-up (re-draws when it's already open). */
+function showDue() {
+  APP.filters.status = 'due';
+  APP.showRows = 200;
+  if (APP.view === 'patients') renderPatients(); else go(sidPath('patients'));
+}
 const isDue = p => { const d = p.d || {}; if (d.vital === 'D') return false; const last = lastContact(p) || d.reg_date; return !!last && days(last, today()) >= PREFS.fuDays; };
 
 function renderToday(soft) {
@@ -3050,13 +3891,15 @@ function renderToday(soft) {
     <div class="who"><div class="sub">${esc([psiteLabel(p.d || {}), (p.d || {}).stage, (p.d || {}).site].filter(Boolean).join(' · ') || '—')}</div></div>
     <span class="v${late ? ' late' : ''}">${right}</span></li>`;
 
+  const hr = new Date().getHours();
   $('#view').innerHTML = `
+    <p class="greet">Good ${hr < 12 ? 'morning' : hr < 17 ? 'afternoon' : 'evening'}, ${esc(firstName(USER.name || ''))}</p>
     <div class="grid-2">
       <div class="stack">
         <div class="card quick">
           <div class="phase">${editor ? (n >= goal ? 'Daily goal reached' : 'Today') : 'Today'}</div>
           <div class="lbl">${esc(fmtLong(new Date()))}</div>
-          ${editor ? `<div class="ring">
+          ${editor ? `<div class="ring${n >= goal ? ' done' : ''}">
             <svg viewBox="0 0 220 220" aria-hidden="true"><circle class="track" cx="110" cy="110" r="100"></circle>
               <circle class="prog" cx="110" cy="110" r="100" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - frac)).toFixed(1)}"></circle></svg>
             <div class="ring-center"><div class="big-num">${n}</div><div class="lbl">of ${goal} record${goal === 1 ? '' : 's'} today</div></div>
@@ -3127,7 +3970,7 @@ function renderToday(soft) {
   const cr = $('#clearRecent');
   if (cr) cr.onclick = () => { const rr = recents(); rr.list = []; writeLS(recKey(), rr); renderToday(); };
   const ad = $('#allDue');
-  if (ad) ad.onclick = e => { e.preventDefault(); APP.filters.status = 'due'; go(sidPath('patients')); };
+  if (ad) ad.onclick = e => { e.preventDefault(); showDue(); };
 }
 
 /** "12" → CODE-0012; a full Study ID opens directly; otherwise try the hospital-ID lookup, then search. */
@@ -3367,7 +4210,7 @@ function barChart(cols, { goal = 0, height = 230, width = 720 } = {}) {
   const ticks = [4, 5, 2].find(t => Number.isInteger(yMax / t)) || 4;
   const cw = (W - L - R) / cols.length, bw = Math.min(cw * 0.64, 46);
   const yOf = v => T + plotH * (1 - v / yMax);
-  let svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Records per period">`;
+  let svg = `<svg class="chart bars" viewBox="0 0 ${W} ${H}" role="img" aria-label="Records per period">`;
   for (let i = 0; i <= ticks; i++) {
     const v = yMax * i / ticks, y = yOf(v);
     svg += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/><text class="axis" x="${L - 6}" y="${y + 4}" text-anchor="end">${fmtNum(v)}</text>`;
@@ -3375,7 +4218,7 @@ function barChart(cols, { goal = 0, height = 230, width = 720 } = {}) {
   if (goal && goal <= yMax) svg += `<line class="goal" x1="${L}" x2="${W - R}" y1="${yOf(goal)}" y2="${yOf(goal)}"/>`;
   cols.forEach((c, i) => {
     const x = L + cw * i + (cw - bw) / 2, h = c.v / yMax * plotH;
-    svg += c.v ? `<rect x="${x.toFixed(1)}" y="${(H - B - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3" style="fill:var(--accent)" data-tip="${esc(c.tip)}"/>`
+    svg += c.v ? `<rect x="${x.toFixed(1)}" y="${(H - B - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3" style="fill:var(--accent);--i:${i}" data-tip="${esc(c.tip)}"/>`
       : `<rect x="${x.toFixed(1)}" y="${T}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent" data-tip="${esc(c.tip)}"/>`;
     const cx = (x + bw / 2).toFixed(1);
     if (c.label && (cw >= 16 || i % 5 === 0)) svg += `<text class="axis-b" x="${cx}" y="${H - B + 15}" text-anchor="middle">${esc(c.label)}</text>`;
@@ -3454,51 +4297,90 @@ function renderSettings() {
   else renderPrefs(el);
 }
 
+/* Device settings (as Focus): Glossed Interface and Animations belong to the device, not the account. */
+const GLASS_NAMES = { off: 'Off', lite: 'Lite', full: 'Full' };
+const DEV = { glass: readJSON('oncoregistry-glass', 'lite'), motion: readJSON('oncoregistry-motion', '') };
+function setDev(k, v) {
+  DEV[k] = v;
+  writeLS('oncoregistry-' + k, v);
+  if (k === 'glass') applyGlass(); else applyMotion();
+  queueSegs();
+}
+const glassOK = () => CSS.supports('color', 'color-mix(in srgb, red 50%, blue)');
+function applyGlass() {
+  const root = document.documentElement, v = GLASS_NAMES[DEV.glass] ? DEV.glass : 'lite';
+  if (v === 'off' || !glassOK()) delete root.dataset.glass; else root.dataset.glass = v;
+  const blur = CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)');
+  if (matchMedia('(prefers-reduced-transparency: reduce)').matches) root.dataset.glassSolid = 'rt';
+  else if (!blur) root.dataset.glassSolid = 'nb';
+  else delete root.dataset.glassSolid;
+}
+const motion = () => document.documentElement.dataset.motion || 'full';
+function applyMotion() {
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.documentElement.dataset.motion = ['full', 'reduced', 'off'].includes(DEV.motion) ? DEV.motion : calm ? 'reduced' : 'full';
+}
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', applyMotion);
+applyGlass();
+applyMotion();
+
+/** Preferences in the Focus app's layout: a search box, then grouped cards of rows. */
 function renderPrefs(el) {
   const P = PREFS;
   const opt = (v, l, cur) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${l}</option>`;
-  el.innerHTML = `<div class="grid-2">
-    <div class="card">
-      <h2>Preferences</h2>
-      <div class="setting"><div><div>Theme</div></div>
-        <select id="pfTheme">${opt('auto', 'System', P.theme)}${opt('light', 'Light', P.theme)}${opt('dark', 'Dark', P.theme)}</select></div>
-      <div class="setting"><div><div>Accent colour</div><div class="desc">${esc((ACCENTS[P.accent] || ACCENTS.teal).name)}</div></div>
-        <div class="swatches">${Object.entries(ACCENTS).map(([k, a]) => `<button class="swatch${P.accent === k ? ' on' : ''}" data-accent="${k}" style="background:${isDark() ? a.dark : a.light}" title="${a.name}" aria-label="${a.name}"></button>`).join('')}</div></div>
-      <div class="setting"><div><div>Daily goal</div><div class="desc">Records to work on (register, edit, complete, follow-up) for a day to count toward your streak</div></div>
-        <input type="number" id="pfGoal" min="1" max="200" step="1" value="${P.goal}"></div>
-      <div class="setting"><div><div>Working days</div><div class="desc">Days off never break your streak</div></div>
-        <select id="pfWork">${opt('mon-sat', 'Monday – Saturday', P.workdays)}${opt('mon-fri', 'Monday – Friday', P.workdays)}${opt('all', 'Every day', P.workdays)}</select></div>
-      <div class="setting"><div><div>Week starts on</div></div>
-        <select id="pfWeek">${opt(1, 'Monday', P.weekStart)}${opt(0, 'Sunday', P.weekStart)}</select></div>
-      <div class="setting"><div><div>Follow-up due after</div><div class="desc">Patients not contacted for this long appear under Today → Due for follow-up</div></div>
-        <select id="pfFu">${[30, 60, 90, 120, 180, 365].map(d => opt(d, d === 365 ? '1 year' : d + ' days', P.fuDays)).join('')}</select></div>
-      <div class="setting"><div><div>Progression</div><div class="desc">Points, levels, badges, achievements and team points. Turn off for a plain registry.</div></div>
-        <input type="checkbox" id="pfProg" ${P.progression ? 'checked' : ''}></div>
-      <p class="lbl" style="margin:12px 0 0">Preferences are saved on this device.</p>
+  const row = (k, title, desc, ctl, extra = '') => `<div class="setting" data-k="${k}" data-q="${esc((title + ' ' + desc + ' ' + extra).toLowerCase())}"><div><div>${title}</div>${desc ? `<div class="desc">${desc}</div>` : ''}</div>${ctl}</div>`;
+  el.innerHTML = `<div class="set-wrap">
+    <div class="search-in set-search">${navSVG('search')}<input type="search" id="setQ" placeholder="Search settings" aria-label="Search settings"></div>
+    <div class="card set-grp"><h2>Appearance</h2>
+      ${row('theme', 'Theme', 'Light, dark or follow your device', `<select id="pfTheme">${opt('auto', 'System', P.theme)}${opt('light', 'Light', P.theme)}${opt('dark', 'Dark', P.theme)}</select>`, 'dark mode night')}
+      ${row('accent', 'Accent colour', esc((ACCENTS[P.accent] || ACCENTS.teal).name), `<div class="swatches">${Object.entries(ACCENTS).map(([k, a]) => `<button class="swatch${P.accent === k ? ' on' : ''}" data-accent="${k}" style="background:${isDark() ? a.dark : a.light}" title="${a.name}" aria-label="${a.name}" aria-pressed="${P.accent === k}"></button>`).join('')}</div>`, 'colour color teal blue plum amber slate')}
+      ${row('glass', 'Glossed Interface', 'Frosted, translucent cards over a soft colour wash. Lite (the default) is gentle and easy on older phones; Full adds more blur. Saved on this device.', `<select id="pfGlass">${['off', 'lite', 'full'].map(v => opt(v, GLASS_NAMES[v], DEV.glass)).join('')}</select>`, 'glass blur frosted')}
+      ${row('motion', 'Animations', 'Full, reduced (simple fades) or off. Saved on this device.', `<select id="pfMotion">${opt('', 'Automatic', DEV.motion || '')}${opt('full', 'Full', DEV.motion)}${opt('reduced', 'Reduced', DEV.motion)}${opt('off', 'Off', DEV.motion)}</select>`, 'motion reduce')}
     </div>
-    <div class="stack">
-      <div class="card">
-        <h2>Account</h2>
-        <div class="row between" style="flex-wrap:nowrap">
-          <div style="min-width:0;display:flex;gap:12px;align-items:center"><span class="avatar">${esc(initials(USER.name || USER.email))}</span>
-            <div style="min-width:0"><div class="acct-name">${esc(USER.name || '')}</div><div class="desc">${esc(USER.email)}${USER.demo ? ' · demo, this device only' : ''}</div></div></div>
-          <button class="btn" id="logoutBtn">${USER.demo ? 'Exit demo' : 'Log out'}</button>
-        </div>
-        ${!USER.demo ? `<p class="lbl" style="margin:12px 0 0">Logging out also removes this browser’s offline copy of study data — important on shared computers.</p>` : ''}
-      </div>
-      ${USER.demo ? `<div class="card"><h2>Demo</h2><p class="muted" style="margin:0 0 14px;font-size:14px">Synthetic patients and activity, stored only in this browser.</p><button class="btn danger" id="pfResetDemo">Reset demo data</button></div>` : ''}
-      <div class="card"><h2>Shortcuts</h2>
-        <div class="ptsrule"><span>Open a patient (Today) / search (Patients)</span><b>/</b><span>Register a patient</span><b>N</b><span>Save the open record</span><b>Ctrl+S</b></div></div>
+    <div class="card set-grp"><h2>Work &amp; goals</h2>
+      ${row('goal', 'Daily goal', 'Records to work on (register, edit, complete, follow-up) for a day to count toward your streak', `<input type="number" id="pfGoal" min="1" max="200" step="1" value="${P.goal}">`, 'streak target')}
+      ${row('workdays', 'Working days', 'Days off never break your streak', `<select id="pfWork">${opt('mon-sat', 'Monday – Saturday', P.workdays)}${opt('mon-fri', 'Monday – Friday', P.workdays)}${opt('all', 'Every day', P.workdays)}</select>`, 'weekend sunday')}
+      ${row('week', 'Week starts on', 'For weekly activity and the leaderboard', `<select id="pfWeek">${opt(1, 'Monday', P.weekStart)}${opt(0, 'Sunday', P.weekStart)}</select>`)}
+      ${row('fu', 'Follow-up due after', 'Patients not contacted for this long appear under Today → Due for follow-up and in the Inbox', `<select id="pfFu">${[30, 60, 90, 120, 180, 365].map(d => opt(d, d === 365 ? '1 year' : d + ' days', P.fuDays)).join('')}</select>`, 'overdue contact lost')}
     </div>
+    <div class="card set-grp"><h2>Progression</h2>
+      ${row('prog', 'Points, levels &amp; achievements', 'Badges, achievements and team points. Turn off for a plain registry — nothing is deleted.', `<input type="checkbox" id="pfProg" ${P.progression ? 'checked' : ''} aria-label="Progression">`, 'gamification leaderboard badges minimal')}
+      ${row('keys', 'Keyboard shortcuts', 'Press <kbd>?</kbd> to see them all, <kbd>Ctrl</kbd> <kbd>K</kbd> for the command palette', `<button class="btn small" id="pfKeys">Show</button>`, 'keys palette')}
+    </div>
+    <div class="card set-grp"><h2>Account &amp; data</h2>
+      ${row('account', `<span class="acct-name">${esc(USER.name || '')}</span>`, `${esc(USER.email)}${USER.demo ? ' · demo — nothing is saved' : ' · logging out also removes this browser’s offline copy of study data'}`, `<button class="btn small" id="logoutBtn">${USER.demo ? 'Exit demo' : 'Log out'}</button>`, 'log out sign out account email')}
+      ${USER.demo ? row('demo', 'Demo data', 'Synthetic patients and activity, kept only while this tab is open', `<button class="btn small danger" id="pfResetDemo">Reset</button>`, 'reset demo') : ''}
+      ${row('prefs', 'Where preferences live', 'Goal, working days and progression are saved per account on this device; your points and achievements come from the study’s audit trail, so they match on every device.', '')}
+    </div>
+    <div class="card set-grp"><h2>About</h2>
+      ${row('version', `Version ${APP_VERSION}`, 'See what changed in each update', `<button class="btn small" id="pfNew">What’s new</button>`, 'changelog')}
+      ${row('about', 'About OncoRegistry', 'Pseudonymised research data collection: Study IDs only, no direct identifiers, verified e-mail sign-in, append-only audit trail, data kept in your own Firebase project.', '', 'privacy security')}
+    </div>
+    <p class="empty hidden" id="setNone">No setting matches that.</p>
   </div>`;
   const set = (k, v) => { PREFS[k] = v; savePrefs(); renderNav(); };
+  $('#setQ').addEventListener('input', e => {
+    const q = norm(e.target.value.trim());
+    let any = false;
+    $$('.set-grp', el).forEach(g => {
+      let shown = 0;
+      $$('.setting', g).forEach(r => { const hit = !q || norm(r.dataset.q).includes(q); r.classList.toggle('hidden', !hit); if (hit) shown++; });
+      g.classList.toggle('hidden', !shown);
+      if (shown) any = true;
+    });
+    $('#setNone').classList.toggle('hidden', any);
+  });
   $('#pfTheme').onchange = e => { set('theme', e.target.value); renderPrefs(el); };
   $$('[data-accent]', el).forEach(b => b.onclick = () => { set('accent', b.dataset.accent); renderPrefs(el); });
-  $('#pfGoal').onchange = e => { const v = clamp(Math.round(+e.target.value || 1), 1, 200); e.target.value = v; set('goal', v); toast(`Daily goal: ${v} record${v === 1 ? '' : 's'}`); };
+  $('#pfGlass').onchange = e => setDev('glass', e.target.value);
+  $('#pfMotion').onchange = e => setDev('motion', e.target.value);
+  $('#pfGoal').onchange = e => { const v = clamp(Math.round(+e.target.value || 1), 1, 200); e.target.value = v; set('goal', v); toast(`Daily goal: ${v} record${v === 1 ? '' : 's'}`, 2200, true); };
   $('#pfWork').onchange = e => set('workdays', e.target.value);
   $('#pfWeek').onchange = e => set('weekStart', +e.target.value);
   $('#pfFu').onchange = e => set('fuDays', +e.target.value);
   $('#pfProg').onchange = e => set('progression', e.target.checked);
+  $('#pfKeys').onclick = () => $('#keysDlg').showModal();
+  $('#pfNew').onclick = openWhatsNew;
   $('#logoutBtn').onclick = logout;
   const rd = $('#pfResetDemo');
   if (rd) rd.onclick = resetDemo;
@@ -3874,10 +4756,11 @@ function startSession(user) {
   Store = user.demo ? Demo : Cloud;
   if (user.demo) Demo.load();
   loadPrefs();
+  loadInbox();
   showView('appView');
-  $('#main').innerHTML = '<div id="ctx" class="ctx"></div><div id="view"></div>';
-  APP.unsubGlobal.push(Store.watchStudies(list => { APP.studies = list; APP.studiesLoaded = true; if (APP.view === 'studies') renderStudies(); }));
-  APP.unsubGlobal.push(Store.watchMyInvites(list => { APP.invites = list; if (APP.view === 'studies') renderStudies(); }));
+  renderOffline();
+  APP.unsubGlobal.push(Store.watchStudies(list => { APP.studies = list; APP.studiesLoaded = true; if (APP.view === 'studies') { renderStudies(); afterRender(); } }));
+  APP.unsubGlobal.push(Store.watchMyInvites(list => { APP.invites = list; renderInboxCount(); if (APP.view === 'studies') renderStudies(); if ($('#inboxDlg').open) renderInbox(); }));
   lastHash = location.hash;
   applyRoute(parseHash());
 }
@@ -3906,11 +4789,13 @@ async function logout() {
 
 function startDemo() {
   sessionStorage.setItem('oncoregistry-demo-on', '1');
+  DEMO_MEM = {};   // from here on nothing is written to the browser
   startSession({ uid: 'demo', email: 'demo@example.org', name: 'Demo user', demo: true });
 }
 
 async function boot() {
   applyTheme();
+  bindShell();
   $('#dl-regimens').innerHTML = REGIMENS.map(r => `<option value="${esc(r)}">`).join('');
   $('#dl-ctcae').innerHTML = CTCAE.map(r => `<option value="${esc(r)}">`).join('');
   $('#dl-histo').innerHTML = HISTO.map(r => `<option value="${esc(r)}">`).join('');

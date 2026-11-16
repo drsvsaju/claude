@@ -2,7 +2,9 @@
 
 A one-file web app for collecting oncology research data. It runs like a lightweight REDCap built for Indian real-world-data studies. It is hosted the same way as the Focus app: one `index.html` on GitHub Pages, with Firebase for login and the database.
 
-**Try it without any setup:** open the page and press **Try the demo**. That loads 120 synthetic patients, a small team and several weeks of activity, kept only in your browser.
+**Try it without any setup:** open the page and press **Try the demo**. That loads 120 synthetic patients, a small team and several weeks of activity. Nothing is written to the browser; reloading starts a fresh demo.
+
+Current version: **1.2**. It uses the Focus app's v1.20 design and code patterns; see *Version 1.2* below.
 
 ## What it does
 
@@ -23,6 +25,19 @@ A one-file web app for collecting oncology research data. It runs like a lightwe
 | **Paper CRF** | A printable blank form for clinics without a computer at the bedside. |
 | **Works offline** | Records open and can be edited without internet and sync later. Only *registering* a new patient needs a connection, because that is when the unique Study ID is assigned. |
 | **Conflicting edits** | If two people edit the same record, the second save is refused (enforced by the server) instead of silently overwriting the first person's work. |
+
+| **Find anything** | **Command palette** (`Ctrl K`, or the search button): type a Study ID or number to open a patient, or search for pages, actions (register, export, print the CRF) and settings. **Inbox** (bell): invitations, follow-ups due, drafts, achievements and colleagues' changes. |
+
+## Version 1.2: the Focus app's look and structure
+
+- **Navigation as in Focus v1.20.** A grouped, collapsible sidebar (Study · Analysis · Team, plus Settings), with the current study shown at the top. Tablets get a ☰ slide-in menu; phones get a bottom bar and a **More** sheet.
+- **Header.** Logo, sync status, search, inbox and your level chip.
+- **Glossed Interface** (Off · Lite · Full) and **Animations** (Full · Reduced · Off; Automatic follows the device). Both are saved on each device.
+- **Components.** Switchers with a sliding pill, every checkbox drawn as a switch, native dialogs and sheets that animate open and closed with a blurred backdrop, stacked toasts with a check mark, and **Undo** when you remove a treatment, visit or other entry. Line-art empty states, loading skeletons and an offline banner.
+- **Settings.** A search box and grouped cards: Appearance, Work & goals, Progression, Account & data, About. What's new, and a keyboard-shortcut list (`?`).
+- **Keyboard.** `Ctrl K` palette, `/` search, `N` register, `G` then `T`/`P`/`D`/`M` to go to Today, Patients, Dashboard or Team, `I` inbox, `Ctrl S` save.
+- **Demo.** Like the Focus preview, the demo writes nothing to the browser.
+- **Unchanged.** The data model and `firestore.rules`. Existing studies, patients and audit trails carry over as they are.
 
 ## Privacy by design
 
