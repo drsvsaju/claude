@@ -558,14 +558,14 @@ await nk.context().close();
   check('A stepper with a 0.5 step: decimal keypad, "1.5" stays 1.5, + gives 2.5; its name is on the stepper and on its field (old selectors keep working)', dn.mode === 'decimal' && dn.name === 'hrs' && dn.byName && dn2.v === '1.5' && dn2.v2 === '2.5', JSON.stringify({ dn, dn2 }));
   // the Session card's preset chooser: each row shows its rhythm; a star in the demo asks to sign up and writes nothing
   await ev(() => showTab('timer')); await wait(500);
-  const ps = await ev(() => { const s = document.getElementById('presetSelect'), o = s.options; return { tag: s.tagName.toLowerCase(), kind: s.getAttribute('kind'), n: o.length, rhy: o.every(x => x.dataset.f && x.dataset.b && x.dataset.r), face: s.querySelector('.ui-rhy') ? s.querySelector('.ui-rhy').textContent.replace(/\s+/g, ' ').trim() : '' }; });
+  const ps = await ev(() => { const s = document.getElementById('presetSelect'), o = s.options; return { tag: s.tagName.toLowerCase(), kind: s.getAttribute('kind'), n: o.length, rhy: o.every(x => x.dataset.f && x.dataset.b && x.dataset.r), face: s.querySelector('.ui-face, .ui-val') ? s.querySelector('.ui-face, .ui-val').textContent.replace(/\s+/g, ' ').trim() : s.textContent.replace(/\s+/g, ' ').trim() }; });
   await ev(() => document.getElementById('presetSelect').scrollIntoView({ block: 'center' })); await p.click('#presetSelect'); await wait(350);
   const ps2 = await ev(() => ({ rows: document.querySelectorAll('.ui-pop .ui-opt').length, stars: document.querySelectorAll('.ui-pop .ui-star').length, foot: [...document.querySelectorAll('.ui-pop [data-foot]')].map(x => x.textContent.trim()) }));
   await p.click('.ui-pop .ui-star'); await wait(400);
   const ps3 = await ev(() => ({ pv: document.getElementById('pvDlg').open, favs: S.presets.filter(x => x.fav).length, w: window.__w.length, ls: JSON.stringify(Object.entries(localStorage).sort()) === window.__ls }));
   await ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); UI.closePop('api'); showTab('gallery'); }); await wait(300);
   check('Session card: the preset chooser is a <ui-select kind="preset"> whose rows and closed face show the rhythm (25 / 5 × 4), with stars and New / Edit presets; in the demo a star asks to sign up and nothing is written',
-    ps.tag === 'ui-select' && ps.kind === 'preset' && ps.n >= 2 && ps.rhy && /25 \/ 5/.test(ps.face) && ps2.rows === ps.n && ps2.stars === ps.n && ps2.foot.join() === 'New preset,Edit presets' && ps3.pv && ps3.favs === 0 && ps3.w === 0 && ps3.ls, JSON.stringify({ ps, ps2, ps3 }));
+    ps.tag === 'ui-select' && ps.kind === 'preset' && ps.n >= 2 && ps.rhy && /25 ?\/ ?5/.test(ps.face) && ps2.rows === ps.n && ps2.stars === ps.n && ps2.foot.join() === 'New preset,Edit presets' && ps3.pv && ps3.favs === 0 && ps3.w === 0 && ps3.ls, JSON.stringify({ ps, ps2, ps3 }));
 }
 check('No page errors', !errs.length, JSON.stringify(errs.slice(0, 5)));
 console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

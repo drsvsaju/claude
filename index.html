@@ -459,7 +459,10 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
    ========================================================================== */
 .seg { display: inline-flex; background: var(--ctl-bg, var(--surface)); border: 1px solid var(--ctl-bd, var(--line)); border-radius: var(--r-8, 8px); padding: 3px; }
 .seg button { border: 0; background: none; min-height: 32px; padding: 5px 14px; border-radius: var(--r-6, 6px); color: var(--t-2, var(--muted)); font-size: var(--fs-14, 14px); font-weight: 500; cursor: pointer; }
-.seg button:hover:not(.active) { background: var(--hover, transparent); color: var(--t-1, var(--text)); }
+.seg button:hover:not(.active):not(:disabled) { background: var(--hover, transparent); color: var(--t-1, var(--text)); }
+.seg:has(> button:disabled) { background: transparent; border-style: dashed; box-shadow: none; }
+.seg button:disabled { cursor: default; color: var(--muted); }
+.seg button.active:disabled { background: var(--hover); box-shadow: inset 0 0 0 1px var(--ctl-bd); color: var(--t-1, var(--text)); }   /* the setting still shows, flat */
 .seg button.active { background: var(--accent-tint, var(--accent-soft)); color: var(--t-1, var(--text)); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)); }   /* v2.0: a tinted fill, a ring and bold ink — never colour alone, and never quieter than the page it switches */
 .stats-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .range-nav { display: flex; align-items: center; gap: 8px; }
@@ -1022,8 +1025,8 @@ input[type="checkbox"]:disabled { opacity: .65; cursor: default; }
 /* a switch that can't be used is flat with a dashed edge, like every other disabled control; the knob still shows on / off */
 input[type="checkbox"]:not([data-check]):disabled { opacity: 1; background: transparent; outline: 1.5px dashed var(--ctl-bd, var(--muted)); outline-offset: -1.5px; }
 input[type="checkbox"]:not([data-check]):disabled::before { background: var(--ctl-bd, var(--muted)); box-shadow: none; }
-input[type="checkbox"]:not([data-check]):disabled:checked { background: var(--accent-tint, var(--accent-soft)); }
-input[type="checkbox"]:not([data-check]):disabled:checked::before { background: var(--accent-text, var(--accent)); }
+input[type="checkbox"]:not([data-check]):disabled:checked { background: var(--hover); }
+input[type="checkbox"]:not([data-check]):disabled:checked::before { background: var(--t-2, var(--muted)); }   /* on: the knob at the right and an I; no accent on a control that can't be used */
 input[type="checkbox"]:not([data-check]):disabled::after { background: radial-gradient(circle at 38px 22px, transparent 2.6px, var(--t-2, var(--muted)) 3.1px, var(--t-2, var(--muted)) 4.6px, transparent 5.1px) no-repeat; }
 input[type="checkbox"]:not([data-check]):disabled:checked::after { background: linear-gradient(var(--t-2, var(--muted)), var(--t-2, var(--muted))) 14px 16.5px / 2.4px 11px no-repeat; }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
@@ -3960,7 +3963,7 @@ ui-select > option, ui-select > optgroup { display: none; }
 :is(ui-select, ui-date, ui-time, ui-color):focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 /* disabled: flat (no well), a dashed lip and muted text — it cannot be mistaken for an empty field */
 :is(ui-select, ui-date, ui-time, ui-color, ui-tags)[disabled] { background: transparent; border-style: dashed; box-shadow: none; color: var(--muted); cursor: not-allowed; }
-:is(ui-select, ui-date, ui-time)[disabled] .ui-chev { visibility: hidden; }
+:is(ui-select, ui-date, ui-time)[disabled] .ui-chev { opacity: .55; }   /* still a chooser, just not now */
 :is(ui-select, ui-date, ui-time) .ui-face { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-8, 8px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .ui-face .ui-opt-l { overflow: hidden; text-overflow: ellipsis; }
 .ui-ph { color: var(--muted); }
@@ -4008,6 +4011,7 @@ ui-select > option, ui-select > optgroup { display: none; }
 .ui-rhy { display: inline-flex; align-items: stretch; flex: none; height: 20px; margin-left: auto; border-radius: var(--r-6, 6px); background: var(--raise); box-shadow: inset 0 0 0 1px var(--pad-bd, transparent); font-size: var(--fs-11, 11px); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
 .ui-rhy b { display: grid; place-items: center; padding: 0 6px; color: var(--t-1, var(--text)); font-weight: 600; }
 .ui-rhy i { display: grid; place-items: center; padding: 0 6px; border-left: 1px solid var(--pad-bd, var(--line)); color: var(--t-2, var(--muted)); font-style: normal; }
+.ui-opt.on .ui-rhy i, .ui-opt.act .ui-rhy i { color: var(--t-1, var(--text)); }
 .ui-star { all: unset; box-sizing: border-box; position: relative; flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--t-2, var(--muted)); cursor: pointer; }
 .ui-star:hover { background: var(--hover); color: var(--t-1, var(--text)); }
 .ui-star.on { color: var(--warn-text, var(--warn)); } .ui-star.on svg { fill: currentColor; }
@@ -4034,7 +4038,7 @@ ui-select > option, ui-select > optgroup { display: none; }
 
 /* ----- bottom sheet (phones): the same panel as a modal dialog from the bottom ----- */
 dialog.ui-pop.ui-sheet {
-  position: fixed; inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: min(86dvh, 680px); margin: 0; padding: 0 var(--space-12, 12px) calc(var(--space-16, 16px) + env(safe-area-inset-bottom)); background: var(--pop-bg, var(--surface));
+  position: fixed; inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: min(92dvh, 740px); margin: 0; padding: 0 var(--space-12, 12px) calc(var(--space-16, 16px) + env(safe-area-inset-bottom)); background: var(--pop-bg, var(--surface));
   border: 0; border-top: 1px solid var(--pop-bd); border-radius: var(--r-xl, 22px) var(--r-xl, 22px) 0 0;
   animation: uiSheetIn var(--d-3, 320ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)) backwards;
 }
@@ -4054,6 +4058,9 @@ dialog.ui-pop.ui-sheet::backdrop { background: var(--scrim, rgba(0, 0, 0, .5)); 
 .ui-sheet-body { display: flex; flex-direction: column; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
 .ui-sheet-body > .ui-foot { position: sticky; bottom: 0; z-index: 1; background: var(--pop-bg, var(--surface)); }   /* Done is always on screen */
 .ui-sheet .ui-opt { min-height: 48px; }
+.ui-tags-pop .ui-list { max-height: calc(4 * 40px + 8px); overflow-y: auto; }
+.ui-tags-pop .ui-sug-h { padding: var(--space-6, 6px) var(--space-12, 12px) 2px; color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
+@media (pointer: coarse) { .ui-tags-pop .ui-opt { min-height: 44px; } .ui-tags-pop .ui-list { max-height: calc(4 * 44px + 8px); } }
 .ui-sheet .ui-search { margin: 0 0 var(--space-6, 6px); min-height: 44px; box-sizing: border-box; }
 .ui-sheet .ui-foot-btn { height: 44px; }
 .ui-sheet .ui-ib { width: 44px; height: 44px; }
@@ -4063,7 +4070,8 @@ dialog.ui-pop.ui-sheet::backdrop { background: var(--scrim, rgba(0, 0, 0, .5)); 
 .ui-sheet .ui-time-exact { flex-wrap: wrap; }
 .ui-sheet .ui-time-exact ui-num { flex: 1 1 0; min-width: 0; }
 .ui-sheet .ui-time-exact .ui-num-well { width: 100%; justify-content: space-between; }
-.ui-sheet ui-num[bare] .ui-num-b { border-color: transparent; background: var(--hover); }   /* the well is the edge */
+.ui-sheet ui-num[bare] .ui-num-well { border-color: transparent; box-shadow: none; background: transparent; }
+.ui-sheet ui-num[bare] .ui-num-b { border-color: var(--ctl-bd); background: var(--pad); }   /* the buttons carry the edge (3:1), the well does not */
 .ui-sheet .ui-ampm { flex: 1 0 100%; margin-left: 0; }   /* AM / PM on its own row: two 44 px steppers and the switch don't fit across a phone */
 
 /* ----- number stepper ----- */
@@ -4080,6 +4088,7 @@ ui-num input[type="text"]:disabled, ui-tags input[type="text"]:disabled { border
 .ui-num-b:active { background: var(--accent-soft); }
 .ui-num-b:disabled { border-style: dashed; background: none; color: var(--muted); cursor: default; }
 ui-num[disabled] .ui-num-well { background: transparent; border-style: dashed; box-shadow: none; }
+ui-num[disabled] .ui-num-b { border-color: transparent; background: none; }   /* one dashed edge, not three */
 
 /* ----- date picker ----- */
 .ui-date-pop, .ui-time-pop, .ui-color-pop { overflow-y: auto; }   /* a short window scrolls the panel instead of cutting it */
@@ -4128,8 +4137,9 @@ ui-num[disabled] .ui-num-well { background: transparent; border-style: dashed; b
 .ui-sheet .ui-cal { width: auto; }
 .ui-sheet.ui-date-pop .ui-quick, .ui-sheet .ui-date-pop .ui-quick { display: grid; grid-template-columns: 1fr 1fr; width: auto; gap: 2px var(--space-8, 8px); padding: 0 0 var(--space-8, 8px); margin-bottom: var(--space-8, 8px); border-right: 0; border-bottom: 1px solid var(--divider, var(--line)); }
 .ui-sheet .ui-quick-h { display: none; }
-.ui-sheet .ui-qrow { min-height: 44px; }
-.ui-sheet .ui-day { min-height: 44px; }
+.ui-sheet .ui-qrow { min-height: 44px; border: 1px solid var(--ctl-bd); }   /* each pick is one unit: its date can't be read as the next label's */
+.ui-qrow.on { background: var(--accent-tint, var(--accent-soft)); box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)); font-weight: 600; }
+.ui-sheet .ui-day { min-height: 44px; height: 44px; aspect-ratio: auto; }
 .ui-sheet .ui-chipbtn { min-height: 40px; }
 .ui-sheet .ui-quiet { height: 44px; }
 .ui-sheet .ui-foot-v .ui-foot-btn { min-width: 96px; }
@@ -4240,6 +4250,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
 /* ----- touch: 44 px targets; the small × buttons inside a field keep their look and get a larger hit area ----- */
 @media (pointer: coarse) {
   ui-select, ui-date, ui-time, ui-num, ui-tags { min-height: 44px; }
+  ui-date .ui-clear, ui-time .ui-clear { display: none; }   /* Clear sits in the picker's footer instead */
   ui-color:not([named]) { width: 44px; height: 44px; }
   ui-color[named] { flex: none; min-height: 44px; height: auto; }   /* dot, name and chevron stay inside the well */
   .ui-tag button:not(.plant):not(.rem-check), .ui-clear:not(.plant):not(.rem-check) { min-height: 0; position: relative; }
@@ -5231,7 +5242,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
   <h2 style="margin:0 0 10px">Exam countdown</h2>
   <ul class="exam-list" id="examList"></ul>
   <form class="exam-form" id="examForm" novalidate>
-    <input type="text" id="examName" maxlength="60" placeholder="Exam name, e.g. JEE Main" aria-label="Exam name" autocomplete="off">
+    <input type="text" id="examName" maxlength="60" placeholder="e.g. JEE Main" aria-label="Exam name" autocomplete="off">
     <ui-date id="examDate" aria-label="Exam date" required></ui-date>
     <button class="btn primary" type="submit">Add</button>
   </form>
@@ -6160,6 +6171,7 @@ const UI = (() => {
         f = grid.querySelector('.ui-day:not([disabled]):not(.out)') || grid.querySelector('.ui-day:not([disabled])');
         if (f) f.tabIndex = 0;
       }
+      el.querySelectorAll('.ui-qrow').forEach(b => { const on = !this.range && b.dataset.k === this._v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });   // the quick pick that matches the date
       if (focus && f) f.focus({ preventScroll: true });
       this._pop.place();
     }
@@ -6541,7 +6553,7 @@ const UI = (() => {
     if (!sg || sg.el !== el) {
       close();
       const lid = nid('list');
-      const p = pop(el, b => { b.innerHTML = `<div class="ui-list" role="listbox" id="${lid}" aria-label="Suggestions"></div>`; }, { cls: 'ui-select-pop ui-tags-pop', sheet: false, restore: false, onClose: () => { if (sg && sg.p === p) sg = null; el.setAttribute('aria-expanded', 'false'); el.removeAttribute('aria-activedescendant'); el.removeAttribute('aria-controls'); } });
+      const p = pop(el, b => { b.innerHTML = `<div class="ui-sug-h" aria-hidden="true">Suggestions</div><div class="ui-list" role="listbox" id="${lid}" aria-label="Suggestions"></div>`; }, { cls: 'ui-select-pop ui-tags-pop', sheet: false, restore: false, onClose: () => { if (sg && sg.p === p) sg = null; el.setAttribute('aria-expanded', 'false'); el.removeAttribute('aria-activedescendant'); el.removeAttribute('aria-controls'); } });
       if (!p.root.isConnected) return;   // closed at once (the field is out of view; UI.pop's handle still says open): no list until the next keystroke
       p.el.addEventListener('pointerdown', e => e.preventDefault());   // (the field keeps the focus)
       p.el.addEventListener('click', e => { const r = e.target.closest('.ui-opt'); if (r) take(+r.dataset.i); });   // on the click, not the press: a finger that scrolls the list picks nothing
@@ -6609,7 +6621,7 @@ UI.RENDER.preset = (() => {
   const head = o => `<i class="ui-dot"${o.dataset.dot ? ` style="background:${h(o.dataset.dot)}"` : ''}></i><span class="ui-opt-l">${h((o.label || o.textContent || '').trim())}</span>`;
   return {
     search: true,
-    value: o => head(o) + rhythm(o),
+    value: o => head(o) + (new RegExp(`\\b${+o.dataset.f || 0}\\s*/\\s*${+o.dataset.b || 0}\\b`).test(o.label || o.textContent || '') ? '' : rhythm(o)),   // (a name that already says 25/5 doesn't get it twice)
     option(o) {
       const fav = o.dataset.fav === '1';
       return `${head(o)}${rhythm(o)}${fav ? '<span class="ui-sr">, favourite</span>' : ''}<button type="button" class="ui-star${fav ? ' on' : ''}" data-act="fav" tabindex="-1" aria-pressed="${fav}" aria-label="${fav ? 'Remove from favourites' : 'Add to favourites'}" title="${fav ? 'Remove from favourites' : 'Favourite'}">${UI.IC.star}</button>`;
@@ -17010,7 +17022,7 @@ function openPlanDlg() {
   dlg.showModal();
   setTimeout(() => { const i = $('#plRows input[name="name"]'); if (i && !i.value) i.focus(); }, 50);
 }
-const planRowHTML = (name = '', hrs = '') => `<div class="pl-row"><input type="text" name="name" data-suggest="plan" autocomplete="off" maxlength="40" placeholder="Subject (session name or tag)" aria-label="Subject" value="${esc(name)}"><ui-num name="hrs" bare allow-empty min="0.5" max="60" step="0.5" placeholder="h / week" aria-label="Hours per week" value="${hrs === '' ? '' : esc(String(hrs))}"></ui-num><button type="button" class="iconbtn" data-plremove aria-label="Remove this subject">✕</button></div>`;
+const planRowHTML = (name = '', hrs = '') => `<div class="pl-row"><input type="text" name="name" data-suggest="plan" autocomplete="off" maxlength="40" placeholder="Subject (session name or tag)" aria-label="Subject" value="${esc(name)}"><ui-num name="hrs" bare allow-empty min="0.5" max="60" step="0.5" suffix="h" placeholder="h / week" aria-label="Hours per week" value="${hrs === '' ? '' : esc(String(hrs))}"></ui-num><button type="button" class="iconbtn" data-plremove aria-label="Remove this subject">✕</button></div>`;
 (() => {
   const dlg = $('#planDlg');
   dlg.addEventListener('click', e => {
