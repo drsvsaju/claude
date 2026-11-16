@@ -475,8 +475,8 @@ await nk.context().close();
   let chartTip = 'no chart mark';
   if (chart) { await chart.hover({ force: true }); await wait(800); chartTip = await ev(() => !!document.querySelector('.ui-tip.on')); }
   await ev(() => showTab('settings')); await wait(500);
-  const sl = await ev(async () => { const r = document.querySelector('#setAmbVol') || document.querySelector('input[type="range"]:not([data-scale])'); if (!r) return 'none'; r.scrollIntoView({ block: 'center' }); r.value = '0.4'; r.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(x => setTimeout(x, 120)); const bb = document.querySelector('.ui-bubble.on'); return { id: r.id, bubble: !!bb, fill: r.style.getPropertyValue('--ui-fill') }; });
-  check('The library\'s tooltip leaves chart marks alone (they fill their card\'s own tip box), and a plain app slider shows no 0–1 value bubble (its filled part still follows)', chartTip === false && sl !== 'none' && !sl.bubble && sl.fill === '40.0%', JSON.stringify({ chartTip, sl }));
+  const sl = await ev(async () => { const r = document.querySelector('#setAmbVol') || document.querySelector('input[type="range"]:not([data-scale])'); if (!r) return 'none'; r.scrollIntoView({ block: 'center' }); r.value = '0.4'; r.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(x => setTimeout(x, 120)); const bb = document.querySelector('.ui-bubble.on'); return { id: r.id, bubble: bb ? bb.textContent : '', fill: r.style.getPropertyValue('--ui-fill') }; });
+  check('The library\'s tooltip leaves chart marks alone (they fill their card\'s own tip box); the ambient volume slider shows its value in percent (40%), never the raw 0–1, and its filled part follows', chartTip === false && sl !== 'none' && sl.bubble === '40%' && sl.fill === '40.0%', JSON.stringify({ chartTip, sl }));
   // keyboard focus only: a clicked switch shows no ring; the command palette's line is not a well
   await ev(() => showTab('gallery')); await wait(400);
   const sw = await p.$('#gxk1');   // (the settings switches are disabled in the demo)
@@ -534,6 +534,38 @@ await nk.context().close();
   const sg = await ev(() => { const bs = [...document.querySelectorAll('#statsSeg > button')], on = bs.find(x => x.classList.contains('active')), off = bs.find(x => !x.classList.contains('active')); const c = x => getComputedStyle(x); return { on: [c(on).color, c(on).fontWeight], off: [c(off).color, c(off).fontWeight] }; });
   await ev(() => showTab('gallery')); await wait(300);
   check('Segmented controls: the options not chosen are in secondary ink and lighter weight; the chosen one is full ink and bold (on top of its ring and tint)', sg.on[0] !== sg.off[0] && +sg.on[1] > +sg.off[1], JSON.stringify(sg));
+}
+// ---------- Phase 2: suggestions under a text field, decimal steppers, the app's preset chooser ----------
+{
+  await ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); UI.closePop('api'); showTab('gallery'); }); await wait(400); await log();
+  // suggestions (data-suggest): the demo's own session names, filtered as you type; ↓ + Enter takes one without submitting
+  await ev(() => { const f = document.getElementById('gxsg1'); f.value = ''; f.scrollIntoView({ block: 'center' }); }); await wait(150);
+  await p.click('#gxsg1'); await wait(250);
+  const sg0 = await ev(() => [...document.querySelectorAll('.ui-tags-pop .ui-opt')].map(x => x.textContent.trim()));
+  await p.keyboard.type('ph', { delay: 30 }); await wait(250);
+  const sg1 = await ev(() => ({ rows: [...document.querySelectorAll('.ui-tags-pop .ui-opt')].map(x => x.textContent.trim()), role: document.getElementById('gxsg1').getAttribute('role'), exp: document.getElementById('gxsg1').getAttribute('aria-expanded') }));
+  await log();
+  await p.keyboard.press('ArrowDown'); await p.keyboard.press('Enter'); await wait(250);
+  const sg2 = await ev(() => ({ v: document.getElementById('gxsg1').value, open: !!document.querySelector('.ui-tags-pop'), focus: document.activeElement.id }));
+  const sgLog = await log();
+  await p.keyboard.press('Escape'); await ev(() => document.activeElement.blur()); await wait(200);
+  check('Suggestions under a text field: a tap shows the session names, typing "ph" narrows them, ↓ + Enter takes "Physics" (one change, the field keeps focus, the list closes) — as a combobox',
+    sg0.length >= 3 && sg1.rows.length >= 1 && sg1.rows.every(x => /ph/i.test(x)) && sg1.role === 'combobox' && sg1.exp === 'true' && sg2.v === 'Physics' && !sg2.open && sg2.focus === 'gxsg1' && sgLog.filter(x => x.startsWith('change:gxsg1')).length === 1, JSON.stringify({ sg0, sg1, sg2, sgLog }));
+  // a stepper with a fractional step keeps the decimal point; a name reaches its inner field
+  const dn = await ev(() => { const n = document.createElement('ui-num'); n.id = 'gxtmpnum'; n.setAttribute('name', 'hrs'); n.setAttribute('min', '0.5'); n.setAttribute('max', '60'); n.setAttribute('step', '0.5'); n.setAttribute('allow-empty', ''); document.getElementById('galleryBody').appendChild(n); const i = n.querySelector('input'); return { mode: i.inputMode, name: i.name, byName: document.querySelector('#galleryBody [name="hrs"]') === n }; });
+  await p.click('#gxtmpnum input'); await p.keyboard.type('1.5', { delay: 30 }); await p.keyboard.press('Tab'); await wait(150);
+  const dn2 = await ev(() => { const n = document.getElementById('gxtmpnum'), v = n.value; n.value = '2'; n._bump(0.5); const v2 = n.value; n.remove(); return { v, v2 }; });
+  check('A stepper with a 0.5 step: decimal keypad, "1.5" stays 1.5, + gives 2.5; its name is on the stepper and on its field (old selectors keep working)', dn.mode === 'decimal' && dn.name === 'hrs' && dn.byName && dn2.v === '1.5' && dn2.v2 === '2.5', JSON.stringify({ dn, dn2 }));
+  // the Session card's preset chooser: each row shows its rhythm; a star in the demo asks to sign up and writes nothing
+  await ev(() => showTab('timer')); await wait(500);
+  const ps = await ev(() => { const s = document.getElementById('presetSelect'), o = s.options; return { tag: s.tagName.toLowerCase(), kind: s.getAttribute('kind'), n: o.length, rhy: o.every(x => x.dataset.f && x.dataset.b && x.dataset.r), face: s.querySelector('.ui-rhy') ? s.querySelector('.ui-rhy').textContent.replace(/\s+/g, ' ').trim() : '' }; });
+  await ev(() => document.getElementById('presetSelect').scrollIntoView({ block: 'center' })); await p.click('#presetSelect'); await wait(350);
+  const ps2 = await ev(() => ({ rows: document.querySelectorAll('.ui-pop .ui-opt').length, stars: document.querySelectorAll('.ui-pop .ui-star').length, foot: [...document.querySelectorAll('.ui-pop [data-foot]')].map(x => x.textContent.trim()) }));
+  await p.click('.ui-pop .ui-star'); await wait(400);
+  const ps3 = await ev(() => ({ pv: document.getElementById('pvDlg').open, favs: S.presets.filter(x => x.fav).length, w: window.__w.length, ls: JSON.stringify(Object.entries(localStorage).sort()) === window.__ls }));
+  await ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); UI.closePop('api'); showTab('gallery'); }); await wait(300);
+  check('Session card: the preset chooser is a <ui-select kind="preset"> whose rows and closed face show the rhythm (25 / 5 × 4), with stars and New / Edit presets; in the demo a star asks to sign up and nothing is written',
+    ps.tag === 'ui-select' && ps.kind === 'preset' && ps.n >= 2 && ps.rhy && /25 \/ 5/.test(ps.face) && ps2.rows === ps.n && ps2.stars === ps.n && ps2.foot.join() === 'New preset,Edit presets' && ps3.pv && ps3.favs === 0 && ps3.w === 0 && ps3.ls, JSON.stringify({ ps, ps2, ps3 }));
 }
 check('No page errors', !errs.length, JSON.stringify(errs.slice(0, 5)));
 console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

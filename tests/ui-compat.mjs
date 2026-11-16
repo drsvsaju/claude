@@ -79,7 +79,7 @@ function patchPage(pg) {
   const fill = pg.fill.bind(pg);
   pg.fill = async (sel, text, opts) => {
     const k = typeof sel === 'string' ? await kind(sel) : '';
-    if (!k || k === 'ui-select') return fill(sel, text, opts);
+    if (!k || k === 'ui-select') { const r = await fill(sel, text, opts); if (typeof sel === 'string') await pg.evaluate(s => { let el = null; try { el = document.querySelector(s); } catch (e) {} if (el && el.matches('input[data-suggest]') && window.UI && UI.closePop) UI.closePop('api'); }, sel).catch(() => {}); return r; }   // (a fill leaves the suggestion list closed, as a person who moves on would)
     return pg.evaluate(([s, t]) => {
       const el = document.querySelector(s);
       if (el.disabled) throw new Error(s + ' is disabled');

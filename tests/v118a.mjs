@@ -47,7 +47,7 @@ const D = await guest(1280, { tag: 'dismiss', dismiss: true });
 await startBlock(D, 'Keep', 'p-classic'); await D.ev(() => $('#clearRecent').click()); await wait(200);
 check('Clear asks first — cancelling keeps the list', (await D.ev(() => $$('#chips .chip').length)) === 1);
 await D.ctx.close();
-await G.ev(() => $('#clearRecent').click()); await wait(300);
+await G.ev(() => $('#clearRecent').click()); for (let i = 0; i < 20 && await G.ev(() => $('#confirmDlg').open || S.chips.length > 1); i++) await wait(150); await wait(150);   // v2.0: answered through the app's own dialog
 const cl = await G.ev(() => ({ chips: $$('#chips .chip').map(c => c.dataset.name), stored: S.chips.length, undo: !!document.querySelector('.toast-item.has-undo button') }));
 check('Clear (confirmed) removes the six recents and keeps the favourite; an Undo toast appears', cl.chips.join() === 'Maths' && cl.stored === 1 && cl.undo, JSON.stringify(cl));
 await G.ev(() => document.querySelector('.toast-item.has-undo button').click()); await wait(200);

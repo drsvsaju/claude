@@ -55,7 +55,7 @@ check('Before the boss is beaten, a session still shows the "⚔️ −HP" float
 check('The session remembers its stamp (session.stamp)', await ev(A, () => S.sessions[S.sessions.length - 1].stamp === 'stamp_classic'));
 // 2. buy + equip a shop stamp; the bag shows Stamps
 const bought = await ev(A, () => { S.ui.shopCat = 'stamp'; showTab('shop'); const n = $$('#shopView .item').length; const btn = $('#shopView [data-buy="stamp_tomato"]'); btn.click(); return { n, bal: game().balance }; });
-await wait(400);
+for (let i = 0; i < 20 && !(await ev(A, () => !!$('#shopView [data-equip="stamp_tomato"]'))); i++) await wait(150);   // v2.0: the purchase lands once its confirm dialog is answered
 await ev(A, () => { const e = $('#shopView [data-equip="stamp_tomato"]'); if (e) e.click(); });
 await wait(400);
 check('Shop → Stamps lists the stamps; buying + equipping the Tomato stamp works', bought.n >= 5 && await ev(A, () => equippedId('stamp') === 'stamp_tomato'), JSON.stringify(bought));

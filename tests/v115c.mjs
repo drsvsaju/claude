@@ -26,9 +26,9 @@ check('Shop → Pomeo’s room: every item on a card; the free defaults show as 
 await closeAll(G); await G.p.click('#shopView [data-buy="rug_round"]'); await wait(500);
 const bought = await G.ev(c0 => ({ owned: isOwned('rug_round'), coins: game().balance, spent: c0 - game().balance, placed: roomSlot('rug') === 'rug_round', pref: S.roomPrefs.rug && S.roomPrefs.rug.v, purchases: Object.values(S.game.purchases).filter(p => p.item === 'rug_round').length }), c0);
 check('Buying a rug costs exactly its coin price (the coin economy is unchanged) and places it straight away', bought.owned && bought.spent === 50 && bought.placed && bought.pref === 'rug_round' && bought.purchases === 1, JSON.stringify(bought));
-const more = await G.ev(() => { const r = ['wall_sage', 'desk_oak', 'lamp_desk', 'window_city', 'pet_fish', 'poster_space', 'shelf_books', 'plant_monstera'].map(id => { buyItem(id); return isOwned(id); }); return { r, layout: roomLayout(), coins: game().balance }; });
+const more = await G.ev(async () => { const r = []; for (const id of ['wall_sage', 'desk_oak', 'lamp_desk', 'window_city', 'pet_fish', 'poster_space', 'shelf_books', 'plant_monstera']) { await buyItem(id); r.push(isOwned(id)); } return { r, layout: roomLayout(), coins: game().balance }; });   // v2.0: buyItem waits for its confirm dialog (it used to be a native confirm())
 check('Eight more items bought and placed in their own slots', more.r.every(Boolean) && more.layout.wall === 'wall_sage' && more.layout.desk === 'desk_oak' && more.layout.pet === 'pet_fish' && more.layout.floor === 'floor_wood', JSON.stringify(more.layout));
-const locked = await G.ev(() => { const c = game().balance; buyItem('pet_cat'); return { owned: isOwned('pet_cat'), same: game().balance === c, lvl: game().lv.level }; });
+const locked = await G.ev(async () => { const c = game().balance; await buyItem('pet_cat'); return { owned: isOwned('pet_cat'), same: game().balance === c, lvl: game().lv.level }; });
 check('A level-locked room item can’t be bought below its level (or is bought if the level allows) — never both charged and refused', (locked.lvl >= 5) === locked.owned && (locked.owned !== locked.same), JSON.stringify(locked));
 // ---------- 2. the room screen ----------
 await G.ev(() => showTab('room')); await wait(500);
@@ -102,7 +102,7 @@ await D.ctx.close();
 // ---------- 10. phone layout ----------
 for (const w of [360, 390]) {
   const P = await guest(w, { rich: true });
-  await P.ev(() => { buyItem('rug_round'); buyItem('lamp_desk'); showTab('room'); }); await wait(900);
+  await P.ev(async () => { await buyItem('rug_round'); await buyItem('lamp_desk'); showTab('room'); }); await wait(900);
   const r = await P.ev(() => ({ hscroll: document.documentElement.scrollWidth > innerWidth + 1, small: $$('#tab-room button').filter(b => b.offsetParent && (b.getBoundingClientRect().height < 44 || b.getBoundingClientRect().width < 44)).map(b => b.textContent.trim() || b.className).slice(0, 5), scene: $('#rmScene').getBoundingClientRect().width > 300 }));
   check(`${w}px: the room fits (no sideways scroll), the scene is wide, every button is at least 44px`, !r.hscroll && !r.small.length && r.scene, JSON.stringify(r));
   await P.ctx.close();
@@ -117,7 +117,7 @@ const A2 = await device('A2', 1200);
 await A2.p.goto('http://localhost:8000/index.html?emulator=1'); await A2.p.waitForSelector('#authView:not(.hidden)');
 await A2.p.click('[data-mode=login] >> visible=true'); await A2.p.fill('#authUser', U); await A2.p.fill('#authPass', 'secret12'); await A2.p.click('#authSubmit');
 await A2.p.waitForFunction(() => typeof firstLoadDone !== 'undefined' && firstLoadDone, null, { timeout: 20000 }); await wait(2500); await closeDlg(A2); await A2.ev(() => { window.confirm = () => true; });
-await A.ev(() => { buyItem('wall_sky'); buyItem('poster_focus'); saveRoomSet('From A'); });
+await A.ev(async () => { await buyItem('wall_sky'); await buyItem('poster_focus'); saveRoomSet('From A'); });
 const seen = await until(A2, () => roomSlot('wall') === 'wall_sky' && roomSlot('poster') === 'poster_focus' && S.roomSets.some(r => r.name === 'From A'), null, 15000);
 check('A buys and places two items and saves a room → A2 sees the same room and the saved room', seen >= 0, `${seen} ms`);
 await A2.ev(() => roomRemove('poster'));

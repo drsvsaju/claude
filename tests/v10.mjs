@@ -85,7 +85,7 @@ await A.p.click('[data-del="sd1"]'); await wait(100);
 log('session delete: no confirm', confirms === 0, '| deleted', await A.p.evaluate(() => !S.sessions.some(s => s.id === 'sd1')));
 await A.p.click('.toast-item.has-undo .undo'); await wait(150);
 log('session undo:', await A.p.evaluate(() => S.sessions.some(s => s.id === 'sd1')));
-log('serious action still confirms:', await A.p.evaluate(() => /confirm\(`Erase ALL/.test(document.documentElement.innerHTML) || $('#wipeBtn') !== null));
+log('serious action still confirms:', await A.p.evaluate(() => /Erase ALL sessions, presets and settings/.test(document.documentElement.innerHTML) || $('#wipeBtn') !== null));
 // ---------- Command palette ----------
 await A.p.evaluate(() => showTab('timer')); await A.p.click('body', { position: { x: 3, y: 400 } });
 await A.p.keyboard.press('Control+k'); await wait(250);

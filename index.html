@@ -355,8 +355,6 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], :is(ui-select, ui-dat
 .field-msg.err { color: var(--danger-text, var(--danger)); font-weight: 500; }
 .field-msg.err svg { flex: none; width: 14px; height: 14px; margin-top: 1px; }
 input:focus:not(:where([type="checkbox"], [type="radio"], [type="range"], [type="color"])), select:focus { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; border-color: var(--focus, var(--accent)); }   /* the ring, and the well's own edge takes the colour (switches, radios, sliders: keyboard focus only) */
-input[type="color"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
-input[type="color"] { width: 42px; height: 40px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); cursor: pointer; flex: none; }
 input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 
 /* ==========================================================================
@@ -410,10 +408,10 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 /* Session name row */
 .name-row { display: flex; gap: 8px; }
 .name-row input[type="text"] { flex: 1; min-width: 0; }
-.sub-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
-@media (max-width: 420px) { .sub-row { grid-template-columns: minmax(0, 1fr); } }   /* small phones: the preset menu gets a full row */
+.sub-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin-top: 12px; }   /* v2.0: one column — the preset chooser (name + rhythm) gets a full row, first; the optional tag below it */
+.sub-row > div:has(#presetSelect) { order: -1; }
 .preset-row { display: flex; gap: 8px; min-width: 0; }
-.preset-row select { flex: 1; min-width: 0; text-overflow: ellipsis; }
+.preset-row ui-select { flex: 1; min-width: 0; }
 
 /* Chips */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -430,8 +428,8 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .chip.current { background: var(--accent-tint, var(--accent-soft)); border-color: var(--accent-text, var(--accent)); box-shadow: inset 0 0 0 .5px var(--accent-text, var(--accent)); font-weight: 600; }   /* the chip that is loaded right now (v1.18) */
 .sess-row .btn { flex: none; }
 .ach-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0 0 10px; min-width: 0; }
-.ach-sort { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; white-space: nowrap; }   /* the label holds the select: it sizes to it (v1.18 layout fix) */
-.ach-sort select { margin: 0; min-width: 0; max-width: 100%; }
+.ach-sort { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; white-space: nowrap; }   /* "Sort" and its select side by side: the row sizes to them (v1.18 layout fix) */
+.ach-sort ui-select { width: auto; margin: 0; min-width: 0; max-width: 100%; }
 .ach .ach-cat { font-size: 11px; font-weight: 600; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 7px; margin-left: 4px; vertical-align: 1px; }
 .ach .ach-gift { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
 .mile-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
@@ -442,7 +440,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .person.hosting .sub.now { font-weight: 600; }
 .sess-tools details summary { cursor: pointer; }
 .sess-tools .plist { margin-top: 6px; }
-#sessForm select { width: 100%; margin-top: 4px; }
+#sessForm ui-select { width: 100%; margin-top: 4px; }
 #sessForm label.lbl { display: block; }
 .chip .meta { white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
 .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; }
@@ -506,7 +504,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
 .setting:first-of-type { border-top: 0; padding-top: 4px; }
 .desc { font-size: 12px; color: var(--muted); }
-.setting input[type="number"], .setting select { width: 140px; flex: none; }
+.setting ui-select { width: 140px; flex: none; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .acct-name { font-weight: 600; word-break: break-all; }
 
@@ -520,9 +518,10 @@ dialog {
 .preset-list li:first-child { border-top: 0; }
 .preset-list .nm { flex: 1; min-width: 0; }
 .preset-list .meta { color: var(--muted); font-size: 12px; display: block; }
-.pform { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.pform { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .pform .full { grid-column: 1 / -1; }
-@media (max-width: 480px) { .pform { grid-template-columns: 1fr 1fr; } }
+.pform ui-num .ui-num-b { width: 28px; } .pform ui-num input[type="text"] { width: 2.4em; }   /* v2.0: four steppers fit a row of the 520 px dialog (– 28 · 2.4em · + 28 ≈ 102 px a column) */
+@media (max-width: 520px), (pointer: coarse) { .pform { grid-template-columns: 1fr 1fr; } }   /* narrow windows and 44 px touch buttons: two a row */
 
 /* ==========================================================================
    PROGRESSION + SHOP
@@ -1501,7 +1500,10 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .mason > .card:not(.timer
 .daychips input:focus-visible + span { outline: 2px solid var(--accent); }
 .rform { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
 .rform .full { grid-column: 1 / -1; }
-.rform input, .rform select { width: 100%; }
+.rform input { width: 100%; }   /* (selects, date and time in this form are ui-select / ui-date / ui-time: full width by default) */
+.rform > * { min-width: 0; }   /* a long choice (a preset with its rhythm, a date in words) is cut with an ellipsis instead of widening its column */
+@media (max-width: 480px) { .rform { grid-template-columns: 1fr; } }   /* phones: one field per row, so a chosen day in words and "Weekdays (Mon-Fri)" read in full */
+.k-preset-compact .ui-opt .ui-opt-l { flex: 1 1 auto; }   /* the reminder's preset list: name, then its rhythm chip and the tick at the right */
 .cal-btns { display: grid; gap: 8px; margin: 14px 0 6px; }
 .cal-btns .btn { justify-content: center; display: flex; text-decoration: none; }
 @media (max-width: 640px) { .rem-acts .hide-sm { display: none; } }
@@ -1693,8 +1695,8 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .mason > .card:not(.timer
 .exam-list li:first-child { border-top: 0; }
 .exam-list .nm { flex: 1; min-width: 0; }
 .exam-list .past { color: var(--muted); }
-.exam-form { display: grid; grid-template-columns: 1fr 160px auto; gap: 8px; }
-@media (max-width: 480px) { .exam-form { grid-template-columns: 1fr 1fr; } .exam-form .btn { grid-column: 1 / -1; } }
+.exam-form { display: grid; grid-template-columns: 1fr 190px auto; gap: 8px; }   /* the date column fits a chosen day in words ("Tue 21 Dec 2027") beside the picker's icon and chevron */
+@media (max-width: 480px) { .exam-form { grid-template-columns: 1fr; } .exam-form .btn { grid-column: 1 / -1; } }
 
 .timer-card .park-btn { position: absolute; top: 12px; right: 58px; z-index: 3; font-size: 15px; }
 .park-pop { position: absolute; top: 56px; right: 12px; z-index: 6; width: min(300px, calc(100% - 24px)); display: flex; gap: 6px; padding: 8px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 14px 30px -14px rgba(0, 0, 0, .45); }
@@ -2109,6 +2111,7 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .mason > .card:not(.timer
 .plan-dlg h2 { margin: 0 0 4px; }
 .pl-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px 44px; gap: 6px; margin-top: 8px; align-items: center; }
 .pl-row input { min-width: 0; min-height: 44px; }
+.pl-row ui-num, .pl-row ui-num .ui-num-well { width: 100%; min-width: 0; height: 44px; } .pl-row ui-num input[type="text"] { width: 100%; min-height: 0; }
 .pl-row .iconbtn { width: 44px; height: 44px; }
 .plan-dlg .btn-row { margin-top: 12px; }
 @media (max-width: 640px) {
@@ -2303,7 +2306,7 @@ kbd { display: inline-block; min-width: 26px; padding: 3px 7px; border-radius: 7
 /* Soft, visible focus rings for keyboard users */
 :where(button, a[href], [role="button"], summary, .plant):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 :root:not([data-motion="off"]) :where(button, a[href], [role="button"], summary):focus-visible { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 18%, transparent); }
-:where(input[type="text"], input[type="number"], input[type="date"], input[type="time"], input:not([type]), select):focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 1px; }
+:where(input[type="text"], input[type="number"], input:not([type]), select):focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); outline-offset: 1px; }
 /* Gentle fade at the edges of sideways-scrolling rows */
 .catrow { scroll-behavior: smooth; }
 :root[data-motion="off"] .catrow { scroll-behavior: auto; }
@@ -2549,11 +2552,13 @@ dialog.tut { width: min(460px, calc(100vw - 24px)); padding: 20px; box-sizing: b
 .tut-opt { border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: var(--r-md); padding: 12px; cursor: pointer; text-align: left; font: inherit; font-size: 14px; display: grid; gap: 4px; align-content: start; min-width: 0; min-height: 64px; box-sizing: border-box; }
 .tut-opt b, .tut-opt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tut-opt input { width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; padding: 6px 10px; }
+.tut-opt ui-num, .tut-opt ui-num .ui-num-well { width: 100%; min-width: 0; } .tut-opt ui-num input[type="text"] { width: 100%; padding: 0; }
 .tut-opt small { color: var(--muted); font-size: 12px; }
 .tut-opt:hover { border-color: var(--accent); }
 .tut-opt.on { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
 .tut-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
 .tut-row input { flex: 1 1 140px; min-width: 0; }
+.tut-row ui-date { flex: 1 1 200px; min-width: 0; }   /* the exam date picker shows the day in words: on phones it takes its own line */
 .tut-foot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-top: 18px; }
 .tut-foot .linkbtn { white-space: nowrap; min-height: 44px; padding: 0 4px; }
 .tut-foot #tutNext { min-width: 0; padding-inline: 26px; }
@@ -2646,7 +2651,6 @@ dialog.tut { width: min(460px, calc(100vw - 24px)); padding: 20px; box-sizing: b
 @media (pointer: coarse) {
   button:not(.plant):not(.rem-check), select, a.btn, .chip, summary, [role="button"] { min-height: 44px; }
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) { min-height: 44px; }
-  input[type="color"] { min-width: 44px; min-height: 44px; }
   .iconbtn, .iconbtn.sm, .hdr-right .iconbtn, .nc-x, .ib-item .ib-x, .chip .pin, .wr-close, .linkbtn, .pb-x { min-width: 44px; }
   .iconbtn.sm { width: 44px; height: 44px; }
   /* header: compact visuals, full-size invisible hit areas (keeps the top bar from overflowing on phones) */
@@ -3634,6 +3638,9 @@ body.first-load #todayBar { opacity: 0; }
 .hs-opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
 .hs-opt input { margin-top: 3px; accent-color: var(--accent); }
 .hs-opt b { display: block; }
+.hs-later { flex-direction: column; align-items: stretch; gap: 0; padding: 0; cursor: default; }   /* v2.0: the start time sits under the radio's label, not inside it (a click on the picker would pick the radio and re-draw the sheet) */
+.hs-later > label { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px 8px; cursor: pointer; }
+.hs-later > ui-time { width: auto; max-width: 220px; margin: 0 14px 12px 46px; }
 .hs-seats { display: flex; flex-wrap: wrap; gap: 8px; }
 .hs-seats label { position: relative; }
 .hs-seats input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
@@ -3641,7 +3648,7 @@ body.first-load #todayBar { opacity: 0; }
 .hs-seats input:checked + span { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .hs-seats input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hs-preset { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 6%, transparent); margin-top: 12px; }
-.hs-preset select { max-width: 100%; }
+.hs-preset ui-select { max-width: 100%; }
 .hs-sum { margin: 12px 0 0; }
 .hs-nav { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
 .hs-nav .hs-r { display: flex; gap: 8px; margin-left: auto; }
@@ -3755,12 +3762,12 @@ body.first-load #todayBar { opacity: 0; }
 .set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .set-row:first-child { border-top: 0; }
 .set-row > div:first-child { flex: 1 1 200px; min-width: 0; }
-.set-row select { max-width: 180px; }
+.set-row ui-select { width: auto; max-width: 180px; }
 #csdDays { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 #csdDays button { width: 40px; padding: 5px 0; }
 .ib-acts { display: flex; gap: 6px; margin-top: 6px; }
 .crem .rem-fg { display: flex; align-items: center; gap: 12px; }
-.crem-before { font-size: 13px; padding: 4px 6px; max-width: 140px; }
+.crem-before { width: auto; max-width: 140px; padding: 0 8px; gap: 4px; font-size: 13px; }   /* a ui-select: as wide as its choice, not the row; height from the library (40 px, 44 px on touch) */
 .pc-clan { font-size: 13px; font-weight: 600; opacity: .85; margin-top: 2px; }
 .today-clan .live-dot { margin-right: 4px; vertical-align: 1px; }
 @media (max-width: 640px) {
@@ -4590,10 +4597,9 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
           <h2>Session</h2>
           <label class="field" for="nameInput">What are you working on?</label>
           <div class="name-row">
-            <input type="text" id="nameInput" list="nameList" placeholder="e.g. Physics – Rotational Motion" maxlength="80" autocomplete="off">
-            <input type="color" id="nameColor" title="Colour for this name">
+            <input type="text" id="nameInput" data-suggest="names" placeholder="e.g. Physics – Rotational Motion" maxlength="80" autocomplete="off">
+            <ui-color id="nameColor" title="Colour for this name" aria-label="Colour for this name"></ui-color>
           </div>
-          <datalist id="nameList"></datalist>
           <button class="sub-toggle" id="subToggle" aria-expanded="false" aria-controls="subEd">+ Add subtasks</button>
           <div class="sub-last hidden" id="subLast"></div>
           <div class="sub-ed hidden" id="subEd">
@@ -4606,12 +4612,12 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
           <div class="sub-row">
             <div>
               <label class="field" for="nameTag">Tag (optional)</label>
-              <input type="text" id="nameTag" placeholder="e.g. JEE, Study" maxlength="30">
+              <input type="text" id="nameTag" data-suggest="nametag" autocomplete="off" placeholder="e.g. JEE, Study" maxlength="30">
             </div>
             <div>
               <label class="field" for="presetSelect">Preset</label>
               <div class="preset-row">
-                <select id="presetSelect"></select>
+                <ui-select id="presetSelect" kind="preset" search-placeholder="Search presets…"></ui-select>
                 <button class="iconbtn" id="managePresets" title="Manage presets" aria-label="Manage presets">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                 </button>
@@ -4769,11 +4775,11 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         <h2>Timer</h2>
         <div class="setting" data-k="goal minutes streak target">
           <div><div>Daily goal</div><div class="desc">Minutes of focus for a day to count toward your streak</div></div>
-          <input type="number" id="setGoal" min="5" max="1440" step="5" aria-label="Daily goal in minutes">
+          <ui-num id="setGoal" min="5" max="1440" step="5" aria-label="Daily goal in minutes"></ui-num>
         </div>
         <div class="setting" data-k="week monday sunday calendar">
           <div><div>Week starts on</div><div class="desc">For weekly stats and the garden</div></div>
-          <select id="setWeek" aria-label="Week starts on"><option value="1">Monday</option><option value="0">Sunday</option></select>
+          <ui-select id="setWeek" aria-label="Week starts on"><option value="1">Monday</option><option value="0">Sunday</option></ui-select>
         </div>
         <div class="setting" data-k="auto start break automatic">
           <div><div>Auto-start next phase</div><div class="desc">Begin breaks and focus blocks automatically</div></div>
@@ -4793,7 +4799,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         </div>
         <div class="setting" data-k="energy check-in focus rating feel mood insights">
           <div><div>Energy check-in</div><div class="desc">After a focus session, tap how focused you felt. Unlocks insights in Stats.</div></div>
-          <select id="setEnergy" aria-label="Energy check-in"><option value="always">Always</option><option value="sometimes">Sometimes (every 3rd)</option><option value="off">Off</option></select>
+          <ui-select id="setEnergy" aria-label="Energy check-in"><option value="always">Always</option><option value="sometimes">Sometimes (every 3rd)</option><option value="off">Off</option></ui-select>
         </div>
       </div>
 
@@ -4805,7 +4811,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         </div>
         <div class="setting" data-k="ambient volume rain noise">
           <div><div>Ambient volume</div><div class="desc">For ambient sounds from the shop</div></div>
-          <input type="range" id="setAmbVol" min="0" max="1" step="0.05" aria-label="Ambient volume">
+          <input type="range" id="setAmbVol" min="0" max="1" step="0.05" data-scale="100" data-unit="%" aria-label="Ambient volume">
         </div>
         <div class="setting" data-k="interface ui sounds clicks taps">
           <div><div>Interface sounds</div><div class="desc">Soft taps, ticks and chimes. Saved on this device.</div></div>
@@ -4813,7 +4819,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         </div>
         <div class="setting" data-k="interface volume ui sounds">
           <div><div>Interface volume</div><div class="desc">Kept well below the timer sounds</div></div>
-          <input type="range" id="uisVol" min="0" max="1" step="0.05" aria-label="Interface sound volume">
+          <input type="range" id="uisVol" min="0" max="1" step="0.05" data-scale="100" data-unit="%" aria-label="Interface sound volume">
         </div>
         <div class="setting" id="uisHoverRow" data-k="hover sounds mouse">
           <div><div>Hover sounds</div><div class="desc">A tiny blip when the mouse moves over buttons</div></div>
@@ -4821,7 +4827,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         </div>
         <div class="setting" data-k="sound pack soft crisp wood bubbles">
           <div><div>Sound pack</div><div class="desc">How the interface sounds feel</div></div>
-          <div class="uis-row"><select id="uisPack" aria-label="Sound pack"><option value="soft">Soft</option><option value="crisp">Crisp</option><option value="wood">Wood</option><option value="bubbles">Bubbles</option></select>
+          <div class="uis-row"><ui-select id="uisPack" aria-label="Sound pack"><option value="soft">Soft</option><option value="crisp">Crisp</option><option value="wood">Wood</option><option value="bubbles">Bubbles</option></ui-select>
             <button class="iconbtn" id="uisTry" title="Play a sample" aria-label="Play a sample"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10-6.5Z"/></svg></button></div>
         </div>
         <div class="setting" data-k="quiet focus mute distraction">
@@ -4850,11 +4856,11 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         </div>
         <div class="setting" data-k="theme dark light mode system colour color">
           <div><div>Theme</div><div class="desc">Light, dark or follow your device</div></div>
-          <select id="setTheme" aria-label="Theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+          <ui-select id="setTheme" aria-label="Theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></ui-select>
         </div>
         <div class="setting" data-k="glossed interface glass gloss blur frosted translucent transparency">
           <div><div>Glossed Interface</div><div class="desc" id="glassDesc">Frosted, translucent cards over soft colour. Lite (the default) is gentle and easy on older phones; Full adds more blur and shine. Saved on this device.</div></div>
-          <select id="setGlass" aria-label="Glossed Interface"><option value="off">Glossed Interface: Off</option><option value="lite">Glossed Interface: Lite</option><option value="full">Glossed Interface: Full</option></select>
+          <ui-select id="setGlass" aria-label="Glossed Interface"><option value="off">Glossed Interface: Off</option><option value="lite">Glossed Interface: Lite</option><option value="full">Glossed Interface: Full</option></ui-select>
         </div>
         <div class="setting" data-k="focus atmosphere background gradient calm mood glow">
           <div><div>Focus atmosphere</div><div class="desc">A slow background glow on the Timer: calmer and deeper as a focus block goes on, lighter during breaks</div></div>
@@ -4878,7 +4884,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         </div>
         <div class="setting" data-k="animations motion reduce effects">
           <div><div>Animations</div><div class="desc">Full, reduced (simple fades) or off. Saved on this device.</div></div>
-          <select id="setMotion" aria-label="Animations"><option value="full">Full</option><option value="reduced">Reduced</option><option value="off">Off</option></select>
+          <ui-select id="setMotion" aria-label="Animations"><option value="full">Full</option><option value="reduced">Reduced</option><option value="off">Off</option></ui-select>
         </div>
         <div class="setting" data-k="pomeo mascot tomato show hide">
           <div><div>Show Pomeo</div><div class="desc">Your tomato buddy on the Timer screen</div></div>
@@ -4902,7 +4908,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
         </div>
         <div class="setting" data-k="pomeo talks speech quiet often">
           <div><div>Pomeo talks</div><div class="desc">Taps and reminders always get an answer</div></div>
-          <select id="setPomeoTalk" aria-label="Pomeo talks"><option value="often">Often</option><option value="sometimes">Sometimes</option><option value="quiet">Quiet</option></select>
+          <ui-select id="setPomeoTalk" aria-label="Pomeo talks"><option value="often">Often</option><option value="sometimes">Sometimes</option><option value="quiet">Quiet</option></ui-select>
         </div>
         <div class="setting" data-k="water stretch nudge break health">
           <div><div>Water &amp; stretch nudges</div><div class="desc">A gentle reminder after about 90 minutes of focus</div></div>
@@ -5048,7 +5054,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
   <h2 id="ccTitle">Create a clan</h2>
   <label class="lbl" for="ccName">Clan name (3–24 characters)</label><input type="text" id="ccName" maxlength="24" autocomplete="off" placeholder="e.g. Night Owls">
   <label class="lbl" for="ccTag">Tag (2–5 letters or numbers)</label><input type="text" id="ccTag" maxlength="5" autocomplete="off" placeholder="e.g. OWLS" style="text-transform:uppercase">
-  <label class="lbl" for="ccDesc">What’s your clan about?</label><select id="ccDesc"></select>
+  <label class="lbl" for="ccDesc">What’s your clan about?</label><ui-select id="ccDesc"></ui-select>
   <p class="lbl" style="margin:10px 0 0">You’ll be the leader. New members need your approval (you can change this). Clans have no chat — just focus.</p>
   <p style="color:var(--danger);font-size:13px;min-height:18px;margin:6px 0 0" id="ccErr" role="alert"></p>
   <div class="btn-row" style="justify-content:flex-end"><button class="btn" id="ccCancel" type="button">Cancel</button><button class="btn primary" id="ccSave" type="button">Create clan</button></div>
@@ -5080,19 +5086,19 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
 </dialog>
 <dialog id="clanSchedDlg" class="clan-dlg" aria-labelledby="csdTitle">
   <h2 id="csdTitle">Schedule a session</h2>
-  <label class="lbl" for="csdName">Session</label><select id="csdName"></select>
+  <label class="lbl" for="csdName">Session</label><ui-select id="csdName"></ui-select>
   <div id="csdOwnWrap" class="hidden"><label class="lbl" for="csdOwn">Session name</label><input type="text" id="csdOwn" maxlength="40" autocomplete="off" placeholder="e.g. Physics revision"></div>
   <label class="lbl">Mode</label><div class="mode-seg" id="csdMode" role="group" aria-label="Session mode"><button type="button" data-cmode2="together"><b>Focus together</b><span>Everyone runs their own timer at one table</span></button><button type="button" data-cmode2="synced"><b>Synced timer</b><span>One shared timer; the host starts, pauses, skips</span></button></div>
-  <label class="lbl" for="csdPattern" id="csdPatternLbl">Pattern</label><select id="csdPattern"></select>
+  <label class="lbl" for="csdPattern" id="csdPatternLbl">Pattern</label><ui-select id="csdPattern"></ui-select>
   <div class="row sched-only" style="gap:12px;flex-wrap:wrap">
-    <div style="flex:1 1 140px"><label class="lbl" for="csdDate">Date</label><input type="date" id="csdDate"></div>
-    <div style="flex:1 1 110px"><label class="lbl" for="csdTime">Time</label><input type="time" id="csdTime"></div>
+    <div style="flex:1 1 200px"><label class="lbl" for="csdDate">Date</label><ui-date id="csdDate" required></ui-date></div>
+    <div style="flex:1 1 140px"><label class="lbl" for="csdTime">Time</label><ui-time id="csdTime" required></ui-time></div>
   </div>
-  <div class="sched-only"><label class="lbl" for="csdRepeat">Repeat</label><select id="csdRepeat"><option value="none">Doesn’t repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">On these days…</option></select>
+  <div class="sched-only"><label class="lbl" for="csdRepeat">Repeat</label><ui-select id="csdRepeat"><option value="none">Doesn’t repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays</option><option value="weekly">On these days…</option></ui-select>
     <div id="csdDays" class="hidden" role="group" aria-label="Days"><button type="button" class="btn small" data-d="1">Mon</button><button type="button" class="btn small" data-d="2">Tue</button><button type="button" class="btn small" data-d="3">Wed</button><button type="button" class="btn small" data-d="4">Thu</button><button type="button" class="btn small" data-d="5">Fri</button><button type="button" class="btn small" data-d="6">Sat</button><button type="button" class="btn small" data-d="0">Sun</button></div></div>
   <div class="row sched-only" style="gap:12px;flex-wrap:wrap">
     <div style="flex:1 1 160px"><label class="lbl" for="csdTag">Subject tag (optional)</label><input type="text" id="csdTag" maxlength="30" autocomplete="off" placeholder="e.g. Physics"></div>
-    <div style="flex:0 1 110px"><label class="lbl" for="csdMax">Max people</label><input type="number" id="csdMax" min="2" max="30" value="30"></div>
+    <div style="flex:0 1 110px"><label class="lbl" for="csdMax">Max people</label><ui-num id="csdMax" min="2" max="30" value="30"></ui-num></div>
   </div>
   <p style="color:var(--danger);font-size:13px;min-height:18px;margin:6px 0 0" id="csdErr" role="alert"></p>
   <div class="btn-row" style="justify-content:flex-end"><button class="btn" id="csdCancel" type="button">Cancel</button><button class="btn primary" id="csdSave" type="button">Schedule</button></div>
@@ -5112,7 +5118,6 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
 <dialog id="planDlg" class="plan-dlg" aria-labelledby="planDlgTitle">
   <h2 id="planDlgTitle">Weekly plan</h2>
   <p class="desc" style="margin:0 0 6px">Target hours per subject each week. A subject matches your session names (or their tags) — the plan fills in as you focus.</p>
-  <datalist id="plNames"></datalist>
   <div id="plRows"></div>
   <div class="btn-row" style="margin-top:8px"><button class="btn small" type="button" id="plAdd">+ Add subject</button></div>
   <p style="color:var(--danger);font-size:13px;min-height:18px;margin:6px 0 0" id="plErr"></p>
@@ -5124,8 +5129,8 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
   <h2 id="todoDlgTitle" style="margin:0 0 10px">New task</h2>
   <label class="lbl" for="tdTitle">Task</label><input type="text" id="tdTitle" maxlength="120" autocomplete="off" placeholder="e.g. Finish chapter 5 problems">
   <div class="row" style="gap:12px;flex-wrap:wrap">
-    <div style="flex:1 1 140px"><label class="lbl" for="tdDue">Due date (optional)</label><input type="date" id="tdDue"></div>
-    <div style="flex:1 1 140px"><label class="lbl" for="tdTag">Subject / tag (optional)</label><input type="text" id="tdTag" list="tdTagList" maxlength="30" autocomplete="off" placeholder="e.g. Physics"><datalist id="tdTagList"></datalist></div>
+    <div style="flex:1 1 180px"><label class="lbl" for="tdDue">Due date (optional)</label><ui-date id="tdDue"></ui-date></div>
+    <div style="flex:1 1 140px"><label class="lbl" for="tdTag">Subject / tag (optional)</label><input type="text" id="tdTag" data-suggest="todotag" maxlength="30" autocomplete="off" placeholder="e.g. Physics"></div>
   </div>
   <label class="lbl">Priority</label><div class="seg pri-seg" id="tdPri" role="group" aria-label="Priority"><button type="button" data-pri="low">Low</button><button type="button" data-pri="med">Medium</button><button type="button" data-pri="high">High</button></div>
   <label class="lbl" for="tdCheck">Checklist (optional, one step per line — becomes subtasks with “Focus on this”)</label><textarea id="tdCheck" rows="3" placeholder="Read notes&#10;Solve 10 problems"></textarea>
@@ -5138,16 +5143,16 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
     <div class="row between" style="margin-bottom:12px"><h2 style="margin:0" id="remDlgTitle">New reminder</h2></div>
     <div class="rform">
       <div class="full"><label class="field" for="remTitle">Title</label><input type="text" id="remTitle" maxlength="80" placeholder="e.g. Physics revision" autocomplete="off"></div>
-      <div><label class="field" for="remDate" id="remDateLbl">Date</label><input type="date" id="remDate"></div>
-      <div><label class="field" for="remTime">Time</label><input type="time" id="remTime"></div>
+      <div><label class="field" for="remDate" id="remDateLbl">Date</label><ui-date id="remDate"></ui-date></div>
+      <div><label class="field" for="remTime">Time</label><ui-time id="remTime"></ui-time></div>
       <div><label class="field" for="remRepeat">Repeat</label>
-        <select id="remRepeat"><option value="none">Doesn’t repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays (Mon–Fri)</option><option value="weekly">Weekly on…</option><option value="revision">Revision plan (spaced)</option></select></div>
+        <ui-select id="remRepeat"><option value="none">Doesn’t repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays (Mon–Fri)</option><option value="weekly">Weekly on…</option><option value="revision">Revision plan (spaced)</option></ui-select></div>
       <div><label class="field" for="remBefore">Remind me</label>
-        <select id="remBefore"><option value="0">At the time</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option><option value="30">30 min before</option></select></div>
+        <ui-select id="remBefore"><option value="0">At the time</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option><option value="30">30 min before</option></ui-select></div>
       <div class="full hidden" id="remDaysWrap"><span class="field">On these days</span>
         <div class="daychips" id="remDays"><label><input type="checkbox" value="1"><span>Mon</span></label><label><input type="checkbox" value="2"><span>Tue</span></label><label><input type="checkbox" value="3"><span>Wed</span></label><label><input type="checkbox" value="4"><span>Thu</span></label><label><input type="checkbox" value="5"><span>Fri</span></label><label><input type="checkbox" value="6"><span>Sat</span></label><label><input type="checkbox" value="0"><span>Sun</span></label></div></div>
-      <div><label class="field" for="remPreset">Timer preset (optional)</label><select id="remPreset"></select></div>
-      <div><label class="field" for="remSession">Session name (optional)</label><input type="text" id="remSession" maxlength="80" placeholder="Same as the title" autocomplete="off" list="nameList"></div>
+      <div><label class="field" for="remPreset">Timer preset (optional)</label><ui-select id="remPreset" kind="preset-compact" placeholder="No timer link"></ui-select></div>
+      <div><label class="field" for="remSession">Session name (optional)</label><input type="text" id="remSession" maxlength="80" placeholder="Same as the title" autocomplete="off" data-suggest="names"></div>
     </div>
     <p class="err" id="remErr" style="color:var(--danger);font-size:13px;min-height:18px;margin:10px 0 0"></p>
     <div class="btn-row" style="justify-content:flex-end;margin-top:6px">
@@ -5227,7 +5232,7 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
   <ul class="exam-list" id="examList"></ul>
   <form class="exam-form" id="examForm" novalidate>
     <input type="text" id="examName" maxlength="60" placeholder="Exam name, e.g. JEE Main" aria-label="Exam name" autocomplete="off">
-    <input type="date" id="examDate" aria-label="Exam date">
+    <ui-date id="examDate" aria-label="Exam date" required></ui-date>
     <button class="btn primary" type="submit">Add</button>
   </form>
   <p class="lbl" style="margin:10px 0 0">Enter the date yourself — check the official schedule. Pomodorolist never guesses exam dates.</p>
@@ -5310,10 +5315,10 @@ input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(-
   <form id="presetForm" class="pform" autocomplete="off">
     <input type="hidden" id="pfId">
     <div class="full"><label class="field" for="pfName" id="pfTitle">New preset</label><input type="text" id="pfName" placeholder="Preset name" required maxlength="40"></div>
-    <div><label class="field" for="pfFocus">Focus (min)</label><input type="number" id="pfFocus" min="1" max="240" required></div>
-    <div><label class="field" for="pfShort">Short break</label><input type="number" id="pfShort" min="1" max="120" required></div>
-    <div><label class="field" for="pfLong">Long break</label><input type="number" id="pfLong" min="1" max="180" required></div>
-    <div><label class="field" for="pfRounds">Rounds</label><input type="number" id="pfRounds" min="1" max="12" required></div>
+    <div><label class="field" for="pfFocus">Focus (min)</label><ui-num id="pfFocus" min="1" max="240"></ui-num></div>
+    <div><label class="field" for="pfShort">Short break</label><ui-num id="pfShort" min="1" max="120"></ui-num></div>
+    <div><label class="field" for="pfLong">Long break</label><ui-num id="pfLong" min="1" max="180"></ui-num></div>
+    <div><label class="field" for="pfRounds">Rounds</label><ui-num id="pfRounds" min="1" max="12"></ui-num></div>
     <div class="full btn-row" style="justify-content:flex-end">
       <button type="button" class="btn" id="pfNew">Clear</button>
       <button type="submit" class="btn primary" style="min-width:0;padding:9px 22px">Save preset</button>
@@ -5961,14 +5966,14 @@ const UI = (() => {
     connectedCallback() {
       if (this._in) return;
       const lab = wireLabel(this), name = this.getAttribute('aria-label') || (lab ? lab.textContent.trim() : 'Number');
-      this.innerHTML = `<span class="ui-num-well"><button type="button" class="ui-num-b" data-d="-1" tabindex="-1" aria-label="Less">${IC.minus}</button><input type="text" inputmode="numeric" role="spinbutton" autocomplete="off" aria-label="${h(name)}"${this.hasAttribute('placeholder') ? ` placeholder="${h(this.getAttribute('placeholder'))}"` : ''}><button type="button" class="ui-num-b" data-d="1" tabindex="-1" aria-label="More">${IC.plus}</button></span><span class="ui-num-sfx"></span>`;
+      this.innerHTML = `<span class="ui-num-well"><button type="button" class="ui-num-b" data-d="-1" tabindex="-1" aria-label="Less">${IC.minus}</button><input type="text" inputmode="${this.step % 1 ? 'decimal' : 'numeric'}" role="spinbutton" autocomplete="off" aria-label="${h(name)}"${this.hasAttribute('name') ? ` name="${h(this.getAttribute('name'))}"` : ''}${this.hasAttribute('placeholder') ? ` placeholder="${h(this.getAttribute('placeholder'))}"` : ''}><button type="button" class="ui-num-b" data-d="1" tabindex="-1" aria-label="More">${IC.plus}</button></span><span class="ui-num-sfx"></span>`;
       this._in = this.querySelector('input'); this._sfx = this.querySelector('.ui-num-sfx');
       if (lab) { this._in.removeAttribute('aria-label'); this._in.setAttribute('aria-labelledby', lab.id); }
       this.removeAttribute('aria-label');
       this._set(this.hasAttribute('value') ? this.getAttribute('value') : '', true);
       this._sync();
       const stop = e => e.stopPropagation();
-      this._in.addEventListener('input', e => { stop(e); const raw = this._in.value, cleaned = raw.replace(this.min < 0 ? /[^\d-]/g : /\D/g, ''); if (cleaned !== raw) this._in.value = cleaned; this._aria(); fire(this, 'input'); });
+      this._in.addEventListener('input', e => { stop(e); const raw = this._in.value, cleaned = this.step % 1 ? raw.replace(',', '.').replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1') : raw.replace(this.min < 0 ? /[^\d-]/g : /\D/g, ''); if (cleaned !== raw) this._in.value = cleaned; this._aria(); fire(this, 'input'); });   // (a fractional step keeps one decimal point)
       this._in.addEventListener('change', e => { stop(e); this._commit(); });
       this._in.addEventListener('blur', () => this._commit());
       this._in.addEventListener('focus', () => { try { this._in.select(); } catch (e) {} });
@@ -5998,7 +6003,7 @@ const UI = (() => {
     _focus() { this._in && this._in.focus(); }
     focus(o) { this._in ? this._in.focus(o) : super.focus(o); }
     select() { this._in && this._in.select(); }
-    _fmt(n) { const p = +this.getAttribute('pad') || 0; return p ? String(n).padStart(p, '0') : String(n); }
+    _fmt(n) { const st = String(this.step), dp = st.includes('.') ? st.split('.')[1].length : 0; if (dp) n = +n.toFixed(dp); const p = +this.getAttribute('pad') || 0; return p ? String(n).padStart(p, '0') : String(n); }   // (0.1 + 0.2 steps stay 0.3)
     _set(v, quiet) { const s = v === '' || v === null || v === undefined ? '' : String(v); const n = parseFloat(s); this._in.value = s === '' || isNaN(n) ? '' : this._fmt(n); this._last = this._in.value; this._aria(); if (!quiet) fire(this, 'input', 'change'); }
     _aria() { const n = parseFloat(this._in.value), i = this._in; if (isNaN(n)) i.removeAttribute('aria-valuenow'); else i.setAttribute('aria-valuenow', n); const [a, b] = this.querySelectorAll('.ui-num-b'); if (a) { a.disabled = this.disabled || (!this.hasAttribute('wrap') && n <= this.min); b.disabled = this.disabled || (!this.hasAttribute('wrap') && n >= this.max); } }
     _sync() { const i = this._in; isFinite(this.min) ? i.setAttribute('aria-valuemin', this.min) : i.removeAttribute('aria-valuemin'); isFinite(this.max) ? i.setAttribute('aria-valuemax', this.max) : i.removeAttribute('aria-valuemax'); i.disabled = this.disabled; this._sfx.textContent = this.getAttribute('suffix') || ''; this._sfx.hidden = !this.getAttribute('suffix'); this._aria(); }
@@ -6513,6 +6518,79 @@ const UI = (() => {
   Object.assign(UI, { menu, confirm, alert, range, scan });
 })();
 
+/* ---------- UI LIBRARY: suggestions under a plain text field — <input type="text" data-suggest="kind"> ----------
+   What a datalist element did, drawn by the library. The field stays the browser's own input: its value, maxlength,
+   required, IME and form submit, and every input / change event, are unchanged. The list offers UI.cfg.suggest(input):
+   the strings that contain what is typed (the exact match left out). ↑ / ↓ move, Enter or a tap takes one (the text is
+   set, then input + change fire, as when a datalist option is picked), Esc or leaving the field closes it.
+   Nothing here writes anywhere. */
+(() => {
+  const { pop, h, nid, fire } = UI;
+  let sg = null, taking = false;   // sg: { el, p, items, act }, the open list
+  const field = t => (t && t.matches && t.matches('input[data-suggest]') ? t : null);
+  const close = () => { if (sg) sg.p.close('api'); };
+  const items = el => {
+    let all = []; try { all = (typeof UI.cfg.suggest === 'function' && UI.cfg.suggest(el)) || []; } catch (e) { all = []; }
+    const q = el.value.trim().toLowerCase();
+    return [...new Set(all.map(String))].filter(s => s && s.toLowerCase() !== q && (!q || s.toLowerCase().includes(q)));
+  };
+  function show(el) {
+    if (el.disabled || el.readOnly || document.activeElement !== el) { if (sg && sg.el === el) close(); return; }
+    const list = items(el);
+    if (!list.length) { if (sg && sg.el === el) close(); return; }
+    if (!sg || sg.el !== el) {
+      close();
+      const lid = nid('list');
+      const p = pop(el, b => { b.innerHTML = `<div class="ui-list" role="listbox" id="${lid}" aria-label="Suggestions"></div>`; }, { cls: 'ui-select-pop ui-tags-pop', sheet: false, restore: false, onClose: () => { if (sg && sg.p === p) sg = null; el.setAttribute('aria-expanded', 'false'); el.removeAttribute('aria-activedescendant'); el.removeAttribute('aria-controls'); } });
+      if (!p.root.isConnected) return;   // closed at once (the field is out of view; UI.pop's handle still says open): no list until the next keystroke
+      p.el.addEventListener('pointerdown', e => e.preventDefault());   // (the field keeps the focus)
+      p.el.addEventListener('click', e => { const r = e.target.closest('.ui-opt'); if (r) take(+r.dataset.i); });   // on the click, not the press: a finger that scrolls the list picks nothing
+      sg = { el, p, items: [], act: -1 };
+      el.setAttribute('aria-expanded', 'true'); el.setAttribute('aria-controls', lid);
+    }
+    sg.items = list; sg.act = -1; el.removeAttribute('aria-activedescendant');
+    sg.p.el.querySelector('.ui-list').innerHTML = list.map((s, i) => `<div class="ui-opt" role="option" id="${sg.p.root.id}-o${i}" data-i="${i}" aria-selected="false"><span class="ui-opt-l">${h(s)}</span></div>`).join('');
+    sg.p.place();
+  }
+  function take(i) {
+    if (!sg) return;
+    const el = sg.el, s = sg.items[i];
+    close();
+    if (s === undefined) return;
+    el.value = el.maxLength > 0 ? s.slice(0, el.maxLength) : s;
+    taking = true; try { fire(el, 'input', 'change'); } finally { taking = false; }
+  }
+  function move(d) {
+    const n = sg.items.length;
+    sg.act = sg.act < 0 ? (d > 0 ? 0 : n - 1) : (sg.act + d + n) % n;
+    sg.p.el.querySelectorAll('.ui-opt').forEach((r, k) => { const on = k === sg.act; r.classList.toggle('act', on); r.setAttribute('aria-selected', on); if (on) { sg.el.setAttribute('aria-activedescendant', r.id); r.scrollIntoView({ block: 'nearest' }); } });
+  }
+  document.addEventListener('focusin', e => { const el = field(e.target); if (el && !el.hasAttribute('role')) { el.setAttribute('role', 'combobox'); el.setAttribute('aria-autocomplete', 'list'); el.setAttribute('aria-expanded', 'false'); } });
+  document.addEventListener('input', e => { const el = field(e.target); if (el && !taking) show(el); });
+  document.addEventListener('click', e => { const el = field(e.target); if (el && !(sg && sg.el === el)) show(el); });   // a tap on the field shows the list, as a datalist does
+  document.addEventListener('focusout', e => { if (sg && e.target === sg.el) close(); });
+  document.addEventListener('keydown', e => {
+    const el = field(e.target); if (!el || e.isComposing) return;
+    const k = e.key;
+    if (k === 'ArrowDown' || k === 'ArrowUp') {
+      if (!(sg && sg.el === el)) { if (k !== 'ArrowDown') return; show(el); if (!(sg && sg.el === el)) return; }
+      e.preventDefault(); move(k === 'ArrowDown' ? 1 : -1);
+    } else if (k === 'Enter' && sg && sg.el === el && sg.act >= 0) { e.preventDefault(); e.stopPropagation(); take(sg.act); }   // takes the highlighted one; the form is not submitted
+    else if (k === 'Tab' && sg && sg.el === el) close();
+  }, true);
+})();
+// the app's lists for those fields (until v2.0 three datalist elements, filled when their form opened)
+UI.cfg.suggest = el => {
+  try {
+    const k = el.dataset.suggest;
+    if (k === 'names') return Object.keys(S.names).sort();   // Session card and reminder: session names
+    if (k === 'nametag') return [...new Set(Object.values(S.names).map(x => x && x.tag).filter(Boolean))].sort().slice(0, 30);   // Session card: the tags already in use
+    if (k === 'todotag') return [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.todos.map(x => x.tag)].filter(Boolean))].slice(0, 30);
+    if (k === 'decksubject') return [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 30);
+    if (k === 'plan') return [...new Set([...Object.entries(S.names).flatMap(([n, x]) => [n, x.tag]), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 40);
+  } catch (e) { /* the state is not loaded yet */ }
+  return [];
+};
 /** Selectors for "the person is typing in, or steering, one of our controls": single-key shortcuts and the demo's key guard skip them. */
 const UI_FIELDS = 'ui-select, ui-date, ui-time, ui-color, ui-num, ui-tags, .ui-pop';
 // the library asks the app for a few facts (read when a panel opens, long after the state has loaded)
@@ -6593,7 +6671,8 @@ function renderGallery() {
     ${cell('Number stepper', `<label class="field" for="gxn1">Daily goal</label><ui-num id="gxn1" value="120" min="10" max="720" step="5" suffix="minutes"></ui-num>
       <span class="field">Disabled</span><ui-num aria-label="Disabled number" value="4" suffix="rounds" disabled></ui-num>`)}
     ${cell('Colour and tags', `<span class="field">Colour (swatch only, and with its name)</span><div class="gx-wrap"><ui-color id="gxc1" aria-label="Session colour" value="#c25480" default="#2f8f83"></ui-color><ui-color id="gxc2" aria-label="Subject colour" value="#3a7ca5" named></ui-color></div>
-      <div class="field-top"><label class="field" for="gxg1">Subject / tags</label><small>up to 4</small></div><ui-tags id="gxg1" value="Physics, JEE" placeholder="e.g. JEE, Study" max="4"></ui-tags>`)}
+      <div class="field-top"><label class="field" for="gxg1">Subject / tags</label><small>up to 4</small></div><ui-tags id="gxg1" value="Physics, JEE" placeholder="e.g. JEE, Study" max="4"></ui-tags>
+      <label class="field" for="gxsg1">Session name (suggestions)</label><input type="text" id="gxsg1" data-suggest="names" maxlength="80" autocomplete="off" placeholder="e.g. Physics – Rotational Motion">`)}
     ${cell('Switch, tick box, radio', `<div class="gx-row"><span>Switch on</span><input type="checkbox" id="gxk1" checked aria-label="Switch on"></div>
       <div class="gx-row"><span>Switch off</span><input type="checkbox" aria-label="Switch off"></div>
       <div class="gx-row"><span>Switch disabled, off</span><input type="checkbox" aria-label="Switch disabled, off" disabled></div>
@@ -7725,7 +7804,7 @@ async function logout() {
     return;
   }
   if (localOnly) { toast('Connect to the internet to log out'); return; }
-  if (pendingWrites > 0 && !confirm('Some changes have not reached the cloud yet (you may be offline). If you log out now they will be lost. Log out anyway?')) return;
+  if (pendingWrites > 0 && !(await confirmDlg({ title: 'Log out anyway?', body: 'Some changes have not reached the cloud yet (you may be offline). If you log out now they will be lost.', ok: 'Log out', danger: true }))) return;
   // Stop showing "focusing now" to friends (best effort, never blocks logging out).
   if (socialReady()) await Promise.race([FB.setDoc(FB.doc(FB.db, 'presence', USER.uid), { visible: false, now: null, updatedAt: FB.serverTimestamp() }).catch(() => {}), new Promise(r => setTimeout(r, 1500))]);
   if (LIVE.lid) liveTeardown();
@@ -8289,10 +8368,11 @@ function loadChip(name, pid) {
   return !!p;
 }
 /** Clear removes the recents and keeps the favourites (asked first); Undo brings them back. */
-function clearRecents() {
-  const gone = chipRecents();
+async function clearRecents() {
+  if (!chipRecents().length) return false;
+  if (!(await confirmDlg({ title: 'Clear your recently used list?', body: 'Favourites stay.', ok: 'Clear list', danger: true }))) return false;
+  const gone = chipRecents();   // read after the answer: a cloud update (a star from another device) can land while the question is open
   if (!gone.length) return false;
-  if (!confirm('Clear your recently used list? Favourites stay.')) return false;
   const ids = new Set(gone.map(c => c.id)), before = gone.map(c => ({ ...c }));
   S.chips = S.chips.filter(c => !ids.has(c.id));
   save();
@@ -8441,11 +8521,26 @@ function renderTimer() {
   renderClock();
 }
 
-function renderSessionInputs() {
-  $('#presetSelect').innerHTML = S.presets.map(p =>
-    `<option value="${esc(p.id)}"${p.id === activePreset().id ? ' selected' : ''}>${esc(p.name)}</option>`).join('');
-  $('#nameList').innerHTML = Object.keys(S.names).sort().map(n => `<option value="${esc(n)}">`).join('');
+/** The presets of the last blocks, newest first (from the sessions' own preset names: nothing new is stored). */
+function recentPresetIds(n = 3) {
+  const out = [];
+  for (let i = S.sessions.length - 1; i >= 0 && out.length < n; i--) { const p = S.presets.find(x => x.name === S.sessions[i].preset); if (p && !out.includes(p.id)) out.push(p.id); }
+  return out;
 }
+function renderSessionInputs() {   // the preset chooser: each row shows its rhythm (focus / break × rounds); favourites and recent ones first
+  const rec = recentPresetIds();
+  $('#presetSelect').innerHTML = S.presets.map(p => { const r = rec.indexOf(p.id); return `<option value="${esc(p.id)}" data-f="${+p.focus || 0}" data-b="${+p.short || 0}" data-r="${+p.rounds || 4}"${p.fav ? ' data-fav="1"' : ''}${r >= 0 ? ` data-recent="${r}"` : ''}${p.id === activePreset().id ? ' selected' : ''}>${esc(p.name)}</option>`; }).join('');
+}
+// the preset chooser's star, "New preset" and "Edit presets" (a favourite is an optional `fav` on the preset; older apps keep it)
+UI.cfg.preset.fav = o => {
+  if (isPreview()) { previewPrompt($('#managePresets')); return; }
+  const p = S.presets.find(x => x.id === o.value); if (!p) return;
+  if (p.fav) delete p.fav; else p.fav = 1;
+  if (p.fav) o.dataset.fav = '1'; else delete o.dataset.fav;
+  save();
+};
+UI.cfg.preset.create = () => { if (isPreview()) { previewPrompt($('#managePresets')); return; } renderPresetList(); fillPresetForm(null); $('#presetDlg').showModal(); };
+UI.cfg.preset.edit = () => { if (isPreview()) { previewPrompt($('#managePresets')); return; } renderPresetList(); fillPresetForm(activePreset()); $('#presetDlg').showModal(); };
 
 function renderChips() {
   const items = [...chipFavs().map(c => ({ ...c, pinned: true })), ...chipRecents().map(c => ({ ...c, pinned: false }))];
@@ -8829,6 +8924,7 @@ function renderSettings() {
   $('#setRevInt').value = revIntervals().join(', ');
   renderPrivacy();
   $('#setAmbVol').value = st.ambientVolume;
+  UI.range($('#setAmbVol'));   // a value set from code: repaint the slider's filled part
   const perm = 'Notification' in window ? Notification.permission : 'unsupported';
   $('#notifStatus').textContent =
     perm === 'granted' ? 'Allowed — shown when the tab is in the background'
@@ -10054,15 +10150,25 @@ function useStreakFreezes(g, now) {
 }
 
 /* ---------- Buying and equipping ---------- */
-function buyItem(id) {
+const buyAsking = new Set();   // items whose “Buy …?” question is open: a second call for the same item asks nothing
+async function buyItem(id) {
   const it = ITEM_BY_ID[id];
-  if (!it || it.price < 0) return;   // rewards can't be bought
-  if (!rewardsReady()) { toast('Still syncing — try again in a moment'); return; }
-  const g = game();
-  if (it.lvl && g.lv.level < it.lvl) { toast(`Unlocks at level ${it.lvl}`); return; }
-  if (it.cat === 'freeze' ? g.freezesHeld >= MAX_FREEZES : it.cat === 'boost' ? xpBoostAt().left + it.n > BOOST_MAX_BLOCKS : isOwned(id)) return;
-  if (g.balance < it.price) { toast(`You need ${it.price - g.balance} more coins`); return; }
-  if (!confirm(`Buy “${it.name}” for ${it.price} coins?`)) return;
+  if (!it || it.price < 0 || buyAsking.has(id)) return;   // rewards can't be bought
+  const cant = () => {   // checked before the question and again after it: coins or items can change (another device) while it is open
+    if (!rewardsReady()) { toast('Still syncing — try again in a moment'); return true; }
+    const g = game();
+    if (it.lvl && g.lv.level < it.lvl) { toast(`Unlocks at level ${it.lvl}`); return true; }
+    if (it.cat === 'freeze' ? g.freezesHeld >= MAX_FREEZES : it.cat === 'boost' ? xpBoostAt().left + it.n > BOOST_MAX_BLOCKS : isOwned(id)) return true;
+    if (g.balance < it.price) { toast(`You need ${it.price - g.balance} more coins`); return true; }
+    return false;
+  };
+  if (cant()) return;
+  buyAsking.add(id);
+  let ok = false;
+  try { ok = await confirmDlg({ title: `Buy “${it.name}” for ${it.price} coins?`, ok: 'Buy' }); } finally { buyAsking.delete(id); }
+  if (!ok) return;
+  G = null;
+  if (cant()) return;
   S.game.purchases['b' + uid()] = { item: id, price: it.price, at: Date.now() };
   if (it.cat !== 'freeze' && it.cat !== 'boost') markEquipped(id);
   if (it.cat === 'extra') eqSet(id, true);
@@ -10793,7 +10899,7 @@ function achListHTML(stats, claimed) {
   else rows.sort((x, y) => catOrder.indexOf(x.a.cat) - catOrder.indexOf(y.a.cat) || x.i - y.i);
   const counts = Object.fromEntries(catOrder.map(c => [c, ACHIEVEMENTS.filter(a => a.cat === c)]));
   const seg = `<div class="ach-tools"><div class="seg seg-wrap" id="achCats" role="tablist" aria-label="Achievement categories">${[['all', 'All'], ...catOrder.filter(c => counts[c].length).map(c => [c, ACH_CATS[c]])].map(([k, n]) => `<button data-achcat="${k}" class="${cat === k ? 'active' : ''}">${n}</button>`).join('')}</div>
-    <label class="lbl ach-sort">Sort <select id="achSort"><option value="cat"${sort === 'cat' ? ' selected' : ''}>By category</option><option value="close"${sort === 'close' ? ' selected' : ''}>Closest to done</option><option value="done"${sort === 'done' ? ' selected' : ''}>Completed first</option></select></label></div>`;
+    <span class="lbl ach-sort"><label for="achSort">Sort</label><ui-select id="achSort"><option value="cat"${sort === 'cat' ? ' selected' : ''}>By category</option><option value="close"${sort === 'close' ? ' selected' : ''}>Closest to done</option><option value="done"${sort === 'done' ? ' selected' : ''}>Completed first</option></ui-select></span></div>`;
   return seg + rows.map(({ a, got, v }) => {
     const prog = !got ? `<div class="ap"><i style="width:${(v / a.goal * 100).toFixed(1)}%"></i></div><div class="lbl">${fmtNum(Math.floor(v * 10) / 10)} / ${fmtNum(a.goal)}${a.unit ? ' ' + a.unit : ''}</div>` : '';
     const gift = achRewardText({ ...a, coins: 0 });
@@ -10955,7 +11061,7 @@ function renderShop() {
     </div>
     ${g.balance < 50 ? `<div class="card earn-card"><span>${g.balance ? 'Almost there —' : 'No coins yet.'} Earn coins by finishing sessions.</span><button class="btn small primary" id="shopToTimer">Start a session</button></div>` : ''}
     <div class="catrow" id="shopCats">${SHOP_CATS.map(([id, n]) => `<button data-cat="${id}" class="${id === cat ? 'active' : ''}">${n}</button>`).join('')}</div>
-    ${cat === 'ambient' ? `<div class="card amb-vol"><label class="row between"><span>Ambient volume</span><input type="range" id="shopAmbVol" min="0" max="1" step="0.05" value="${S.settings.ambientVolume}"></label><div class="lbl">Plays only while a focus block is running. The mute button silences it too.</div></div>` : ''}
+    ${cat === 'ambient' ? `<div class="card amb-vol"><label class="row between"><span>Ambient volume</span><input type="range" id="shopAmbVol" min="0" max="1" step="0.05" value="${S.settings.ambientVolume}" data-scale="100" data-unit="%"></label><div class="lbl">Plays only while a focus block is running. The mute button silences it too.</div></div>` : ''}
     <div class="shopgrid">${items.map(it => itemCard(it, g)).join('')}</div>`;
   animateCounts($('#shopView'));
   updateFades($('#shopCats'));
@@ -11598,7 +11704,7 @@ async function removeFriendship(id, msg) {
   try { await FB.deleteDoc(FB.doc(FB.db, 'friendships', id)); if (msg) toast(msg); } catch (e) { toast('Couldn’t update — try again'); }
 }
 async function blockUser(uid, name) {
-  if (!confirm(`Block @${name}? They won’t be able to send you requests or see your profile, and you’ll stop being friends.`)) return;
+  if (!(await confirmDlg({ title: `Block @${name}?`, body: 'They won’t be able to send you requests or see your profile, and you’ll stop being friends.', ok: 'Block', danger: true }))) return;
   try {
     await FB.setDoc(FB.doc(FB.db, 'users', USER.uid, 'blocked', uid), { name, at: Date.now() });
     postsDropAudience([uid]);   // v1.20: blocked people never see my posts
@@ -11628,7 +11734,7 @@ function handleInvite() {
   const name = sessionStorage.getItem('pomodorolist-invite');
   if (!name) return;
   sessionStorage.removeItem('pomodorolist-invite');
-  if (name !== USER.username && confirm(`Send a friend request to @${name}?`)) sendRequest(name);
+  if (name !== USER.username) confirmDlg({ title: `Send a friend request to @${name}?`, ok: 'Send request' }).then(ok => { if (ok) sendRequest(name); });
 }
 
 /* ---------- Kudos and nudges ---------- */
@@ -12833,6 +12939,13 @@ function renderReminderBits() {
 }
 
 /* ---------- Add / edit ---------- */
+/* <ui-select kind="preset-compact">: the reminder's "Timer preset". Each row is a preset's name and its rhythm (50 / 10 x 3), as in the
+   preset chooser, but with no star, no sections and no "New preset" footer (this form only picks one). A row without data-f is plain text. */
+UI.RENDER['preset-compact'] = (() => {
+  const h = UI.h;
+  const row = o => `<span class="ui-opt-l">${h((o.label || o.textContent || '').trim())}</span>${o.dataset.f ? `<span class="ui-rhy" aria-hidden="true"><b>${h(o.dataset.f)} / ${h(o.dataset.b || '0')}</b>${o.dataset.r ? `<i>&times; ${h(o.dataset.r)}</i>` : ''}</span><span class="ui-sr">, ${h(o.dataset.f)} minutes focus, ${h(o.dataset.b || '0')} minutes break${o.dataset.r ? `, ${h(o.dataset.r)} rounds` : ''}</span>` : ''}`;
+  return { value: row, option: row };
+})();
 let remEditing = null;
 function openRemForm(r) {
   remEditing = r && r.id ? r.id : null;
@@ -12844,8 +12957,15 @@ function openRemForm(r) {
   $('#remDate').value = v.date;
   $('#remTime').value = v.time;
   $('#remRepeat').value = v.repeat;
-  $('#remBefore').value = String(v.before);
-  $('#remPreset').innerHTML = '<option value="">No timer link</option>' + S.presets.map(p => `<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  const rb = $('#remBefore'), bv = String(v.before ?? '');
+  rb.querySelectorAll('option[data-kept]').forEach(o => o.remove());   // a lead time that is not in the list (older or imported data) gets a row of its own, so saving keeps it
+  if (/^\d+(\.\d+)?$/.test(bv) && !rb.options.some(o => o.value === bv)) {
+    const o = Object.assign(document.createElement('option'), { value: bv, textContent: `${bv} min before` });
+    o.dataset.kept = '';
+    rb.insertBefore(o, rb.options.find(x => +x.value > +bv) || null);
+  }
+  rb.value = bv;
+  $('#remPreset').innerHTML = '<option value="">No timer link</option>' + S.presets.map(p => `<option value="${esc(p.id)}" data-f="${+p.focus}" data-b="${+p.short}" data-r="${+p.rounds}">${esc(p.name)}</option>`).join('');
   $('#remPreset').value = v.presetId || '';
   $('#remSession').value = v.session || '';
   $$('#remDays input').forEach(i => { i.checked = (v.days || []).includes(+i.value); });
@@ -16693,7 +16813,7 @@ function cardsSection() {
   return `<div class="card cards-card">
     <div class="row between" style="flex-wrap:wrap;gap:8px"><div><b>${due}</b> due today · ${total} card${total === 1 ? '' : 's'} in ${decks.length} deck${decks.length === 1 ? '' : 's'}</div>
       <div class="btn-row">${due ? '<button class="btn small primary" data-dreview="">Review all due</button>' : ''}<button class="btn small" data-dnew>+ New deck</button></div></div>
-    <form class="dk-new hidden" id="deckNew" autocomplete="off"><input type="text" id="dnName" maxlength="60" placeholder="Deck name, e.g. Organic chemistry" aria-label="Deck name" required><input type="text" id="dnSubject" list="tdTagList" maxlength="30" placeholder="Subject (optional)" aria-label="Subject"><span class="btn-row"><button class="btn primary small" type="submit">Create</button><button class="btn small" type="button" data-dncancel>Cancel</button></span></form>
+    <form class="dk-new hidden" id="deckNew" autocomplete="off"><input type="text" id="dnName" maxlength="60" placeholder="Deck name, e.g. Organic chemistry" aria-label="Deck name" required><input type="text" id="dnSubject" data-suggest="decksubject" maxlength="30" placeholder="Subject (optional)" aria-label="Subject"><span class="btn-row"><button class="btn primary small" type="submit">Create</button><button class="btn small" type="button" data-dncancel>Cancel</button></span></form>
     ${decks.length ? `<ul class="rem-list deck-list">${rows}</ul>` : `<div class="empty">${pomeoOn() ? pomeoScene('bag') : ''}No decks yet. Make one, add cards as “front | back”, and Pomeo will offer a quick review on your breaks.</div>`}
     <p class="lbl" style="margin:10px 0 0">Again · Hard · Good · Easy set when a card comes back (1 day, 3 days, then longer). ${S.settings.breakCards === false ? 'Break offers are off in Settings.' : 'Pomeo offers up to 5 due cards on breaks — never during focus.'}</p></div>`;
 }
@@ -16792,7 +16912,6 @@ function openNewDeck() {
   const f = $('#deckNew');
   if (!f) return;
   f.classList.remove('hidden');
-  $('#tdTagList').innerHTML = [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 30).map(n => `<option value="${esc(n)}">`).join('');
   setTimeout(() => $('#dnName').focus(), 30);
 }
 
@@ -16887,12 +17006,11 @@ function planTodayLine() {
 function openPlanDlg() {
   const dlg = $('#planDlg'), rows = planOf();
   $('#plRows').innerHTML = (rows.length ? rows : [{ name: '', hrs: '' }]).map(r => planRowHTML(r.name, r.hrs)).join('');
-  $('#plNames').innerHTML = [...new Set([...Object.entries(S.names).flatMap(([n, x]) => [n, x.tag]), ...S.decks.map(d => d.subject)].filter(Boolean))].slice(0, 40).map(n => `<option value="${esc(n)}">`).join('');
   $('#plErr').textContent = '';
   dlg.showModal();
   setTimeout(() => { const i = $('#plRows input[name="name"]'); if (i && !i.value) i.focus(); }, 50);
 }
-const planRowHTML = (name = '', hrs = '') => `<div class="pl-row"><input type="text" name="name" list="plNames" maxlength="40" placeholder="Subject (session name or tag)" aria-label="Subject" value="${esc(name)}"><input type="number" name="hrs" min="0.5" max="60" step="0.5" placeholder="h / week" aria-label="Hours per week" value="${hrs === '' ? '' : esc(String(hrs))}"><button type="button" class="iconbtn" data-plremove aria-label="Remove this subject">✕</button></div>`;
+const planRowHTML = (name = '', hrs = '') => `<div class="pl-row"><input type="text" name="name" data-suggest="plan" autocomplete="off" maxlength="40" placeholder="Subject (session name or tag)" aria-label="Subject" value="${esc(name)}"><ui-num name="hrs" bare allow-empty min="0.5" max="60" step="0.5" placeholder="h / week" aria-label="Hours per week" value="${hrs === '' ? '' : esc(String(hrs))}"></ui-num><button type="button" class="iconbtn" data-plremove aria-label="Remove this subject">✕</button></div>`;
 (() => {
   const dlg = $('#planDlg');
   dlg.addEventListener('click', e => {
@@ -17584,6 +17702,7 @@ function renderUisSettings() {
   const p = UIS.prefs;
   $('#uisOn').checked = p.on;
   $('#uisVol').value = p.vol;
+  UI.range($('#uisVol'));
   $('#uisHover').checked = p.hover;
   $('#uisPack').value = p.pack;
   $('#uisQuiet').checked = p.quietFocus;
@@ -17957,7 +18076,7 @@ $('#setHaptics').addEventListener('change', e => { writeLS(HAPTIC_KEY, e.target.
 function goSetting(row) {
   showTab('settings');
   $('#setSearch').value = ''; filterSettings();
-  setTimeout(() => { row.scrollIntoView({ block: 'center', behavior: motion() === 'full' ? 'smooth' : 'auto' }); restartClass(row, 'hit', 1700); const c = row.querySelector('input, select, button'); if (c) c.focus({ preventScroll: true }); }, 60);
+  setTimeout(() => { row.scrollIntoView({ block: 'center', behavior: motion() === 'full' ? 'smooth' : 'auto' }); restartClass(row, 'hit', 1700); const c = row.querySelector('input, select, button, ui-select:not([disabled]), ui-num'); if (c) c.focus({ preventScroll: true }); }, 60);
 }
 
 /* ==========================================================================
@@ -18180,7 +18299,7 @@ async function ptrRefresh(where) {
 /** Left/right swipes on the page move between the tabs in the bottom bar. */
 (() => {
   let sw = null;
-  const NO_SWIPE = 'input, textarea, select, button, .catrow, .chips, .rem, .sub-ed-list, .plist, .ib-item, .wrapped, dialog, .tabs, .sidenav, .park-pop, .garden, .hpbar, [data-noswipe], .shopgrid';
+  const NO_SWIPE = 'input, textarea, select, ' + UI_FIELDS + ', button, .catrow, .chips, .rem, .sub-ed-list, .plist, .ib-item, .wrapped, dialog, .tabs, .sidenav, .park-pop, .garden, .hpbar, [data-noswipe], .shopgrid';
   const scrollsX = el => { for (let n = el; n && n !== document.body; n = n.parentElement) { const s = getComputedStyle(n); if (/(auto|scroll)/.test(s.overflowX) && n.scrollWidth > n.clientWidth + 2) return true; } return false; };
   document.addEventListener('touchstart', e => {
     sw = null;
@@ -18584,13 +18703,13 @@ function renderTut() {
   } else if (i === 1) {
     $('#tutTitle').textContent = 'What are you using it for?';
     body.innerHTML = `<p>I’ll set sensible defaults. You can change anything later.</p><div class="tut-opts">${Object.entries(USE_CASES).map(([k, u]) => `<button class="tut-opt${TUT.use === k ? ' on' : ''}" data-use="${k}" aria-pressed="${TUT.use === k}"><b>${u.t}</b><small>${u.s}</small></button>`).join('')}</div>
-      <div class="tut-row${TUT.use === 'exam' ? '' : ' hidden'}" id="tutExamRow"><input type="text" id="tutExamName" maxlength="60" placeholder="Exam name (optional)" aria-label="Exam name"><input type="date" id="tutExamDate" aria-label="Exam date" min="${dayKey(new Date())}"></div>`;
+      <div class="tut-row${TUT.use === 'exam' ? '' : ' hidden'}" id="tutExamRow"><input type="text" id="tutExamName" maxlength="60" placeholder="Exam name (optional)" aria-label="Exam name"><ui-date id="tutExamDate" aria-label="Exam date" min="${dayKey(new Date())}"></ui-date></div>`;
   } else if (i === 2) {
     $('#tutTitle').textContent = 'Pick a daily goal';
     const def = TUT.goal || (USE_CASES[TUT.use] || {}).goal || S.settings.goalMin || 60;
     TUT.goal = def;
     body.innerHTML = `<p>A day counts toward your streak when you reach it.</p><div class="tut-opts">${[60, 120, 240].map(m => `<button class="tut-opt${def === m ? ' on' : ''}" data-goal="${m}"><b>${m / 60} hour${m > 60 ? 's' : ''}</b><small>${m} minutes</small></button>`).join('')}
-      <label class="tut-opt${[60, 120, 240].includes(def) ? '' : ' on'}"><b>Custom</b><input type="number" id="tutGoal" min="5" max="1440" step="5" value="${[60, 120, 240].includes(def) ? '' : def}" placeholder="minutes" aria-label="Custom daily goal in minutes"></label></div>`;
+      <label class="tut-opt${[60, 120, 240].includes(def) ? '' : ' on'}"><b>Custom</b><ui-num id="tutGoal" bare allow-empty min="5" max="1440" step="5" value="${[60, 120, 240].includes(def) ? '' : def}" placeholder="minutes" aria-label="Custom daily goal in minutes"></ui-num></label></div>`;
   } else if (i === 3) {
     $('#tutTitle').textContent = 'A quick look around';
     body.innerHTML = `<p>I’ll point at each main tab with one line about it: Timer, Stats, Reminders, Leaderboard${on ? ', Shop' : ''}, Friends${on ? ' and Quests' : ''}.</p>`;
@@ -19321,7 +19440,7 @@ document.addEventListener('keydown', e => {
 /** Settings are visible but read-only in the preview. */
 function previewLockSettings() {
   if (!PV.on) return;
-  $$('#tab-settings input, #tab-settings select, #tab-settings .setting button').forEach(el => { el.disabled = true; });
+  $$('#tab-settings input, #tab-settings select, #tab-settings ui-select, #tab-settings ui-num, #tab-settings .setting button').forEach(el => { el.disabled = true; });
   if (!$('#pvSetNote')) $('#tab-settings .set-wrap, #tab-settings').querySelector('.card')?.insertAdjacentHTML('beforebegin', '<p class="hint" id="pvSetNote" style="margin:0 0 12px">Settings are read-only in the preview. Create an account to make it yours.</p>');
 }
 $('#pvBanner').addEventListener('click', e => { if (e.target.closest('.pv-go')) exitPreview(true); if (e.target.closest('.pv-exit')) exitPreview(false); });
@@ -20274,6 +20393,7 @@ function onNameChange() {
   saveLocal();
 }
 $('#nameInput').addEventListener('input', onNameChange);
+$('#nameColor').setAttribute('palette', NAME_PALETTE.join(','));   // the colours the app gives new names (ensureName / hashColor), then Custom
 $('#nameColor').addEventListener('input', e => {
   const name = currentName();
   ensureName(name);
@@ -20463,7 +20583,7 @@ $('#tab-friends').addEventListener('click', e => {
   else if (d.accept) acceptRequest(d.accept);
   else if (d.decline) removeFriendship(d.decline, 'Request declined');
   else if (d.cancel) removeFriendship(d.cancel, 'Request cancelled');
-  else if (d.remove) { if (confirm('Remove this friend?')) { removeFriendship(d.remove, 'Friend removed'); SOC.friend = null; } }
+  else if (d.remove) { const fr = SOC.friendships.find(x => x.id === d.remove); confirmDlg({ title: fr ? `Remove @${otherName(fr)} from your friends?` : 'Remove this friend?', ok: 'Remove friend', danger: true }).then(ok => { if (ok) { removeFriendship(d.remove, 'Friend removed'); SOC.friend = null; } }); }
   else if (d.block) blockUser(d.block, d.name);
   else if (d.kudos) sendReaction(SOC.friend.uid, 'kudos', d.kudos, d.target);
   else if (d.start) startChallenge(d.start);
@@ -20553,17 +20673,17 @@ $('#importFile').addEventListener('change', async e => {
   try {
     const data = JSON.parse(await file.text());
     if (!data || !Array.isArray(data.sessions)) throw new Error('This is not a Pomodorolist backup file');
-    if (!confirm(`Merge this backup (${data.sessions.length} sessions) into your data? Duplicates are skipped.`)) return;
+    if (!(await confirmDlg({ title: `Merge this backup (${data.sessions.length} sessions) into your data?`, body: 'Duplicates are skipped.', ok: 'Merge' }))) return;
     const added = mergeData(data);
     toast(`Imported ${added} new session(s)`, 2600, true);
   } catch (err) {
-    alert('Could not import: ' + err.message);
+    UI.alert({ title: 'Could not import', body: err.message });
   }
 });
-$('#wipeBtn').addEventListener('click', () => {
+$('#wipeBtn').addEventListener('click', async () => {
   if (localOnly) { toast('Connect to the internet to erase cloud data'); return; }
   const where = USER.guest ? 'on this device' : 'in your account on ALL devices';
-  if (!confirm(`Erase ALL sessions, presets and settings ${where}? This cannot be undone.`)) return;
+  if (!(await confirmDlg({ title: `Erase ALL sessions, presets and settings ${where}?`, body: 'This cannot be undone.', ok: 'Erase everything', danger: true }))) return;
   S = defaultState();
   S.wipedAt = Date.now();
   if (socialReady()) {
@@ -20614,7 +20734,7 @@ $('#presetList').addEventListener('click', e => {
 /* The limits of a timer preset (v1.19.1: one table for the preset editor and for study sessions; the Firestore rules for
    studySessions accept exactly these — keep them in step). Clan sessions use the fixed CLAN_PATTERNS. */
 const PRESET_LIMITS = { focus: [1, 240], short: [1, 120], long: [1, 180], rounds: [1, 12] };
-for (const [k, id] of [['focus', '#pfFocus'], ['short', '#pfShort'], ['long', '#pfLong'], ['rounds', '#pfRounds']]) { $(id).min = PRESET_LIMITS[k][0]; $(id).max = PRESET_LIMITS[k][1]; }   // the editor's inputs follow PRESET_LIMITS
+for (const [k, id] of [['focus', '#pfFocus'], ['short', '#pfShort'], ['long', '#pfLong'], ['rounds', '#pfRounds']]) { $(id).setAttribute('min', PRESET_LIMITS[k][0]); $(id).setAttribute('max', PRESET_LIMITS[k][1]); }   // the editor's steppers follow PRESET_LIMITS (v2.0: <ui-num> reads min / max from its attributes; its .min / .max have no setter)
 $('#presetForm').addEventListener('submit', e => {
   e.preventDefault();
   const n = (id, lo, hi) => clamp(Math.round(+$(id).value) || lo, lo, hi);
@@ -21685,7 +21805,6 @@ function openTodoForm(t, title = '') {
   $('#tdDue').value = v.due || '';
   $$('#tdPri [data-pri]').forEach(b => { b.classList.toggle('active', b.dataset.pri === (v.pri || 'med')); b.setAttribute('aria-pressed', b.dataset.pri === (v.pri || 'med')); });
   $('#tdTag').value = v.tag || '';
-  $('#tdTagList').innerHTML = [...new Set([...Object.entries(S.names).map(([n, x]) => x.tag || n), ...S.todos.map(x => x.tag)].filter(Boolean))].slice(0, 30).map(n => `<option value="${esc(n)}">`).join('');
   $('#tdNotes').value = v.notes || '';
   $('#tdCheck').value = (v.check || []).map(x => (x.d ? '[x] ' : '') + x.t).join('\n');
   $('#tdErr').textContent = '';
@@ -23293,8 +23412,8 @@ function hostSheetHTML() {
       <div class="hs-seats" role="radiogroup" aria-label="Seats">${[2, 3, 4, 5, 6, 8, 10].map(n => `<label><input type="radio" name="sessMax" value="${n}"${max === n ? ' checked' : ''} aria-label="${n} seats"><span>${n}</span></label>`).join('')}</div></div>
     <div class="hs-step${hsStep === 4 ? ' on' : ''}" data-hs="4"><h3>When</h3><div class="hs-opts">
       ${opt('sessWhen', 'now', !later, 'Start now', 'The table opens straight away.')}
-      <label class="hs-opt"><input type="radio" name="sessWhen" value="later"${later ? ' checked' : ''}><span><b>Plan it for later</b><span class="lbl">Friends see the time and can set a reminder. <input type="time" id="sessTime" value="${esc(ui.sessTime || '')}" aria-label="Start time" style="margin-top:6px"></span></span></label></div>
-      <div class="hs-preset"><span>Rhythm</span><select id="sessPreset" aria-label="Preset for this session">${S.presets.map(x => `<option value="${esc(x.id)}"${x.id === p.id ? ' selected' : ''}>${esc(x.name)} · ${x.focus}/${x.short} × ${x.rounds}</option>`).join('')}</select></div>
+      <div class="hs-opt hs-later"><label><input type="radio" name="sessWhen" value="later"${later ? ' checked' : ''}><span><b>Plan it for later</b><span class="lbl">Friends see the time and can set a reminder.</span></span></label><ui-time id="sessTime" value="${esc(ui.sessTime || '')}" aria-label="Start time"></ui-time></div></div>
+      <div class="hs-preset"><span>Rhythm</span><ui-select id="sessPreset" aria-label="Preset for this session">${S.presets.map(x => `<option value="${esc(x.id)}"${x.id === p.id ? ' selected' : ''}>${esc(x.name)} · ${x.focus}/${x.short} × ${x.rounds}</option>`).join('')}</ui-select></div>
       ${problem ? `<p class="lbl warn-note" id="sessPresetWarn" style="margin:8px 0 0;color:var(--danger)">${esc(problem)}.</p>` : ''}
       <p class="lbl hs-sum" id="hsSum"></p></div>
     <div class="hs-nav"><button type="button" class="btn" id="hsBack">${hsStep ? 'Back' : 'Cancel'}</button><div class="hs-r">
@@ -23339,7 +23458,7 @@ $('#sessHostDlg').addEventListener('click', e => {
   if (e.target.closest('#hsBack')) { hostSheetGo(-1); return; }
 });
 $('#sessHostDlg').addEventListener('change', e => {
-  if (e.target.id === 'sessPreset') { hostSheetRead(); S.activePresetId = e.target.value; save(); renderAll(); hostSheetDraw(false); $('#sessPreset').focus(); return; }   // the preset this session uses (and the timer's)
+  if (e.target.id === 'sessPreset') { hostSheetRead(); S.activePresetId = e.target.value; save(); renderAll(); hostSheetDraw(false); const refocus = () => { const x = $('#sessPreset'); if (x) x.focus(); }; refocus(); setTimeout(() => { const a = document.activeElement; if (!a || a === document.body) refocus(); }, 260); return; }   // the preset this session uses (and the timer's). v2.0: on a phone the list is a sheet still sliding away (everything else is inert for 200 ms), so focus comes back once it has gone
   if (e.target.name === 'sessWhen' || e.target.name === 'sessMode' || e.target.name === 'sessVis' || e.target.name === 'sessMax') { hostSheetRead(); if (e.target.name === 'sessWhen') { hostSheetDraw(false); const x = $(`#sessHostDlg input[name=sessWhen][value=${e.target.value}]`); if (x) x.focus(); if (e.target.value === 'later') { const t = $('#sessTime'); if (t) t.focus(); } } }
 });
 $('#sessHostDlg').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'sessTitle') { e.preventDefault(); hostSheetGo(1); } });
@@ -23819,7 +23938,7 @@ function openClanSettings() {
       <div class="seg" id="cstMode">${[['approval', 'Approval'], ['open', 'Open']].map(([v, n]) => `<button data-cmode="${v}" class="${d.joinMode === v ? 'active' : ''}"${lead ? '' : ' disabled'}>${n}</button>`).join('')}</div></div>
     <div class="set-row"><div><b>Officers can use the clan shop</b><div class="lbl">Buy and change the emblem, banner, colours and frame</div></div><input type="checkbox" id="cstShop" aria-label="Officers can use the clan shop" ${info.officerShop ? 'checked' : ''}${lead ? '' : ' disabled'}></div>
     <div class="set-row"><div><b>Members can schedule sessions</b><div class="lbl">Otherwise only the leader and officers</div></div><input type="checkbox" id="cstSched" aria-label="Members can schedule sessions" ${info.memberSchedule ? 'checked' : ''}${lead ? '' : ' disabled'}></div>
-    ${lead ? `<div class="set-row"><div><b>Hand over leadership</b><div class="lbl">You become an officer</div></div><span class="row" style="gap:6px"><select id="cstTo">${others.map(m => `<option value="${esc(m.id)}">@${esc(m.name)} (${CLAN_ROLES[m.role]})</option>`).join('')}</select><button class="btn small" id="cstTransfer"${others.length ? '' : ' disabled'}>Hand over</button></span></div>
+    ${lead ? `<div class="set-row"><div><b>Hand over leadership</b><div class="lbl">You become an officer</div></div><span class="row" style="gap:6px"><ui-select id="cstTo" aria-label="New leader"${others.length ? '' : ' disabled'}>${others.map(m => `<option value="${esc(m.id)}">@${esc(m.name)} (${CLAN_ROLES[m.role]})</option>`).join('')}</ui-select><button class="btn small" id="cstTransfer"${others.length ? '' : ' disabled'}>Hand over</button></span></div>
       <div class="set-row"><div><b>Disband the clan</b><div class="lbl">Removes every member and deletes the clan for good</div></div><button class="btn danger small" id="cstDisband">Disband…</button></div>` : '<p class="lbl">Only the leader can change these.</p>'}
     <p class="lbl" style="margin-top:12px">Clans have no chat or free text. Names, tags and session titles pass a word filter. You can leave any time; leaders and officers can remove members.</p>`;
   $('#clanSettingsDlg').showModal();
@@ -24013,7 +24132,7 @@ function clanRemSection() {
     const rem = S.clanRem[s.id] || {}, going = Object.values(s.rsvp || {}).filter(v => v === 'going').length;
     return `<li class="rem crem" data-crsid="${esc(s.id)}"><div class="rem-fg"><span class="rtime">${fmtHM(at)}</span>
       <div class="rem-main"><div class="rt">${esc(s.title)}</div><div class="rs">${esc(fmtClanWhen(at).split(' · ')[0])} · ${esc(CLAN.doc.tag)} · ${going} going${(s.rsvp || {})[USER.uid] ? ' · you: ' + { going: 'going', maybe: 'maybe', no: 'can’t' }[s.rsvp[USER.uid]] : ''}</div></div>
-      <div class="rem-acts"><select class="crem-before" data-crbefore aria-label="Remind me">${[0, 5, 10, 15, 30].map(m => `<option value="${m}"${rem.on && (rem.before || 0) === m ? ' selected' : ''}>${m ? `${m} min before` : 'At the time'}</option>`).join('')}${rem.on ? '' : '<option value="off" selected>No reminder</option>'}${rem.on ? '<option value="off">No reminder</option>' : ''}</select>
+      <div class="rem-acts"><ui-select class="crem-before" data-crbefore aria-label="Remind me">${[...new Set([0, 5, 10, 15, 30, rem.on ? +rem.before || 0 : 0])].sort((a, b) => a - b).map(m => `<option value="${m}"${rem.on && (+rem.before || 0) === m ? ' selected' : ''}>${m ? `${m} min before` : 'At the time'}</option>`).join('')}${rem.on ? '' : '<option value="off" selected>No reminder</option>'}${rem.on ? '<option value="off">No reminder</option>' : ''}</ui-select>
         <button class="iconbtn" data-crcal title="Add to calendar" aria-label="Add to calendar">${CAL_SVG}</button></div></div></li>`;
   }).join('')}</ul></div>`;
 }

@@ -28,7 +28,7 @@ await G.ev(() => {
 await G.ev(() => showTab('stats')); await G.ctx.clock.runFor(500);
 check('Stats shows an empty Weekly plan card with "Set targets"', await G.ev(() => /Weekly plan/.test($('#planSlot').textContent) && !!$('#planSlot [data-planedit]')));
 await closeAll(G); await G.p.click('#planSlot [data-planedit]'); await G.ctx.clock.runFor(300);
-check('The plan dialog opens with one empty row, suggestions from session names and tags', await G.ev(() => $('#planDlg').open && $$('#plRows .pl-row').length === 1 && [...$('#plNames').options].map(o => o.value).includes('Physics')));
+check('The plan dialog opens with one empty row, suggestions from session names and tags', await G.ev(() => $('#planDlg').open && $$('#plRows .pl-row').length === 1 && UI.cfg.suggest($('#plRows .pl-row input[name="name"]')).includes('Physics')));
 await G.p.fill('#plRows .pl-row input[name="name"]', 'Physics'); await G.p.fill('#plRows .pl-row input[name="hrs"]', '8');
 await G.p.click('#plAdd'); await G.p.fill('#plRows .pl-row:nth-child(2) input[name="name"]', 'Chemistry'); await G.p.fill('#plRows .pl-row:nth-child(2) input[name="hrs"]', '6');
 await G.p.click('#plAdd'); await G.p.fill('#plRows .pl-row:nth-child(3) input[name="name"]', 'Maths');
