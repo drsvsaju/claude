@@ -17,6 +17,13 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   `cl-common.mjs` has the shared helpers; `ot-classic.mjs` keeps Overtime off for suites written before v1.20.
 - `shots.mjs` + `shots-screens.mjs`: the screenshot tool used for the v2.0 before/after pictures
   (`node shots.mjs <outDir> --page index.html --variants d-dark,d-light,phone`).
-- `tools/`: `site.sh`, `contact.py` (contact sheets), `mkindex.py` (the JS function index in `notes/v2.0-codemap`).
+  The component gallery is shot with `--page 'index.html?debug=1'`.
+- `v200a.mjs` (v2.0): the control library, on the Component gallery of the demo account — the native contract of
+  `<ui-select>`, keyboard maps, ARIA, panels inside dialogs, phone sheets, the preset chooser, every palette's contrast
+  on every layer, and that the demo writes nothing. Suites named `v2*` run without `ot-classic.mjs`.
+- `perfp1.mjs`: a quick render / tab-switch / theme-application timing of two builds side by side.
+- `tools/`: `site.sh` (`sh site.sh other.html` builds a second copy next to the main one), `contact.py` (contact
+  sheets), `mkindex.py` (the JS function index in `notes/v2.0-codemap`), `tokens.mjs` (regenerates the stylesheet's
+  first-paint colour roles from the script's own arithmetic: `node tokens.mjs --write`).
 
 The paths inside the shell scripts are absolute paths of the working folder; adjust them after restoring.

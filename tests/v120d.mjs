@@ -119,7 +119,7 @@ await A.ev(() => { S.ui.postDay = null; POST.mine = {}; });
 await owner(`posts/ach_${uid.A}_g_h1`, { author: uid.A, authorName: names.A, type: 'ach', ref: 'g_h1', n: 0, aud: [uid.A, uid.B, uid.D], day: '2026-11-10', at: new Date(Date.now() - 60000) });
 await owner(`posts/ach_${uid.A}_g_h10`, { author: uid.A, authorName: names.A, type: 'ach', ref: 'g_h10', n: 0, aud: [uid.A, uid.B, uid.D], day: '2026-11-10', at: new Date(Date.now() - 120000) });
 const grp = await B.ev(async () => { await loadPosts(true); renderPosts(true); const cards = $$('#postsBody .post').map(x => x.textContent.replace(/\s+/g, ' ')); return cards.find(t => /unlocked \d+ achievements/.test(t)) || cards.join(' | ').slice(0, 300); });
-check('Achievements unlocked together show as one card: "unlocked 3 achievements: …"', /unlocked 3 achievements/.test(grp), grp);
+check('Achievements unlocked together show as one card: "unlocked 3 achievements: …" (4 between 10 PM and 7 AM, when Night owl or Early bird joins them)', /unlocked [34] achievements/.test(grp), grp);
 // 7. reactions
 const pid = id1;
 const rx = await B.ev(async id => {

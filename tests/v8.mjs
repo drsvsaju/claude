@@ -20,6 +20,10 @@ async function device(name, { w = 1280, h = 900, scheme = 'light', touch = false
   return { ctx, p, name };
 }
 const close = async d => { await d.p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(x => x.close())); await wait(350); };
+// v2.0: celebrations held during a focus block come back one at a time afterwards (level-up, achievements, tips), and how
+// many there are depends on the day (an achievement that unlocks only at night or on a weekend delays the level-up by
+// seconds). Wait until the ones that open a dialog or a card are through, closing each, instead of guessing a delay.
+const settle = async d => { for (let i = 0; i < 60; i++) { const busy = await d.p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(x => x.close()); return FG.q.some(x => x.kind === 'level' || x.kind === 'ach' || x.kind === 'unlock' || x.kind === 'boss' || x.kind === 'reveal') || !!achBusy; }); if (!busy) break; await wait(400); } await wait(400); await d.p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(x => x.close())); await wait(350); };
 const guest = async d => { await d.p.goto('http://localhost:8000/index.html'); await d.p.click('#guestBtn'); await d.p.waitForSelector('#appView:not(.hidden)'); await wait(1300); await close(d); };
 const finish = (d, min = 25) => d.p.evaluate(m => { S.timer.planned = m * 60000; S.timer.focusStartedAt = Date.now() - m * 60000; S.timer.endAt = Date.now() - 1; }, min);
 const sesslist = d => d.p.evaluate(() => $$('#subEdList .tx').map(x => x.textContent).join(' | '));
@@ -89,7 +93,7 @@ await close(A);
 await A.p.evaluate(() => { S.ui.statsView = 'day'; statsOffset = 0; showTab('stats'); }); await wait(400);
 log('history:', await A.p.evaluate(() => $$('.subdet summary').map(x => x.closest('.nm').firstChild.textContent + ' · ' + x.textContent).join(' | ')));
 log('stats tile:', await A.p.evaluate(() => $('#subStatSlot').innerText.replace(/\s+/g, ' ').trim()));
-await close(A);   // the level-up celebration held during the block is released on the Stats tab
+await settle(A);   // the level-up celebration held during the block is released on the Stats tab (after anything queued before it)
 await A.p.click('.subdet summary'); await wait(100);
 await A.p.screenshot({ path: 'v8-history.png' });
 // daily cap
@@ -97,7 +101,7 @@ const cap = await A.p.evaluate(() => { const today = dayKey(new Date()); const b
 log('daily cap:', cap);
 // templates
 await A.p.evaluate(() => { showTab('timer'); S.timer.subtasks = []; loadItems(['Warm-up: 5 easy problems', 'Timed set of 10', 'Review mistakes']); });
-await A.p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(d => d.close())); await wait(250);   // the cap step can level up: its pop-up would cover the button
+await settle(A);   // the cap step can level up: its pop-up would cover the button
 await A.p.click('#tplSaveOpen'); await A.p.fill('#tplName', 'Daily maths routine'); await A.p.press('#tplName', 'Enter'); await wait(150);
 await A.p.evaluate(() => { S.timer.subtasks = []; renderSubtasks(); });
 log('template chips:', await A.p.evaluate(() => $$('#subTpls .chip-t').map(c => c.textContent).join(', ')));

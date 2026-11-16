@@ -3,6 +3,16 @@
 const tab = (t, extra = '') => `${extra} showTab('${t}');`;
 const dlg = code => `${code}`;
 export const SCREENS = [
+  // ---------- the component gallery (development only: shoot with --page 'index.html?debug=1') ----------
+  { id: 'gallery', group: 'Gallery', title: 'Component gallery', debugOnly: true, run: `showTab('gallery');` },
+  { id: 'gallery-preset', group: 'Gallery', title: 'Preset chooser (open)', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); document.getElementById('gxp1').scrollIntoView({ block: 'center' }); document.getElementById('gxp1').open();`, after: `UI.closePop && UI.closePop();` },
+  { id: 'gallery-select', group: 'Gallery', title: 'Select with search (open)', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); window.scrollTo(0, 0); document.getElementById('gxs2').open();`, after: `UI.closePop && UI.closePop();` },
+  { id: 'gallery-date', group: 'Gallery', title: 'Date picker (open)', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); window.scrollTo(0, 0); document.getElementById('gxd1').open();`, after: `UI.closePop && UI.closePop();` },
+  { id: 'gallery-time', group: 'Gallery', title: 'Time picker (open)', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); window.scrollTo(0, 0); document.getElementById('gxt2').open();`, after: `UI.closePop && UI.closePop();` },
+  { id: 'gallery-color', group: 'Gallery', title: 'Colour picker (open)', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); document.getElementById('gxc1').scrollIntoView({ block: 'center' }); document.getElementById('gxc1').open();`, after: `UI.closePop && UI.closePop();` },
+  { id: 'gallery-menu', group: 'Gallery', title: 'Menu (open)', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); document.getElementById('gxmenuBtn').scrollIntoView({ block: 'center' }); document.getElementById('gxmenuBtn').click();`, after: `UI.closePop && UI.closePop();` },
+  { id: 'gallery-confirm', group: 'Gallery', title: 'Confirm dialog', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); document.getElementById('gxcfBtn').click();` },
+  { id: 'gallery-dialog', group: 'Gallery', title: 'Dialog with a date picker open inside', debugOnly: true, viewport: true, run: `showTab('gallery'); await new Promise(r => setTimeout(r, 300)); document.getElementById('gxdlgBtn').click(); await new Promise(r => setTimeout(r, 400)); document.getElementById('gxdd1').open();`, after: `UI.closePop && UI.closePop();` },
   // ---------- logged out ----------
   { id: 'welcome', group: 'Welcome', title: 'Welcome page', loggedOut: true, fullPage: true, run: `window.scrollTo(0, 0);`, cap: 5200 },
   { id: 'welcome-signup', group: 'Welcome', title: 'Sign-up card', loggedOut: true, viewport: true, run: `if (typeof lpOpenAuth === 'function') lpOpenAuth('signup');` },

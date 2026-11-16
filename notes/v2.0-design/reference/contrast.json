@@ -1,0 +1,3122 @@
+[
+ {
+  "group": "text",
+  "label": "ink on frame",
+  "need": 4.5,
+  "ratios": {
+   "default light": 13.06,
+   "default dark": 16.44,
+   "sunset light": 12.84,
+   "sunset dark": 15.9
+  },
+  "lowest": 12.84,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#e9e9e6"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#070808"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#eee6e1"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#0c0708"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on stage",
+  "need": 4.5,
+  "ratios": {
+   "default light": 14.67,
+   "default dark": 15.16,
+   "sunset light": 14.44,
+   "sunset dark": 14.63
+  },
+  "lowest": 14.44,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#f6f6f3"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#121414"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#fbf3ee"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#1a1214"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on card-quiet",
+  "need": 4.5,
+  "ratios": {
+   "default light": 15.34,
+   "default dark": 14.5,
+   "sunset light": 14.9,
+   "sunset dark": 14.2
+  },
+  "lowest": 14.2,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#161919"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on card",
+  "need": 4.5,
+  "ratios": {
+   "default light": 15.89,
+   "default dark": 13.92,
+   "sunset light": 15.27,
+   "sunset dark": 13.75
+  },
+  "lowest": 13.75,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on card-hi",
+  "need": 4.5,
+  "ratios": {
+   "default light": 15.89,
+   "default dark": 12.98,
+   "sunset light": 15.27,
+   "sunset dark": 12.87
+  },
+  "lowest": 12.87,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#202323"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 15.89,
+   "default dark": 12.03,
+   "sunset light": 15.27,
+   "sunset dark": 11.96
+  },
+  "lowest": 11.96,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#262929"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on well",
+  "need": 4.5,
+  "ratios": {
+   "default light": 15.07,
+   "default dark": 14.78,
+   "sunset light": 14.67,
+   "sunset dark": 14.37
+  },
+  "lowest": 14.37,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#f9f9f7"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#141717"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#fcf5f1"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#1c1416"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on frame",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6,
+   "default dark": 8.39,
+   "sunset light": 5.45,
+   "sunset dark": 8.01
+  },
+  "lowest": 5.45,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#e9e9e6"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#070808"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#eee6e1"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#0c0708"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on stage",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.74,
+   "default dark": 7.74,
+   "sunset light": 6.13,
+   "sunset dark": 7.37
+  },
+  "lowest": 6.13,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#f6f6f3"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#121414"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fbf3ee"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#1a1214"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on card-quiet",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.05,
+   "default dark": 7.4,
+   "sunset light": 6.32,
+   "sunset dark": 7.16
+  },
+  "lowest": 6.32,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#161919"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on card",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.3,
+   "default dark": 7.1,
+   "sunset light": 6.48,
+   "sunset dark": 6.93
+  },
+  "lowest": 6.48,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on card-hi",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.3,
+   "default dark": 6.63,
+   "sunset light": 6.48,
+   "sunset dark": 6.48
+  },
+  "lowest": 6.48,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#202323"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.3,
+   "default dark": 6.14,
+   "sunset light": 6.48,
+   "sunset dark": 6.03
+  },
+  "lowest": 6.03,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#262929"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on well",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.92,
+   "default dark": 7.55,
+   "sunset light": 6.23,
+   "sunset dark": 7.24
+  },
+  "lowest": 6.23,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#f9f9f7"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#141717"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fcf5f1"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#1c1416"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on hover row over frame",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.21,
+   "default dark": 7.52,
+   "sunset light": 4.74,
+   "sunset dark": 7.15
+  },
+  "lowest": 4.74,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#dadad7"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#161717"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#e0d7d3"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#1c1617"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on hover row over card",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.35,
+   "default dark": 6.04,
+   "sunset light": 5.64,
+   "sunset dark": 5.86
+  },
+  "lowest": 5.64,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#efefef"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#282a2a"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#f0eae7"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#302628"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on hover row over pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.35,
+   "default dark": 5.11,
+   "sunset light": 5.64,
+   "sunset dark": 5.03
+  },
+  "lowest": 5.03,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#efefef"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#333636"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#f0eae7"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#3b3132"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on frame",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.14,
+   "default dark": 10.23,
+   "sunset light": 5.07,
+   "sunset dark": 10.18
+  },
+  "lowest": 5.07,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#e9e9e6"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#070808"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#eee6e1"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#0c0708"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on stage",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.77,
+   "default dark": 9.43,
+   "sunset light": 5.7,
+   "sunset dark": 9.37
+  },
+  "lowest": 5.7,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#f6f6f3"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#121414"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fbf3ee"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#1a1214"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on card-quiet",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.04,
+   "default dark": 9.02,
+   "sunset light": 5.89,
+   "sunset dark": 9.1
+  },
+  "lowest": 5.89,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#161919"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on card",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.25,
+   "default dark": 8.65,
+   "sunset light": 6.03,
+   "sunset dark": 8.81
+  },
+  "lowest": 6.03,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on card-hi",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.25,
+   "default dark": 8.08,
+   "sunset light": 6.03,
+   "sunset dark": 8.24
+  },
+  "lowest": 6.03,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#202323"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.25,
+   "default dark": 7.48,
+   "sunset light": 6.03,
+   "sunset dark": 7.66
+  },
+  "lowest": 6.03,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#262929"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on well",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.93,
+   "default dark": 9.2,
+   "sunset light": 5.8,
+   "sunset dark": 9.21
+  },
+  "lowest": 5.8,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#f9f9f7"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#141717"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fcf5f1"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#1c1416"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on accent-soft over card-quiet",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.22,
+   "default dark": 6.96,
+   "sunset light": 4.97,
+   "sunset dark": 7.26
+  },
+  "lowest": 4.97,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#e2edeb"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#1f312f"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#f6e1d8"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#3b2520"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on accent-soft over card",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.42,
+   "default dark": 6.59,
+   "sunset light": 5.06,
+   "sunset dark": 7
+  },
+  "lowest": 5.06,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#e6f1f0"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#223533"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#f8e3dc"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#3f2723"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on accent-soft over pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.42,
+   "default dark": 5.68,
+   "sunset light": 5.06,
+   "sunset dark": 6.08
+  },
+  "lowest": 5.06,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#e6f1f0"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#2c3f3d"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#f8e3dc"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#49312c"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on accent-soft over well",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.13,
+   "default dark": 7.07,
+   "sunset light": 4.89,
+   "sunset dark": 7.36
+  },
+  "lowest": 4.89,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#e0ebe9"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#1d302e"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#f5dfd7"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#3a241f"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "on-accent on accent-fill (Start, Save)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 4.99,
+   "default dark": 8.18,
+   "sunset light": 5.01,
+   "sunset dark": 8.24
+  },
+  "lowest": 4.99,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#277c71"
+   ],
+   "default dark": [
+    "#0c1513",
+    "#64bbae"
+   ],
+   "sunset light": [
+    "#ffffff",
+    "#b45231"
+   ],
+   "sunset dark": [
+    "#1a1214",
+    "#f3966e"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "on-accent on accent-fill-hover",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.83,
+   "default dark": 9.21,
+   "sunset light": 6.85,
+   "sunset dark": 9.31
+  },
+  "lowest": 6.83,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#1f655c"
+   ],
+   "default dark": [
+    "#0c1513",
+    "#7bc4b8"
+   ],
+   "sunset light": [
+    "#ffffff",
+    "#944227"
+   ],
+   "sunset dark": [
+    "#1a1214",
+    "#f6a582"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "on-accent on danger-fill (Delete)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.7,
+   "default dark": 7.2,
+   "sunset light": 5.17,
+   "sunset dark": 7.58
+  },
+  "lowest": 5.17,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#bb3631"
+   ],
+   "default dark": [
+    "#0c1513",
+    "#ff786c"
+   ],
+   "sunset light": [
+    "#ffffff",
+    "#c33e37"
+   ],
+   "sunset dark": [
+    "#1a1214",
+    "#ff8174"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "on-accent on danger-fill-hover",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.64,
+   "default dark": 8.22,
+   "sunset light": 7.02,
+   "sunset dark": 8.57
+  },
+  "lowest": 7.02,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#9a2b26"
+   ],
+   "default dark": [
+    "#0c1513",
+    "#ff8c7f"
+   ],
+   "sunset light": [
+    "#ffffff",
+    "#a1312c"
+   ],
+   "sunset dark": [
+    "#1a1214",
+    "#ff9387"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "danger-ink on card (error text, Delete… row)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.49,
+   "default dark": 8.41,
+   "sunset light": 6.74,
+   "sunset dark": 8.76
+  },
+  "lowest": 6.74,
+  "colours": {
+   "default light": [
+    "#8e3a33",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#fd9d91",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#983b33",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#ff9f92",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "danger-ink on pop (error text, Delete… row)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.49,
+   "default dark": 7.27,
+   "sunset light": 6.74,
+   "sunset dark": 7.62
+  },
+  "lowest": 6.74,
+  "colours": {
+   "default light": [
+    "#8e3a33",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#fd9d91",
+    "#262929"
+   ],
+   "sunset light": [
+    "#983b33",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#ff9f92",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "warn-ink on card-quiet (1 overdue)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.87,
+   "default dark": 9.13,
+   "sunset light": 6.33,
+   "sunset dark": 9.7
+  },
+  "lowest": 6.33,
+  "colours": {
+   "default light": [
+    "#705324",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#d7b585",
+    "#161919"
+   ],
+   "sunset light": [
+    "#805203",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#e5b77c",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "warn-ink on warn-soft over card",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.86,
+   "default dark": 6.76,
+   "sunset light": 5.42,
+   "sunset dark": 7.1
+  },
+  "lowest": 5.42,
+  "colours": {
+   "default light": [
+    "#705324",
+    "#f1e8d9"
+   ],
+   "default dark": [
+    "#d7b585",
+    "#363022"
+   ],
+   "sunset light": [
+    "#805203",
+    "#f4e5cf"
+   ],
+   "sunset dark": [
+    "#e5b77c",
+    "#3f2d1d"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ok-ink on ok-soft over pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.62,
+   "default dark": 5.95,
+   "sunset light": 5.03,
+   "sunset dark": 6.35
+  },
+  "lowest": 5.03,
+  "colours": {
+   "default light": [
+    "#366542",
+    "#e0ede4"
+   ],
+   "default dark": [
+    "#98c9a2",
+    "#2f3f35"
+   ],
+   "sunset light": [
+    "#3b6b3c",
+    "#ddeadc"
+   ],
+   "sunset dark": [
+    "#9ecf9f",
+    "#363d32"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "danger-ink on danger-soft over pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.06,
+   "default dark": 5.89,
+   "sunset light": 5.55,
+   "sunset dark": 5.97
+  },
+  "lowest": 5.55,
+  "colours": {
+   "default light": [
+    "#8e3a33",
+    "#f9e2e1"
+   ],
+   "default dark": [
+    "#fd9d91",
+    "#473230"
+   ],
+   "sunset light": [
+    "#983b33",
+    "#fbdfdc"
+   ],
+   "sunset dark": [
+    "#ff9f92",
+    "#4f2f2e"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on neutral pad over frame",
+  "need": 4.5,
+  "ratios": {
+   "default light": 11.79,
+   "default dark": 15,
+   "sunset light": 11.58,
+   "sunset dark": 14.45
+  },
+  "lowest": 11.58,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#dededb"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#141515"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#e3dbd6"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#1a1415"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on neutral pad over stage",
+  "need": 4.5,
+  "ratios": {
+   "default light": 13.18,
+   "default dark": 13.11,
+   "sunset light": 12.99,
+   "sunset dark": 12.76
+  },
+  "lowest": 12.76,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#eaeae7"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#202222"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#f0e7e2"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#281f21"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on neutral pad over card-quiet",
+  "need": 4.5,
+  "ratios": {
+   "default light": 13.77,
+   "default dark": 12.36,
+   "sunset light": 13.42,
+   "sunset dark": 12.15
+  },
+  "lowest": 12.15,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#eeefed"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#242726"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#f2ebe7"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#2c2324"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on neutral pad over card",
+  "need": 4.5,
+  "ratios": {
+   "default light": 14.28,
+   "default dark": 11.87,
+   "sunset light": 13.74,
+   "sunset dark": 11.76
+  },
+  "lowest": 11.76,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#f2f3f2"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#272a2a"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#f3eeea"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#302527"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on neutral pad over card-hi",
+  "need": 4.5,
+  "ratios": {
+   "default light": 14.28,
+   "default dark": 10.92,
+   "sunset light": 13.74,
+   "sunset dark": 10.84
+  },
+  "lowest": 10.84,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#f2f3f2"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#2d3030"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#f3eeea"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#362b2c"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on neutral pad over pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 14.28,
+   "default dark": 10,
+   "sunset light": 13.74,
+   "sunset dark": 10.05
+  },
+  "lowest": 10,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#f2f3f2"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#333636"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#f3eeea"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#3c3032"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on neutral pad over well",
+  "need": 4.5,
+  "ratios": {
+   "default light": 13.53,
+   "default dark": 12.79,
+   "sunset light": 13.2,
+   "sunset dark": 12.45
+  },
+  "lowest": 12.45,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#ecedeb"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#222424"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#f1e9e4"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#2a2123"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on neutral pad over frame (search hint)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.41,
+   "default dark": 7.66,
+   "sunset light": 4.91,
+   "sunset dark": 7.28
+  },
+  "lowest": 4.91,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#dededb"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#141515"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#e3dbd6"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#1a1415"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on label chip over pad on frame (Lv 19)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 10.28,
+   "default dark": 12.92,
+   "sunset light": 10.12,
+   "sunset dark": 12.39
+  },
+  "lowest": 10.12,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#d0d0cd"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#222323"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#d6cdc8"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#292223"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on rhythm chip, second cell, over pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.35,
+   "default dark": 5.11,
+   "sunset light": 5.64,
+   "sunset dark": 5.03
+  },
+  "lowest": 5.03,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#efefef"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#333636"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#f0eae7"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#3b3132"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "accent-ink on ready tag (accent-soft over card-quiet)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.22,
+   "default dark": 6.96,
+   "sunset light": 4.97,
+   "sunset dark": 7.26
+  },
+  "lowest": 4.97,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#e2edeb"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#1f312f"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#f6e1d8"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#3b2520"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "card on ink (phone tab badge)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 15.89,
+   "default dark": 13.92,
+   "sunset light": 15.27,
+   "sunset dark": 13.75
+  },
+  "lowest": 13.75,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#1f2322"
+   ],
+   "default dark": [
+    "#1a1d1d",
+    "#e7e9e8"
+   ],
+   "sunset light": [
+    "#fffaf7",
+    "#2e1f1a"
+   ],
+   "sunset dark": [
+    "#22181a",
+    "#f2e2dc"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink-2 on kbd over pop",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.35,
+   "default dark": 5.11,
+   "sunset light": 5.64,
+   "sunset dark": 5.03
+  },
+  "lowest": 5.03,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#efefef"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#333636"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#f0eae7"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#3b3132"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on count pill over frame (sidebar 2)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 11.34,
+   "default dark": 14.73,
+   "sunset light": 11.18,
+   "sunset dark": 14.18
+  },
+  "lowest": 11.18,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#dadad7"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#161717"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#e0d7d3"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#1c1617"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "ink on tag inside a well",
+  "need": 4.5,
+  "ratios": {
+   "default light": 11.55,
+   "default dark": 11.68,
+   "sunset light": 11.28,
+   "sunset dark": 11.34
+  },
+  "lowest": 11.28,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#dbdcda"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#292b2b"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#e1d8d4"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#322829"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "inverse on ink (tooltip, badge)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 15.89,
+   "default dark": 13.92,
+   "sunset light": 15.27,
+   "sunset dark": 13.75
+  },
+  "lowest": 13.75,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#1f2322"
+   ],
+   "default dark": [
+    "#1a1d1d",
+    "#e7e9e8"
+   ],
+   "sunset light": [
+    "#fffaf7",
+    "#2e1f1a"
+   ],
+   "sunset dark": [
+    "#22181a",
+    "#f2e2dc"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "frame on ink (inbox badge)",
+  "need": 4.5,
+  "ratios": {
+   "default light": 13.06,
+   "default dark": 16.44,
+   "sunset light": 12.84,
+   "sunset dark": 15.9
+  },
+  "lowest": 12.84,
+  "colours": {
+   "default light": [
+    "#e9e9e6",
+    "#1f2322"
+   ],
+   "default dark": [
+    "#070808",
+    "#e7e9e8"
+   ],
+   "sunset light": [
+    "#eee6e1",
+    "#2e1f1a"
+   ],
+   "sunset dark": [
+    "#0c0708",
+    "#f2e2dc"
+   ]
+  }
+ },
+ {
+  "group": "text",
+  "label": "placeholder (ink-2) in well",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.92,
+   "default dark": 7.55,
+   "sunset light": 6.23,
+   "sunset dark": 7.24
+  },
+  "lowest": 6.23,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#f9f9f7"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#141717"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fcf5f1"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#1c1416"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge on frame (well lip, pad ring, switch off)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.28,
+   "default dark": 4.56,
+   "sunset light": 3.33,
+   "sunset dark": 4.39
+  },
+  "lowest": 3.28,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#e9e9e6"
+   ],
+   "default dark": [
+    "#767978",
+    "#070808"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#eee6e1"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#0c0708"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge on stage (well lip, pad ring, switch off)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.68,
+   "default dark": 4.21,
+   "sunset light": 3.74,
+   "sunset dark": 4.04
+  },
+  "lowest": 3.68,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#f6f6f3"
+   ],
+   "default dark": [
+    "#767978",
+    "#121414"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#fbf3ee"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#1a1214"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge on card-quiet (well lip, pad ring, switch off)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.85,
+   "default dark": 4.02,
+   "sunset light": 3.86,
+   "sunset dark": 3.92
+  },
+  "lowest": 3.85,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#767978",
+    "#161919"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge on card (well lip, pad ring, switch off)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.99,
+   "default dark": 3.86,
+   "sunset light": 3.96,
+   "sunset dark": 3.8
+  },
+  "lowest": 3.8,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#767978",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge on card-hi (well lip, pad ring, switch off)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.99,
+   "default dark": 3.6,
+   "sunset light": 3.96,
+   "sunset dark": 3.55
+  },
+  "lowest": 3.55,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#767978",
+    "#202323"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge on pop (well lip, pad ring, switch off)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.99,
+   "default dark": 3.34,
+   "sunset light": 3.96,
+   "sunset dark": 3.3
+  },
+  "lowest": 3.3,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#767978",
+    "#262929"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge on well (well lip, pad ring, switch off)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.78,
+   "default dark": 4.1,
+   "sunset light": 3.8,
+   "sunset dark": 3.97
+  },
+  "lowest": 3.78,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#f9f9f7"
+   ],
+   "default dark": [
+    "#767978",
+    "#141717"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#fcf5f1"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#1c1416"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge against its own pad fill over frame",
+  "need": 0,
+  "ratios": {
+   "default light": 2.96,
+   "default dark": 4.16,
+   "sunset light": 3,
+   "sunset dark": 3.99
+  },
+  "lowest": 2.96,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#dededb"
+   ],
+   "default dark": [
+    "#767978",
+    "#141515"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#e3dbd6"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#1a1415"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge against its own pad fill over card",
+  "need": 0,
+  "ratios": {
+   "default light": 3.58,
+   "default dark": 3.29,
+   "sunset light": 3.56,
+   "sunset dark": 3.25
+  },
+  "lowest": 3.25,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#f2f3f2"
+   ],
+   "default dark": [
+    "#767978",
+    "#272a2a"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#f3eeea"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#302527"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge against its own pad fill over card-hi",
+  "need": 0,
+  "ratios": {
+   "default light": 3.58,
+   "default dark": 3.03,
+   "sunset light": 3.56,
+   "sunset dark": 2.99
+  },
+  "lowest": 2.99,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#f2f3f2"
+   ],
+   "default dark": [
+    "#767978",
+    "#2d3030"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#f3eeea"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#362b2c"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "edge against its own pad fill over pop",
+  "need": 0,
+  "ratios": {
+   "default light": 3.58,
+   "default dark": 2.77,
+   "sunset light": 3.56,
+   "sunset dark": 2.77
+  },
+  "lowest": 2.77,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#f2f3f2"
+   ],
+   "default dark": [
+    "#767978",
+    "#333636"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#f3eeea"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#3c3032"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "accent-fill on card-quiet (ring arc, bar, switch on, checked box)",
+  "need": 3,
+  "ratios": {
+   "default light": 4.82,
+   "default dark": 7.8,
+   "sunset light": 4.72,
+   "sunset dark": 8
+  },
+  "lowest": 4.72,
+  "colours": {
+   "default light": [
+    "#277c71",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#64bbae",
+    "#161919"
+   ],
+   "sunset light": [
+    "#b45231",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#f3966e",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "accent-fill on card (ring arc, bar, switch on, checked box)",
+  "need": 3,
+  "ratios": {
+   "default light": 4.99,
+   "default dark": 7.48,
+   "sunset light": 4.84,
+   "sunset dark": 7.74
+  },
+  "lowest": 4.84,
+  "colours": {
+   "default light": [
+    "#277c71",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#64bbae",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#b45231",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3966e",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "accent-fill on card-hi (ring arc, bar, switch on, checked box)",
+  "need": 3,
+  "ratios": {
+   "default light": 4.99,
+   "default dark": 6.98,
+   "sunset light": 4.84,
+   "sunset dark": 7.25
+  },
+  "lowest": 4.84,
+  "colours": {
+   "default light": [
+    "#277c71",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#64bbae",
+    "#202323"
+   ],
+   "sunset light": [
+    "#b45231",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3966e",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "accent-fill on pop (ring arc, bar, switch on, checked box)",
+  "need": 3,
+  "ratios": {
+   "default light": 4.99,
+   "default dark": 6.47,
+   "sunset light": 4.84,
+   "sunset dark": 6.74
+  },
+  "lowest": 4.84,
+  "colours": {
+   "default light": [
+    "#277c71",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#64bbae",
+    "#262929"
+   ],
+   "sunset light": [
+    "#b45231",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3966e",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "accent-fill on track (bar fill vs empty part)",
+  "need": 0,
+  "ratios": {
+   "default light": 3.64,
+   "default dark": 5.46,
+   "sunset light": 3.56,
+   "sunset dark": 5.69
+  },
+  "lowest": 3.56,
+  "colours": {
+   "default light": [
+    "#277c71",
+    "#dcdcdc"
+   ],
+   "default dark": [
+    "#64bbae",
+    "#323535"
+   ],
+   "sunset light": [
+    "#b45231",
+    "#dfd8d4"
+   ],
+   "sunset dark": [
+    "#f3966e",
+    "#3b3031"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "focus ring on frame",
+  "need": 3,
+  "ratios": {
+   "default light": 5.14,
+   "default dark": 10.23,
+   "sunset light": 5.07,
+   "sunset dark": 10.18
+  },
+  "lowest": 5.07,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#e9e9e6"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#070808"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#eee6e1"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#0c0708"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "focus ring on stage",
+  "need": 3,
+  "ratios": {
+   "default light": 5.77,
+   "default dark": 9.43,
+   "sunset light": 5.7,
+   "sunset dark": 9.37
+  },
+  "lowest": 5.7,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#f6f6f3"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#121414"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fbf3ee"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#1a1214"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "focus ring on card-quiet",
+  "need": 3,
+  "ratios": {
+   "default light": 6.04,
+   "default dark": 9.02,
+   "sunset light": 5.89,
+   "sunset dark": 9.1
+  },
+  "lowest": 5.89,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#161919"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "focus ring on card",
+  "need": 3,
+  "ratios": {
+   "default light": 6.25,
+   "default dark": 8.65,
+   "sunset light": 6.03,
+   "sunset dark": 8.81
+  },
+  "lowest": 6.03,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "focus ring on card-hi",
+  "need": 3,
+  "ratios": {
+   "default light": 6.25,
+   "default dark": 8.08,
+   "sunset light": 6.03,
+   "sunset dark": 8.24
+  },
+  "lowest": 6.03,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#202323"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "focus ring on pop",
+  "need": 3,
+  "ratios": {
+   "default light": 6.25,
+   "default dark": 7.48,
+   "sunset light": 6.03,
+   "sunset dark": 7.66
+  },
+  "lowest": 6.03,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#262929"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "focus ring on well",
+  "need": 3,
+  "ratios": {
+   "default light": 5.93,
+   "default dark": 9.2,
+   "sunset light": 5.8,
+   "sunset dark": 9.21
+  },
+  "lowest": 5.8,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#f9f9f7"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#141717"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fcf5f1"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#1c1416"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "accent-ink ring of the chosen segment on well",
+  "need": 3,
+  "ratios": {
+   "default light": 5.93,
+   "default dark": 9.2,
+   "sunset light": 5.8,
+   "sunset dark": 9.21
+  },
+  "lowest": 5.8,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#f9f9f7"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#141717"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fcf5f1"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#1c1416"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "danger-ink edge of an error field on card",
+  "need": 3,
+  "ratios": {
+   "default light": 7.49,
+   "default dark": 8.41,
+   "sunset light": 6.74,
+   "sunset dark": 8.76
+  },
+  "lowest": 6.74,
+  "colours": {
+   "default light": [
+    "#8e3a33",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#fd9d91",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#983b33",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#ff9f92",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "switch knob (surface) on off track (edge)",
+  "need": 3,
+  "ratios": {
+   "default light": 3.99,
+   "default dark": 3.86,
+   "sunset light": 3.96,
+   "sunset dark": 3.8
+  },
+  "lowest": 3.8,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#7d807f"
+   ],
+   "default dark": [
+    "#1a1d1d",
+    "#767978"
+   ],
+   "sunset light": [
+    "#fffaf7",
+    "#877b76"
+   ],
+   "sunset dark": [
+    "#22181a",
+    "#807371"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "switch knob (on-accent) on accent-fill",
+  "need": 3,
+  "ratios": {
+   "default light": 4.99,
+   "default dark": 8.18,
+   "sunset light": 5.01,
+   "sunset dark": 8.24
+  },
+  "lowest": 4.99,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#277c71"
+   ],
+   "default dark": [
+    "#0c1513",
+    "#64bbae"
+   ],
+   "sunset light": [
+    "#ffffff",
+    "#b45231"
+   ],
+   "sunset dark": [
+    "#1a1214",
+    "#f3966e"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "today outline (ink) on pop",
+  "need": 3,
+  "ratios": {
+   "default light": 15.89,
+   "default dark": 12.03,
+   "sunset light": 15.27,
+   "sunset dark": 11.96
+  },
+  "lowest": 11.96,
+  "colours": {
+   "default light": [
+    "#1f2322",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#e7e9e8",
+    "#262929"
+   ],
+   "sunset light": [
+    "#2e1f1a",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#f2e2dc",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "warn-ink icon on card-quiet (flame)",
+  "need": 3,
+  "ratios": {
+   "default light": 6.87,
+   "default dark": 9.13,
+   "sunset light": 6.33,
+   "sunset dark": 9.7
+  },
+  "lowest": 6.33,
+  "colours": {
+   "default light": [
+    "#705324",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#d7b585",
+    "#161919"
+   ],
+   "sunset light": [
+    "#805203",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#e5b77c",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "warn-ink star on pop",
+  "need": 3,
+  "ratios": {
+   "default light": 7.11,
+   "default dark": 7.57,
+   "sunset light": 6.48,
+   "sunset dark": 8.17
+  },
+  "lowest": 6.48,
+  "colours": {
+   "default light": [
+    "#705324",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#d7b585",
+    "#262929"
+   ],
+   "sunset light": [
+    "#805203",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#e5b77c",
+    "#2e2425"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "ok-ink on frame (sync icon)",
+  "need": 3,
+  "ratios": {
+   "default light": 5.57,
+   "default dark": 10.71,
+   "sunset light": 5.08,
+   "sunset dark": 11.32
+  },
+  "lowest": 5.08,
+  "colours": {
+   "default light": [
+    "#366542",
+    "#e9e9e6"
+   ],
+   "default dark": [
+    "#98c9a2",
+    "#070808"
+   ],
+   "sunset light": [
+    "#3b6b3c",
+    "#eee6e1"
+   ],
+   "sunset dark": [
+    "#9ecf9f",
+    "#0c0708"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "ok-ink plant on card-quiet",
+  "need": 3,
+  "ratios": {
+   "default light": 6.55,
+   "default dark": 9.44,
+   "sunset light": 5.9,
+   "sunset dark": 10.11
+  },
+  "lowest": 5.9,
+  "colours": {
+   "default light": [
+    "#366542",
+    "#fbfbfa"
+   ],
+   "default dark": [
+    "#98c9a2",
+    "#161919"
+   ],
+   "sunset light": [
+    "#3b6b3c",
+    "#fdf7f3"
+   ],
+   "sunset dark": [
+    "#9ecf9f",
+    "#1e1517"
+   ]
+  }
+ },
+ {
+  "group": "edge",
+  "label": "ok-ink plant on accent-soft over card-quiet (ready tile)",
+  "need": 3,
+  "ratios": {
+   "default light": 5.67,
+   "default dark": 7.29,
+   "sunset light": 4.97,
+   "sunset dark": 8.07
+  },
+  "lowest": 4.97,
+  "colours": {
+   "default light": [
+    "#366542",
+    "#e2edeb"
+   ],
+   "default dark": [
+    "#98c9a2",
+    "#1f312f"
+   ],
+   "sunset light": [
+    "#3b6b3c",
+    "#f6e1d8"
+   ],
+   "sunset dark": [
+    "#9ecf9f",
+    "#3b2520"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "Glossed Lite: ink-2 on card-quiet at 80% over the accent blob",
+  "need": 4.5,
+  "ratios": {
+   "default light": 6.41,
+   "default dark": 6.87,
+   "sunset light": 5.72,
+   "sunset dark": 6.62
+  },
+  "lowest": 5.72,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#eaf2ef"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#192120"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#f9eae2"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#2a1b1a"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "Glossed Lite: accent-ink on card at 80% over the accent blob",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.64,
+   "default dark": 8.08,
+   "sunset light": 5.43,
+   "sunset dark": 8.19
+  },
+  "lowest": 5.43,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#edf5f3"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#1c2423"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#fbece6"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#2d1d1d"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "Glossed Lite: edge on card at 80% over the accent blob",
+  "need": 3,
+  "ratios": {
+   "default light": 3.6,
+   "default dark": 3.6,
+   "sunset light": 3.56,
+   "sunset dark": 3.53
+  },
+  "lowest": 3.53,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#edf5f3"
+   ],
+   "default dark": [
+    "#767978",
+    "#1c2423"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#fbece6"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#2d1d1d"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "Glossed Full: ink-2 on card-quiet at 64% over the accent blob",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.85,
+   "default dark": 6.38,
+   "sunset light": 5.26,
+   "sunset dark": 6.16
+  },
+  "lowest": 5.26,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#dbe9e7"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#1b2826"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#f6dfd5"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#33201d"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "Glossed Full: accent-ink on card at 64% over the accent blob",
+  "need": 4.5,
+  "ratios": {
+   "default light": 5.15,
+   "default dark": 7.47,
+   "sunset light": 4.98,
+   "sunset dark": 7.6
+  },
+  "lowest": 4.98,
+  "colours": {
+   "default light": [
+    "#2f6a62",
+    "#deecea"
+   ],
+   "default dark": [
+    "#86c5ba",
+    "#1e2b29"
+   ],
+   "sunset light": [
+    "#984a31",
+    "#f7e1d8"
+   ],
+   "sunset dark": [
+    "#f3a787",
+    "#36221f"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "Glossed Full: edge on card at 64% over the accent blob",
+  "need": 3,
+  "ratios": {
+   "default light": 3.28,
+   "default dark": 3.33,
+   "sunset light": 3.26,
+   "sunset dark": 3.28
+  },
+  "lowest": 3.26,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#deecea"
+   ],
+   "default dark": [
+    "#767978",
+    "#1e2b29"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#f7e1d8"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#36221f"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "for reference, v1.20 Full fill: ink-2 on card-quiet at 55% over the accent blob",
+  "need": 0,
+  "ratios": {
+   "default light": 5.58,
+   "default dark": 6.09,
+   "sunset light": 5.04,
+   "sunset dark": 5.84
+  },
+  "lowest": 5.04,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#d3e5e1"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#1c2c2a"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#f4dace"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#38241f"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "for reference, v1.20 Full fill: edge on card at 55% over the accent blob",
+  "need": 0,
+  "ratios": {
+   "default light": 3.11,
+   "default dark": 3.22,
+   "sunset light": 3.11,
+   "sunset dark": 3.13
+  },
+  "lowest": 3.11,
+  "colours": {
+   "default light": [
+    "#7d807f",
+    "#d5e7e4"
+   ],
+   "default dark": [
+    "#767978",
+    "#1e2e2c"
+   ],
+   "sunset light": [
+    "#877b76",
+    "#f5dbd1"
+   ],
+   "sunset dark": [
+    "#807371",
+    "#3b2520"
+   ]
+  }
+ },
+ {
+  "group": "glass",
+  "label": "Glossed: ink-2 on pop at 94% over the accent blob",
+  "need": 4.5,
+  "ratios": {
+   "default light": 7.09,
+   "default dark": 6.02,
+   "sunset light": 6.29,
+   "sunset dark": 5.93
+  },
+  "lowest": 5.93,
+  "colours": {
+   "default light": [
+    "#515855",
+    "#fafcfc"
+   ],
+   "default dark": [
+    "#a3a9a7",
+    "#262b2a"
+   ],
+   "sunset light": [
+    "#70564d",
+    "#fef6f2"
+   ],
+   "sunset dark": [
+    "#b99e98",
+    "#302525"
+   ]
+  }
+ },
+ {
+  "group": "deco",
+  "label": "track on card-hi (empty ring)",
+  "need": 0,
+  "ratios": {
+   "default light": 1.37,
+   "default dark": 1.28,
+   "sunset light": 1.36,
+   "sunset dark": 1.27
+  },
+  "lowest": 1.27,
+  "colours": {
+   "default light": [
+    "#dcdcdc",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#323535",
+    "#202323"
+   ],
+   "sunset light": [
+    "#dfd8d4",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#3b3031",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "deco",
+  "label": "5-minute tick on card-hi",
+  "need": 0,
+  "ratios": {
+   "default light": 2.54,
+   "default dark": 3.45,
+   "sunset light": 2.53,
+   "sunset dark": 3.4
+  },
+  "lowest": 2.53,
+  "colours": {
+   "default light": [
+    "#a1a3a2",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#737675",
+    "#202323"
+   ],
+   "sunset light": [
+    "#a79e9a",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#7d706e",
+    "#281e20"
+   ]
+  }
+ },
+ {
+  "group": "deco",
+  "label": "divider on card",
+  "need": 0,
+  "ratios": {
+   "default light": 1.24,
+   "default dark": 1.33,
+   "sunset light": 1.25,
+   "sunset dark": 1.32
+  },
+  "lowest": 1.24,
+  "colours": {
+   "default light": [
+    "#e6e7e7",
+    "#ffffff"
+   ],
+   "default dark": [
+    "#303332",
+    "#1a1d1d"
+   ],
+   "sunset light": [
+    "#e8e1de",
+    "#fffaf7"
+   ],
+   "sunset dark": [
+    "#392e2f",
+    "#22181a"
+   ]
+  }
+ },
+ {
+  "group": "deco",
+  "label": "card on stage (surface step)",
+  "need": 0,
+  "ratios": {
+   "default light": 1.08,
+   "default dark": 1.09,
+   "sunset light": 1.06,
+   "sunset dark": 1.06
+  },
+  "lowest": 1.06,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#f6f6f3"
+   ],
+   "default dark": [
+    "#1a1d1d",
+    "#121414"
+   ],
+   "sunset light": [
+    "#fffaf7",
+    "#fbf3ee"
+   ],
+   "sunset dark": [
+    "#22181a",
+    "#1a1214"
+   ]
+  }
+ },
+ {
+  "group": "deco",
+  "label": "card-hi on stage (hero step)",
+  "need": 0,
+  "ratios": {
+   "default light": 1.08,
+   "default dark": 1.17,
+   "sunset light": 1.06,
+   "sunset dark": 1.14
+  },
+  "lowest": 1.06,
+  "colours": {
+   "default light": [
+    "#ffffff",
+    "#f6f6f3"
+   ],
+   "default dark": [
+    "#202323",
+    "#121414"
+   ],
+   "sunset light": [
+    "#fffaf7",
+    "#fbf3ee"
+   ],
+   "sunset dark": [
+    "#281e20",
+    "#1a1214"
+   ]
+  }
+ },
+ {
+  "group": "deco",
+  "label": "stage on frame",
+  "need": 0,
+  "ratios": {
+   "default light": 1.12,
+   "default dark": 1.08,
+   "sunset light": 1.12,
+   "sunset dark": 1.09
+  },
+  "lowest": 1.08,
+  "colours": {
+   "default light": [
+    "#f6f6f3",
+    "#e9e9e6"
+   ],
+   "default dark": [
+    "#121414",
+    "#070808"
+   ],
+   "sunset light": [
+    "#fbf3ee",
+    "#eee6e1"
+   ],
+   "sunset dark": [
+    "#1a1214",
+    "#0c0708"
+   ]
+  }
+ }
+]

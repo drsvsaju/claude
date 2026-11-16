@@ -39,6 +39,7 @@ for (const vn of VARIANTS) {
   for (const s of SCREENS) {
     if (ONLY && !ONLY.includes(s.id)) continue;
     if (s.skip && s.skip.includes(vn)) continue;
+    if (!!s.debugOnly !== /debug=1/.test(PAGE)) continue;   // the gallery exists only with ?debug=1; everything else is shot without it
     const file = path.join(outDir, `${s.id}--${vn}.${PNG ? 'png' : 'jpg'}`);
     try {
       let p;
