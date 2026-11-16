@@ -4,7 +4,7 @@ A one-file web app for collecting oncology research data. It runs like a lightwe
 
 **Try it without any setup:** open the page and press **Try the demo**. That loads 120 synthetic patients, a small team and several weeks of activity. Nothing is written to the browser; reloading starts a fresh demo.
 
-Current version: **1.2**. It uses the Focus app's v1.20 design and code patterns; see *Version 1.2* below.
+Current version: **1.3**. It uses the Focus app's 2.0 "Soft depth" design; see *Version 1.3* below.
 
 ## What it does
 
@@ -27,6 +27,16 @@ Current version: **1.2**. It uses the Focus app's v1.20 design and code patterns
 | **Conflicting edits** | If two people edit the same record, the second save is refused (enforced by the server) instead of silently overwriting the first person's work. |
 
 | **Find anything** | **Command palette** (`Ctrl K`, or the search button): type a Study ID or number to open a patient, or search for pages, actions (register, export, print the CRF) and settings. **Inbox** (bell): invitations, follow-ups due, drafts, achievements and colleagues' changes. |
+
+## Version 1.3: the Focus app's 2.0 "Soft depth" design
+
+- **Depth instead of borders.** The header and sidebar sink back; the page is a raised sheet with a rounded corner. Cards have no outlines: a slightly lighter tone, a fine top highlight and a soft shadow tinted with the accent colour.
+- **One shape language.** Pills and circles are things you press (buttons, chips, the header search, the tab bar). Squarer, slightly sunken wells are things you type in or choose in (fields, dropdowns, switchers). Every control has a visible edge (at least 3:1 contrast).
+- **Colour from nine values.** Every colour is mixed from the theme's nine values and the chosen accent, so all five accents and both themes stay legible. The accent never glows; status colours (warning, error, success) are derived from it.
+- **Today.** One lead card (the goal ring, **Register patient**, open-by-ID), then your streak as two numbers, a goal bar and a ledger: due for follow-up, your drafts, registered, complete, verified. Each row opens the matching patient list.
+- **Clearer states.** A chosen answer in the form is shown three ways (soft fill, accent edge, check mark); switches show O / I; labels (Draft, Complete, Verified) are small square tags, never pills.
+- **Toasts** are cards at the bottom right with an icon, a dismiss button and a thin line showing how long they stay. Errors stay until you dismiss them.
+- **Unchanged.** Data, `firestore.rules`, features and shortcuts. Glossed Interface and Animations settings still apply.
 
 ## Version 1.2: the Focus app's look and structure
 
