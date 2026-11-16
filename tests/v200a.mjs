@@ -514,7 +514,26 @@ await nk.context().close();
   const gone = await tev(() => ({ pop: UI.popOpen, shown: [...document.querySelectorAll('.ui-pop')].filter(x => x.getBoundingClientRect().height > 0).length }));
   check('Phone sheets: the sheet slides up (not the dialog zoom); a toast shown while it is open survives its closing and later toasts still work; the close button and the swatches stay round (44 × 44, square boxes); a sheet closed by other code disappears and frees the queue',
     anim === 'uiSheetIn' && inSheet && !after.err && after.connected && xb[0] === 44 && xb[1] === 44 && sw[0] === sw[1] && !gone.pop && !gone.shown, JSON.stringify({ anim, inSheet, after, xb, sw, gone }));
+  // design round 2: the phone date sheet shows its quick picks in two columns and keeps Done on screen; the named colour
+  // control keeps its size; an empty time panel says hh / mm and shows the half of the day that applies
+  await tev(() => { const d = document.getElementById('gxd1'); d.value = ''; d.scrollIntoView({ block: 'center' }); }); await wait(200);
+  await tp.tap('#gxd1'); await wait(600);
+  const ds = await tev(() => { const sh = document.querySelector('dialog.ui-sheet[open]'), q = sh.querySelectorAll('.ui-qrow'), done = sh.querySelector('.ui-done').getBoundingClientRect(); return { cols: new Set([...q].map(b => Math.round(b.getBoundingClientRect().left))).size, doneIn: done.bottom <= innerHeight && done.top >= 0, rule: getComputedStyle(sh.querySelector('.ui-quick')).borderRightWidth }; });
+  await tev(() => UI.closePop('api')); await wait(400);
+  const nc = await tev(() => { const c = document.getElementById('gxc2'), r = c.getBoundingClientRect(), n = c.querySelector('.ui-color-n').getBoundingClientRect(), ch = c.querySelector('.ui-chev').getBoundingClientRect(); return { w: Math.round(r.width), inside: n.left >= r.left && ch.right <= r.right + 0.5 }; });
+  await tev(() => { const t = document.getElementById('gxt2'); t.value = ''; t.allDay = false; t.scrollIntoView({ block: 'center' }); }); await wait(200);
+  await tp.tap('#gxt2'); await wait(600);
+  const te = await tev(() => { const sh = document.querySelector('dialog.ui-sheet[open]'), ph = [...sh.querySelectorAll('.ui-time-exact input')].map(i => i.placeholder), ap = [...sh.querySelectorAll('[data-ap]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.dataset.ap), h12 = UI.cfg.hour12(), H = sh.querySelector('.ui-th').getBoundingClientRect(), M = sh.querySelector('.ui-tm').getBoundingClientRect(), body = sh.querySelector('.ui-time-exact').getBoundingClientRect(); return { ph, ap, h12, want: new Date().getHours() >= 12 ? 'pm' : 'am', even: Math.abs(H.width - M.width) < 2, fills: M.right >= body.right - 2 }; });
+  await tev(() => UI.closePop('api')); await wait(400);
+  check('Phone sheets (design round 2): the date sheet puts its quick picks in two columns with Done on screen; the named colour control keeps its name and chevron inside; an empty time shows hh : mm across the full row, with the half of the day that applies chosen',
+    ds.cols === 2 && ds.doneIn && ds.rule === '0px' && nc.w > 80 && nc.inside && te.ph.join() === 'hh,mm' && te.even && te.fills && (!te.h12 || te.ap.join() === te.want), JSON.stringify({ ds, nc, te }));
   await tp.context().close();
+}
+{
+  await ev(() => { showTab('stats'); }); await wait(600);
+  const sg = await ev(() => { const bs = [...document.querySelectorAll('#statsSeg > button')], on = bs.find(x => x.classList.contains('active')), off = bs.find(x => !x.classList.contains('active')); const c = x => getComputedStyle(x); return { on: [c(on).color, c(on).fontWeight], off: [c(off).color, c(off).fontWeight] }; });
+  await ev(() => showTab('gallery')); await wait(300);
+  check('Segmented controls: the options not chosen are in secondary ink and lighter weight; the chosen one is full ink and bold (on top of its ring and tint)', sg.on[0] !== sg.off[0] && +sg.on[1] > +sg.off[1], JSON.stringify(sg));
 }
 check('No page errors', !errs.length, JSON.stringify(errs.slice(0, 5)));
 console.log(fails ? `${fails} FAILED` : 'ALL PASSED');

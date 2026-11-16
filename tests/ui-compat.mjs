@@ -50,7 +50,9 @@ function patchPage(pg) {
   pg.once = (ev, h) => { if (ev === 'dialog') { const w = d => { handlers.delete(w); return h(d); }; w.__orig = h; handlers.add(w); return once(ev, h); } return once(ev, h); };
   pg.off = (ev, h) => { if (ev === 'dialog') { handlers.delete(h); for (const x of handlers) if (x.__orig === h) handlers.delete(x); } return off(ev, h); };
   pg.removeListener = pg.off;
-  pg.exposeBinding('__uiDialog', async ({ page }, type, text) => {
+  // awaited by newPage (below): a binding still being set up while the suite adds its own made Playwright throw
+  // "Cannot read properties of undefined (reading 'addBinding')" inside the page
+  pg.__uiReady = pg.exposeBinding('__uiDialog', async ({ page }, type, text) => {
     const answer = v => page.evaluate(v => { const a = window.__uiCompat && window.__uiCompat.answer; if (a) { window.__uiCompat.answer = null; a(v); } }, v).catch(() => {});
     if (!handlers.size) return;   // nobody listens: the dialog stays for the suite to click (as a person would)
     let done = false;
@@ -94,8 +96,8 @@ const launch = chromium.launch.bind(chromium);
 chromium.launch = async (...a) => {
   const b = await launch(...a);
   const nc = b.newContext.bind(b), np = b.newPage.bind(b);
-  const wrapCtx = c => { if (c.__uiCompat) return c; c.__uiCompat = true; const cp = c.newPage.bind(c); c.newPage = async (...x) => patchPage(await cp(...x)); c.on('page', pg => patchPage(pg)); return c; };
+  const wrapCtx = c => { if (c.__uiCompat) return c; c.__uiCompat = true; const cp = c.newPage.bind(c); c.newPage = async (...x) => { const pg = patchPage(await cp(...x)); await pg.__uiReady; return pg; }; c.on('page', pg => patchPage(pg)); return c; };
   b.newContext = async (...x) => { const c = await nc(...x); await c.addInitScript(IN_PAGE, MANUAL); return wrapCtx(c); };
-  b.newPage = async (...x) => { const pg = await np(...x); await pg.addInitScript(IN_PAGE, MANUAL); wrapCtx(pg.context()); return patchPage(pg); };
+  b.newPage = async (...x) => { const pg = await np(...x); await pg.addInitScript(IN_PAGE, MANUAL); wrapCtx(pg.context()); patchPage(pg); await pg.__uiReady; return pg; };
   return b;
 };

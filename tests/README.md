@@ -38,6 +38,11 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   rank frames, season coins; it now checks that only those are added), v113b (its sharpness check sampled one fixed
   row of the share image that no longer crossed any text; it now takes the best of rows every 2%), and v1131a (a
   rank-up shows one small toast during a block by design since v1.19; the test now allows exactly that toast).
+  A fourth showed up once the verdicts were honest: v112b's questline checks use the October 2026 questline, which
+  ended on 7 November; the suite now keeps that questline open for its own two browsers.
+- `ui-compat.mjs` waits for its page binding before handing the page to the suite (two bindings set up at once made
+  Playwright throw "reading 'addBinding'" inside the page).
+- `startup.mjs`: start-up cost of two builds, alternated (`node startup.mjs v120.html p1.html`).
 - `tools/pair.py`: before/after screenshot pairs with captions.
 - `tools/`: `site.sh` (`sh site.sh other.html` builds a second copy next to the main one), `contact.py` (contact
   sheets), `mkindex.py` (the JS function index in `notes/v2.0-codemap`), `tokens.mjs` (regenerates the stylesheet's

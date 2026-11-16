@@ -97,6 +97,10 @@ await Promise.all([ev(A1, id => claimBossRewards(id, 'squad'), bossId), ev(A2, i
 let ms = await until(A2, id => ['col_b_' + id, 'au_b_' + id + '_sq', 'th_b_' + id, 'au_b_' + id].every(isOwned), bossId);
 const ms1 = await until(A1, id => ['col_b_' + id, 'au_b_' + id + '_sq', 'th_b_' + id, 'au_b_' + id].every(isOwned), bossId);
 check('Claims on both devices merge: each sees all 4 boss rewards', ms >= 0 && ms1 >= 0, `${ms} / ${ms1} ms`);
+// v2.0: the October 2026 questline (hw26) ended on 7 November; these checks are about merging claims across devices, not
+// about the calendar, so both browsers keep that questline open for the length of the suite (it failed unnoticed from
+// 8 November 2026, when its suite still exited 0)
+for (const d of [A1, A2]) await ev(d, () => { EVENT_BY_ID.hw26.end = '2099-12-31'; G = null; });
 // a quest done on both devices, claimed on both at the same time → exactly one claim wins
 await ev(A1, async () => {
   const add = [];

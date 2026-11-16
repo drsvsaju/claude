@@ -322,7 +322,7 @@ dialog.cf-dlg h2 { font-size: var(--fs-17, 17px); font-weight: 650; text-transfo
 @media (max-width: 640px) { .cf-dlg .btn-row { flex-direction: column; align-items: stretch; } .cf-dlg .btn-row .btn { width: 100%; height: var(--h-tap, 44px); } }
 .cf-dlg #cfType { margin-top: 4px; }
 :where(.btn, .iconbtn, .linkbtn, .chip, summary, [role="button"], [tabindex]):focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
-.linkbtn { border: 0; background: none; color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 999px; }   /* v2.0: the quiet button — bold ink, a wash on hover */
+.linkbtn { border: 0; background: none; color: var(--accent-text, var(--accent)); cursor: pointer; font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 999px; }   /* v2.0: the quiet button — accent ink (4.5:1 on every layer), a wash on hover */
 .linkbtn:hover { background: var(--hover, transparent); }
 .linkbtn:disabled { color: var(--muted); font-weight: 500; cursor: default; background: none; }
 .iconbtn {
@@ -460,9 +460,9 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
    STATS
    ========================================================================== */
 .seg { display: inline-flex; background: var(--ctl-bg, var(--surface)); border: 1px solid var(--ctl-bd, var(--line)); border-radius: var(--r-8, 8px); padding: 3px; }
-.seg button { border: 0; background: none; min-height: 32px; padding: 5px 14px; border-radius: var(--r-6, 6px); color: var(--text); font-size: var(--fs-14, 14px); font-weight: 500; cursor: pointer; }
-.seg button:hover:not(.active) { background: var(--hover, transparent); }
-.seg button.active { background: var(--accent-tint, var(--accent-soft)); color: var(--text); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)); }   /* v2.0: a tinted fill, a ring and bold ink — never colour alone, and never quieter than the page it switches */
+.seg button { border: 0; background: none; min-height: 32px; padding: 5px 14px; border-radius: var(--r-6, 6px); color: var(--t-2, var(--muted)); font-size: var(--fs-14, 14px); font-weight: 500; cursor: pointer; }
+.seg button:hover:not(.active) { background: var(--hover, transparent); color: var(--t-1, var(--text)); }
+.seg button.active { background: var(--accent-tint, var(--accent-soft)); color: var(--t-1, var(--text)); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)); }   /* v2.0: a tinted fill, a ring and bold ink — never colour alone, and never quieter than the page it switches */
 .stats-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .range-nav { display: flex; align-items: center; gap: 8px; }
 .range-nav .lbl2 { min-width: 150px; text-align: center; font-weight: 600; }
@@ -571,8 +571,9 @@ dialog {
 .shop-head .lbl { flex: 1; min-width: 220px; }
 .catrow { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
 .catrow::-webkit-scrollbar { display: none; }
-.catrow button { white-space: nowrap; box-sizing: border-box; height: var(--h-sm, 32px); border: 1px solid var(--ctl-bd, var(--line)); background: var(--pad, var(--surface)); border-radius: 999px; padding: 0 12px; color: var(--text); cursor: pointer; font-size: var(--fs-13, 13px); font-weight: 500; }
-.catrow button.active { border-color: var(--accent-text, var(--accent)); background: var(--accent-tint, var(--accent-soft)); box-shadow: inset 0 0 0 .5px var(--accent-text, var(--accent)); font-weight: 600; }
+.catrow button { white-space: nowrap; box-sizing: border-box; height: var(--h-sm, 32px); border: 1px solid var(--ctl-bd, var(--line)); background: var(--pad, var(--surface)); border-radius: 999px; padding: 0 12px; color: var(--t-2, var(--muted)); cursor: pointer; font-size: var(--fs-13, 13px); font-weight: 500; }
+.catrow button.active { border-color: var(--accent-text, var(--accent)); background: var(--accent-tint, var(--accent-soft)); box-shadow: inset 0 0 0 .5px var(--accent-text, var(--accent)); font-weight: 600; color: var(--t-1, var(--text)); }
+.catrow button:hover:not(.active) { color: var(--t-1, var(--text)); }
 .amb-vol { margin-bottom: 12px; padding: 14px 18px; }
 .shopgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -967,6 +968,7 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 @keyframes rip { to { transform: scale(1); opacity: 0; } }
 
 /* Start / pause: icons morph, soft glow while running */
+.controls > .btn { height: var(--h-lg, 52px); }   /* Reset / Skip as tall as Start: one row, one height */
 #mainBtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: var(--h-lg, 52px); padding: 0 34px; font-size: var(--fs-17, 17px); min-width: 148px; }
 @media (max-width: 400px) { #mainBtn { min-width: 116px; padding: 0 22px; } }
 .pp { position: relative; width: 15px; height: 15px; flex: none; }
@@ -1021,8 +1023,10 @@ input[type="checkbox"]:disabled { opacity: .65; cursor: default; }
 /* a switch that can't be used is flat with a dashed edge, like every other disabled control; the knob still shows on / off */
 input[type="checkbox"]:not([data-check]):disabled { opacity: 1; background: transparent; outline: 1.5px dashed var(--ctl-bd, var(--muted)); outline-offset: -1.5px; }
 input[type="checkbox"]:not([data-check]):disabled::before { background: var(--ctl-bd, var(--muted)); box-shadow: none; }
+input[type="checkbox"]:not([data-check]):disabled:checked { background: var(--accent-tint, var(--accent-soft)); }
 input[type="checkbox"]:not([data-check]):disabled:checked::before { background: var(--accent-text, var(--accent)); }
-input[type="checkbox"]:not([data-check]):disabled::after { background: none; }
+input[type="checkbox"]:not([data-check]):disabled::after { background: radial-gradient(circle at 38px 22px, transparent 2.6px, var(--t-2, var(--muted)) 3.1px, var(--t-2, var(--muted)) 4.6px, transparent 5.1px) no-repeat; }
+input[type="checkbox"]:not([data-check]):disabled:checked::after { background: linear-gradient(var(--t-2, var(--muted)), var(--t-2, var(--muted))) 14px 16.5px / 2.4px 11px no-repeat; }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 /* A tick box (<input type="checkbox" data-check>) is for lists and consents — several things that can each be on.
    A plain checkbox stays a switch (one setting, on or off). 20 px, 6 px corners, a 3:1 edge; a tick, or a dash for "some". */
@@ -1120,13 +1124,15 @@ dialog::backdrop { background: var(--scrim, rgba(10, 12, 12, .4)); -webkit-backd
   display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; width: max-content; max-width: calc(100vw - 32px);
 }
 .toast-item {
+  text-wrap: pretty;
   display: flex; align-items: center; gap: 8px; background: var(--pop-bg, var(--surface)); color: var(--text); border: 1px solid var(--pop-bd, var(--line)); padding: 10px 16px; border-radius: var(--r-12, 12px);
   font-size: 14px; text-align: center; box-shadow: var(--e-3, 0 10px 26px -12px rgba(0, 0, 0, .45));
   opacity: 0; transform: translateY(16px) scale(.97); transition: transform .38s var(--spring-soft), opacity .22s var(--ease);
 }
 .toast-item.in { opacity: 1; transform: none; }
 .toast-item.out { opacity: 0; transform: translateY(10px) scale(.97); }
-:root[data-motion="reduced"] .toast-item { transform: none !important; }
+:root[data-motion="reduced"] .toast-item {
+  text-wrap: pretty; transform: none !important; }
 
 /* Achievement card: slides in from the top with a shine */
 .achcard {
@@ -2448,10 +2454,11 @@ html, body { overscroll-behavior-y: contain; }
 /* ---------- Settings: sections, search, About, footer ---------- */
 .set-wrap { max-width: 740px; margin: 0 auto; display: grid; gap: var(--sp-4); }
 .set-wrap > .back { justify-self: start; margin-bottom: -6px; }
-.set-search { position: sticky; top: calc(70px + env(safe-area-inset-top)); z-index: 5; display: flex; align-items: center; gap: var(--sp-2); padding: 4px 6px 4px 14px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-1); }
+.set-search { position: sticky; top: calc(70px + env(safe-area-inset-top)); z-index: 5; display: flex; align-items: center; gap: var(--sp-2); padding: 4px 6px 4px 14px; border-radius: var(--r-8, 8px); background: var(--ctl-bg, var(--surface)); border: 1px solid var(--ctl-bd, var(--line)); box-shadow: var(--sh-1); }
 .set-search svg { width: 17px; height: 17px; color: var(--muted); flex: none; }
 .set-search input { border: 0; background: none; padding: 9px 4px; }
 .set-search input:focus { outline: none; }
+.set-search:focus-within { border-color: var(--focus, var(--accent)); outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 .set-search:focus-within { border-color: var(--accent); }
 @media (max-width: 640px) { .set-search { top: calc(62px + env(safe-area-inset-top)); } }
 @media (min-width: 641px) and (max-width: 1380px) { .set-search { top: calc(84px + env(safe-area-inset-top)); } }
@@ -3615,7 +3622,7 @@ body.first-load #todayBar { opacity: 0; }
 .hs-dlg h2 { margin: 0; }
 .hs-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
 .hs-dots { display: flex; gap: 6px; }
-.hs-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--heat0); box-shadow: inset 0 0 0 1px var(--line); transition: background-color .2s, width .2s; }
+.hs-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--heat0); box-shadow: inset 0 0 0 1.5px var(--ctl-bd, var(--line)); transition: background-color .2s, width .2s; }
 .hs-dots i.on { background: var(--accent); box-shadow: none; width: 20px; border-radius: 999px; }
 .hs-step { display: none; margin-top: 14px; }
 .hs-step.on { display: block; }
@@ -3797,10 +3804,10 @@ body.first-load #todayBar { opacity: 0; }
 .lv-cd.paused { color: var(--muted); }
 .lv-seat.st-paused, .lv-seat.st-idle { opacity: .85; }
 .mode-seg { display: flex; flex-wrap: wrap; gap: 6px; }
-.mode-seg button { flex: 1 1 140px; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 9px 12px; cursor: pointer; color: var(--text); font: inherit; min-height: 44px; }
+.mode-seg button { flex: 1 1 140px; text-align: left; border: 1px solid var(--ctl-bd, var(--line)); background: var(--pad, var(--surface)); border-radius: 12px; padding: 9px 12px; cursor: pointer; color: var(--text); font: inherit; min-height: 44px; }
 .mode-seg button b { display: block; font-size: 14px; }
 .mode-seg button span { font-size: 12px; color: var(--muted); }
-.mode-seg button.active { border-color: var(--accent); background: var(--accent-soft); }
+.mode-seg button.active { border-color: var(--accent-text, var(--accent)); background: var(--accent-tint, var(--accent-soft)); box-shadow: inset 0 0 0 1px var(--accent-text, var(--accent)); }
 /* Player card: the stats board folds under the header (v1.14.3) */
 .pc-toggle { display: inline-flex; align-items: center; gap: 6px; margin: 12px 18px 0; padding: 6px 12px; min-height: 36px; border: 1px solid var(--pc-line); border-radius: 999px;
   background: var(--pc-tile); color: var(--pc-fg); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
@@ -3998,8 +4005,9 @@ ui-select > option, ui-select > optgroup { display: none; }
 .ui-star:hover { background: var(--hover); color: var(--t-1, var(--text)); }
 .ui-star.on { color: var(--warn-text, var(--warn)); } .ui-star.on svg { fill: currentColor; }
 .ui-star:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 1px; }
-.k-preset .ui-opt { padding-right: var(--space-4, 4px); } .k-preset .ui-tick { order: 0; margin-left: 0; width: auto; }
-.k-preset .ui-opt .ui-opt-l { flex: 0 1 auto; } .k-preset .ui-opt .ui-rhy { margin-left: auto; order: 1; } .k-preset .ui-opt .ui-star { order: 2; }
+.k-preset .ui-opt { padding-right: var(--space-4, 4px); } .k-preset .ui-tick { order: 1; margin: 0 var(--space-4, 4px) 0 auto; width: 16px; }
+.k-preset .ui-opt .ui-opt-l { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.k-preset .ui-opt .ui-opt-l { flex: 0 1 auto; } .k-preset .ui-opt .ui-rhy { margin-left: 0; order: 2; } .k-preset .ui-opt .ui-star { order: 3; }
 .ui-sheet .ui-star { width: 44px; height: 44px; }
 .ui-opt-s + .ui-tick { margin-left: var(--space-8, 8px); }
 .ui-grp { display: flex; justify-content: space-between; gap: var(--space-8, 8px); padding: var(--space-8, 8px) var(--space-12, 12px) var(--space-4, 4px); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
@@ -4036,7 +4044,8 @@ dialog.ui-pop.ui-sheet::backdrop { background: var(--scrim, rgba(0, 0, 0, .5)); 
 .ui-sheet-x svg { width: 16px; height: 16px; }
 .ui-sheet-x:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 .ui-pop-body { display: flex; flex-direction: column; min-height: 0; }
-.ui-sheet-body { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+.ui-sheet-body { display: flex; flex-direction: column; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+.ui-sheet-body > .ui-foot { position: sticky; bottom: 0; z-index: 1; background: var(--pop-bg, var(--surface)); }   /* Done is always on screen */
 .ui-sheet .ui-opt { min-height: 48px; }
 .ui-sheet .ui-search { margin: 0 0 var(--space-6, 6px); min-height: 44px; box-sizing: border-box; }
 .ui-sheet .ui-foot-btn { height: 44px; }
@@ -4045,6 +4054,9 @@ dialog.ui-pop.ui-sheet::backdrop { background: var(--scrim, rgba(0, 0, 0, .5)); 
 .ui-sheet .ui-num-b { width: 44px; height: 44px; } .ui-sheet .ui-num-well { height: 52px; }
 .ui-sheet .ui-ampm button { height: 44px; min-width: 52px; flex: 1; }
 .ui-sheet .ui-time-exact { flex-wrap: wrap; }
+.ui-sheet .ui-time-exact ui-num { flex: 1 1 0; min-width: 0; }
+.ui-sheet .ui-time-exact .ui-num-well { width: 100%; justify-content: space-between; }
+.ui-sheet ui-num[bare] .ui-num-b { border-color: transparent; background: var(--hover); }   /* the well is the edge */
 .ui-sheet .ui-ampm { flex: 1 0 100%; margin-left: 0; }   /* AM / PM on its own row: two 44 px steppers and the switch don't fit across a phone */
 
 /* ----- number stepper ----- */
@@ -4069,7 +4081,7 @@ ui-num[disabled] .ui-num-well { background: transparent; border-style: dashed; b
 .ui-cal { width: 268px; flex: none; }
 .ui-cal-head { display: flex; align-items: center; gap: var(--space-4, 4px); min-height: 40px; margin-bottom: var(--space-4, 4px); }
 .ui-cal-title { flex: 1; padding-left: var(--space-8, 8px); font-weight: 600; font-size: var(--fs-15, 15px); }
-.ui-ib { all: unset; box-sizing: border-box; flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--hover); color: var(--t-1, var(--text)); cursor: pointer; }
+.ui-ib { all: unset; box-sizing: border-box; flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--ctl-bd); background: var(--pad); color: var(--t-1, var(--text)); cursor: pointer; }
 .ui-ib:hover { background: var(--press); color: var(--t-1, var(--text)); }
 .ui-cal-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
 .ui-cal-dow span { display: grid; place-items: center; height: 24px; color: var(--t-2, var(--muted)); font-size: var(--fs-11, 11px); font-weight: 600; }
@@ -4087,7 +4099,7 @@ ui-num[disabled] .ui-num-well { background: transparent; border-style: dashed; b
 .ui-day.sel.today { color: var(--on-accent, #fff); }
 .ui-day:disabled { opacity: .3; cursor: default; background: none; }
 /* quick picks: a column beside the month, each with the date it means */
-.ui-quick { display: grid; gap: 2px; align-content: start; width: 164px; flex: none; padding-right: var(--space-12, 12px); border-right: 1px solid var(--divider, var(--line)); align-self: stretch; }
+.ui-quick { display: grid; gap: 2px; align-content: start; width: 184px; flex: none; padding-right: var(--space-12, 12px); border-right: 1px solid var(--divider, var(--line)); align-self: stretch; }
 .ui-quick-h { padding: var(--space-8, 8px) var(--space-8, 8px) var(--space-6, 6px); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
 .ui-qrow { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: var(--space-8, 8px); min-height: 36px; padding: 0 var(--space-8, 8px); border-radius: var(--r-8, 8px); font-size: var(--fs-14, 14px); cursor: pointer; white-space: nowrap; }
 .ui-qrow:hover { background: var(--hover); }
@@ -4097,8 +4109,7 @@ ui-num[disabled] .ui-num-well { background: transparent; border-style: dashed; b
 .ui-foot-v { align-items: center; margin-top: var(--space-12, 12px); padding-top: var(--space-8, 8px); border-top-color: var(--divider, var(--line)); }
 .ui-foot-v .ui-foot-sp { flex: 1; }
 .ui-foot-v .ui-foot-btn { flex: none; min-width: 76px; }
-.ui-quiet { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; height: var(--h-sm, 32px); padding: 0 var(--space-12, 12px); border-radius: 999px; font-size: var(--fs-13, 13px); font-weight: 600; color: var(--t-1, var(--text)); cursor: pointer; }
-.ui-quiet[data-today], .ui-quiet[data-now], .ui-quiet[data-default] { color: var(--accent-text, var(--accent)); }
+.ui-quiet { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; height: var(--h-sm, 32px); padding: 0 var(--space-12, 12px); border-radius: 999px; font-size: var(--fs-13, 13px); font-weight: 600; color: var(--accent-text, var(--accent)); cursor: pointer; }
 .ui-quiet:hover { background: var(--hover); }
 .ui-chipbtn { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: var(--space-6, 6px); min-height: 30px; padding: 0 var(--space-12, 12px); border-radius: var(--r-pill, 999px); border: 1px solid var(--ctl-bd); font-size: var(--fs-12, 12px); font-weight: 500; cursor: pointer; white-space: nowrap; }
 .ui-chipbtn:hover { border-color: var(--ctl-bd-hover); background: var(--hover); }
@@ -4108,7 +4119,7 @@ ui-num[disabled] .ui-num-well { background: transparent; border-style: dashed; b
 .ui-sheet .ui-date-pop, dialog.ui-sheet.ui-date-pop { width: 100%; }
 .ui-sheet .ui-date-body { flex-direction: column; align-items: stretch; }
 .ui-sheet .ui-cal { width: auto; }
-.ui-sheet .ui-date-pop .ui-quick { display: grid; grid-template-columns: 1fr 1fr; width: auto; gap: 2px var(--space-8, 8px); padding: 0 0 var(--space-8, 8px); margin-bottom: var(--space-8, 8px); border-right: 0; border-bottom: 1px solid var(--divider, var(--line)); }
+.ui-sheet.ui-date-pop .ui-quick, .ui-sheet .ui-date-pop .ui-quick { display: grid; grid-template-columns: 1fr 1fr; width: auto; gap: 2px var(--space-8, 8px); padding: 0 0 var(--space-8, 8px); margin-bottom: var(--space-8, 8px); border-right: 0; border-bottom: 1px solid var(--divider, var(--line)); }
 .ui-sheet .ui-quick-h { display: none; }
 .ui-sheet .ui-qrow { min-height: 44px; }
 .ui-sheet .ui-day { min-height: 44px; }
@@ -4210,7 +4221,11 @@ input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.1); }
 input[type="range"]:disabled { opacity: .5; cursor: default; }
 @media (pointer: coarse) { input[type="range"] { height: 44px; } }
 input[type="range"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 4px; border-radius: 6px; }
-input[type="range"]:disabled { opacity: .5; cursor: not-allowed; }
+input[type="range"]:disabled { opacity: 1; cursor: not-allowed; }
+input[type="range"]:disabled::-webkit-slider-runnable-track { background: var(--ctl-bd, var(--track)); }
+input[type="range"]:disabled::-moz-range-progress { background: var(--ctl-bd, var(--track)); }
+input[type="range"]:disabled::-webkit-slider-thumb { background: var(--pop-bg, var(--surface)); border: 1.5px dashed var(--ctl-bd, var(--muted)); box-shadow: none; }
+input[type="range"]:disabled::-moz-range-thumb { background: var(--pop-bg, var(--surface)); border: 1.5px dashed var(--ctl-bd, var(--muted)); box-shadow: none; }
 .ui-bubble { position: fixed; z-index: 90; transform: translate(-50%, -100%) scale(.9); padding: 2px var(--space-8, 8px); border-radius: var(--r-sm, 8px); background: var(--t-1, var(--text)); color: var(--s-1, var(--surface)); font-size: var(--fs-12, 12px); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity var(--d-1, 120ms) var(--ease-out, ease), transform var(--d-1, 120ms) var(--ease-out, ease); }
 .ui-bubble.in-dlg { position: absolute; }
 .ui-bubble.on { opacity: 1; transform: translate(-50%, -100%); }
@@ -4218,13 +4233,16 @@ input[type="range"]:disabled { opacity: .5; cursor: not-allowed; }
 /* ----- touch: 44 px targets; the small × buttons inside a field keep their look and get a larger hit area ----- */
 @media (pointer: coarse) {
   ui-select, ui-date, ui-time, ui-num, ui-tags { min-height: 44px; }
-  ui-color { width: 44px; height: 44px; }
+  ui-color:not([named]) { width: 44px; height: 44px; }
+  ui-color[named] { flex: none; min-height: 44px; height: auto; }   /* dot, name and chevron stay inside the well */
   .ui-tag button:not(.plant):not(.rem-check), .ui-clear:not(.plant):not(.rem-check) { min-height: 0; position: relative; }
   .ui-tag button::after, .ui-clear::after { content: ''; position: absolute; inset: -11px; }
   ui-tags input[type="text"]:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) { min-height: 34px; }
   .ui-num-b:not(.plant):not(.rem-check) { min-height: 0; width: 44px; }
   .ui-sheet-x:not(.plant):not(.rem-check), .ui-ib:not(.plant):not(.rem-check) { min-height: 0; width: 44px; height: 44px; }   /* round, and a full 44 px target */
   .ui-sw:not(.plant):not(.rem-check), .ui-star:not(.plant):not(.rem-check) { min-height: 0; }   /* a swatch keeps its circle; the star's target is its ::after */
+  .ui-sw::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; }   /* 39 px circles, 44 px targets (they sit 47 px apart) */
+  .ui-num-b:not(.plant):not(.rem-check) { height: 44px; } .ui-num-well { height: 52px; }
 }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
@@ -6194,7 +6212,7 @@ const UI = (() => {
         el.innerHTML = `${this.hasAttribute('allday') ? `<label class="ui-row"><span>All day</span><input type="checkbox" role="switch" class="ui-allday"${this._all ? ' checked' : ''}></label>` : ''}
           <div class="ui-time-body"><div class="ui-quick" role="group" aria-label="Quick picks">${TIME_CHIPS.map(([n, v, ic]) => `<button type="button" class="ui-ttile" data-t="${v}">${IC[ic]}<span><b>${n}</b><small>${h(niceTime(...tparse(v)))}</small></span><i class="ui-tcheck" aria-hidden="true">${IC.check}</i></button>`).join('')}</div>
           <div class="ui-time-h" aria-hidden="true">Exact time</div>
-          <div class="ui-time-exact"><ui-num class="ui-th" bare allow-empty placeholder="––" aria-label="Hour" min="${h12 ? 1 : 0}" max="${h12 ? 12 : 23}" wrap${h12 ? '' : ' pad="2"'}></ui-num><span class="ui-time-sep" aria-hidden="true">:</span><ui-num class="ui-tm" bare allow-empty placeholder="––" aria-label="Minute" min="0" max="59" step="${step}" wrap pad="2"></ui-num>${h12 ? `<div class="ui-ampm" role="radiogroup" aria-label="AM or PM"><button type="button" role="radio" data-ap="am">AM</button><button type="button" role="radio" data-ap="pm">PM</button></div>` : ''}</div></div>
+          <div class="ui-time-exact"><ui-num class="ui-th" bare allow-empty placeholder="hh" aria-label="Hour" min="${h12 ? 1 : 0}" max="${h12 ? 12 : 23}" wrap${h12 ? '' : ' pad="2"'}></ui-num><span class="ui-time-sep" aria-hidden="true">:</span><ui-num class="ui-tm" bare allow-empty placeholder="mm" aria-label="Minute" min="0" max="59" step="${step}" wrap pad="2"></ui-num>${h12 ? `<div class="ui-ampm" role="radiogroup" aria-label="AM or PM"><button type="button" role="radio" data-ap="am">AM</button><button type="button" role="radio" data-ap="pm">PM</button></div>` : ''}</div></div>
           <div class="ui-foot ui-foot-v"><button type="button" class="ui-quiet" data-now>Now</button><span class="ui-foot-sp"></span>${this.clearable ? '<button type="button" class="ui-quiet" data-clear>Clear</button>' : ''}<button type="button" class="ui-foot-btn ui-done">Done</button></div>`;
       }, { cls: 'ui-time-pop', role: 'dialog', maxH: 600, label: `Choose ${label.toLowerCase()}`, title: label, head: label, match: false, onClose: () => { this._pop = null; this.setAttribute('aria-expanded', 'false'); this.classList.remove('open'); if (this._dirty) { this._dirty = false; fire(this, 'change'); } } });
       this.setAttribute('aria-expanded', 'true'); this.classList.add('open');
@@ -6204,7 +6222,8 @@ const UI = (() => {
         const typing = w => w.contains(document.activeElement);   // the well being typed in keeps what was typed
         if (!typing(H)) H.value = t ? (h12 ? (t[0] % 12 || 12) : t[0]) : '';   // nothing set: nothing shown
         if (!typing(M)) M.value = t ? t[1] : '';
-        el.querySelectorAll('[data-ap]').forEach(b => b.setAttribute('aria-checked', !!t && (b.dataset.ap === 'pm') === (t[0] >= 12)));
+        const pmNow = t ? t[0] >= 12 : new Date().getHours() >= 12;   // nothing set yet: the half of the day a typed hour will take
+        el.querySelectorAll('[data-ap]').forEach(b => b.setAttribute('aria-checked', (b.dataset.ap === 'pm') === pmNow));
         el.querySelectorAll('[data-t]').forEach(b => { const on = !this._all && b.dataset.t === this._v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
         const body = el.querySelector('.ui-time-body'); body.classList.toggle('off', this._all); body.inert = this._all;
       };
@@ -6577,7 +6596,8 @@ function renderGallery() {
       <div class="field-top"><label class="field" for="gxg1">Subject / tags</label><small>up to 4</small></div><ui-tags id="gxg1" value="Physics, JEE" placeholder="e.g. JEE, Study" max="4"></ui-tags>`)}
     ${cell('Switch, tick box, radio', `<div class="gx-row"><span>Switch on</span><input type="checkbox" id="gxk1" checked aria-label="Switch on"></div>
       <div class="gx-row"><span>Switch off</span><input type="checkbox" aria-label="Switch off"></div>
-      <div class="gx-row"><span>Switch disabled</span><input type="checkbox" aria-label="Switch disabled" disabled></div>
+      <div class="gx-row"><span>Switch disabled, off</span><input type="checkbox" aria-label="Switch disabled, off" disabled></div>
+      <div class="gx-row"><span>Switch disabled, on</span><input type="checkbox" aria-label="Switch disabled, on" checked disabled></div>
       <label class="gx-check"><input type="checkbox" data-check checked><span>Remind me 10 min before</span></label>
       <label class="gx-check"><input type="checkbox" data-check><span>Repeat every week</span></label>
       <label class="gx-check"><input type="checkbox" data-check id="gxkm"><span>All subtasks · 2 of 5</span></label>
