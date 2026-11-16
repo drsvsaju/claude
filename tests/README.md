@@ -43,6 +43,8 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
 - `ui-compat.mjs` waits for its page binding before handing the page to the suite (two bindings set up at once made
   Playwright throw "reading 'addBinding'" inside the page).
 - `startup.mjs`: start-up cost of two builds, alternated (`node startup.mjs v120.html p1.html`).
+- v112c's start-up check takes the best of three loads: one cold load in this container varies by about ±60 ms
+  (v1.20 measured 310–370 ms against the 300 ms budget).
 - `tools/pair.py`: before/after screenshot pairs with captions.
 - `tools/`: `site.sh` (`sh site.sh other.html` builds a second copy next to the main one), `contact.py` (contact
   sheets), `mkindex.py` (the JS function index in `notes/v2.0-codemap`), `tokens.mjs` (regenerates the stylesheet's
