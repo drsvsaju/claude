@@ -98,3 +98,4 @@ const st4 = await ev(C, () => ({ auth: !$('#authView').classList.contains('hidde
 check('login gone (signed out elsewhere): shows the login screen once, no reload loop', st4.auth && !st4.app && !st4.last && C.nav === 1, JSON.stringify(st4) + ` navigations ${C.nav}`);
 log('errors', errs, '| failures', fails);
 await b.close();
+process.exit(fails ? 1 : 0);   // v2.0: a failing check fails the suite (it used to exit 0)

@@ -105,3 +105,4 @@ for (const [time, dark, glass] of [['2026-10-22T06:15:00+05:30', false, 'off'], 
 check('Readable in every theme, light/dark and Glossed: text vs. the sky behind it stays ≥ 4.5:1 (WCAG AA) at sunrise, noon, sunset and night with rain, and the sky costs ≤ 15% contrast', worst >= 4.5 && worstDrop <= 0.15, `worst ${worst.toFixed(2)} (${worstAt}) · biggest drop ${(worstDrop * 100).toFixed(1)}% (${dropAt})`);
 log('errors', JSON.stringify(errs), '| failures', fails);
 await b.close();
+process.exit(fails ? 1 : 0);   // v2.0: a failing check fails the suite (it used to exit 0)

@@ -22,6 +22,23 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   `<ui-select>`, keyboard maps, ARIA, panels inside dialogs, phone sheets, the preset chooser, every palette's contrast
   on every layer, and that the demo writes nothing. Suites named `v2*` run without `ot-classic.mjs`.
 - `perfp1.mjs`: a quick render / tab-switch / theme-application timing of two builds side by side.
+- `ui-compat.mjs` (v2.0, preloaded for every suite by the runners): the older suites keep calling `page.selectOption()`,
+  `page.fill()` on a date / time / number, `page.on('dialog')` or a `window.confirm` stub, and this layer makes those
+  calls drive the app's own controls and its confirm dialog. A suite that clicks the confirm dialog's buttons itself
+  is left alone. `v200c.mjs` tests the layer.
+- **Time of day.** The runners start every suite in a timezone where it is about midday on the same calendar date
+  (`TZ=…`, followed by Node and by the browser). The app unlocks "Night owl" after 10 PM and "Early bird" before 7 AM,
+  which changes coins, celebrations and post counts, so without this a run at night fails suites that pass by day.
+  v7 also lets those celebrations finish before its keyboard-shortcut steps, so it passes at any hour on its own.
+- **What counts as a failure.** A runner line reads `pass` or `FAIL`, and the last line lists every failed suite. A
+  suite fails when it exits non-zero, prints a `✗` line, or reports `failures N` / `problems N` / `N FAILED` with
+  N > 0. Until v2.0, fourteen suites (v111b–v114a, plus v112e's layout problems) printed their failure count and still
+  exited 0, so a failing check could pass unnoticed; they now exit 1 as well. Three were found failing that way:
+  v112c (its "nothing changed" expectation predated the rewards v1.18–v1.19 add to an old account: streak milestones,
+  rank frames, season coins; it now checks that only those are added), v113b (its sharpness check sampled one fixed
+  row of the share image that no longer crossed any text; it now takes the best of rows every 2%), and v1131a (a
+  rank-up shows one small toast during a block by design since v1.19; the test now allows exactly that toast).
+- `tools/pair.py`: before/after screenshot pairs with captions.
 - `tools/`: `site.sh` (`sh site.sh other.html` builds a second copy next to the main one), `contact.py` (contact
   sheets), `mkindex.py` (the JS function index in `notes/v2.0-codemap`), `tokens.mjs` (regenerates the stylesheet's
   first-paint colour roles from the script's own arithmetic: `node tokens.mjs --write`).

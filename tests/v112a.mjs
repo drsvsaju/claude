@@ -354,3 +354,4 @@ log('— Minimalist / motion / sound —');
 }
 log('errors', JSON.stringify(errs), '| failures', fails);
 await b.close();
+process.exit(fails ? 1 : 0);   // v2.0: a failing check fails the suite (it used to exit 0)

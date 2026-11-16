@@ -136,3 +136,4 @@ await wait(2500);
 check('…and on the leaderboard', await B.ev(() => $$('.lb li, .lb-pod').some(li => li.innerHTML.includes('clip-path'))));   // top three sit on the podium (v1.16)
 log('errors', JSON.stringify(errs), '| failures', fails);
 await b.close();
+process.exit(fails ? 1 : 0);   // v2.0: a failing check fails the suite (it used to exit 0)

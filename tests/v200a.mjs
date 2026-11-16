@@ -118,7 +118,7 @@ await p.focus('#gxn1 input'); await p.keyboard.press('Home'); await p.keyboard.p
 const n4 = await ev(() => { const n = document.getElementById('gxn1'); const r = { v: n.value, lessOff: n.querySelector('[data-d="-1"]').disabled }; n.value = 30; r.code = n.value; r.silent = LOG.splice(0).filter(x => x.endsWith('=30')).length; return r; });
 const hold = await (async () => { const bb = await p.locator('#gxn1 .ui-num-b[data-d="1"]').boundingBox(); await p.mouse.move(bb.x + 10, bb.y + 10); await p.mouse.down(); await wait(900); await p.mouse.up(); return ev(() => +document.getElementById('gxn1').value); })();
 check('ui-num: a labelled spinbutton with min / max / now and a suffix; + + – steps by 5 with input + change each; 9999 clamps to 720 on leaving; letters are dropped and the last good value stays; Home / ↑ / PageUp; set from code is silent; holding + repeats',
-  n0.v === '120' && n0.num === 120 && n0.role === 'spinbutton' && n0.now === '120' && n0.min === '10' && n0.max === '720' && n0.lab && n0.sfx === 'min' && n1.v === '125' && n1.log.length === 6 && n2.v === '720' && n2.log.length === 1 && n3 === '720' && n4.v === '65' && n4.code === '30' && n4.silent === 0 && hold >= 45, JSON.stringify({ n0, n1, n2, n3, n4, hold }));
+  n0.v === '120' && n0.num === 120 && n0.role === 'spinbutton' && n0.now === '120' && n0.min === '10' && n0.max === '720' && n0.lab && n0.sfx === 'minutes' && n1.v === '125' && n1.log.length === 6 && n2.v === '720' && n2.log.length === 1 && n3 === '720' && n4.v === '65' && n4.code === '30' && n4.silent === 0 && hold >= 45, JSON.stringify({ n0, n1, n2, n3, n4, hold }));
 await log();
 
 // ---------- <ui-date> ----------
@@ -134,7 +134,7 @@ const tomorrow = await ev(() => { const d = new Date(); return UI.dkey(new Date(
 await p.click('#gxd1 .ui-clear'); await wait(80);
 const dt4 = await ev(() => ({ v: document.getElementById('gxd1').value, face: document.querySelector('#gxd1 .ui-face').textContent, log: LOG.splice(0).filter(x => /^change/.test(x)).length }));
 check('ui-date: a dialog with a 6 × 7 grid, the month title, a Monday-first header, quick picks, focus on today; → ↓ Enter picks today + 8 (YYYY-MM-DD, input + change, valueAsDate); "Tomorrow" quick pick; the × clears it',
-  dt1.role === 'dialog' && dt1.days === 42 && dt1.focusToday && dt1.dow === 'Mo' && dt1.quick === 'Today|Tomorrow|This weekend|Next week|In 2 weeks' && dt1.exp === 'true' && dt2.v === expect8 && dt2.log.length === 2 && dt2.clear && dt2.date && dt3.v === tomorrow && /^Tomorrow/.test(dt3.face) && dt4.v === '' && dt4.face === 'No date' && dt4.log === 2, JSON.stringify({ dt1, dt2, expect8, dt3, dt4 }));
+  dt1.role === 'dialog' && dt1.days === 42 && dt1.focusToday && dt1.dow === 'Mo' && dt1.quick === 'Today|Tomorrow|This weekend|Next week|In 2 weeks' && dt1.exp === 'true' && dt2.v === expect8 && dt2.log.length === 2 && dt2.clear && dt2.date && dt3.v === tomorrow && /^Tomorrow/.test(dt3.face) && dt4.v === '' && dt4.face === 'Add date' && dt4.log === 2, JSON.stringify({ dt1, dt2, expect8, dt3, dt4 }));
 const dm = await ev(async () => {
   const d = document.getElementById('gxd2'), out = { v0: d.value, noClear: !d.querySelector('.ui-clear') };
   d.min = UI.dkey(new Date()); d.value = 'garbage'; out.bad = d.value; d.value = '2027-01-28'; out.set = d.value; out.face = d.querySelector('.ui-face').textContent;
@@ -156,7 +156,7 @@ await p.click('#gxt1'); await wait(150);
 await p.click('.ui-pop [data-t="18:00"]'); await wait(120);
 const tm1 = await ev(() => ({ v: document.getElementById('gxt1').value, face: document.querySelector('#gxt1 .ui-face').textContent, log: LOG.splice(0), closed: !document.querySelector('.ui-pop') }));
 await p.click('#gxt1'); await wait(150);
-await p.click('.ui-pop .ui-th .ui-num-b[data-d="1"]'); await p.click('.ui-pop .ui-tm .ui-num-b[data-d="-1"]'); await wait(80);
+await p.focus('.ui-pop .ui-th input'); await p.keyboard.press('ArrowUp'); await p.focus('.ui-pop .ui-tm input'); await p.keyboard.press('ArrowDown'); await wait(80);
 const tm2 = await ev(() => document.getElementById('gxt1').value);
 await p.click('.ui-pop .ui-done'); await wait(120);
 const tm3 = await ev(() => ({ v: document.getElementById('gxt1').value, log: LOG.splice(0).filter(x => /^change/.test(x)).length, closed: !document.querySelector('.ui-pop') }));
@@ -166,7 +166,7 @@ await p.click('#gxt1'); await wait(150);
 const tm5 = await ev(() => { const pop = document.querySelector('.ui-pop'); return { h: pop.querySelector('.ui-th').value, m: pop.querySelector('.ui-tm').value, am: pop.querySelector('[data-ap=am]').getAttribute('aria-checked') }; });
 await p.click('.ui-pop [data-ap=pm]'); await wait(80); await p.keyboard.press('Escape'); await wait(120);
 const tm6 = await ev(() => { const r = { v: document.getElementById('gxt1').value, face: document.querySelector('#gxt1 .ui-face').textContent }; UI.cfg.hour12 = () => false; LOG.splice(0); return r; });
-check('ui-time: chips set the time and close (one change); the steppers wrap (18:00 → +1 h, –5 min = 19:55) and Done closes with one change; in 12-hour mode 00:05 reads 12:05 AM, the panel shows 12 : 05 AM, PM makes it 12:05',
+check('ui-time: the times of day set the time and close (one change); hour and minute step with the arrow keys and wrap (18:00 → ↑ hour, ↓ minute = 19:55) and Done closes with one change; in 12-hour mode 00:05 reads 12:05 AM, the panel shows 12 : 05 AM, PM makes it 12:05',
   tm0.v === '14:30' && tm1.v === '18:00' && tm1.face === '18:00' && tm1.closed && tm1.log.filter(x => /^change/.test(x)).length === 1 && tm2 === '19:55' && tm3.v === '19:55' && tm3.log === 1 && tm3.closed && tm4 === '12:05 AM' && tm5.h === '12' && tm5.m === '05' && tm5.am === 'true' && tm6.v === '12:05' && tm6.face === '12:05 PM', JSON.stringify({ tm0, tm1, tm2, tm3, tm4, tm5, tm6 }));
 await p.click('#gxt2'); await wait(150);
 await p.click('.ui-pop .ui-allday'); await wait(100);
@@ -182,7 +182,7 @@ await p.click('.ui-pop .ui-sw[data-c="#3a7ca5"]'); await wait(120);
 const co2 = await ev(() => ({ v: document.getElementById('gxc1').value, log: LOG.splice(0), label: document.getElementById('gxc1').getAttribute('aria-label') }));
 await p.click('#gxc1'); await wait(120); await p.fill('.ui-pop .ui-hex input', '#ABCDEF'); await wait(80); await p.keyboard.press('Enter'); await wait(120);
 const co3 = await ev(() => { const r = { v: document.getElementById('gxc1').value, closed: !document.querySelector('.ui-pop') }; const c = document.getElementById('gxc1'); c.value = 'red'; r.bad = c.value; LOG.splice(0); return r; });
-check('ui-color: a radio group of swatches with the current one checked; picking one sets #rrggbb (input + change) and the label names it; a typed hex is accepted; an invalid value from code is ignored', co1.n === 14 && co1.checked === '#c25480' && co1.role === 'radiogroup' && co2.v === '#3a7ca5' && co2.log.length === 2 && /#3a7ca5/.test(co2.label) && co3.v === '#abcdef' && co3.closed && co3.bad === '#abcdef', JSON.stringify({ co1, co2, co3 }));
+check('ui-color: a radio group of 16 named swatches with the current one checked; picking one sets #rrggbb (input + change) and the control is named after the colour ("Ocean"); a typed hex is accepted; an invalid value from code is ignored', co1.n === 16 && co1.checked === '#c25480' && co1.role === 'radiogroup' && co2.v === '#3a7ca5' && co2.log.length === 2 && co2.label === 'Session colour: Ocean' && co3.v === '#abcdef' && co3.closed && co3.bad === '#abcdef', JSON.stringify({ co1, co2, co3 }));
 const tg0 = await ev(() => ({ v: document.getElementById('gxg1').value, chips: [...document.querySelectorAll('#gxg1 .ui-tag')].map(x => x.textContent.trim()) }));
 await p.click('#gxg1 input'); await wait(150);
 const tg1 = await ev(() => ({ sug: [...document.querySelectorAll('.ui-pop [role=option]')].map(x => x.textContent.trim()), exp: document.querySelector('#gxg1 input').getAttribute('aria-expanded') }));
@@ -198,16 +198,16 @@ check('ui-tags: chips from "Physics, JEE"; focus offers past tags not already us
 // ---------- menu, confirm / alert, slider, switch ----------
 await p.click('#gxmenuBtn'); await wait(150);
 const m1 = await ev(() => { const pop = document.querySelector('.ui-pop'); return { role: pop.getAttribute('role'), items: [...pop.querySelectorAll('[role=menuitem]')].length, focus: document.activeElement.textContent.trim().slice(0, 4), sep: !!pop.querySelector('[role=separator]') }; });
-await p.keyboard.press('ArrowDown'); await p.keyboard.press('ArrowDown'); await p.keyboard.press('ArrowDown'); const m2 = await ev(() => document.activeElement.textContent.trim().slice(0, 4));
+await p.keyboard.press('ArrowDown'); await p.keyboard.press('ArrowDown'); await p.keyboard.press('ArrowDown'); const m2a = await ev(() => document.activeElement.textContent.trim().slice(0, 4)); await p.keyboard.press('ArrowDown'); const m2 = await ev(() => document.activeElement.textContent.trim().slice(0, 4));
 await p.keyboard.press('d'); await p.keyboard.press('Enter'); await wait(120);
 const m3 = await ev(() => ({ log: LOG.splice(0), closed: !document.querySelector('.ui-pop'), focus: document.activeElement.id }));
-check('UI.menu: role=menu with menu items and a divider, focus on the first; ↓ skips the disabled item and wraps; a letter jumps to the item; Enter runs it, closes and returns focus', m1.role === 'menu' && m1.items === 4 && m1.focus === 'Edit' && m1.sep && m2 === 'Edit' && m3.log.join() === 'menu:dup' && m3.closed && m3.focus === 'gxmenuBtn', JSON.stringify({ m1, m2, m3 }));
+check('UI.menu: role=menu with menu items and a divider, focus on the first; ↓ skips the disabled item and wraps; a letter jumps to the item; Enter runs it, closes and returns focus', m1.role === 'menu' && m1.items === 5 && m1.focus === 'Edit' && m1.sep && m2a === 'Dele' && m2 === 'Edit' && m3.log.join() === 'menu:dup' && m3.closed && m3.focus === 'gxmenuBtn', JSON.stringify({ m1, m2a, m2, m3 }));
 await p.click('#gxcfBtn'); await wait(200);
-const cf1 = await ev(() => ({ open: document.getElementById('confirmDlg').open, title: document.getElementById('cfTitle').textContent, ok: document.getElementById('cfOk').textContent + '|' + document.getElementById('cfOk').className, focus: document.activeElement.id }));
+const cf1 = await ev(() => ({ open: document.getElementById('confirmDlg').open, title: document.getElementById('cfTitle').textContent, ok: document.getElementById('cfOk').textContent + '|' + document.getElementById('cfOk').className, focus: document.activeElement.id, icon: !!document.querySelector('#confirmDlg.has-ic #cfIc svg') && !!document.querySelector('#cfOk svg') }));
 await p.click('#cfOk'); await wait(400);
 const cf2 = await log();
 const cf3 = await ev(async () => { const a = UI.confirm({ title: 'First?' }), b = UI.alert('Second'); await new Promise(r => setTimeout(r, 150)); const t1 = document.getElementById('cfTitle').textContent; document.getElementById('cfNo').click(); const ra = await a; await new Promise(r => setTimeout(r, 450)); const t2 = document.getElementById('cfTitle').textContent, noHidden = document.getElementById('cfNo').classList.contains('hidden'); document.getElementById('cfOk').click(); await b; await new Promise(r => setTimeout(r, 400)); return { t1, ra, t2, noHidden, open: document.getElementById('confirmDlg').open }; });
-check('UI.confirm: the dialog shows the question, a filled danger button, and starts on Cancel; OK resolves true. Two questions asked at once are shown one after the other; UI.alert has no Cancel', cf1.open && cf1.title === 'Delete this preset?' && cf1.ok === 'Delete|btn danger solid' && cf1.focus === 'cfNo' && cf2.join() === 'confirm:true' && cf3.t1 === 'First?' && cf3.ra === false && cf3.t2 === 'Second' && cf3.noHidden && !cf3.open, JSON.stringify({ cf1, cf2, cf3 }));
+check('UI.confirm: the dialog names the thing, shows a bin on its tile and on a filled danger button with a verb, and starts on the safe choice; OK resolves true. Two questions asked at once are shown one after the other; UI.alert has no Cancel', cf1.open && cf1.title === 'Delete “Sprint”?' && cf1.ok === 'Delete preset|btn danger solid' && cf1.icon && cf1.focus === 'cfNo' && cf2.join() === 'confirm:true' && cf3.t1 === 'First?' && cf3.ra === false && cf3.t2 === 'Second' && cf3.noHidden && !cf3.open, JSON.stringify({ cf1, cf2, cf3 }));
 const sl = await (async () => { const r0 = await ev(() => getComputedStyle(document.getElementById('gxr1')).getPropertyValue('--ui-fill').trim()); await p.focus('#gxr1'); await p.keyboard.press('ArrowRight'); await wait(80); return ev(r0 => { const r = document.getElementById('gxr1'), bub = document.querySelector('.ui-bubble'); const out = { r0, r1: getComputedStyle(r).getPropertyValue('--ui-fill').trim(), bub: bub && bub.classList.contains('on') ? bub.textContent : '', sw: document.getElementById('gxk1').getAttribute('role') }; r.value = 1; UI.range(r); out.r2 = getComputedStyle(r).getPropertyValue('--ui-fill').trim(); const n = document.createElement('input'); n.type = 'checkbox'; n.id = 'gxk2'; document.body.appendChild(n); return out; }, r0); })();
 await wait(120);
 const sw2 = await ev(() => document.getElementById('gxk2').getAttribute('role'));
@@ -250,9 +250,9 @@ check('Glossed (full and lite) and True Minimalist: the date panel opens on top 
 // ---------- the preset chooser (kind="preset") ----------
 await p.evaluate(() => { document.querySelector('#galleryBody').scrollIntoView(); window.scrollTo(0, 0); }); await log();
 await p.click('#gxp1'); await wait(400);
-const pr1 = await ev(() => { const pop = document.querySelector('.ui-pop'); return { groups: [...pop.querySelectorAll('.ui-group')].map(g => (g.querySelector('.ui-grp') || {}).textContent + ':' + [...g.querySelectorAll('.ui-opt .ui-opt-l')].map(x => x.textContent).join(',')), search: !!pop.querySelector('.ui-search input'), foot: [...pop.querySelectorAll('.ui-foot-btn')].map(b => b.textContent.trim()), chips: pop.querySelector('.ui-opt .ui-rhy').textContent.replace(/\s+/g, ''), name: pop.querySelector('.ui-opt').textContent.replace(/\s+/g, ' ').trim(), stars: pop.querySelectorAll('.ui-star').length, starOn: pop.querySelectorAll('.ui-star.on').length }; });
-check('Preset chooser: Favourites, Recent and All presets sections, a search box, each row with its rhythm (25 / 5 × 4) and a star, "New preset" and "Edit presets" at the bottom',
-  pr1.groups.join(' | ') === 'Favourites:Classic | Recent:Deep work,Sprint | All presets:Mock test,Reading,Revision' && pr1.search && pr1.foot.join() === 'New preset,Edit presets' && pr1.chips === '25/5×4' && /25 minutes focus, 5 minutes break, 4 rounds/.test(pr1.name) && pr1.stars === 6 && pr1.starOn === 1, JSON.stringify(pr1));
+const pr1 = await ev(() => { const pop = document.querySelector('.ui-pop'); return { key: (pop.querySelector('.ui-grp small') || {}).textContent, groups: [...pop.querySelectorAll('.ui-group')].map(g => (g.querySelector('.ui-grp span') || {}).textContent + ':' + [...g.querySelectorAll('.ui-opt .ui-opt-l')].map(x => x.textContent).join(',')), search: !!pop.querySelector('.ui-search input'), foot: [...pop.querySelectorAll('.ui-foot-btn')].map(b => b.textContent.trim()), chips: pop.querySelector('.ui-opt .ui-rhy').textContent.replace(/\s+/g, ''), order: [...pop.querySelector('.ui-opt').children].filter(x => getComputedStyle(x).position !== 'absolute').sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left).map(x => x.className.split(' ')[0]).join(), name: pop.querySelector('.ui-opt').textContent.replace(/\s+/g, ' ').trim(), stars: pop.querySelectorAll('.ui-star').length, starOn: pop.querySelectorAll('.ui-star.on').length }; });
+check('Preset chooser: Favourites, Recent and All presets sections (the first says what the numbers mean), a search box, each row in the order dot · name · check · rhythm · star, "New preset" and "Edit presets" at the bottom',
+  pr1.groups.join(' | ') === 'Favourites:Classic | Recent:Deep work,Sprint | All presets:Mock test,Reading,Revision' && pr1.search && pr1.foot.join() === 'New preset,Edit presets' && pr1.chips === '25/5×4' && pr1.key === 'focus / break × rounds' && /^ui-dot,ui-opt-l,ui-tick,ui-rhy,ui-star$/.test(pr1.order) && /25 minutes focus, 5 minutes break, 4 rounds/.test(pr1.name) && pr1.stars === 6 && pr1.starOn === 1, JSON.stringify(pr1));
 await p.click('.ui-pop .ui-opt:has-text("Mock test") .ui-star'); await wait(200);
 const pr2 = await ev(() => { const pop = document.querySelector('.ui-pop'); return { open: !!pop, fav: pop ? [...pop.querySelectorAll('.ui-group')][0].textContent.replace(/\s+/g, ' ') : '', value: document.getElementById('gxp1').value, log: LOG.splice(0), focus: !!(document.activeElement && document.activeElement.closest('.ui-pop .ui-search')), actRow: (document.querySelector('.ui-pop .ui-opt.act .ui-opt-l') || {}).textContent, pv: document.getElementById('pvDlg').open }; });
 check('Preset chooser: the star makes a favourite without closing the list or choosing the preset (no input / change event); the keyboard stays in the panel, on the same row', pr2.open && /Classic/.test(pr2.fav) && /Mock test/.test(pr2.fav) && pr2.value === 'classic' && pr2.log.join() === 'fav:mock=1' && pr2.focus && pr2.actRow === 'Mock test' && !pr2.pv, JSON.stringify(pr2));
@@ -294,7 +294,7 @@ await p.hover('#gxtip1'); await wait(150); const tp0 = await tipState(); await w
 await p.mouse.move(5, 5); await wait(150); const tp2 = await tipState();
 check('Tooltip: appears after a short hover (not at once), above the button and centred on it, with its key hint; it is hidden from assistive tech (the button has its own name) and goes when the pointer leaves',
   !tp0.on && tp1.on && tp1.text === 'Skip to breakS' && tp1.hidden === 'true' && tp1.above && tp1.centred && !tp2.on, JSON.stringify({ tp0, tp1, tp2 }));
-await p.focus('.gx-wrap .linkbtn'); await p.keyboard.press('Tab'); await wait(200); const tp3 = await tipState();
+await p.focus('.gx-wrap .btn.big'); await p.keyboard.press('Tab'); await wait(200); const tp3 = await tipState();
 await p.keyboard.press('Escape'); await wait(100); const tp4 = await tipState();
 const tpTouch = await (async () => { await ph.evaluate(() => document.getElementById('gxtip1').scrollIntoView({ block: 'center' })); await wait(200); await ph.tap('#gxtip1'); await wait(700); return pe(() => !!document.querySelector('.ui-tip.on')); })();
 check('Tooltip: keyboard focus shows it at once and a key press hides it; a tap on a phone never shows one', tp3.on && !tp4.on && !tpTouch, JSON.stringify({ tp3, tp4, tpTouch }));
@@ -336,6 +336,186 @@ console.log('palette minimums', JSON.stringify(Object.fromEntries(Object.keys(NE
 check(`Every palette (${pal.length} palette × mode pairs), on every layer (frame, page, quiet card, card, hero card, panel, field): a field's lip at least 3:1, the focus ring at least 3:1, text at least 7:1, secondary / accent / danger / warning / success text at least 4.5:1, text on a filled accent or danger button at least 4.5:1`, pal.length >= 40 && !weak.length, JSON.stringify(weak.slice(0, 6)));
 const lit = await ev(() => { const css = [...document.querySelectorAll('style')].map(x => x.textContent).join('\n'), miss = []; for (const [key, dark] of [['default:l', false], ['default:d', true]]) { const o = derivedFor(key + 'x', dark, null); for (const k in o) if (!css.includes(`--${k}: ${o[k]};`)) miss.push(key + ' --' + k + ': ' + o[k]); } return miss; });
 check('The stylesheet\'s first-paint colour roles (the GENERATED block) are exactly what the script works out for the default palette', !lit.length, JSON.stringify(lit.slice(0, 6)));
+// ---------- code review fixes (Phase 1, round 2) ----------
+{
+await ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); UI.closePop('api'); showTab('gallery'); }); await wait(500); await log();
+// a confirm closed by other code (Ctrl+K closes every open dialog) answers "no"; the queue does not stall
+await p.click('#gxcfBtn'); await wait(400);
+await ev(() => document.querySelectorAll('dialog[open]').forEach(d => d.close())); await wait(500);
+const cq1 = await log();
+await p.click('#gxcfBtn'); await wait(400);
+const cqOpen = await ev(() => document.getElementById('confirmDlg').open);
+if (cqOpen) await p.click('#cfOk'); await wait(500);
+const cq2 = await log();
+check('UI.confirm: a confirm closed by other code (as Ctrl+K closes every dialog) answers "no", and the next confirm still opens and answers', cq1.join() === 'confirm:false' && cqOpen && cq2.join() === 'confirm:true', JSON.stringify({ cq1, cqOpen, cq2 }));
+// a panel inside a dialog closes with that dialog
+await p.click('#gxdlgBtn'); await wait(400); await p.click('#gxds1'); await wait(300);
+const hp1 = await ev(() => UI.popOpen);
+await ev(() => document.querySelectorAll('dialog[open]').forEach(d => d.close())); await wait(500);
+const hp2 = await ev(() => ({ pop: UI.popOpen, el: !!document.querySelector('.ui-pop') }));
+check('A panel open inside a dialog closes with that dialog when other code closes it (nothing left open or holding back the focus queue)', hp1 && !hp2.pop && !hp2.el, JSON.stringify({ hp1, hp2 }));
+// scrolling a long list inside its panel keeps its place
+const sc = await ev(async () => {
+  const s = document.getElementById('gxs2'); s.scrollIntoView({ block: 'center' }); await new Promise(r => setTimeout(r, 150));
+  s.open(); await new Promise(r => setTimeout(r, 200));
+  const l = document.querySelector('.ui-pop .ui-list'), can = l.scrollHeight > l.clientHeight + 4;
+  l.scrollTop = 40; await new Promise(r => setTimeout(r, 250));   // (the scroll event reaches the page's capture listener)
+  const after = l.scrollTop; s.close(); await new Promise(r => setTimeout(r, 200)); return { can, after, sh: l.scrollHeight, ch: l.clientHeight };
+});
+check('A long list scrolls: scrolling inside the open panel no longer snaps the list back to the top', sc.can && sc.after >= 30, JSON.stringify(sc));
+// a date field's label still focuses it after its calendar has been opened
+await p.click('#gxd1'); await wait(300); await p.keyboard.press('Escape'); await wait(300);
+const errN = errs.length;
+await p.click('label[for="gxd1"]'); await wait(200);
+const lf2 = await ev(() => document.activeElement.id);
+check('Clicking a date field\'s label after its calendar has been opened focuses the field (it used to throw)', lf2 === 'gxd1' && errs.length === errN, JSON.stringify({ lf2, err: errs.slice(errN) }));
+// the calendar keeps keyboard focus: range picks, min / max, PageUp / PageDown at a month's end
+await ev(() => { const d = document.getElementById('gxd3'); d.value = ''; d.focus(); });
+await p.keyboard.press('Enter'); await wait(300); await p.keyboard.press('Enter'); await wait(150);
+const rk1 = await ev(() => ({ day: document.activeElement.classList.contains('ui-day'), d: document.activeElement.dataset.d, today: dayKey(new Date()) }));
+await p.keyboard.press('ArrowRight'); await p.keyboard.press('ArrowRight'); await p.keyboard.press('Enter'); await wait(400);
+const rk2 = await ev(() => ({ v: document.getElementById('gxd3').value, want: dayKey(new Date()) + '/' + dayKey(addDays(new Date(), 2)), open: !!document.querySelector('.ui-date-pop') }));
+await ev(() => { const d = document.getElementById('gxd1'); d.value = ''; d.max = dayKey(new Date()); d.focus(); });
+await p.keyboard.press('Enter'); await wait(300); await p.keyboard.press('ArrowRight'); await wait(120);
+const mk1 = await ev(() => ({ day: document.activeElement.classList.contains('ui-day'), d: document.activeElement.dataset ? document.activeElement.dataset.d : '', today: dayKey(new Date()) }));
+await p.keyboard.press('Escape'); await wait(300);
+await ev(() => { const d = document.getElementById('gxd1'); d.max = ''; d.value = '2026-03-31'; d.focus(); });
+await p.keyboard.press('Enter'); await wait(300); await p.keyboard.press('PageUp'); await wait(120);
+const pu = await ev(() => document.activeElement.dataset.d);
+await p.keyboard.press('PageDown'); await wait(120);
+const pd = await ev(() => document.activeElement.dataset.d);
+await ev(() => { const d = document.getElementById('gxd1'); d.value = '2026-01-31'; }); await p.keyboard.press('Escape'); await wait(300); await ev(() => document.getElementById('gxd1').focus());
+await p.keyboard.press('Enter'); await wait(300); await p.keyboard.press('PageDown'); await wait(120);
+const pd2 = await ev(() => document.activeElement.dataset.d);
+await p.keyboard.press('Escape'); await wait(300);
+check('Calendar from the keyboard: after the first day of a range the focus stays in the grid, so the second day can be picked; → onto a day after `max` keeps focus on the last allowed day; PageUp / PageDown from the 31st land on the last day of the shorter month',
+  rk1.day && rk1.d === rk1.today && rk2.v === rk2.want && !rk2.open && mk1.day && mk1.d === mk1.today && pu === '2026-02-28' && pd === '2026-03-28' && pd2 === '2026-02-28', JSON.stringify({ rk1, rk2, mk1, pu, pd, pd2 }));
+// quick picks choose the date they show (also when the day changes while the panel is open)
+await ev(() => { document.getElementById('gxd1').value = ''; }); await p.click('#gxd1'); await wait(300);
+const qk = await ev(() => { const bt = document.querySelector('.ui-date-pop .ui-qrow[data-quick="1"]'), shown = bt.dataset.k; bt.dataset.k = '2030-01-15'; bt.click(); return { shown, v: document.getElementById('gxd1').value, tomorrow: dayKey(addDays(new Date(), 1)) }; });
+await wait(300);
+check('A quick pick chooses exactly the date its row shows (it used to work the date out again on click, a day off just after midnight)', qk.shown === qk.tomorrow && qk.v === '2030-01-15', JSON.stringify(qk));
+// typing a time: the well being typed in is not rewritten
+await ev(() => { document.getElementById('gxt1').value = '14:30'; }); await p.click('#gxt1'); await wait(350);
+const h12 = await ev(() => UI.cfg.hour12());
+await ev(() => document.querySelector('.ui-time-pop .ui-th input').focus()); await wait(80);
+await p.keyboard.press('Backspace'); await wait(100);
+const ty1 = await ev(() => ({ well: document.querySelector('.ui-time-pop .ui-th input').value, v: document.getElementById('gxt1').value }));
+await p.keyboard.type(h12 ? '4' : '16', { delay: 40 }); await wait(150);
+const ty2 = await ev(() => ({ well: document.querySelector('.ui-time-pop .ui-th input').value, v: document.getElementById('gxt1').value }));
+await ev(() => document.querySelector('.ui-time-pop .ui-tm input').focus()); await wait(80);
+await p.keyboard.type('65', { delay: 40 }); await wait(150);
+const ty3 = await ev(() => ({ well: document.querySelector('.ui-time-pop .ui-tm input').value, v: document.getElementById('gxt1').value }));
+await p.keyboard.press('Escape'); await wait(300);
+const ty4 = await ev(() => document.getElementById('gxt1').value);
+check('Typing a time: Backspace in the hour leaves it empty (the time is kept), typing the new hour gives it (14:30 → 16:30); typing "65" in the minute stops at :06 while 65 is shown, and closing settles it to :59 (clamped, not wrapped)',
+  ty1.well === '' && ty1.v === '14:30' && ty2.v === '16:30' && ty2.well === (h12 ? '4' : '16') && ty3.v === '16:06' && ty3.well === '65' && ty4 === '16:59', JSON.stringify({ h12, ty1, ty2, ty3, ty4 }));
+// "Now" just before midnight stays today
+await p.click('#gxt1'); await wait(350);
+const now1 = await ev(() => { const RD = Date; window.Date = class extends RD { constructor(...a) { if (a.length) super(...a); else super(2026, 10, 16, 23, 58); } static now() { return new RD(2026, 10, 16, 23, 58).getTime(); } }; try { document.querySelector('.ui-time-pop [data-now]').click(); } finally { window.Date = RD; } return document.getElementById('gxt1').value; });
+await p.keyboard.press('Escape'); await wait(300);
+check('Time panel: "Now" at 23:58 gives 23:55 (the last 5-minute slot of today), not 00:00', now1 === '23:55', now1);
+// colour: input while the hue moves, one change when the panel closes; arrows move by a whole row
+await log(); await p.click('#gxc1'); await wait(300);
+await ev(() => { const r = document.querySelector('.ui-color-pop .ui-hue'); for (const v of [10, 60, 120, 200, 300]) { r.value = v; r.dispatchEvent(new Event('input', { bubbles: true })); } });
+const cIn = await log();
+await p.click('.ui-color-pop .ui-done'); await wait(300);
+const cOut = await log();
+await p.click('#gxc1'); await wait(300);
+await ev(() => document.querySelector('.ui-color-pop .ui-sw').focus()); await p.keyboard.press('ArrowDown'); await wait(80);
+const arr = await ev(() => { const all = [...document.querySelectorAll('.ui-color-pop .ui-sw')], cols = getComputedStyle(all[0].parentElement).gridTemplateColumns.split(' ').length; return { i: all.indexOf(document.activeElement), cols }; });
+await p.keyboard.press('Escape'); await wait(300);
+const cEsc = await log();
+check('Colour: dragging the hue fires "input" on each step and one "change" when the panel closes (not one per step); ↓ moves to the swatch right below (one row = the grid\'s column count); closing without a change fires nothing',
+  cIn.length === 5 && cIn.every(x => x.startsWith('input:gxc1')) && cOut.length === 1 && cOut[0].startsWith('change:gxc1') && arr.i === arr.cols && !cEsc.length, JSON.stringify({ cIn, cOut, arr, cEsc }));
+// tags: a pasted list becomes one tag per item, each cut to the length limit
+await ev(() => { const g = document.getElementById('gxg1'); g.value = ''; g.querySelector('input').focus(); }); await log();
+await p.keyboard.insertText('Maths, Chemistry, Biology'); await wait(150);
+const tg1 = await ev(() => { const g = document.getElementById('gxg1'); return { tags: [...g.querySelectorAll('.ui-tag')].map(x => x.textContent.trim()), rest: g.querySelector('input').value, v: g.value }; });
+await ev(() => { const i = document.querySelector('#gxg1 input'); i.value = ''; });
+await p.keyboard.insertText('Organic chemistry reaction mechanisms,'); await wait(150);
+const tg2 = await ev(() => [...document.querySelectorAll('#gxg1 .ui-tag')].map(x => x.textContent.trim()));
+const tgLog = await log();
+await ev(() => { document.getElementById('gxg1').value = 'Physics, JEE'; document.activeElement.blur(); }); await wait(200);
+check('Tags: pasting "Maths, Chemistry, Biology" makes Maths and Chemistry tags and leaves Biology being typed (one change for the paste); a long pasted tag is cut to 24 characters',
+  tg1.tags.join('|') === 'Maths|Chemistry' && tg1.rest === 'Biology' && tg1.v === 'Maths, Chemistry, Biology' && tg2[2] === 'Organic chemistry reacti' && tgLog.filter(x => x.startsWith('change:')).length === 2, JSON.stringify({ tg1, tg2, tgLog }));
+// a narrow window with a keyboard: the sheets work from the keyboard
+const nk = await open(600, 800);
+const nev = (f, a) => nk.evaluate(f, a);
+await nev(() => { const s = document.getElementById('gxs1'); s.value = '1'; s.focus(); LOG.splice(0); });
+await nk.keyboard.press('Enter'); await wait(450);
+const sk1 = await nev(() => !!document.querySelector('dialog.ui-sheet[open]'));
+await nk.keyboard.press('ArrowDown'); await nk.keyboard.press('Enter'); await wait(500);
+const sk2 = await nev(() => ({ v: document.getElementById('gxs1').value, sheet: !!document.querySelector('dialog.ui-sheet[open]'), log: LOG.splice(0) }));
+await nev(() => UI.closePop('api')); await wait(300);   // (if the select sheet is still open)
+await nk.click('#gxmenuBtn'); await wait(450);
+await nk.keyboard.press('ArrowDown'); await wait(120);
+const mk = await nev(() => ({ sheet: !!document.querySelector('dialog.ui-sheet[open]'), item: document.activeElement.classList.contains('ui-mi') }));
+await nk.keyboard.press('Escape'); await wait(450);
+check('Sheets (a window 640 px or narrower) work from the keyboard: ↓ + Enter chooses in a select sheet (one change); ↓ in a menu sheet goes to its first item',
+  sk1 && sk2.v !== '1' && !sk2.sheet && sk2.log.filter(x => x.startsWith('change:gxs1')).length === 1 && mk.sheet && mk.item, JSON.stringify({ sk1, sk2, mk }));
+await nk.context().close();
+}
+// ---------- code review fixes (Phase 1, round 2): stylesheet and the library's page-wide hooks ----------
+{
+  await ev(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); UI.closePop('api'); showTab('gallery'); }); await wait(500);
+  // Glossed: dialogs are opaque in every glass level (the confirm dialog here)
+  const gl = [];
+  for (const lv of ['lite', 'full']) {
+    await ev(lv => setGlass(lv), lv); await wait(300);
+    await p.click('#gxcfBtn'); await wait(500);
+    gl.push(await ev(lv => { const d = document.getElementById('confirmDlg'), cs = getComputedStyle(d), a = (cs.backgroundColor.match(/[\d.]+/g) || []).map(Number); return { lv, bg: cs.backgroundColor, alpha: a.length > 3 ? a[3] : 1, blur: cs.backdropFilter }; }, lv));
+    await p.click('#cfNo'); await wait(400);
+  }
+  await ev(() => setGlass('lite')); await wait(200);
+  check('Glossed (lite and full): dialogs are opaque, with no glass blur (the glass rule used to win on specificity)', gl.every(x => x.alpha === 1 && (x.blur === 'none' || !x.blur)), JSON.stringify(gl));
+  // the library's page-wide hooks stay out of the app's own: chart marks keep their tip box, plain sliders get no bubble
+  await ev(() => showTab('stats')); await wait(900);
+  const chart = await p.$('rect[data-tip], g[data-tip]');
+  let chartTip = 'no chart mark';
+  if (chart) { await chart.hover({ force: true }); await wait(800); chartTip = await ev(() => !!document.querySelector('.ui-tip.on')); }
+  await ev(() => showTab('settings')); await wait(500);
+  const sl = await ev(async () => { const r = document.querySelector('#setAmbVol') || document.querySelector('input[type="range"]:not([data-scale])'); if (!r) return 'none'; r.scrollIntoView({ block: 'center' }); r.value = '0.4'; r.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(x => setTimeout(x, 120)); const bb = document.querySelector('.ui-bubble.on'); return { id: r.id, bubble: !!bb, fill: r.style.getPropertyValue('--ui-fill') }; });
+  check('The library\'s tooltip leaves chart marks alone (they fill their card\'s own tip box), and a plain app slider shows no 0–1 value bubble (its filled part still follows)', chartTip === false && sl !== 'none' && !sl.bubble && sl.fill === '40.0%', JSON.stringify({ chartTip, sl }));
+  // keyboard focus only: a clicked switch shows no ring; the command palette's line is not a well
+  await ev(() => showTab('gallery')); await wait(400);
+  const sw = await p.$('#gxk1');   // (the settings switches are disabled in the demo)
+  let ring = 'no switch';
+  if (sw) { await sw.scrollIntoViewIfNeeded(); await sw.click(); await wait(150); ring = await ev(() => { const c = document.getElementById('gxk1'), cs = getComputedStyle(c); return { style: cs.outlineStyle, w: cs.outlineWidth, focus: document.activeElement === c }; }); await sw.click(); await wait(150); }
+  await ev(() => { document.activeElement.blur(); }); await p.keyboard.press('Control+k'); await wait(400);
+  const cmd = await ev(() => { const i = document.getElementById('cmdInput'); if (!i) return 'none'; const cs = getComputedStyle(i); return { sh: cs.boxShadow, r: cs.borderRadius, open: !!i.offsetParent }; });
+  await p.keyboard.press('Escape'); await wait(300);
+  check('A switch clicked with the mouse shows no focus ring (the ring is for keyboard focus); the command palette\'s search line has no well shadow', ring.focus && (ring.style === 'none' || ring.w === '0px') && cmd.sh === 'none' && cmd.r === '0px', JSON.stringify({ ring, cmd }));
+  // checkboxes drawn as chips / ticks stay checkboxes for assistive tech
+  const roles = await ev(() => [...document.querySelectorAll('.daychips input[type="checkbox"], .sub-check input[type="checkbox"], .hs-seats input[type="checkbox"]')].map(c => c.getAttribute('role')));
+  const switches = await ev(() => ['setKeys', 'setSound', 'setMinimal'].map(id => document.getElementById(id).getAttribute('role')));
+  check('Weekday chips, subtask ticks and seat chips are not announced as switches; the setting switches are', roles.length > 0 && roles.every(r => r !== 'switch') && switches.every(r => r === 'switch'), JSON.stringify({ n: roles.length, roles: [...new Set(roles)], switches }));
+  await ev(() => showTab('gallery')); await wait(400);
+}
+{
+  // phone with touch: a toast shown while a sheet is open survives the sheet; round buttons stay round; the sheet slides in
+  const tp = await open(390, 800, true);
+  const tev = (f, a) => tp.evaluate(f, a);
+  await tev(() => { document.documentElement.dataset.motion = 'full'; }); await wait(200);
+  await tp.tap('#gxs1'); await wait(120);
+  const anim = await tev(() => { const d = document.querySelector('dialog.ui-sheet[open]'); return d ? getComputedStyle(d).animationName : 'no sheet'; });
+  await wait(400);
+  await tev(() => toast('Saved while a sheet was open', 1200, true, { now: true })); await wait(150);
+  const inSheet = await tev(() => !!document.querySelector('dialog.ui-sheet #toast'));
+  const xb = await tev(() => { const r = document.querySelector('.ui-sheet-x').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
+  await tp.tap('.ui-sheet-x'); await wait(600);
+  const after = await tev(() => { let err = ''; try { toast('A later toast', 800, true, { now: true }); } catch (e) { err = e.message; } return { err, host: !!document.getElementById('toast'), connected: !!(document.getElementById('toast') || {}).isConnected }; });
+  await tp.tap('#gxc1'); await wait(500);
+  const sw = await tev(() => { const r = document.querySelector('.ui-color-pop .ui-sw').getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; });
+  await tev(() => UI.closePop('api')); await wait(400);
+  // a sheet closed by other code (Ctrl+K closes every dialog) is gone, and nothing is left holding the queue
+  await tp.tap('#gxs1'); await wait(450);
+  await tev(() => document.querySelectorAll('dialog[open]').forEach(d => d.close())); await wait(500);
+  const gone = await tev(() => ({ pop: UI.popOpen, shown: [...document.querySelectorAll('.ui-pop')].filter(x => x.getBoundingClientRect().height > 0).length }));
+  check('Phone sheets: the sheet slides up (not the dialog zoom); a toast shown while it is open survives its closing and later toasts still work; the close button and the swatches stay round (44 × 44, square boxes); a sheet closed by other code disappears and frees the queue',
+    anim === 'uiSheetIn' && inSheet && !after.err && after.connected && xb[0] === 44 && xb[1] === 44 && sw[0] === sw[1] && !gone.pop && !gone.shown, JSON.stringify({ anim, inSheet, after, xb, sw, gone }));
+  await tp.context().close();
+}
 check('No page errors', !errs.length, JSON.stringify(errs.slice(0, 5)));
 console.log(fails ? `${fails} FAILED` : 'ALL PASSED');
 await b.close();

@@ -185,8 +185,12 @@ log('exam day Pomeo:', await A.p.evaluate(() => { S.exams.push({ id: 'xt', name:
 await A.p.evaluate(() => { S.exams = S.exams.filter(x => x.id !== 'xt'); save(); renderExamCard(); });
 
 // parking lot + shortcuts
+// v2.0: let the celebrations queued by the earlier blocks finish first (an "Early bird" / "Night owl" achievement and
+// its level-up depend on the hour the suite runs).
+for (let i = 0; i < 60; i++) { const busy = await A.p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(x => x.close()); return FG.q.some(x => ['level', 'ach', 'unlock', 'boss', 'reveal'].includes(x.kind)) || !!achBusy; }); if (!busy) break; await wait(400); }
+await A.p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(x => x.close())); await wait(350);
 await A.p.evaluate(() => { hideBubble(); hideNote(); $('#nameInput').value = 'Calculus'; onNameChange(); S.timer.phase = 'focus'; S.timer.status = 'idle'; startTimer(); });
-await pclick(A, 'body', { position: { x: 5, y: 400 } });
+await pclick(A, 'body', { position: { x: 5, y: 400 } }); await A.p.evaluate(() => { const a = document.activeElement; if (a && a !== document.body) a.blur(); });   // (as a real click on empty space would)
 log('park button during focus:', await A.p.isVisible('#parkBtn'));
 await A.p.keyboard.press('p'); await wait(150);
 log('P opens parking:', await A.p.isVisible('#parkPop'), '| focused:', await A.p.evaluate(() => document.activeElement.id));
@@ -203,7 +207,7 @@ await close(A);
 await A.p.evaluate(() => showTab('reminders')); await wait(200);
 log('parked section:', await A.p.evaluate(() => [...$$('.rem-sec h2')].map(h => h.firstChild.textContent).join(' / ')), await A.p.evaluate(() => $$('.plist li').length));
 // keys
-await A.p.evaluate(() => showTab('timer')); await pclick(A, 'body', { position: { x: 5, y: 400 } });
+await A.p.evaluate(() => showTab('timer')); await pclick(A, 'body', { position: { x: 5, y: 400 } }); await A.p.evaluate(() => { const a = document.activeElement; if (a && a !== document.body) a.blur(); });   // (as a real click on empty space would)
 await A.p.keyboard.press('Shift+?'); await wait(150);
 log('? sheet:', await A.p.evaluate(() => $('#keysDlg').open)); await close(A); await wait(500);
 await A.p.keyboard.press('3'); await wait(150); const t3 = await A.p.evaluate(() => S.ui.tab);

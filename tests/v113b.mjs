@@ -39,9 +39,13 @@ for (const w of [360, 390, 768, 1280]) {
 await A.p.setViewportSize({ width: 1280, height: 860 });
 // PNG export
 const png = await A.ev(async () => { const out = {}; for (const size of ['square', 'story']) { const bl = await cardPNG(cardData(), size); const bm = await createImageBitmap(bl); const c = new OffscreenCanvas(bm.width, bm.height), x = c.getContext('2d'); x.drawImage(bm, 0, 0); const px = x.getImageData(0, 0, bm.width, bm.height).data; const cols = new Set(); let hardEdges = 0; for (let i = 0; i < px.length; i += 4 * 97) cols.add(px[i] << 16 | px[i + 1] << 8 | px[i + 2]);
-  // sharpness: count adjacent pixel pairs with a big jump along one row through the stat tiles (text edges stay crisp)
-  const yRow = Math.round(bm.height * (size === 'story' ? .34 : .42)); for (let xx = 1; xx < bm.width; xx++) { const i = (yRow * bm.width + xx) * 4, j = i - 4; if (Math.abs(px[i] - px[j]) + Math.abs(px[i + 1] - px[j + 1]) + Math.abs(px[i + 2] - px[j + 2]) > 180) hardEdges++; }
-  out[size] = { w: bm.width, h: bm.height, bytes: bl.size, type: bl.type, colours: cols.size, hardEdges }; } return out; });
+  // sharpness: adjacent pixel pairs with a big jump along a row (crisp text edges); an upscaled image has almost none.
+  // v2.0: the best of rows every 2% of the height, so the check does not depend on where the layout puts the text
+  // (one fixed row at 34% of the story image stopped crossing any text when later versions added to the card).
+  let bestRow = 0; for (let k = 5; k <= 95; k += 2) { const yRow = Math.round(bm.height * k / 100); let n = 0; for (let xx = 1; xx < bm.width; xx++) { const i = (yRow * bm.width + xx) * 4, j = i - 4; if (Math.abs(px[i] - px[j]) + Math.abs(px[i + 1] - px[j + 1]) + Math.abs(px[i + 2] - px[j + 2]) > 180) n++; } if (n > hardEdges) { hardEdges = n; bestRow = k; } }
+  if (size === 'story') out.storyUrl = await new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(bl); });
+  out[size] = { w: bm.width, h: bm.height, bytes: bl.size, type: bl.type, colours: cols.size, hardEdges, bestRow }; } return out; });
+fs.writeFileSync('s113/v113b-story.png', Buffer.from(png.storyUrl.split(',')[1], 'base64')); delete png.storyUrl;
 check('Save as image: square PNG is 1080×1080, story PNG is 1080×1920', png.square.w === 1080 && png.square.h === 1080 && png.story.w === 1080 && png.story.h === 1920 && png.square.type === 'image/png', JSON.stringify(png));
 check('… drawn at full size (not upscaled): crisp edges and full detail', png.square.hardEdges > 20 && png.story.hardEdges > 20 && png.square.colours > 300, `${png.square.hardEdges}/${png.story.hardEdges} edges`);
 // share dialog: preview + buttons; desktop without navigator.share → copy fallback
@@ -141,3 +145,4 @@ await B.p.screenshot({ path: 's113/v113b-share-390.png' });
 await B.ctx.close();
 log('errors', JSON.stringify(errs), '| failures', fails);
 await b.close();
+process.exit(fails ? 1 : 0);   // v2.0: a failing check fails the suite (it used to exit 0)

@@ -69,34 +69,37 @@
 /* GENERATED: colour roles of the default palette (node tests/tools/tokens.mjs --write). Do not edit by hand. */
 :root {
   --frame: #ecece9; --card-quiet: #fbfbfa; --card-hi: #ffffff; --pop-bg: #ffffff; --ctl-bg: #f9f9f7; --ctl-bd: #8a8c8b; --ctl-bd-hover: #595c5b;
-  --track: #e0e0e0; --raise: rgba(31, 35, 34, 0.05); --hover: rgba(31, 35, 34, 0.07); --press: rgba(31, 35, 34, 0.12); --hair: rgba(31, 35, 34, 0.08);
-  --pop-bd: rgba(31, 35, 34, 0.1); --pad-bd: rgba(31, 35, 34, 0.15); --divider: rgba(31, 35, 34, 0.11); --scrim: rgba(10, 31, 29, 0.46);
-  --hi: rgba(255, 255, 255, 0.85); --shadow-1: rgba(40, 50, 48, 0.07); --shadow-w: rgba(40, 50, 48, 0.112); --shadow-2: rgba(40, 50, 48, 0.126);
-  --shadow-3: rgba(40, 50, 48, 0.168); --shadow-4: rgba(40, 50, 48, 0.224); --t-3: #818885; --on-accent: #ffffff; --accent-fill: #297e73;
-  --accent-fill-hover: #246f65; --accent-text: #2b7168; --focus: #2f8f83; --lamp: rgba(47, 143, 131, 0.04); --danger-text: #ad473d;
-  --danger-soft: rgba(185, 74, 63, 0.15); --on-danger: #ffffff; --danger-fill: #b94a3f; --warn-text: #8c5e29; --warn-soft: rgba(192, 122, 44, 0.15);
-  --ok: #2f8a57; --ok-text: #2c754c; --ok-soft: rgba(47, 138, 87, 0.15);
+  --track: #e0e0e0; --raise: rgba(31, 35, 34, 0.05); --pad: #ffffff; --accent-tint: rgba(47, 143, 131, 0.2); --hover: rgba(31, 35, 34, 0.07);
+  --press: rgba(31, 35, 34, 0.12); --hair: rgba(31, 35, 34, 0.08); --pop-bd: rgba(31, 35, 34, 0.18); --sel: rgba(47, 143, 131, 0.3);
+  --pad-bd: rgba(31, 35, 34, 0.15); --divider: rgba(31, 35, 34, 0.11); --scrim: rgba(10, 31, 29, 0.46); --hi: rgba(255, 255, 255, 0.85);
+  --shadow-1: rgba(40, 50, 48, 0.07); --shadow-w: rgba(40, 50, 48, 0.112); --shadow-2: rgba(40, 50, 48, 0.126); --shadow-3: rgba(40, 50, 48, 0.168);
+  --shadow-4: rgba(40, 50, 48, 0.224); --t-3: #818885; --on-accent: #ffffff; --accent-fill: #297e73; --accent-fill-hover: #246f65;
+  --accent-text: #2b7168; --focus: #2f8f83; --lamp: rgba(47, 143, 131, 0.04); --danger-text: #ad473d; --danger-soft: rgba(185, 74, 63, 0.15);
+  --on-danger: #ffffff; --danger-fill: #b94a3f; --warn-text: #8c5e29; --warn-soft: rgba(192, 122, 44, 0.15); --ok: #2f8a57; --ok-text: #2c754c;
+  --ok-soft: rgba(47, 138, 87, 0.15);
 }
 :root[data-theme="dark"] {
   --frame: #0d0e0e; --card-quiet: #161919; --card-hi: #212424; --pop-bg: #282b2b; --ctl-bg: #141717; --ctl-bd: #747776; --ctl-bd-hover: #a2a4a4;
-  --track: #373a39; --raise: rgba(231, 233, 232, 0.08); --hover: rgba(231, 233, 232, 0.07); --press: rgba(231, 233, 232, 0.12);
-  --hair: rgba(231, 233, 232, 0.06); --pop-bd: rgba(231, 233, 232, 0.12); --pad-bd: rgba(231, 233, 232, 0.17); --divider: rgba(231, 233, 232, 0.11);
-  --scrim: rgba(17, 39, 36, 0.66); --hi: rgba(255, 255, 255, 0.06); --shadow-1: rgba(10, 21, 19, 0.28); --shadow-w: rgba(10, 21, 19, 0.448);
-  --shadow-2: rgba(10, 21, 19, 0.504); --shadow-3: rgba(10, 21, 19, 0.672); --shadow-4: rgba(10, 21, 19, 0.896); --muted: #9ca3a1; --t-3: #828886;
-  --on-accent: #081211; --accent-fill: #4fb3a5; --accent-fill-hover: #64bcb0; --accent-text: #4fb3a5; --focus: #4fb3a5;
-  --lamp: rgba(79, 179, 165, 0.06); --danger-text: #e07a6f; --danger-soft: rgba(224, 122, 111, 0.15); --on-danger: #160c0b; --danger-fill: #e07a6f;
-  --warn-text: #e0a15a; --warn-soft: rgba(224, 161, 90, 0.15); --ok: #6cc48a; --ok-text: #6cc48a; --ok-soft: rgba(108, 196, 138, 0.15);
+  --track: #373a39; --raise: rgba(231, 233, 232, 0.08); --pad: rgba(231, 233, 232, 0.08); --accent-tint: rgba(79, 179, 165, 0.26);
+  --hover: rgba(231, 233, 232, 0.07); --press: rgba(231, 233, 232, 0.12); --hair: rgba(231, 233, 232, 0.06); --pop-bd: rgba(231, 233, 232, 0.16);
+  --sel: rgba(79, 179, 165, 0.42); --pad-bd: rgba(231, 233, 232, 0.17); --divider: rgba(231, 233, 232, 0.11); --scrim: rgba(17, 39, 36, 0.66);
+  --hi: rgba(255, 255, 255, 0.06); --shadow-1: rgba(10, 21, 19, 0.28); --shadow-w: rgba(10, 21, 19, 0.448); --shadow-2: rgba(10, 21, 19, 0.504);
+  --shadow-3: rgba(10, 21, 19, 0.672); --shadow-4: rgba(10, 21, 19, 0.896); --muted: #9ca3a1; --t-3: #828886; --on-accent: #081211;
+  --accent-fill: #4fb3a5; --accent-fill-hover: #64bcb0; --accent-text: #4fb3a5; --focus: #4fb3a5; --lamp: rgba(79, 179, 165, 0.06);
+  --danger-text: #e07a6f; --danger-soft: rgba(224, 122, 111, 0.15); --on-danger: #160c0b; --danger-fill: #e07a6f; --warn-text: #e0a15a;
+  --warn-soft: rgba(224, 161, 90, 0.15); --ok: #6cc48a; --ok-text: #6cc48a; --ok-soft: rgba(108, 196, 138, 0.15);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --frame: #0d0e0e; --card-quiet: #161919; --card-hi: #212424; --pop-bg: #282b2b; --ctl-bg: #141717; --ctl-bd: #747776; --ctl-bd-hover: #a2a4a4;
-    --track: #373a39; --raise: rgba(231, 233, 232, 0.08); --hover: rgba(231, 233, 232, 0.07); --press: rgba(231, 233, 232, 0.12);
-    --hair: rgba(231, 233, 232, 0.06); --pop-bd: rgba(231, 233, 232, 0.12); --pad-bd: rgba(231, 233, 232, 0.17); --divider: rgba(231, 233, 232, 0.11);
-    --scrim: rgba(17, 39, 36, 0.66); --hi: rgba(255, 255, 255, 0.06); --shadow-1: rgba(10, 21, 19, 0.28); --shadow-w: rgba(10, 21, 19, 0.448);
-    --shadow-2: rgba(10, 21, 19, 0.504); --shadow-3: rgba(10, 21, 19, 0.672); --shadow-4: rgba(10, 21, 19, 0.896); --muted: #9ca3a1; --t-3: #828886;
-    --on-accent: #081211; --accent-fill: #4fb3a5; --accent-fill-hover: #64bcb0; --accent-text: #4fb3a5; --focus: #4fb3a5;
-    --lamp: rgba(79, 179, 165, 0.06); --danger-text: #e07a6f; --danger-soft: rgba(224, 122, 111, 0.15); --on-danger: #160c0b; --danger-fill: #e07a6f;
-    --warn-text: #e0a15a; --warn-soft: rgba(224, 161, 90, 0.15); --ok: #6cc48a; --ok-text: #6cc48a; --ok-soft: rgba(108, 196, 138, 0.15);
+    --track: #373a39; --raise: rgba(231, 233, 232, 0.08); --pad: rgba(231, 233, 232, 0.08); --accent-tint: rgba(79, 179, 165, 0.26);
+    --hover: rgba(231, 233, 232, 0.07); --press: rgba(231, 233, 232, 0.12); --hair: rgba(231, 233, 232, 0.06); --pop-bd: rgba(231, 233, 232, 0.16);
+    --sel: rgba(79, 179, 165, 0.42); --pad-bd: rgba(231, 233, 232, 0.17); --divider: rgba(231, 233, 232, 0.11); --scrim: rgba(17, 39, 36, 0.66);
+    --hi: rgba(255, 255, 255, 0.06); --shadow-1: rgba(10, 21, 19, 0.28); --shadow-w: rgba(10, 21, 19, 0.448); --shadow-2: rgba(10, 21, 19, 0.504);
+    --shadow-3: rgba(10, 21, 19, 0.672); --shadow-4: rgba(10, 21, 19, 0.896); --muted: #9ca3a1; --t-3: #828886; --on-accent: #081211;
+    --accent-fill: #4fb3a5; --accent-fill-hover: #64bcb0; --accent-text: #4fb3a5; --focus: #4fb3a5; --lamp: rgba(79, 179, 165, 0.06);
+    --danger-text: #e07a6f; --danger-soft: rgba(224, 122, 111, 0.15); --on-danger: #160c0b; --danger-fill: #e07a6f; --warn-text: #e0a15a;
+    --warn-soft: rgba(224, 161, 90, 0.15); --ok: #6cc48a; --ok-text: #6cc48a; --ok-soft: rgba(108, 196, 138, 0.15);
   }
 }
 /* END GENERATED */
@@ -121,6 +124,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 button, input, select { font: inherit; color: inherit; }
+::selection { background: var(--sel, rgba(79, 179, 165, .35)); color: inherit; }
 h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 12px; }
 .muted { color: var(--muted); }
 .row { display: flex; align-items: center; gap: 10px; }
@@ -288,35 +292,45 @@ main { max-width: 1040px; margin: 0 auto; padding: 20px 16px 56px; }
    rounded sheet is a surface. A button is a pad — the layer it sits on plus a little of the text colour — with an edge
    that is 3:1 against it, 32 / 40 / 52 px high. The filled accent button is the one main action of a view; nothing glows. */
 .btn {
-  white-space: nowrap; min-height: var(--h-md, 40px); padding: 9px 18px; border-radius: 999px; border: 1px solid var(--ctl-bd, var(--line));
-  background: var(--raise, var(--surface)); box-shadow: var(--e-pad, none); font-size: var(--fs-14, 14px); font-weight: 600; line-height: 20px;
+  white-space: nowrap; box-sizing: border-box; height: var(--h-md, 40px); padding: 0 18px; border-radius: 999px; border: 1px solid var(--ctl-bd, var(--line));
+  background: var(--pad, var(--surface)); box-shadow: var(--e-pad, none); font-size: var(--fs-14, 14px); font-weight: 500; line-height: 1.2;
   cursor: pointer; transition: border-color .15s, background .15s;
 }
 .btn:hover { background: var(--press, var(--surface)); border-color: var(--ctl-bd-hover, var(--muted)); }
-.btn:disabled { opacity: .45; cursor: default; box-shadow: none; border-color: var(--hair, var(--line)); }
-.btn.primary { background: var(--accent-fill, var(--accent)); border-color: transparent; color: var(--on-accent, #fff); font-weight: 600; padding: 9px 22px; min-width: 104px; box-shadow: inset 0 1px 0 var(--hi, transparent), 0 1px 2px var(--shadow-1, transparent), 0 6px 14px -8px var(--shadow-2, transparent); }   /* a neutral shadow: no glow */
+/* disabled: no accent, no shadow — the same quiet pad whatever the button was, with a label that can still be read */
+.btn:disabled, .btn.primary:disabled, .btn.danger.solid:disabled { opacity: 1; cursor: default; background: transparent; border: 1px dashed var(--ctl-bd, var(--line)); color: var(--muted); box-shadow: none; filter: none; }
+.btn.primary { background: var(--accent-fill, var(--accent)); border-color: transparent; color: var(--on-accent, #fff); font-weight: 600; padding: 0 22px; min-width: 104px; box-shadow: 0 1px 2px var(--shadow-1, transparent), 0 6px 14px -8px var(--shadow-2, transparent); }   /* a neutral shadow: no glow, and no inner line (a ring always means focus) */
 .btn.primary:hover { background: var(--accent-fill-hover, var(--accent)); border-color: transparent; }
-.btn.big { min-height: var(--h-lg, 52px); padding: 15px 32px; font-size: var(--fs-17, 17px); min-width: 132px; }
-.btn.small { min-height: var(--h-sm, 32px); padding: 5px 13px; font-size: var(--fs-13, 13px); }
+.btn.big { height: var(--h-lg, 52px); padding: 0 32px; font-size: var(--fs-17, 17px); min-width: 132px; }
+.btn.small { height: var(--h-sm, 32px); padding: 0 13px; font-size: var(--fs-13, 13px); }
+.btn:has(> svg), .btn.loading { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn > svg { flex: none; width: 16px; height: 16px; }
+.btn.loading { cursor: progress; }
+.btn.loading .spin { margin: 0; }
 .btn.ghost { background: transparent; border-color: transparent; box-shadow: none; }
 .btn.ghost:hover { background: var(--hover, transparent); border-color: transparent; }
 .btn.danger { color: var(--danger-text, var(--danger)); }
-.btn.danger.solid { background: var(--danger-fill, var(--danger)); border-color: transparent; color: var(--on-danger, #fff); font-weight: 600; }
+.btn.danger.solid { background: var(--danger-fill, var(--danger)); border-color: transparent; color: var(--on-danger, #fff); font-weight: 600; box-shadow: 0 1px 2px var(--shadow-1, transparent); }
 .btn.danger.solid:hover { background: var(--danger-fill, var(--danger)); filter: brightness(1.08); }
 /* the confirm dialog: a plain question; a destructive one carries a warning tile and a filled danger button — an icon and a verb, never colour alone */
 dialog.cf-dlg { width: min(420px, calc(100vw - 32px)); }
 dialog.cf-dlg h2 { font-size: var(--fs-17, 17px); font-weight: 650; text-transform: none; letter-spacing: 0; color: var(--text); margin: 0 0 6px; line-height: 1.3; }
 .cf-dlg .cf-ic { display: none; width: 40px; height: 40px; margin-bottom: 12px; border-radius: var(--r-12, 12px); place-items: center; background: var(--danger-soft, transparent); color: var(--danger-text, var(--danger)); }
-.cf-dlg.danger .cf-ic { display: grid; }
+.cf-dlg.has-ic .cf-ic { display: grid; }
+.cf-dlg:not(.danger) .cf-ic { background: var(--accent-soft); color: var(--accent-text, var(--accent)); }
+.cf-dlg .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+@media (max-width: 640px) { .cf-dlg .btn-row { flex-direction: column; align-items: stretch; } .cf-dlg .btn-row .btn { width: 100%; height: var(--h-tap, 44px); } }
 .cf-dlg #cfType { margin-top: 4px; }
 :where(.btn, .iconbtn, .linkbtn, .chip, summary, [role="button"], [tabindex]):focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
-.linkbtn { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 4px 6px; }
-.linkbtn:hover { color: var(--text); }
+.linkbtn { border: 0; background: none; color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 999px; }   /* v2.0: the quiet button — bold ink, a wash on hover */
+.linkbtn:hover { background: var(--hover, transparent); }
+.linkbtn:disabled { color: var(--muted); font-weight: 500; cursor: default; background: none; }
 .iconbtn {
-  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface);
-  display: inline-grid; place-items: center; cursor: pointer; color: var(--muted); flex: none;
+  box-sizing: border-box; width: var(--h-md, 40px); height: var(--h-md, 40px); border-radius: 50%; border: 1px solid var(--ctl-bd, var(--line)); background: var(--pad, var(--surface)); box-shadow: var(--e-pad, none);
+  display: inline-grid; place-items: center; cursor: pointer; color: var(--text); flex: none;
 }
-.iconbtn:hover { color: var(--text); }
+.iconbtn:hover { background: var(--press, var(--surface)); border-color: var(--ctl-bd-hover, var(--muted)); }
+.iconbtn:disabled { background: transparent; border-style: dashed; color: var(--muted); box-shadow: none; cursor: default; }
 .iconbtn svg { width: 18px; height: 18px; }
 
 /* Form fields */
@@ -328,7 +342,20 @@ input[type="text"], input[type="number"], input[type="password"], select {
 }
 input[type="text"]:hover, input[type="number"]:hover, input[type="password"]:hover, select:hover { border-color: var(--ctl-bd-hover, var(--muted)); }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: .9; }
-input:focus, select:focus { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; border-color: var(--focus, var(--accent)); }   /* the ring, and the well's own edge takes the colour */
+textarea { box-sizing: border-box; width: 100%; min-height: 84px; resize: vertical; font: inherit; color: inherit; background: var(--ctl-bg, var(--bg)); border: 1px solid var(--ctl-bd, var(--line)); border-radius: var(--r-8, 8px); padding: 9px 12px; box-shadow: var(--e-well, none); transition: border-color .15s; }
+textarea:hover { border-color: var(--ctl-bd-hover, var(--muted)); }
+textarea:focus { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; border-color: var(--focus, var(--accent)); }
+/* disabled: flat (no well) with a dashed lip and muted text, so it cannot be taken for an empty field */
+input[type="text"]:disabled, input[type="number"]:disabled, input[type="password"]:disabled, select:disabled, textarea:disabled { background: transparent; border-style: dashed; box-shadow: none; color: var(--muted); cursor: not-allowed; }
+/* something is wrong with what was typed: a 2 px edge in the danger ink, and under the field an icon and words (.field-msg.err) */
+input[aria-invalid="true"], textarea[aria-invalid="true"], :is(ui-select, ui-date, ui-time, ui-tags)[aria-invalid="true"] { border-color: var(--danger-text, var(--danger)); box-shadow: inset 0 0 0 1px var(--danger-text, var(--danger)); }
+.field-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.field-top small, .field-msg { color: var(--muted); font-size: var(--fs-12, 12px); }
+.field-msg { display: flex; align-items: flex-start; gap: 6px; margin: 4px 0 0; line-height: 1.35; }
+.field-msg.err { color: var(--danger-text, var(--danger)); font-weight: 500; }
+.field-msg.err svg { flex: none; width: 14px; height: 14px; margin-top: 1px; }
+input:focus:not(:where([type="checkbox"], [type="radio"], [type="range"], [type="color"])), select:focus { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; border-color: var(--focus, var(--accent)); }   /* the ring, and the well's own edge takes the colour (switches, radios, sliders: keyboard focus only) */
+input[type="color"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 input[type="color"] { width: 42px; height: 40px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); cursor: pointer; flex: none; }
 input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 
@@ -392,16 +419,15 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
   display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
-  border: 1px solid var(--line); background: var(--bg); border-radius: 999px;
-  padding: 5px 4px 5px 12px; cursor: pointer; font-size: 14px;
+  border: 1px solid var(--ctl-bd, var(--line)); background: var(--pad, var(--bg)); border-radius: 999px;
+  padding: 4px 4px 4px 12px; min-height: 32px; box-sizing: border-box; cursor: pointer; font-size: var(--fs-13, 13px); font-weight: 500;
 }
-.chip:hover { border-color: var(--muted); }
+.chip:hover { border-color: var(--ctl-bd-hover, var(--muted)); background: var(--press, var(--bg)); }
 .chip .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
 .chip .meta { color: var(--muted); font-size: 12px; }
 .chip .pin { border: 0; background: none; color: var(--muted); cursor: pointer; padding: 2px 6px; font-size: 15px; line-height: 1; }
-.chip.pinned { border-color: var(--accent); }
-.chip.pinned .pin { color: var(--accent); }
-.chip.current { background: var(--accent-soft); }   /* the chip that is loaded right now (v1.18) */
+.chip.pinned .pin { color: var(--warn-text, var(--accent)); }
+.chip.current { background: var(--accent-tint, var(--accent-soft)); border-color: var(--accent-text, var(--accent)); box-shadow: inset 0 0 0 .5px var(--accent-text, var(--accent)); font-weight: 600; }   /* the chip that is loaded right now (v1.18) */
 .sess-row .btn { flex: none; }
 .ach-tools { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; margin: 0 0 10px; min-width: 0; }
 .ach-sort { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; white-space: nowrap; }   /* the label holds the select: it sizes to it (v1.18 layout fix) */
@@ -434,9 +460,9 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
    STATS
    ========================================================================== */
 .seg { display: inline-flex; background: var(--ctl-bg, var(--surface)); border: 1px solid var(--ctl-bd, var(--line)); border-radius: var(--r-8, 8px); padding: 3px; }
-.seg button { border: 0; background: none; min-height: 32px; padding: 5px 14px; border-radius: var(--r-6, 6px); color: var(--muted); font-size: var(--fs-13, 13px); font-weight: 500; cursor: pointer; }
-.seg button:hover:not(.active) { color: var(--text); background: var(--hover, transparent); }
-.seg button.active { background: var(--accent-soft); color: var(--accent-text, var(--accent)); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)); }   /* v2.0: a ring, a tint and bold — never colour alone */
+.seg button { border: 0; background: none; min-height: 32px; padding: 5px 14px; border-radius: var(--r-6, 6px); color: var(--text); font-size: var(--fs-14, 14px); font-weight: 500; cursor: pointer; }
+.seg button:hover:not(.active) { background: var(--hover, transparent); }
+.seg button.active { background: var(--accent-tint, var(--accent-soft)); color: var(--text); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)); }   /* v2.0: a tinted fill, a ring and bold ink — never colour alone, and never quieter than the page it switches */
 .stats-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .range-nav { display: flex; align-items: center; gap: 8px; }
 .range-nav .lbl2 { min-width: 150px; text-align: center; font-weight: 600; }
@@ -545,8 +571,8 @@ dialog {
 .shop-head .lbl { flex: 1; min-width: 220px; }
 .catrow { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; scrollbar-width: none; }
 .catrow::-webkit-scrollbar { display: none; }
-.catrow button { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; color: var(--muted); cursor: pointer; font-size: 13px; }
-.catrow button.active { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.catrow button { white-space: nowrap; box-sizing: border-box; height: var(--h-sm, 32px); border: 1px solid var(--ctl-bd, var(--line)); background: var(--pad, var(--surface)); border-radius: 999px; padding: 0 12px; color: var(--text); cursor: pointer; font-size: var(--fs-13, 13px); font-weight: 500; }
+.catrow button.active { border-color: var(--accent-text, var(--accent)); background: var(--accent-tint, var(--accent-soft)); box-shadow: inset 0 0 0 .5px var(--accent-text, var(--accent)); font-weight: 600; }
 .amb-vol { margin-bottom: 12px; padding: 14px 18px; }
 .shopgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 6px; }
@@ -558,9 +584,8 @@ dialog {
 .item .nm { font-weight: 600; font-size: 14px; }
 .item .ds { font-size: 12px; color: var(--muted); flex: 1; }
 .item .act { display: flex; gap: 6px; align-items: center; margin-top: 2px; }
-.item .act .btn { flex: 1; padding: 6px 10px; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
-.btn.buy { color: var(--accent-text, var(--accent)); border-color: var(--accent-text, var(--accent)); font-weight: 600; }
-.btn.buy:disabled { color: var(--muted); border-color: var(--line); font-weight: 400; }
+.item .act .btn { flex: 1; height: var(--h-sm, 32px); padding: 0 10px; font-size: var(--fs-13, 13px); display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.btn.buy { font-weight: 600; }   /* v2.0: a neutral pad — the coin carries the colour */
 .iconbtn.sm { width: 32px; height: 32px; }
 .fontpv { font-size: 30px; font-weight: 300; font-variant-numeric: tabular-nums; color: var(--text); }
 .namepv { font-weight: 600; font-size: 15px; }
@@ -942,7 +967,8 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 @keyframes rip { to { transform: scale(1); opacity: 0; } }
 
 /* Start / pause: icons morph, soft glow while running */
-#mainBtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--h-lg, 52px); padding: 15px 34px; font-size: var(--fs-17, 17px); min-width: 148px; }
+#mainBtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: var(--h-lg, 52px); padding: 0 34px; font-size: var(--fs-17, 17px); min-width: 148px; }
+@media (max-width: 400px) { #mainBtn { min-width: 116px; padding: 0 22px; } }
 .pp { position: relative; width: 15px; height: 15px; flex: none; }
 .pp svg { position: absolute; inset: 0; width: 15px; height: 15px; fill: currentColor; transition: transform .4s var(--spring), opacity .2s var(--ease); }
 .pp .i-pause, #mainBtn.running .pp .i-play { opacity: 0; transform: scale(.3) rotate(-90deg); }
@@ -966,7 +992,7 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .seg.seg-fl.seg-fr { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
 .seg.has-ind > button.active { background: transparent; box-shadow: none; }
 .seg-ind {
-  position: absolute; left: 0; top: 0; width: 0; height: 0; border-radius: var(--r-6, 6px); background: var(--accent-soft); box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent));
+  position: absolute; left: 0; top: 0; width: 0; height: 0; border-radius: var(--r-6, 6px); background: var(--accent-tint, var(--accent-soft)); box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent));
   z-index: 0; pointer-events: none; transition: transform .42s var(--spring-soft), width .42s var(--spring-soft), height .42s var(--spring-soft), opacity .2s;
 }
 
@@ -981,17 +1007,40 @@ input[type="checkbox"]::before {   /* the knob */
   content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
   background: var(--surface); box-shadow: 0 1px 2px var(--shadow-2, rgba(0, 0, 0, .3)); transition: transform .38s var(--spring), background-color .2s var(--ease);
 }
-input[type="checkbox"]::after {   /* the mark beside the knob: O when off (on the right), I when on (on the left) */
-  content: ""; position: absolute; top: 8px; left: 28px; width: 10px; height: 10px; box-sizing: border-box; border: 1.8px solid var(--surface); border-radius: 50%; transition: opacity .15s;
+input[type="checkbox"]::after {   /* the mark beside the knob — O when off (right), I when on (left) — painted on a box that also widens the target to 44 px high */
+  content: ""; position: absolute; inset: -9px -4px;
+  background: radial-gradient(circle at 38px 22px, transparent 2.6px, var(--surface) 3.1px, var(--surface) 4.6px, transparent 5.1px) no-repeat;
 }
 input[type="checkbox"]:hover:not(:disabled):not(:checked) { background: var(--ctl-bd-hover, var(--text)); }
 input[type="checkbox"]:checked { background: var(--accent-fill, var(--accent)); }
 input[type="checkbox"]:checked::before { transform: translateX(18px); background: var(--on-accent, #fff); }
-input[type="checkbox"]:checked::after { left: 10px; top: 7.5px; width: 2.4px; height: 11px; border: 0; border-radius: 2px; background: var(--on-accent, #fff); }
+input[type="checkbox"]:checked::after { background: linear-gradient(var(--on-accent, #fff), var(--on-accent, #fff)) 14px 16.5px / 2.4px 11px no-repeat; }
 input[type="checkbox"]:active::before { transform: scale(.88); }
 input[type="checkbox"]:checked:active::before { transform: translateX(18px) scale(.88); }
-input[type="checkbox"]:disabled { opacity: .45; cursor: default; }
+input[type="checkbox"]:disabled { opacity: .65; cursor: default; }
+/* a switch that can't be used is flat with a dashed edge, like every other disabled control; the knob still shows on / off */
+input[type="checkbox"]:not([data-check]):disabled { opacity: 1; background: transparent; outline: 1.5px dashed var(--ctl-bd, var(--muted)); outline-offset: -1.5px; }
+input[type="checkbox"]:not([data-check]):disabled::before { background: var(--ctl-bd, var(--muted)); box-shadow: none; }
+input[type="checkbox"]:not([data-check]):disabled:checked::before { background: var(--accent-text, var(--accent)); }
+input[type="checkbox"]:not([data-check]):disabled::after { background: none; }
 input[type="checkbox"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+/* A tick box (<input type="checkbox" data-check>) is for lists and consents — several things that can each be on.
+   A plain checkbox stays a switch (one setting, on or off). 20 px, 6 px corners, a 3:1 edge; a tick, or a dash for "some". */
+input[type="checkbox"][data-check] { width: 20px; height: 20px; border-radius: var(--r-6, 6px); background: var(--ctl-bg, var(--surface)); box-shadow: inset 0 0 0 1.5px var(--ctl-bd, var(--muted)); }
+input[type="checkbox"][data-check]::before { top: 0; left: 0; width: 20px; height: 20px; border-radius: 0; background: var(--on-accent, #fff); box-shadow: none; opacity: 0; transform: none; transition: opacity .12s;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 12.5 10 17 18.5 7.5'/%3E%3C/svg%3E") center / 14px 14px no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 12.5 10 17 18.5 7.5'/%3E%3C/svg%3E") center / 14px 14px no-repeat; }
+input[type="checkbox"][data-check]::after { inset: -12px; background: none; }
+input[type="checkbox"][data-check]:hover:not(:disabled):not(:checked) { background: var(--ctl-bg, var(--surface)); box-shadow: inset 0 0 0 1.5px var(--ctl-bd-hover, var(--text)); }
+input[type="checkbox"][data-check]:checked, input[type="checkbox"][data-check]:indeterminate { background: var(--accent-fill, var(--accent)); box-shadow: none; }
+input[type="checkbox"][data-check]:checked::before, input[type="checkbox"][data-check]:indeterminate::before { opacity: 1; transform: none; }
+input[type="checkbox"][data-check]:indeterminate::before { -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M6.5 12h11'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3.2' stroke-linecap='round'%3E%3Cpath d='M6.5 12h11'/%3E%3C/svg%3E"); }
+input[type="checkbox"][data-check]:active::before, input[type="checkbox"][data-check]:checked:active::before { transform: none; }
+input[type="checkbox"][data-check]:checked::after { background: none; }
+input[type="radio"] { appearance: none; -webkit-appearance: none; box-sizing: border-box; width: 20px; height: 20px; margin: 0; flex: none; border-radius: 50%; background: var(--ctl-bg, var(--surface)); box-shadow: inset 0 0 0 1.5px var(--ctl-bd, var(--muted)); cursor: pointer; transition: box-shadow .15s var(--ease); }
+input[type="radio"]:hover:not(:disabled):not(:checked) { box-shadow: inset 0 0 0 1.5px var(--ctl-bd-hover, var(--text)); }
+input[type="radio"]:checked { box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)), inset 0 0 0 5px var(--ctl-bg, var(--surface)), inset 0 0 0 10px var(--accent-text, var(--accent)); }
+input[type="radio"]:disabled { opacity: .45; cursor: default; }
+input[type="radio"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 
 /* ---------- Pages, lists, charts ---------- */
 :root[data-motion="full"] .tab.active, :root[data-motion="full"] .view-in { animation: pageIn .3s var(--ease) both; }
@@ -1034,9 +1083,9 @@ input[type="checkbox"]:focus-visible { outline: 2px solid var(--focus, var(--acc
 
 /* ---------- Dialogs: scale up from 95%, blurred backdrop ---------- */
 dialog::backdrop { background: var(--scrim, rgba(10, 12, 12, .4)); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
-:root[data-motion="full"] dialog[open] { animation: dlgIn .36s var(--spring-soft) both; }
-:root[data-motion="reduced"] dialog[open] { animation: fadeIn .2s both; }
-:root:not([data-motion="off"]) dialog[open]::backdrop { animation: fadeIn .3s both; }
+:root[data-motion="full"] dialog[open]:not(.ui-pop) { animation: dlgIn .36s var(--spring-soft) both; }
+:root[data-motion="reduced"] dialog[open]:not(.ui-pop) { animation: fadeIn .2s both; }
+:root:not([data-motion="off"]) dialog[open]:not(.ui-pop)::backdrop { animation: fadeIn .3s both; }
 :root:not([data-motion="off"]) dialog.closing { animation: dlgOut .17s var(--ease) both; }
 :root:not([data-motion="off"]) dialog.closing::backdrop { animation: fadeOut .17s both; }
 @keyframes dlgIn { from { opacity: 0; transform: scale(.95); } }
@@ -1480,40 +1529,37 @@ body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .mason > .card:not(.timer
   :root[data-glass="full"][data-motion="full"] #glassBg .g4 { animation-duration: 42s; animation-delay: -6s; }
   @keyframes drift { 50% { transform: translate(6vmax, 4vmax) scale(1.08); } 100% { transform: translate(-4vmax, 7vmax) scale(.95); } }
 
-  :root[data-glass] :is(.card, .tile, .item, dialog, .seg, .coinpill, .lvchip, .pomeo-bubble, .pomeo-pop .pp-card, .tour-tip), :root[data-glass] .top::before {
+  :root[data-glass] :is(.card, .tile, .item, .coinpill, .lvchip, .pomeo-bubble, .pomeo-pop .pp-card, .tour-tip), :root[data-glass] .top::before {
     background-color: color-mix(in srgb, var(--surface) var(--glass-fill), transparent);
     background-image: linear-gradient(115deg, transparent calc(var(--sx) - 22%), rgba(255, 255, 255, var(--sheen-a)) var(--sx), transparent calc(var(--sx) + 22%));
     border-color: var(--glass-edge);
     box-shadow: inset 0 1px 0 var(--glass-hi), inset 0 0 22px -6px var(--glass-glow), var(--glass-shadow);
   }
-  :root[data-glass] :is(.card, .tile, dialog, .pomeo-pop .pp-card, .tour-tip), :root[data-glass] .top::before {
+  :root[data-glass] :is(.card, .tile, .pomeo-pop .pp-card, .tour-tip), :root[data-glass] .top::before {
     -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   }
-  /* v2.0: dialogs hold forms and sit over busy content — nearly solid in every glass level */
-  :root[data-glass] dialog { background-color: color-mix(in srgb, var(--pop-bg, var(--surface)) 94%, transparent); }
+  /* v2.0: a dialog is the nearest plane, holds forms and sits on the scrim: opaque in every glass level (a translucent
+     one takes the scrim's colour and ends up darker than the page it covers) */
+  :root[data-glass] dialog { background-color: var(--pop-bg, var(--surface)); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-color: var(--pop-bd, var(--line)); box-shadow: var(--e-4, none); }
   /* things that sit inside a glass card stay light-weight: a tint and an edge, no second blur */
   :root[data-glass] .rem-fg { background: transparent; box-shadow: none; }
-  :root[data-glass] .item, :root[data-glass] .seg, :root[data-glass] .pomeo-bubble { box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); }
+  :root[data-glass] .item, :root[data-glass] .pomeo-bubble { box-shadow: inset 0 1px 0 var(--glass-hi), var(--glass-shadow); }
   /* The header's glass lives on a pseudo-element: a backdrop-filter on the header itself would turn it into
      the containing block of the fixed phone tab bar inside it, pulling the bar to the top. */
   :root[data-glass] .top { background: transparent; border-bottom-color: var(--glass-edge); }
   :root[data-glass] .top::before { content: ""; position: absolute; inset: 0; z-index: -1; box-shadow: inset 0 -1px 0 var(--glass-edge); }
   :root[data-glass] .tabs { background-color: color-mix(in srgb, var(--surface) 45%, transparent); border-color: var(--glass-edge); box-shadow: inset 0 1px 0 var(--glass-hi); }
   :root[data-glass] .item .pv { background: color-mix(in srgb, var(--bg) 55%, transparent); }
-  :root[data-glass] :is(.iconbtn, .chip, .catrow button) {
-    background-color: color-mix(in srgb, var(--surface) 42%, transparent); border-color: var(--glass-edge);
-    box-shadow: inset 0 1px 0 var(--glass-hi), 0 4px 12px -8px rgba(0, 0, 0, .25);
-  }
   :root[data-glass] .ring .track { opacity: .7; }
   @media (max-width: 640px) {
     :root[data-glass] .tabs { background-color: color-mix(in srgb, var(--surface) var(--glass-fill), transparent); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); box-shadow: inset 0 1px 0 var(--glass-hi), 0 -10px 30px -18px rgba(0, 0, 0, .3); }
   }
   /* no backdrop-filter (older browsers): a solid surface that is only slightly translucent */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    :root[data-glass] :is(.card, .tile, .item, dialog, .seg, .tabs, .pomeo-bubble, .pomeo-pop .pp-card, .tour-tip), :root[data-glass] .top::before { background-color: color-mix(in srgb, var(--surface) 93%, transparent); }
+    :root[data-glass] :is(.card, .tile, .item, .tabs, .pomeo-bubble, .pomeo-pop .pp-card, .tour-tip), :root[data-glass] .top::before { background-color: color-mix(in srgb, var(--surface) 93%, transparent); }
   }
   /* reduced transparency asked for (or no blur support): solid, barely translucent surfaces and no colour wash */
-  :root[data-glass][data-glass-solid] :is(.card, .tile, .item, dialog, .seg, .tabs, .pomeo-bubble, .pomeo-pop .pp-card, .tour-tip, .tip-pop), :root[data-glass][data-glass-solid] .top::before {
+  :root[data-glass][data-glass-solid] :is(.card, .tile, .item, .tabs, .pomeo-bubble, .pomeo-pop .pp-card, .tour-tip, .tip-pop), :root[data-glass][data-glass-solid] .top::before {
     background-color: color-mix(in srgb, var(--surface) 95%, transparent); background-image: none; -webkit-backdrop-filter: none; backdrop-filter: none;
   }
   :root[data-glass][data-glass-solid="rt"] #glassBg { display: none; }
@@ -2362,7 +2408,7 @@ dialog.sheet:not([open]) { display: none; }
 .cmd { margin: 12vh auto auto; width: min(560px, calc(100vw - 24px)); padding: 0; overflow: hidden; }
 .cmd-in { display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line); }
 .cmd-in svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
-.cmd-in input { border: 0; background: none; padding: 6px 0; font-size: 16px; outline: none; }
+.cmd-in input { border: 0; background: none; padding: 6px 0; font-size: 16px; outline: none; box-shadow: none; border-radius: 0; min-height: 0; }
 .cmd-in input:focus { outline: none; border: 0; }
 .cmd-in kbd { flex: none; }
 .cmd-list { list-style: none; margin: 0; padding: var(--sp-2); max-height: min(420px, 60vh); overflow-y: auto; }
@@ -3583,7 +3629,7 @@ body.first-load #todayBar { opacity: 0; }
 .hs-opt b { display: block; }
 .hs-seats { display: flex; flex-wrap: wrap; gap: 8px; }
 .hs-seats label { position: relative; }
-.hs-seats input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.hs-seats input { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; }
 .hs-seats span { display: grid; place-items: center; min-width: 46px; height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; font-weight: 700; }
 .hs-seats input:checked + span { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
 .hs-seats input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -3778,8 +3824,8 @@ body.first-load #todayBar { opacity: 0; }
 .lp-peek, .lp-auth { grid-area: side; min-width: 0; align-self: center; }
 .lp-greet { margin-top: 6px; }
 .lp-cta { gap: 10px; margin-bottom: 10px; }
-.lp-cta .btn { min-height: 46px; padding: 11px 20px; font-weight: 600; }
-.lp-cta .lp-guest { background: transparent; border-color: transparent; color: var(--muted); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; padding-left: 10px; padding-right: 10px; }
+.lp-cta .btn { height: 46px; padding: 0 20px; font-weight: 600; }
+.lp-cta .lp-guest { flex: 0 0 100%; justify-content: flex-start; text-align: left; height: 36px; background: transparent; border-color: transparent; box-shadow: none; color: var(--muted); font-weight: 500; text-decoration: underline; text-underline-offset: 3px; padding-left: 4px; padding-right: 10px; }
 .lp-cta .lp-guest:hover { color: var(--text); }
 :root[data-glass] .lp-cta .btn.lp-guest { background: transparent; border-color: transparent; box-shadow: none; }
 .lp-cta .btn.primary.lp-preview svg { stroke: currentColor; }
@@ -3888,7 +3934,7 @@ body.first-load #todayBar { opacity: 0; }
    ========================================================================== */
 /* ----- closed fields: <ui-select> <ui-date> <ui-time> ----- */
 ui-select, ui-date, ui-time {
-  display: inline-flex; align-items: center; gap: var(--space-8, 8px); box-sizing: border-box; min-width: 0; max-width: 100%;
+  display: flex; align-items: center; gap: var(--space-8, 8px); box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%;
   min-height: var(--ctl-h, 40px); padding: 0 var(--space-12, 12px); border-radius: var(--r-8, 8px);
   border: 1px solid var(--ctl-bd); background: var(--ctl-bg); color: var(--t-1, var(--text)); box-shadow: var(--e-well, none);
   font: inherit; font-size: var(--fs-14, 14px); line-height: 1.3; cursor: pointer; user-select: none; -webkit-user-select: none;
@@ -3896,16 +3942,19 @@ ui-select, ui-date, ui-time {
 }
 ui-select > option, ui-select > optgroup { display: none; }
 :is(ui-select, ui-date, ui-time):hover { border-color: var(--ctl-bd-hover); }
-:is(ui-select, ui-date, ui-time).open { border-color: var(--focus, var(--accent)); box-shadow: inset 0 0 0 1px var(--focus, var(--accent)); }
+:is(ui-select, ui-date, ui-time).open { border-color: var(--ctl-bd-hover); }   /* open is not focus: the lip darkens and the chevron turns; the ring is for the keyboard only */
 :is(ui-select, ui-date, ui-time, ui-color):focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
-:is(ui-select, ui-date, ui-time, ui-num, ui-color, ui-tags)[disabled] { opacity: .55; cursor: not-allowed; }
+/* disabled: flat (no well), a dashed lip and muted text — it cannot be mistaken for an empty field */
+:is(ui-select, ui-date, ui-time, ui-color, ui-tags)[disabled] { background: transparent; border-style: dashed; box-shadow: none; color: var(--muted); cursor: not-allowed; }
+:is(ui-select, ui-date, ui-time)[disabled] .ui-chev { visibility: hidden; }
 :is(ui-select, ui-date, ui-time) .ui-face { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-8, 8px); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .ui-face .ui-opt-l { overflow: hidden; text-overflow: ellipsis; }
 .ui-ph { color: var(--muted); }
 .ui-chev, .ui-ic { flex: none; display: grid; place-items: center; color: var(--t-2, var(--muted)); }
 .ui-chev { transition: transform var(--d-2, 200ms) var(--ease-out, ease); }
-ui-select.open .ui-chev { transform: rotate(180deg); }
-.ui-clear { all: unset; flex: none; display: grid; place-items: center; width: 22px; height: 22px; margin-right: -4px; border-radius: 50%; color: var(--t-2, var(--muted)); cursor: pointer; }
+:is(ui-select, ui-date, ui-time).open .ui-chev { transform: rotate(180deg); }
+.ui-clear { all: unset; flex: none; position: relative; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: var(--t-2, var(--muted)); cursor: pointer; }
+.ui-clear::after, .ui-star::after, .ui-tag button::after { content: ''; position: absolute; inset: -11px; }   /* the glyph is small, the target is not */
 .ui-clear:hover { background: var(--hover); color: var(--t-1, var(--text)); }
 .ui-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 .ui-opt-ic { flex: none; }
@@ -3941,58 +3990,77 @@ ui-select.open .ui-chev { transform: rotate(180deg); }
   background: var(--text); color: var(--bg); font-size: var(--fs-12, 12px); font-weight: 600; line-height: 1.3; box-shadow: var(--e-2, 0 6px 16px -8px rgba(0, 0, 0, .5)); pointer-events: none; }
 .ui-tip.on { display: inline-flex; animation: fadeIn var(--d-1, 120ms) both; }
 .ui-tip kbd { font: inherit; font-size: var(--fs-11, 11px); min-width: 18px; padding: 0 5px; border-radius: 5px; text-align: center; background: color-mix(in srgb, var(--bg) 22%, transparent); }
-/* a preset's rhythm: 25 / 5 × 4 */
-.ui-rhy { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; padding-left: var(--space-12, 12px); font-size: var(--fs-12, 12px); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--t-2, var(--muted)); }
-.ui-rhy b { min-width: 22px; padding: 1px 5px; border-radius: var(--r-xs, 6px); background: var(--hover); color: var(--t-1, var(--text)); font-weight: 600; text-align: center; }
-.ui-rhy i { font-style: normal; opacity: .8; }
-.ui-star { all: unset; box-sizing: border-box; flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--t-2, var(--muted)); cursor: pointer; }
+/* a preset's rhythm: one label in two cells, "25 / 5" and "× 4" (a label, so 6 px and never a pill) */
+.ui-rhy { display: inline-flex; align-items: stretch; flex: none; height: 20px; margin-left: auto; border-radius: var(--r-6, 6px); background: var(--raise); box-shadow: inset 0 0 0 1px var(--pad-bd, transparent); font-size: var(--fs-11, 11px); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
+.ui-rhy b { display: grid; place-items: center; padding: 0 6px; color: var(--t-1, var(--text)); font-weight: 600; }
+.ui-rhy i { display: grid; place-items: center; padding: 0 6px; border-left: 1px solid var(--pad-bd, var(--line)); color: var(--t-2, var(--muted)); font-style: normal; }
+.ui-star { all: unset; box-sizing: border-box; position: relative; flex: none; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--t-2, var(--muted)); cursor: pointer; }
 .ui-star:hover { background: var(--hover); color: var(--t-1, var(--text)); }
 .ui-star.on { color: var(--warn-text, var(--warn)); } .ui-star.on svg { fill: currentColor; }
 .ui-star:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 1px; }
-.k-preset .ui-opt { padding-right: var(--space-4, 4px); } .k-preset .ui-tick { margin-left: 0; }
-.k-preset .ui-opt .ui-rhy { margin-left: auto; }
+.k-preset .ui-opt { padding-right: var(--space-4, 4px); } .k-preset .ui-tick { order: 0; margin-left: 0; width: auto; }
+.k-preset .ui-opt .ui-opt-l { flex: 0 1 auto; } .k-preset .ui-opt .ui-rhy { margin-left: auto; order: 1; } .k-preset .ui-opt .ui-star { order: 2; }
 .ui-sheet .ui-star { width: 44px; height: 44px; }
 .ui-opt-s + .ui-tick { margin-left: var(--space-8, 8px); }
-.ui-grp { padding: var(--space-8, 8px) var(--space-12, 12px) var(--space-4, 4px); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
+.ui-grp { display: flex; justify-content: space-between; gap: var(--space-8, 8px); padding: var(--space-8, 8px) var(--space-12, 12px) var(--space-4, 4px); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
+.ui-grp small { font-weight: 500; font-size: var(--fs-11, 11px); }
+.ui-pop-title { padding: 0 var(--space-4, 4px) var(--space-8, 8px); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
 .ui-group + .ui-group { margin-top: var(--space-4, 4px); padding-top: var(--space-4, 4px); border-top: 1px solid var(--line); }
 .ui-none { padding: var(--space-16, 16px) var(--space-12, 12px); color: var(--t-2, var(--muted)); text-align: center; }
 .ui-search { display: flex; align-items: center; gap: var(--space-8, 8px); margin: 0 0 var(--space-6, 6px); padding: 0 var(--space-12, 12px); min-height: 38px; border: 1px solid var(--ctl-bd); border-radius: var(--r-8, 8px); background: var(--ctl-bg); color: var(--t-2, var(--muted)); }
 .ui-search:focus-within { border-color: var(--focus, var(--accent)); box-shadow: inset 0 0 0 1px var(--focus, var(--accent)); }
 .ui-search input[type="text"] { all: unset; flex: 1; min-width: 0; min-height: 30px; font: inherit; color: var(--t-1, var(--text)); }
 .ui-search input::placeholder { color: var(--muted); }
-.ui-foot { display: flex; gap: var(--space-6, 6px); margin-top: var(--space-6, 6px); padding-top: var(--space-6, 6px); border-top: 1px solid var(--line); }
-.ui-foot-btn { all: unset; box-sizing: border-box; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6, 6px); min-height: 34px; padding: 0 var(--space-12, 12px); border-radius: 999px; border: 1px solid var(--ctl-bd); background: var(--raise); color: var(--t-1, var(--text)); font-weight: 600; font-size: var(--fs-13, 13px); cursor: pointer; }
+.ui-foot { display: flex; gap: var(--space-6, 6px); margin-top: var(--space-6, 6px); padding-top: var(--space-6, 6px); border-top: 1px solid var(--divider, var(--line)); }
+.ui-select-pop .ui-list { -webkit-mask-image: linear-gradient(#000 calc(100% - 14px), transparent); mask-image: linear-gradient(#000 calc(100% - 14px), transparent); padding-bottom: 6px; }   /* a list that goes on fades out instead of being cut mid-row */
+.ui-foot-btn { all: unset; box-sizing: border-box; flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-6, 6px); height: var(--h-sm, 32px); padding: 0 var(--space-12, 12px); border-radius: 999px; border: 1px solid var(--ctl-bd); background: var(--pad); color: var(--t-1, var(--text)); font-weight: 500; font-size: var(--fs-13, 13px); cursor: pointer; }
 .ui-foot-btn:hover { background: var(--press); border-color: var(--ctl-bd-hover); }
 .ui-foot-btn:focus-visible, .ui-chipbtn:focus-visible, .ui-ib:focus-visible, .ui-day:focus-visible, .ui-mi:focus-visible, .ui-sw:focus-visible, .ui-ampm button:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 1px; }
 
 /* ----- bottom sheet (phones): the same panel as a modal dialog from the bottom ----- */
 dialog.ui-pop.ui-sheet {
-  position: fixed; inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: min(82dvh, 640px); margin: 0; padding: 0 var(--space-12, 12px) calc(var(--space-12, 12px) + env(safe-area-inset-bottom));
+  position: fixed; inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: min(86dvh, 680px); margin: 0; padding: 0 var(--space-12, 12px) calc(var(--space-16, 16px) + env(safe-area-inset-bottom)); background: var(--pop-bg, var(--surface));
   border: 0; border-top: 1px solid var(--pop-bd); border-radius: var(--r-xl, 22px) var(--r-xl, 22px) 0 0;
   animation: uiSheetIn var(--d-3, 320ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)) backwards;
 }
 dialog.ui-pop.ui-sheet.out { animation: uiSheetOut var(--d-2, 200ms) ease-in forwards; }
+dialog.ui-pop:not([open]) { display: none; }   /* (.ui-pop's display: flex would otherwise beat the browser's rule for a closed dialog) */
 :root[data-motion="reduced"] dialog.ui-pop.ui-sheet { animation-name: fadeIn; }
 :root[data-motion="reduced"] dialog.ui-pop.ui-sheet.out { animation-name: fadeOut; }
 dialog.ui-pop.ui-sheet::backdrop { background: var(--scrim, rgba(0, 0, 0, .5)); animation: none; }
 .ui-sheet-grip { flex: none; display: grid; place-items: center; height: 24px; touch-action: none; cursor: grab; }
 .ui-sheet-grip i { width: 40px; height: 4px; border-radius: 4px; background: var(--ctl-bd); }
-.ui-sheet-title { flex: none; padding: 0 var(--space-6, 6px) var(--space-12, 12px); font-size: var(--fs-17, 17px); font-weight: 600; touch-action: none; }
+.ui-sheet-head { flex: none; display: flex; align-items: center; gap: var(--space-8, 8px); padding: 0 0 var(--space-8, 8px) var(--space-6, 6px); }
+.ui-sheet-title { flex: 1; min-width: 0; font-size: var(--fs-17, 17px); font-weight: 600; touch-action: none; }
+.ui-sheet-x { all: unset; box-sizing: border-box; flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--hover); color: var(--t-1, var(--text)); cursor: pointer; }
+.ui-sheet-x svg { width: 16px; height: 16px; }
+.ui-sheet-x:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+.ui-pop-body { display: flex; flex-direction: column; min-height: 0; }
 .ui-sheet-body { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 .ui-sheet .ui-opt { min-height: 48px; }
-.ui-sheet .ui-search { margin: 0 0 var(--space-6, 6px); border: 1px solid var(--ctl-bd); border-radius: var(--r-md, 12px); min-height: 44px; box-sizing: border-box; }
-.ui-sheet .ui-foot-btn { min-height: 44px; }
+.ui-sheet .ui-search { margin: 0 0 var(--space-6, 6px); min-height: 44px; box-sizing: border-box; }
+.ui-sheet .ui-foot-btn { height: 44px; }
+.ui-sheet .ui-ib { width: 44px; height: 44px; }
+.ui-sheet .ui-tag { height: 32px; }
+.ui-sheet .ui-num-b { width: 44px; height: 44px; } .ui-sheet .ui-num-well { height: 52px; }
+.ui-sheet .ui-ampm button { height: 44px; min-width: 52px; flex: 1; }
+.ui-sheet .ui-time-exact { flex-wrap: wrap; }
+.ui-sheet .ui-ampm { flex: 1 0 100%; margin-left: 0; }   /* AM / PM on its own row: two 44 px steppers and the switch don't fit across a phone */
 
 /* ----- number stepper ----- */
-ui-num { display: inline-flex; align-items: stretch; box-sizing: border-box; min-height: var(--ctl-h, 40px); border-radius: var(--r-md, 12px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); color: var(--t-1, var(--text)); overflow: hidden; transition: border-color var(--d-1, 120ms) var(--ease-out, ease), box-shadow var(--d-1, 120ms) var(--ease-out, ease); }
-ui-num:hover { border-color: var(--ctl-bd-hover); }
-ui-num:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-ui-num input[type="text"] { all: unset; box-sizing: border-box; width: 3.4em; min-width: 0; flex: 1; text-align: center; font: inherit; font-size: var(--fs-14, 14px); font-variant-numeric: tabular-nums; color: inherit; }
-.ui-num-sfx { align-self: center; margin: 0 var(--space-4, 4px) 0 calc(-1 * var(--space-4, 4px)); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); }
-.ui-num-b { all: unset; flex: none; display: grid; place-items: center; width: 36px; color: var(--t-2, var(--muted)); cursor: pointer; touch-action: manipulation; }
-.ui-num-b:hover { background: var(--hover); color: var(--t-1, var(--text)); }
+ui-num { display: inline-flex; align-items: center; gap: var(--space-8, 8px); vertical-align: middle; color: var(--t-1, var(--text)); }
+.ui-num-well { display: inline-flex; align-items: center; gap: 2px; box-sizing: border-box; height: var(--ctl-h, 40px); padding: 3px; border-radius: var(--r-8, 8px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); box-shadow: var(--e-well, none); transition: border-color var(--d-1, 120ms) var(--ease-out, ease); }
+ui-num:hover .ui-num-well { border-color: var(--ctl-bd-hover); }
+ui-num:focus-within .ui-num-well { border-color: var(--focus, var(--accent)); outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+ui-num input[type="text"] { all: unset; box-sizing: border-box; width: 3.2em; min-width: 0; text-align: center; font: inherit; font-size: var(--fs-14, 14px); font-weight: 600; font-variant-numeric: tabular-nums; color: inherit; }
+ui-num input::placeholder { color: var(--muted); font-weight: 400; }
+ui-num input[type="text"]:disabled, ui-tags input[type="text"]:disabled { border: 0; background: none; color: var(--muted); }
+.ui-num-sfx { color: var(--t-2, var(--muted)); font-size: var(--fs-13, 13px); }
+.ui-num-b { all: unset; box-sizing: border-box; flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-6, 6px); border: 1px solid var(--ctl-bd); background: var(--pad); color: var(--t-1, var(--text)); cursor: pointer; touch-action: manipulation; }
+.ui-num-b:hover { background: var(--press); border-color: var(--ctl-bd-hover); }
 .ui-num-b:active { background: var(--accent-soft); }
-.ui-num-b:disabled { opacity: .35; cursor: default; background: none; }
+.ui-num-b:disabled { border-style: dashed; background: none; color: var(--muted); cursor: default; }
+ui-num[disabled] .ui-num-well { background: transparent; border-style: dashed; box-shadow: none; }
 
 /* ----- date picker ----- */
 .ui-date-pop, .ui-time-pop, .ui-color-pop { overflow-y: auto; }   /* a short window scrolls the panel instead of cutting it */
@@ -4001,7 +4069,7 @@ ui-num input[type="text"] { all: unset; box-sizing: border-box; width: 3.4em; mi
 .ui-cal { width: 268px; flex: none; }
 .ui-cal-head { display: flex; align-items: center; gap: var(--space-4, 4px); min-height: 40px; margin-bottom: var(--space-4, 4px); }
 .ui-cal-title { flex: 1; padding-left: var(--space-8, 8px); font-weight: 600; font-size: var(--fs-15, 15px); }
-.ui-ib { all: unset; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--hover); color: var(--t-2, var(--muted)); cursor: pointer; }
+.ui-ib { all: unset; box-sizing: border-box; flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--hover); color: var(--t-1, var(--text)); cursor: pointer; }
 .ui-ib:hover { background: var(--press); color: var(--t-1, var(--text)); }
 .ui-cal-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 2px; }
 .ui-cal-dow span { display: grid; place-items: center; height: 24px; color: var(--t-2, var(--muted)); font-size: var(--fs-11, 11px); font-weight: 600; }
@@ -4010,11 +4078,13 @@ ui-num input[type="text"] { all: unset; box-sizing: border-box; width: 3.4em; mi
 .ui-day { all: unset; box-sizing: border-box; display: grid; place-items: center; aspect-ratio: 1; min-height: 36px; border-radius: var(--r-8, 8px); font-size: var(--fs-13, 13px); font-variant-numeric: tabular-nums; cursor: pointer; position: relative; }
 .ui-day:hover { background: var(--hover); }
 .ui-day.out { color: var(--muted); }
-.ui-day.today { font-weight: 700; box-shadow: inset 0 0 0 1.5px var(--t-1, var(--text)); }
-.ui-day.dot::after { content: ''; position: absolute; bottom: 4px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
+/* today: bold, in the accent ink, with a short bar under the number (never a ring: a ring is keyboard focus) */
+.ui-day.today { font-weight: 700; color: var(--accent-text, var(--accent)); }
+.ui-day.today::before { content: ''; position: absolute; bottom: 5px; left: 50%; width: 12px; height: 2px; margin-left: -6px; border-radius: 2px; background: currentColor; }
+.ui-day.dot::after { content: ''; position: absolute; top: 5px; right: 6px; left: auto; width: 4px; height: 4px; margin-left: 0; border-radius: 50%; background: currentColor; }
 .ui-day.in { background: var(--accent-soft); border-radius: 0; }
 .ui-day.sel { background: var(--accent-fill, var(--accent)); color: var(--on-accent, #fff); border-radius: var(--r-8, 8px); font-weight: 700; box-shadow: none; }
-.ui-day.sel.today { box-shadow: inset 0 0 0 1.5px var(--on-accent, #fff); }
+.ui-day.sel.today { color: var(--on-accent, #fff); }
 .ui-day:disabled { opacity: .3; cursor: default; background: none; }
 /* quick picks: a column beside the month, each with the date it means */
 .ui-quick { display: grid; gap: 2px; align-content: start; width: 164px; flex: none; padding-right: var(--space-12, 12px); border-right: 1px solid var(--divider, var(--line)); align-self: stretch; }
@@ -4027,7 +4097,7 @@ ui-num input[type="text"] { all: unset; box-sizing: border-box; width: 3.4em; mi
 .ui-foot-v { align-items: center; margin-top: var(--space-12, 12px); padding-top: var(--space-8, 8px); border-top-color: var(--divider, var(--line)); }
 .ui-foot-v .ui-foot-sp { flex: 1; }
 .ui-foot-v .ui-foot-btn { flex: none; min-width: 76px; }
-.ui-quiet { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; min-height: 34px; padding: 0 var(--space-12, 12px); border-radius: 999px; font-size: var(--fs-13, 13px); font-weight: 600; color: var(--t-1, var(--text)); cursor: pointer; }
+.ui-quiet { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; height: var(--h-sm, 32px); padding: 0 var(--space-12, 12px); border-radius: 999px; font-size: var(--fs-13, 13px); font-weight: 600; color: var(--t-1, var(--text)); cursor: pointer; }
 .ui-quiet[data-today], .ui-quiet[data-now], .ui-quiet[data-default] { color: var(--accent-text, var(--accent)); }
 .ui-quiet:hover { background: var(--hover); }
 .ui-chipbtn { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: var(--space-6, 6px); min-height: 30px; padding: 0 var(--space-12, 12px); border-radius: var(--r-pill, 999px); border: 1px solid var(--ctl-bd); font-size: var(--fs-12, 12px); font-weight: 500; cursor: pointer; white-space: nowrap; }
@@ -4038,14 +4108,12 @@ ui-num input[type="text"] { all: unset; box-sizing: border-box; width: 3.4em; mi
 .ui-sheet .ui-date-pop, dialog.ui-sheet.ui-date-pop { width: 100%; }
 .ui-sheet .ui-date-body { flex-direction: column; align-items: stretch; }
 .ui-sheet .ui-cal { width: auto; }
-.ui-sheet .ui-quick { display: flex; width: auto; gap: var(--space-8, 8px); padding: 0 0 var(--space-8, 8px); border-right: 0; overflow-x: auto; scrollbar-width: none; }   /* on a phone: one row of chips that scrolls sideways */
-.ui-sheet .ui-quick::-webkit-scrollbar { display: none; }
+.ui-sheet .ui-date-pop .ui-quick { display: grid; grid-template-columns: 1fr 1fr; width: auto; gap: 2px var(--space-8, 8px); padding: 0 0 var(--space-8, 8px); margin-bottom: var(--space-8, 8px); border-right: 0; border-bottom: 1px solid var(--divider, var(--line)); }
 .ui-sheet .ui-quick-h { display: none; }
-.ui-sheet .ui-qrow { flex: none; min-height: 44px; padding: 0 var(--space-16, 16px); border-radius: 999px; border: 1px solid var(--ctl-bd); background: var(--raise); font-size: var(--fs-13, 13px); font-weight: 600; }
-.ui-sheet .ui-qrow small { display: none; }
+.ui-sheet .ui-qrow { min-height: 44px; }
 .ui-sheet .ui-day { min-height: 44px; }
 .ui-sheet .ui-chipbtn { min-height: 40px; }
-.ui-sheet .ui-quiet { min-height: 44px; }
+.ui-sheet .ui-quiet { height: 44px; }
 .ui-sheet .ui-foot-v .ui-foot-btn { min-width: 96px; }
 
 /* ----- time picker ----- */
@@ -4053,7 +4121,7 @@ ui-num input[type="text"] { all: unset; box-sizing: border-box; width: 3.4em; mi
 dialog.ui-sheet.ui-time-pop { width: 100%; }
 .ui-time-pop .ui-quick { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-8, 8px); width: auto; padding: 0; border: 0; overflow: visible; }
 /* a time of day: a cell in a grid of choices — an icon, the word and the time it means; the chosen one gets a 2 px edge and a check */
-.ui-ttile { all: unset; box-sizing: border-box; position: relative; display: flex; align-items: center; gap: var(--space-8, 8px); min-height: 48px; padding: 0 var(--space-12, 12px); border-radius: var(--r-8, 8px); border: 1px solid var(--ctl-bd); background: var(--raise); color: var(--t-2, var(--muted)); cursor: pointer; }
+.ui-ttile { all: unset; box-sizing: border-box; position: relative; display: flex; align-items: center; gap: var(--space-8, 8px); min-height: 48px; padding: 0 var(--space-12, 12px); border-radius: var(--r-8, 8px); border: 1px solid var(--ctl-bd); background: var(--pad); color: var(--t-2, var(--muted)); cursor: pointer; }
 .ui-ttile span { display: grid; line-height: 1.25; }
 .ui-ttile b { color: var(--t-1, var(--text)); font-size: var(--fs-13, 13px); font-weight: 600; }
 .ui-ttile small { font-size: var(--fs-11, 11px); font-variant-numeric: tabular-nums; }
@@ -4066,65 +4134,81 @@ dialog.ui-sheet.ui-time-pop { width: 100%; }
 .ui-ttile:focus-visible, .ui-qrow:focus-visible, .ui-quiet:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 1px; }
 .ui-time-h { margin: var(--space-12, 12px) var(--space-4, 4px) 0; color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
 .ui-sheet .ui-ttile { min-height: 56px; }
-.ui-time-exact { display: flex; align-items: center; justify-content: center; gap: var(--space-8, 8px); margin-top: var(--space-6, 6px); }
-.ui-time-exact ui-num { flex-direction: column-reverse; width: 64px; min-height: 0; }
-.ui-time-exact ui-num input[type="text"] { width: 100%; height: 40px; font-size: var(--fs-20, 20px); font-weight: 600; }
-.ui-time-exact .ui-num-b { width: 100%; height: 26px; }
+.ui-time-exact { display: flex; align-items: center; gap: var(--space-6, 6px); margin-top: var(--space-6, 6px); }
+.ui-time-exact ui-num input[type="text"] { width: 2.6em; font-size: var(--fs-17, 17px); }
+ui-num[bare] .ui-num-b { display: none; } ui-num[bare] .ui-num-well { padding: 3px var(--space-4, 4px); }
+.ui-sheet ui-num[bare] .ui-num-b { display: grid; }   /* a finger gets the − and + back */
 .ui-time-sep { font-size: var(--fs-20, 20px); font-weight: 600; color: var(--t-2, var(--muted)); }
-.ui-ampm { display: grid; gap: var(--space-4, 4px); margin-left: var(--space-4, 4px); }
-.ui-ampm button { all: unset; display: grid; place-items: center; min-width: 44px; height: 30px; border-radius: var(--r-sm, 8px); border: 1px solid var(--ctl-bd); font-size: var(--fs-12, 12px); font-weight: 600; cursor: pointer; }
-.ui-ampm button[aria-checked="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-text, var(--accent)); }
+.ui-ampm { display: inline-flex; gap: 2px; margin-left: auto; padding: 3px; border-radius: var(--r-8, 8px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); }
+.ui-ampm button { all: unset; box-sizing: border-box; display: grid; place-items: center; min-width: 44px; height: 32px; padding: 0 var(--space-8, 8px); border-radius: var(--r-6, 6px); font-size: var(--fs-13, 13px); font-weight: 500; cursor: pointer; }
+.ui-ampm button:hover { background: var(--hover); }
+.ui-ampm button[aria-checked="true"] { background: var(--accent-tint, var(--accent-soft)); color: var(--t-1, var(--text)); font-weight: 600; box-shadow: inset 0 0 0 1.5px var(--accent-text, var(--accent)); }
 .ui-time-body.off { opacity: .4; }
 .ui-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12, 12px); min-height: 40px; padding: 0 var(--space-4, 4px) var(--space-8, 8px); margin-bottom: var(--space-12, 12px); border-bottom: 1px solid var(--line); font-weight: 500; cursor: pointer; }
 
 /* ----- colour picker ----- */
-ui-color { display: inline-grid; place-items: center; width: var(--ctl-h, 40px); height: var(--ctl-h, 40px); border-radius: var(--r-md, 12px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); cursor: pointer; box-sizing: border-box; }
+ui-color { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-8, 8px); min-width: var(--ctl-h, 40px); height: var(--ctl-h, 40px); padding: 0 9px; border-radius: var(--r-8, 8px); box-shadow: var(--e-well, none); font-size: var(--fs-14, 14px); white-space: nowrap; border: 1px solid var(--ctl-bd); background: var(--ctl-bg); cursor: pointer; box-sizing: border-box; }
 ui-color:hover { border-color: var(--ctl-bd-hover); }
-.ui-swatch { display: block; width: 20px; height: 20px; border-radius: 50%; background: var(--ui-c); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent); }
-.ui-color-pop { padding: var(--space-12, 12px); width: 264px; }
+.ui-swatch { display: block; flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--ui-c); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14); }
+.ui-color-pop { padding: var(--space-12, 12px); width: 300px; }
+.ui-color-n { font-weight: 500; }
 dialog.ui-sheet.ui-color-pop { width: 100%; }
-.ui-swatches { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-6, 6px); }
-.ui-sw { all: unset; box-sizing: border-box; display: grid; place-items: center; aspect-ratio: 1; border-radius: 50%; background: var(--ui-c); color: #fff; cursor: pointer; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent); transition: transform var(--d-1, 120ms) var(--ease-out, ease); }
+.ui-swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: var(--space-8, 8px); }
+.ui-sw { all: unset; box-sizing: border-box; position: relative; display: block; aspect-ratio: 1; border-radius: 50%; background: var(--ui-c); cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14); transition: transform var(--d-1, 120ms) var(--ease-out, ease); }
 .ui-sw:hover { transform: scale(1.1); }
-.ui-sw[aria-checked="true"] { box-shadow: 0 0 0 2px var(--pop-bg), 0 0 0 4px var(--ui-c); }
-.ui-sw svg { filter: drop-shadow(0 0 2px rgba(0, 0, 0, .5)); }
-.ui-hex { display: flex; align-items: center; gap: var(--space-8, 8px); margin-top: var(--space-12, 12px); padding-top: var(--space-12, 12px); border-top: 1px solid var(--line); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); }
-.ui-hex input[type="text"] { all: unset; box-sizing: border-box; flex: 1; min-width: 0; height: 34px; padding: 0 var(--space-8, 8px); border-radius: var(--r-sm, 8px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); color: var(--t-1, var(--text)); font: inherit; font-size: var(--fs-13, 13px); font-variant-numeric: tabular-nums; }
-.ui-hex input[type="text"]:focus { border-color: var(--accent); outline: none; }
+.ui-sw i { display: none; position: absolute; top: -5px; right: -5px; width: 16px; height: 16px; border-radius: 50%; place-items: center; background: var(--t-1, var(--text)); color: var(--pop-bg, var(--surface)); box-shadow: 0 0 0 2px var(--pop-bg, var(--surface)); }
+.ui-sw i svg { width: 10px; height: 10px; stroke-width: 3.4; }
+.ui-sw[aria-checked="true"] { box-shadow: 0 0 0 2px var(--pop-bg, var(--surface)), 0 0 0 4px var(--t-1, var(--text)); }   /* the chosen colour: a ring and a check badge, never the colour alone */
+.ui-sw[aria-checked="true"] i { display: grid; }
+.ui-custom { display: grid; gap: var(--space-8, 8px); margin-top: var(--space-12, 12px); padding-top: var(--space-12, 12px); border-top: 1px solid var(--divider, var(--line)); }
+.ui-custom-h { color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); font-weight: 600; }
+input[type="range"].ui-hue { width: 100%; }
+input[type="range"].ui-hue::-webkit-slider-runnable-track { height: 8px; border-radius: 8px; background: linear-gradient(to right, hsl(0 52% 56%), hsl(60 52% 56%), hsl(120 52% 56%), hsl(180 52% 56%), hsl(240 52% 56%), hsl(300 52% 56%), hsl(359 52% 56%)); }
+input[type="range"].ui-hue::-moz-range-track { height: 8px; border-radius: 8px; background: linear-gradient(to right, hsl(0 52% 56%), hsl(60 52% 56%), hsl(120 52% 56%), hsl(180 52% 56%), hsl(240 52% 56%), hsl(300 52% 56%), hsl(359 52% 56%)); }
+input[type="range"].ui-hue::-moz-range-progress { background: transparent; }
+input[type="range"].ui-hue::-webkit-slider-thumb { margin-top: -7px; }
+.ui-hex { display: flex; align-items: center; gap: var(--space-8, 8px); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); }
+.ui-hex input[type="text"] { all: unset; box-sizing: border-box; flex: 1; min-width: 0; height: 34px; padding: 0 var(--space-8, 8px); border-radius: var(--r-8, 8px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); color: var(--t-1, var(--text)); font: inherit; font-size: var(--fs-13, 13px); font-variant-numeric: tabular-nums; }
+.ui-hex input[type="text"]:focus { border-color: var(--focus, var(--accent)); outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 ui-num input[type="text"]:focus, ui-tags input[type="text"]:focus, .ui-search input[type="text"]:focus { outline: none; }
 
 /* ----- tag input ----- */
-ui-tags { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6, 6px); box-sizing: border-box; min-height: var(--ctl-h, 40px); padding: var(--space-4, 4px) var(--space-8, 8px); border-radius: var(--r-md, 12px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); cursor: text; transition: border-color var(--d-1, 120ms) var(--ease-out, ease), box-shadow var(--d-1, 120ms) var(--ease-out, ease); }
+ui-tags { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6, 6px); box-sizing: border-box; min-height: var(--ctl-h, 40px); padding: var(--space-4, 4px) var(--space-8, 8px); border-radius: var(--r-8, 8px); border: 1px solid var(--ctl-bd); background: var(--ctl-bg); box-shadow: var(--e-well, none); cursor: text; transition: border-color var(--d-1, 120ms) var(--ease-out, ease), box-shadow var(--d-1, 120ms) var(--ease-out, ease); }
 ui-tags:hover { border-color: var(--ctl-bd-hover); }
-ui-tags:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+ui-tags:focus-within { border-color: var(--focus, var(--accent)); outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
 .ui-tag-list { display: contents; }
-.ui-tag { display: inline-flex; align-items: center; gap: var(--space-2, 2px); height: 26px; padding: 0 var(--space-4, 4px) 0 var(--space-8, 8px); border-radius: var(--r-pill, 999px); background: var(--accent-soft); color: var(--t-1, var(--text)); font-size: var(--fs-12, 12px); font-weight: 500; white-space: nowrap; }
-.ui-tag button { all: unset; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; color: var(--t-2, var(--muted)); cursor: pointer; }
+.ui-tag { display: inline-flex; align-items: center; gap: var(--space-2, 2px); height: 26px; padding: 0 var(--space-4, 4px) 0 var(--space-8, 8px); border-radius: var(--r-6, 6px); background: var(--raise); box-shadow: inset 0 0 0 1px var(--pad-bd, transparent); color: var(--t-1, var(--text)); font-size: var(--fs-12, 12px); font-weight: 500; white-space: nowrap; }
+.ui-tag button { all: unset; position: relative; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; color: var(--t-2, var(--muted)); cursor: pointer; }
 .ui-tag button:hover { background: var(--hover); color: var(--t-1, var(--text)); }
 ui-tags input[type="text"] { all: unset; flex: 1; min-width: 72px; min-height: 28px; font: inherit; font-size: var(--fs-14, 14px); color: var(--t-1, var(--text)); }
-ui-tags input::placeholder { color: var(--t-3, var(--muted)); }
+ui-tags input::placeholder { color: var(--muted); }
 ui-tags.full input[type="text"] { flex: 0 0 8px; min-width: 8px; caret-color: transparent; }
 dialog.ui-sheet:focus { outline: none; }
 
 /* ----- menu ----- */
 .ui-menu { min-width: 180px; }
-.ui-mi { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-8, 8px); width: 100%; min-height: 36px; padding: 0 var(--space-12, 12px); border-radius: var(--r-sm, 8px); cursor: pointer; }
+.ui-mi { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-8, 8px); width: 100%; min-height: 40px; padding: 0 var(--space-12, 12px); border-radius: var(--r-8, 8px); cursor: pointer; }
 .ui-mi:hover, .ui-mi:focus { background: var(--hover); }
-.ui-mi.danger { color: var(--danger); }
-.ui-mi:disabled { opacity: .45; cursor: default; background: none; }
+.ui-mi:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: -2px; }   /* inside the row: the list clips what sticks out */
+.ui-mi.danger, .ui-mi.danger .ui-mi-ic { color: var(--danger-text, var(--danger)); }
+.ui-mi:disabled { color: var(--muted); cursor: default; background: none; }
 .ui-mi-ic { flex: none; display: grid; place-items: center; width: 18px; color: var(--t-2, var(--muted)); }
-.ui-mi-h { margin-left: auto; padding-left: var(--space-16, 16px); color: var(--t-2, var(--muted)); font-size: var(--fs-12, 12px); }
-.ui-sep { height: 1px; margin: var(--space-4, 4px) var(--space-6, 6px); background: var(--line); }
+.ui-mi-h { margin-left: auto; min-width: 20px; padding: 1px 6px; border-radius: var(--r-6, 6px); background: var(--raise); box-shadow: inset 0 0 0 1px var(--pad-bd, transparent); color: var(--t-2, var(--muted)); font-size: var(--fs-11, 11px); font-weight: 600; text-align: center; }
+.ui-mi-h.lock { background: none; box-shadow: none; padding: 0; }
+@media (pointer: coarse) { .ui-mi-h:not(.lock) { display: none; } }   /* a key hint means nothing to a finger */
+.ui-sep { height: 1px; margin: var(--space-4, 4px) var(--space-6, 6px); background: var(--divider, var(--line)); }
 .ui-sheet .ui-mi { min-height: 48px; }
 
 /* ----- slider: filled track + value bubble ----- */
 input[type="range"] { -webkit-appearance: none; appearance: none; height: 24px; margin: 0; background: transparent; cursor: pointer; --ui-fill: 0%; }
-input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 6px; background: linear-gradient(to right, var(--accent) var(--ui-fill), var(--track) var(--ui-fill)); }
-input[type="range"]::-moz-range-track { height: 6px; border-radius: 6px; background: var(--track); }
-input[type="range"]::-moz-range-progress { height: 6px; border-radius: 6px; background: var(--accent); }
-input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; margin-top: -6px; border-radius: 50%; background: var(--s-1, var(--surface)); border: 2px solid var(--accent); box-shadow: var(--e-1, 0 1px 3px rgba(0, 0, 0, .3)); transition: transform var(--d-1, 120ms) var(--ease-out, ease); }
-input[type="range"]::-moz-range-thumb { box-sizing: border-box; width: 18px; height: 18px; border-radius: 50%; background: var(--s-1, var(--surface)); border: 2px solid var(--accent); box-shadow: var(--e-1, 0 1px 3px rgba(0, 0, 0, .3)); }
-input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--accent-fill, var(--accent)) var(--ui-fill), var(--ctl-bd, var(--track)) var(--ui-fill)); }
+input[type="range"]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--ctl-bd, var(--track)); }
+input[type="range"]::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--accent-fill, var(--accent)); }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; box-sizing: border-box; width: 22px; height: 22px; margin-top: -9px; border-radius: 50%; background: var(--surface); border: 1px solid var(--ctl-bd, var(--muted)); box-shadow: 0 1px 3px var(--shadow-3, rgba(0, 0, 0, .3)), inset 0 0 0 5px var(--surface), inset 0 0 0 11px var(--accent-fill, var(--accent)); transition: transform var(--d-1, 120ms) var(--ease-out, ease); }
+input[type="range"]::-moz-range-thumb { box-sizing: border-box; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 1px solid var(--ctl-bd, var(--muted)); box-shadow: 0 1px 3px var(--shadow-3, rgba(0, 0, 0, .3)), inset 0 0 0 5px var(--surface), inset 0 0 0 11px var(--accent-fill, var(--accent)); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.1); }
+input[type="range"]:disabled { opacity: .5; cursor: default; }
+@media (pointer: coarse) { input[type="range"] { height: 44px; } }
 input[type="range"]:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 4px; border-radius: 6px; }
 input[type="range"]:disabled { opacity: .5; cursor: not-allowed; }
 .ui-bubble { position: fixed; z-index: 90; transform: translate(-50%, -100%) scale(.9); padding: 2px var(--space-8, 8px); border-radius: var(--r-sm, 8px); background: var(--t-1, var(--text)); color: var(--s-1, var(--surface)); font-size: var(--fs-12, 12px); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity var(--d-1, 120ms) var(--ease-out, ease), transform var(--d-1, 120ms) var(--ease-out, ease); }
@@ -4139,17 +4223,27 @@ input[type="range"]:disabled { opacity: .5; cursor: not-allowed; }
   .ui-tag button::after, .ui-clear::after { content: ''; position: absolute; inset: -11px; }
   ui-tags input[type="text"]:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) { min-height: 34px; }
   .ui-num-b:not(.plant):not(.rem-check) { min-height: 0; width: 44px; }
-  .ui-time-exact .ui-num-b:not(.plant):not(.rem-check) { width: 100%; height: 34px; }
+  .ui-sheet-x:not(.plant):not(.rem-check), .ui-ib:not(.plant):not(.rem-check) { min-height: 0; width: 44px; height: 44px; }   /* round, and a full 44 px target */
+  .ui-sw:not(.plant):not(.rem-check), .ui-star:not(.plant):not(.rem-check) { min-height: 0; }   /* a swatch keeps its circle; the star's target is its ::after */
 }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
-.gx-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; align-items: start; }
+.gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
+.gx-grid > * { break-inside: avoid; margin: 0 0 16px; }
 .gx-cell { display: grid; gap: 8px; align-content: start; }
 .gx-cell h2 { margin: 0 0 4px; }
 .gx-cell .field { margin: 6px 0 0; }
 .gx-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; }
 .gx-wrap { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .gx-spacer { height: 60vh; }
+.gx-check { display: flex; align-items: center; gap: 10px; min-height: 32px; cursor: pointer; }
+.gx-toasts { display: grid; gap: 8px; }
+.gx-toast { position: static; opacity: 1; transform: none; text-align: left; align-items: flex-start; }
+.gx-toast .gx-ti { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-8, 8px); background: var(--accent-soft); color: var(--accent-text, var(--accent)); }
+.gx-toast .gx-ti svg { width: 18px; height: 18px; }
+.gx-toast.ok .gx-ti { background: var(--ok-soft); color: var(--ok-text); } .gx-toast.err .gx-ti { background: var(--danger-soft); color: var(--danger-text); }
+.gx-toast .gx-tt { flex: 1; min-width: 0; display: grid; } .gx-toast .gx-tt small { color: var(--muted); font-size: var(--fs-13, 13px); }
+.gx-toast .btn { align-self: center; }
 .gx-low { max-width: 300px; }
 </style>
 </head>
@@ -4991,7 +5085,7 @@ input[type="range"]:disabled { opacity: .5; cursor: not-allowed; }
   <div class="btn-row" style="justify-content:flex-end;margin-top:8px"><button class="btn" id="cstClose" type="button">Done</button></div>
 </dialog>
 <dialog id="confirmDlg" class="clan-dlg cf-dlg" aria-labelledby="cfTitle" aria-describedby="cfBody">
-  <div class="cf-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17.2v.3"/></svg></div>
+  <div class="cf-ic" id="cfIc" aria-hidden="true"></div>
   <h2 id="cfTitle"></h2>
   <p class="muted" id="cfBody" style="margin:0 0 10px"></p>
   <input type="text" id="cfType" class="hidden" autocomplete="off" aria-label="Type to confirm">
@@ -5439,7 +5533,7 @@ function fmtClock(ms) {
 // Toasts stack (up to 3 at once) and slide in and out; ok = true adds a small drawn check mark.
 /** Toasts live in the top-most open dialog (so an Undo button stays clickable), otherwise on the page. */
 function toastHost() {
-  const host = $('#toast'), dlg = [...document.querySelectorAll('dialog[open]')].filter(d => !d.classList.contains('closing')).pop() || document.body;
+  const host = $('#toast'), dlg = [...document.querySelectorAll('dialog[open]')].filter(d => !d.classList.contains('closing') && !d.classList.contains('out')).pop() || document.body;   // (.out: a library sheet sliding away)
   if (host.parentElement !== dlg) dlg.appendChild(host);
   return host;
 }
@@ -5499,6 +5593,8 @@ const UI = (() => {
       sunrise: s('<path d="M4 18h16M7 14.5a5 5 0 0 1 10 0M12 4v4M9.5 6.5 12 4l2.5 2.5M3 21h18"/>', 18, 1.8), sun: s('<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>', 18, 1.8),
       sunset: s('<path d="M4 18h16M7 14.5a5 5 0 0 1 10 0M12 4v4M9.5 5.5 12 8l2.5-2.5M3 21h18"/>', 18, 1.8), moon: s('<path d="M19.5 14.2A7.8 7.8 0 0 1 9.8 4.5a7.8 7.8 0 1 0 9.7 9.7z"/>', 18, 1.8),
       star: s('<path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.8z"/>', 16, 1.8),
+      edit: s('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>', 15, 1.9), trash: s('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12.5a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5L18 7M9 7V4.5h6V7"/>', 16, 1.8), copy: s('<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2.5"/><path d="M15.5 8.5v-2A2.5 2.5 0 0 0 13 4H6.5A2.5 2.5 0 0 0 4 6.5V13a2.5 2.5 0 0 0 2.5 2.5h2"/>', 16, 1.8),
+      lock: s('<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>', 15, 1.9), warn: s('<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17.2v.3"/>', 20, 2),
     };
   })();
   const cfg = {
@@ -5506,7 +5602,8 @@ const UI = (() => {
     hour12: () => { try { return new Intl.DateTimeFormat([], { hour: 'numeric' }).resolvedOptions().hour12 === true; } catch (e) { return false; } },
     tagSuggest: () => [],          // past subjects / tags for <ui-tags>
     dateDots: null,                // (el) => (dayKey) => boolean: days that already have something on them, for <ui-date>
-    colors: ['#e5654f', '#f08a5d', '#e0a15a', '#c9a227', '#7fb069', '#2f9e5f', '#4fb3a5', '#3a7ca5', '#5e81ac', '#8c9aff', '#a57bd6', '#c25480', '#b0567a', '#8e9693'],
+    colors: ['#e5654f', '#f08a5d', '#e0a15a', '#c9a227', '#7fb069', '#2f9e5f', '#4fb3a5', '#3a7ca5', '#5e81ac', '#8c9aff', '#a57bd6', '#c25480', '#b0567a', '#b9775a', '#6b7f8e', '#8e9693'],
+    colorNames: { '#e5654f': 'Tomato', '#f08a5d': 'Tangerine', '#e0a15a': 'Amber', '#c9a227': 'Gold', '#7fb069': 'Leaf', '#2f9e5f': 'Emerald', '#4fb3a5': 'Teal', '#3a7ca5': 'Ocean', '#5e81ac': 'Steel', '#8c9aff': 'Periwinkle', '#a57bd6': 'Lilac', '#c25480': 'Plum', '#b0567a': 'Berry', '#b9775a': 'Clay', '#6b7f8e': 'Storm', '#8e9693': 'Slate' },
     sound: () => {},               // a soft tick when something is chosen
   };
   let seq = 0;
@@ -5559,12 +5656,14 @@ const UI = (() => {
     if (a.bottom < 0 || a.top > vh) { closePop('scroll'); return; }   // the control scrolled away
     el.style.minWidth = o.match === false ? '' : Math.min(a.width, vw - 2 * EDGE) + 'px';
     el.style.maxWidth = (vw - 2 * EDGE) + 'px';
+    const kept = [el, ...el.querySelectorAll('.ui-list, .ui-pop-body')].map(x => [x, x.scrollTop]);   // measuring at full height would reset them
     el.style.maxHeight = 'none';
     const natural = el.scrollHeight + 2, below = vh - a.bottom - GAP - EDGE, above = a.top - GAP - EDGE;
     const want = Math.min(natural, o.maxH || MAXH);
     const up = below < want && above > below;
     const room = Math.max(120, up ? above : below), hgt = Math.min(want, room);
     el.style.maxHeight = hgt + 'px';
+    for (const [x, t] of kept) if (x.scrollTop !== t) x.scrollTop = t;
     const w = el.offsetWidth;
     let left = o.align === 'end' ? a.right - w : a.left;
     left = Math.max(EDGE, Math.min(left, vw - w - EDGE));
@@ -5578,12 +5677,15 @@ const UI = (() => {
   }
   let raf = 0;
   const replace = () => { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; place(); }); };
+  const onScroll = e => { if (cur && e.target instanceof Node && cur.el.contains(e.target)) return; replace(); };   // the panel's own list scrolling moves nothing
   function onDown(e) { if (!cur) return; const t = e.target; if (cur.el.contains(t) || cur.anchor.contains(t)) return; closePop('outside'); }
   function onKey(e) {
     if (!cur || e.key !== 'Escape') return;
     e.preventDefault(); e.stopPropagation(); closePop('esc');
   }
-  function onCancel(e) { if (cur && !cur.sheet) { e.preventDefault(); closePop('esc'); } }   // Esc inside a dialog closes the panel first, not the dialog
+  function onCancel(e) { if (cur && !cur.sheet) { e.preventDefault(); closePop('esc'); } }
+  // other code can close dialogs (Ctrl+K closes every open one): a panel in that dialog, or a sheet closed that way, goes too
+  document.addEventListener('close', e => { const d = e.target; if (cur && d instanceof HTMLDialogElement && (d === cur.el || d.contains(cur.el))) closePop('gone'); }, true);   // Esc inside a dialog closes the panel first, not the dialog
   /** Open a panel next to `anchor`. build(el) fills it. Returns { el, close(reason), place() }.
       o: { cls, role, label, align: 'start' | 'end', match (false = don't stretch to the anchor's width), maxH, sheet (false = never a sheet),
            title (sheet heading), onClose(reason), restore (false = don't move focus back) } */
@@ -5595,15 +5697,16 @@ const UI = (() => {
     el.id = nid('pop');
     if (o.role && !sheet) el.setAttribute('role', o.role);
     if (o.label) el.setAttribute('aria-label', o.label);
-    if (sheet) el.innerHTML = `<div class="ui-sheet-grip" aria-hidden="true"><i></i></div>${o.title ? `<div class="ui-sheet-title">${h(o.title)}</div>` : ''}<div class="ui-sheet-body"></div>`;
-    const body = sheet ? el.querySelector('.ui-sheet-body') : el;
+    if (sheet) el.innerHTML = `<div class="ui-sheet-grip" aria-hidden="true"><i></i></div><div class="ui-sheet-head"><div class="ui-sheet-title">${h(o.title || '')}</div><button type="button" class="ui-sheet-x" aria-label="Close">${IC.x}</button></div><div class="ui-sheet-body"></div>`;
+    else if (o.head) { const t = document.createElement('div'); t.className = 'ui-pop-title'; t.textContent = o.head; el.appendChild(t); }   // a value panel says what it is for (it can cover its own label)
+    const body = sheet ? el.querySelector('.ui-sheet-body') : o.head ? el.appendChild(Object.assign(document.createElement('div'), { className: 'ui-pop-body' })) : el;
     build(body);
     const hst = topDialog() || document.body;
     hst.appendChild(el);
     cur = { el, body, anchor, o, sheet, top: false };
     if (sheet) {
       el.addEventListener('cancel', e => { e.preventDefault(); closePop('esc'); });
-      el.addEventListener('click', e => { if (e.target === el) closePop('outside'); });   // the dimmed area around the sheet
+      el.addEventListener('click', e => { if (e.target === el || e.target.closest('.ui-sheet-x')) closePop('outside'); });   // the dimmed area around the sheet, or its close button
       dragToClose(el);
       (el._uiShow || el.showModal).call(el);
       stack.push(el);
@@ -5614,7 +5717,7 @@ const UI = (() => {
       place();
       document.addEventListener('pointerdown', onDown, true);
       addEventListener('resize', replace);
-      document.addEventListener('scroll', replace, true);
+      document.addEventListener('scroll', onScroll, true);
       document.addEventListener('cancel', onCancel, true);
     }
     document.addEventListener('keydown', onKey, true);
@@ -5626,11 +5729,16 @@ const UI = (() => {
     const c = cur; cur = null;
     document.removeEventListener('pointerdown', onDown, true);
     removeEventListener('resize', replace);
-    document.removeEventListener('scroll', replace, true);
+    document.removeEventListener('scroll', onScroll, true);
     document.removeEventListener('cancel', onCancel, true);
     document.removeEventListener('keydown', onKey, true);
     const inside = c.el.contains(document.activeElement);
-    const gone = () => { try { if (c.sheet && c.el.open) (HTMLDialogElement.prototype._uiClose || c.el.close).call(c.el); } catch (e) {} const i = stack.indexOf(c.el); if (i >= 0) stack.splice(i, 1); c.el.remove(); };
+    const gone = () => {
+      try { if (c.sheet && c.el.open) (HTMLDialogElement.prototype._uiClose || c.el.close).call(c.el); } catch (e) {}
+      const i = stack.indexOf(c.el); if (i >= 0) stack.splice(i, 1);
+      for (const x of c.el.querySelectorAll('#toast, .ui-tip, .ui-bubble')) (topDialog() || document.body).appendChild(x);   // the app's toasts (and our tip / bubble) may have moved in: they stay in the page
+      c.el.remove();
+    };
     const slides = c.sheet && reason !== 'gone' && getComputedStyle(c.el).animationName !== 'none';   // Animations off: no wait
     c.el.classList.add('out');
     const back = () => { if (c.o.restore !== false && reason !== 'replace' && reason !== 'gone' && (c.sheet || (reason !== 'outside' && (inside || reason === 'esc' || reason === 'select')))) { try { c.anchor.focus({ preventScroll: true }); } catch (e) {} } };
@@ -5640,7 +5748,7 @@ const UI = (() => {
   /** A sheet follows the finger when its grip or title is dragged down; far enough and it closes. */
   function dragToClose(el) {
     let y0 = null, dy = 0, t0 = 0;
-    const grab = e => { if (!e.target.closest('.ui-sheet-grip, .ui-sheet-title')) return; y0 = e.clientY; dy = 0; t0 = performance.now(); el.style.transition = 'none'; el.setPointerCapture && e.target.setPointerCapture(e.pointerId); };
+    const grab = e => { if (!e.target.closest('.ui-sheet-grip, .ui-sheet-title') || e.target.closest('.ui-sheet-x')) return; y0 = e.clientY; dy = 0; t0 = performance.now(); el.style.transition = 'none'; el.setPointerCapture && e.target.setPointerCapture(e.pointerId); };
     const move = e => { if (y0 === null) return; dy = Math.max(0, e.clientY - y0); el.style.transform = `translateY(${dy}px)`; };
     const drop = () => { if (y0 === null) return; const fast = dy / Math.max(1, performance.now() - t0) > 0.6; y0 = null; el.style.transition = ''; if (dy > 110 || (fast && dy > 30)) closePop('drag'); else el.style.transform = ''; };
     el.addEventListener('pointerdown', grab); el.addEventListener('pointermove', move); el.addEventListener('pointerup', drop); el.addEventListener('pointercancel', drop);
@@ -5741,7 +5849,7 @@ const UI = (() => {
       this._flat = [];
       list.innerHTML = groups.length ? groups.map(g => {
         const gid = g.label ? nid('grp') : '';
-        return `<div class="ui-group" role="group"${gid ? ` aria-labelledby="${gid}"` : ''}>${g.label ? `<div class="ui-grp" id="${gid}">${h(g.label)}</div>` : ''}${g.items.map(o => {
+        return `<div class="ui-group" role="group"${gid ? ` aria-labelledby="${gid}"` : ''}>${g.label ? `<div class="ui-grp" id="${gid}"><span>${h(g.label)}</span>${g.hint ? `<small aria-hidden="true">${h(g.hint)}</small>` : ''}</div>` : ''}${g.items.map(o => {
           const i = this._flat.push(o) - 1, on = o === curO;
           return `<div class="ui-opt${on ? ' on' : ''}" role="option" id="${p.root.id}-o${i}" data-i="${i}" aria-selected="${on}"${o.disabled ? ' aria-disabled="true"' : ''}>${this._rowHTML(o)}<span class="ui-tick" aria-hidden="true">${on ? IC.check : ''}</span></div>`;
         }).join('')}</div>`;
@@ -5773,11 +5881,12 @@ const UI = (() => {
       this.setAttribute('aria-expanded', 'true'); this.setAttribute('aria-controls', lid); this.classList.add('open');
       el.addEventListener('click', e => {
         const act = e.target.closest('[data-act]'), foot = e.target.closest('[data-foot]'), row = e.target.closest('.ui-opt');
-        if (act && row) { e.preventDefault(); const o = this._flat[+row.dataset.i]; if (k && k.action) k.action(act.dataset.act, o, this); this._actO = o; this._list(this._q || ''); const f = this._search || el.querySelector('.ui-list'); if (f) f.focus({ preventScroll: true }); return; }   // the row was redrawn: keep the keyboard in the panel, on the same row
+        if (act && row) { e.preventDefault(); const o = this._flat[+row.dataset.i]; if (k && k.action) k.action(act.dataset.act, o, this); this._actO = o; this._list(this._q || ''); const f = this._pop.sheet ? this._pop.root : this._search || el.querySelector('.ui-list'); if (f) f.focus({ preventScroll: true }); return; }   // the row was redrawn: keep the keyboard in the panel, on the same row (a sheet keeps the on-screen keyboard down)
         if (foot) { const f = k.footer[+foot.dataset.foot]; this._pop.close('select'); f.run(this); return; }
         if (row) this._choose(this._flat[+row.dataset.i]);
       });
       el.addEventListener('pointermove', e => { const row = e.target.closest('.ui-opt'); if (row && +row.dataset.i !== this._act) this._setAct(+row.dataset.i, false); });
+      if (this._pop.sheet) this._pop.root.addEventListener('keydown', e => { if (e.target === this._search || e.key === 'Tab' || e.key === 'Escape' || e.target.closest('.ui-sheet-x')) return; this._key(e); });   // the sheet has focus, not the control
       if (this._search) {
         this._search.addEventListener('input', () => { this._actO = null; this._list(this._search.value); });
         this._search.addEventListener('keydown', e => this._key(e, true));
@@ -5826,7 +5935,7 @@ const UI = (() => {
 (() => {
   const { pop, IC, h, nid, fire, cfg, pad2 } = UI;
   const labelFor = el => { const lab = el.id && document.querySelector(`label[for="${CSS.escape(el.id)}"]`); if (lab && !lab.id) lab.id = nid('lab'); return lab || null; };
-  const wireLabel = (el, focus) => { const lab = labelFor(el); if (lab && !lab._uiFor) { lab._uiFor = true; lab.addEventListener('click', e => { e.preventDefault(); const t = document.getElementById(lab.htmlFor); if (t) (t._focus ? t._focus() : t.focus()); }); } return lab; };
+  const wireLabel = (el, focus) => { const lab = labelFor(el); if (lab && !lab._uiFor) { lab._uiFor = true; lab.addEventListener('click', e => { e.preventDefault(); const t = document.getElementById(lab.htmlFor); if (t) (typeof t._focus === 'function' ? t._focus() : t.focus()); }); } return lab; };
 
   /* ---------- <ui-num value min max step [wrap] [pad] [suffix]> : – value + ---------- */
   class UINum extends HTMLElement {
@@ -5834,7 +5943,7 @@ const UI = (() => {
     connectedCallback() {
       if (this._in) return;
       const lab = wireLabel(this), name = this.getAttribute('aria-label') || (lab ? lab.textContent.trim() : 'Number');
-      this.innerHTML = `<button type="button" class="ui-num-b" data-d="-1" tabindex="-1" aria-label="Less">${IC.minus}</button><input type="text" inputmode="numeric" role="spinbutton" autocomplete="off" aria-label="${h(name)}"><span class="ui-num-sfx"></span><button type="button" class="ui-num-b" data-d="1" tabindex="-1" aria-label="More">${IC.plus}</button>`;
+      this.innerHTML = `<span class="ui-num-well"><button type="button" class="ui-num-b" data-d="-1" tabindex="-1" aria-label="Less">${IC.minus}</button><input type="text" inputmode="numeric" role="spinbutton" autocomplete="off" aria-label="${h(name)}"${this.hasAttribute('placeholder') ? ` placeholder="${h(this.getAttribute('placeholder'))}"` : ''}><button type="button" class="ui-num-b" data-d="1" tabindex="-1" aria-label="More">${IC.plus}</button></span><span class="ui-num-sfx"></span>`;
       this._in = this.querySelector('input'); this._sfx = this.querySelector('.ui-num-sfx');
       if (lab) { this._in.removeAttribute('aria-label'); this._in.setAttribute('aria-labelledby', lab.id); }
       this.removeAttribute('aria-label');
@@ -5881,7 +5990,7 @@ const UI = (() => {
     /** Typed text settles when the field is left: clamped into range; nonsense goes back to the last good value. */
     _commit() {
       const raw = this._in.value.trim(), n = parseFloat(raw);
-      let next = raw === '' ? (this.hasAttribute('allow-empty') ? '' : this._last || '') : isNaN(n) ? (this._last || '') : this._fmt(this._clamp(n));
+      let next = raw === '' ? (this.hasAttribute('allow-empty') ? '' : this._last || '') : isNaN(n) ? (this._last || '') : this._fmt(Math.min(this.max, Math.max(this.min, n)));   // typed: clamped (65 minutes → 59), never wrapped; the arrows wrap
       const changed = next !== this._last;
       this._in.value = next; this._last = next; this._aria();
       if (changed) fire(this, 'change'); else if (raw !== next) fire(this, 'input');
@@ -5939,14 +6048,15 @@ const UI = (() => {
       if (!this.isConnected) return;
       const [a, b] = this._v.split('/').map(dparse);
       const text = !a ? '' : b && dkey(a) !== dkey(b) ? `${a.toLocaleDateString([], { day: 'numeric', month: 'short' })} – ${b.toLocaleDateString([], { day: 'numeric', month: 'short', ...(b.getFullYear() !== today().getFullYear() ? { year: 'numeric' } : {}) })}` : niceDate(a);
-      const html = `<span class="ui-ic">${IC.cal}</span><span class="ui-face${a ? '' : ' ui-ph'}" id="${this._fid || (this._fid = nid('face'))}">${h(text || this.getAttribute('placeholder') || 'No date')}</span>${a && this.clearable && !this.disabled ? `<button type="button" class="ui-clear" tabindex="-1" aria-label="Clear the date">${IC.x}</button>` : ''}`;
+      const html = `<span class="ui-ic">${IC.cal}</span><span class="ui-face${a ? '' : ' ui-ph'}" id="${this._fid || (this._fid = nid('face'))}">${h(text || this.getAttribute('placeholder') || (this.range ? 'Start – end' : 'Add date'))}</span>${a && this.clearable && !this.disabled ? `<button type="button" class="ui-clear" tabindex="-1" aria-label="Clear the date">${IC.x}</button>` : ''}<span class="ui-chev" aria-hidden="true">${IC.chev}</span>`;
       if (this._html !== html) { this.innerHTML = html; this._html = html; }
       if (this._lab) this.setAttribute('aria-labelledby', `${this._lab.id} ${this._fid}`);
     }
     _ok(d) { const mn = this.min, mx = this.max; return (!mn || d >= mn) && (!mx || d <= mx); }
+    _clampD(d) { const mn = this.min, mx = this.max; return mn && d < mn ? mn : mx && d > mx ? mx : d; }
     _pick(k) {
       if (this.range && k) {
-        if (!this._from) { this._from = k; this._grid(); return; }
+        if (!this._from) { this._from = k; this._cur = dparse(k); this._grid(true); return; }   // keep focus on the first day (the rebuild replaces it)
         const a = this._from; this._from = null; k = a <= k ? `${a}/${k}` : `${k}/${a}`;
       }
       const changed = k !== this._v;
@@ -5958,26 +6068,27 @@ const UI = (() => {
     open() {
       if (this.disabled || this._pop) return;
       const start = dparse(this._v.split('/')[0]) || today();
-      this._view = new Date(start.getFullYear(), start.getMonth(), 1); this._focus = start; this._from = null;
+      const s0 = this._clampD(start);
+      this._view = new Date(s0.getFullYear(), s0.getMonth(), 1); this._cur = s0; this._from = null;
       const label = this.getAttribute('aria-label') || (this._lab ? this._lab.textContent.trim() : 'Date');
       this._pop = pop(this, el => {
         const t0 = today();
-        el.innerHTML = `<div class="ui-date-body">${this.getAttribute('quick') === 'off' ? '' : `<div class="ui-quick" role="group" aria-label="Quick picks"><div class="ui-quick-h" aria-hidden="true">Quick picks</div>${QUICK.map(([n, f], i) => { const d = f(t0); return `<button type="button" class="ui-qrow" data-quick="${i}"${this._ok(d) ? '' : ' disabled'}><span>${n}</span><small>${h(d.toLocaleDateString([], { weekday: 'short' }))} ${d.getDate()}</small></button>`; }).join('')}</div>`}
+        el.innerHTML = `<div class="ui-date-body">${this.getAttribute('quick') === 'off' ? '' : `<div class="ui-quick" role="group" aria-label="Quick picks"><div class="ui-quick-h" aria-hidden="true">Quick picks</div>${QUICK.map(([n, f], i) => { const d = f(t0); return `<button type="button" class="ui-qrow" data-quick="${i}" data-k="${dkey(d)}"${this._ok(d) ? '' : ' disabled'}><span>${n}</span><small>${h(d.toLocaleDateString([], { weekday: 'short' }))} ${d.getDate()}</small></button>`; }).join('')}</div>`}
           <div class="ui-cal"><div class="ui-cal-head"><div class="ui-cal-title" aria-live="polite"></div><button type="button" class="ui-ib" data-nav="-1" aria-label="Previous month">${IC.left}</button><button type="button" class="ui-ib" data-nav="1" aria-label="Next month">${IC.right}</button></div>
           <div class="ui-cal-grid" role="grid" aria-label="${h(label)}"></div>
           ${this.range ? '<div class="ui-cal-hint">Pick the first day, then the last.</div>' : ''}</div></div>
           <div class="ui-foot ui-foot-v"><button type="button" class="ui-quiet" data-today>Today</button><span class="ui-foot-sp"></span>${this.clearable ? '<button type="button" class="ui-quiet" data-clear>Clear</button>' : ''}<button type="button" class="ui-foot-btn ui-done">Done</button></div>`;
-      }, { cls: 'ui-date-pop', role: 'dialog', maxH: 560, label: `Choose ${label.toLowerCase()}`, title: label, match: false, onClose: () => { this._pop = null; this._from = null; this.setAttribute('aria-expanded', 'false'); this.classList.remove('open'); } });
+      }, { cls: 'ui-date-pop', role: 'dialog', maxH: 600, label: `Choose ${label.toLowerCase()}`, title: label, head: label, match: false, onClose: () => { this._pop = null; this._from = null; this.setAttribute('aria-expanded', 'false'); this.classList.remove('open'); } });
       this.setAttribute('aria-expanded', 'true'); this.classList.add('open');
       const el = this._pop.el;
       el.addEventListener('click', e => {
         const nav = e.target.closest('[data-nav]'), day = e.target.closest('.ui-day'), q = e.target.closest('[data-quick]');
-        if (nav) { this._view = new Date(this._view.getFullYear(), this._view.getMonth() + +nav.dataset.nav, 1); this._focus = new Date(this._view); this._grid(false); }
-        else if (e.target.closest('[data-today]')) { const t = today(); this._view = new Date(t.getFullYear(), t.getMonth(), 1); this._focus = t; this._grid(true); }   // back to this month, on today (it does not choose)
+        if (nav) { this._view = new Date(this._view.getFullYear(), this._view.getMonth() + +nav.dataset.nav, 1); this._cur = new Date(this._view); this._grid(false); }
+        else if (e.target.closest('[data-today]')) { const t = today(); this._view = new Date(t.getFullYear(), t.getMonth(), 1); this._cur = t; this._grid(true); }   // back to this month, on today (it does not choose)
         else if (e.target.closest('[data-clear]')) this._pick('');
         else if (e.target.closest('.ui-done')) this._pop.close('select');
         else if (q && q.disabled) return;
-        else if (q) { const d = QUICK[+q.dataset.quick][1](today()); if (this._ok(d)) this._pick(this.range ? `${dkey(d)}/${dkey(d)}` : dkey(d)); }
+        else if (q) { const d = dparse(q.dataset.k); if (d && this._ok(d)) this._pick(this.range ? `${dkey(d)}/${dkey(d)}` : dkey(d)); }   // the date the row shows (also just after midnight)
         else if (day && !day.disabled) this._pick(day.dataset.d);
       });
       el.addEventListener('keydown', e => {
@@ -5986,11 +6097,14 @@ const UI = (() => {
         let to = null;
         if (k === 'ArrowLeft') to = addD(d, -1); else if (k === 'ArrowRight') to = addD(d, 1); else if (k === 'ArrowUp') to = addD(d, -7); else if (k === 'ArrowDown') to = addD(d, 7);
         else if (k === 'Home') to = addD(d, -((d.getDay() - ws + 7) % 7)); else if (k === 'End') to = addD(d, 6 - ((d.getDay() - ws + 7) % 7));
-        else if (k === 'PageUp') to = new Date(d.getFullYear() - (e.shiftKey ? 1 : 0), d.getMonth() - (e.shiftKey ? 0 : 1), d.getDate());
-        else if (k === 'PageDown') to = new Date(d.getFullYear() + (e.shiftKey ? 1 : 0), d.getMonth() + (e.shiftKey ? 0 : 1), d.getDate());
+        else if (k === 'PageUp' || k === 'PageDown') {   // same day of another month; the 31st becomes that month's last day
+          const n = k === 'PageUp' ? -1 : 1, t = new Date(d.getFullYear() + (e.shiftKey ? n : 0), d.getMonth() + (e.shiftKey ? 0 : n), 1);
+          to = new Date(t.getFullYear(), t.getMonth(), Math.min(d.getDate(), new Date(t.getFullYear(), t.getMonth() + 1, 0).getDate()));
+        }
         if (!to) return;
         e.preventDefault();
-        this._focus = to; this._view = new Date(to.getFullYear(), to.getMonth(), 1); this._grid(true);
+        to = this._clampD(to);   // never onto a day that can't be chosen
+        this._cur = to; this._view = new Date(to.getFullYear(), to.getMonth(), 1); this._grid(true);
       });
       el.addEventListener('pointerover', e => { if (!this.range || !this._from) return; const day = e.target.closest('.ui-day'); if (day) { this._hover = day.dataset.d; this._paint(); } });
       this._grid(!this._pop.sheet);
@@ -6004,7 +6118,7 @@ const UI = (() => {
       const el = this._pop.el, v = this._view, ws = cfg.weekStart(), t = dkey(today());
       const [sa, sb] = this._from ? [this._from, this._from] : this._v.split('/'), selA = sa || '', selB = sb || sa || '';
       el.querySelector('.ui-cal-title').textContent = v.toLocaleDateString([], { month: 'long', year: 'numeric' });
-      const first = addD(v, -((v.getDay() - ws + 7) % 7)), fk = dkey(this._focus);
+      const first = addD(v, -((v.getDay() - ws + 7) % 7)), fk = dkey(this._cur);
       const names = Array.from({ length: 7 }, (_, i) => addD(first, i));
       let dots = null; try { dots = cfg.dateDots ? cfg.dateDots(this) : null; } catch (e) { dots = null; }   // (day key) => true when that day has something on it
       let html = `<div class="ui-cal-row ui-cal-dow" role="row">${names.map(d => `<span role="columnheader" aria-label="${d.toLocaleDateString([], { weekday: 'long' })}">${d.toLocaleDateString([], { weekday: 'short' }).slice(0, 2)}</span>`).join('')}</div>`;
@@ -6016,8 +6130,14 @@ const UI = (() => {
         }
         html += '</div>';
       }
-      el.querySelector('.ui-cal-grid').innerHTML = html;
-      if (focus) { const f = el.querySelector(`.ui-day[data-d="${fk}"]`); if (f) f.focus({ preventScroll: true }); }
+      const grid = el.querySelector('.ui-cal-grid'); grid.innerHTML = html;
+      let f = grid.querySelector(`.ui-day[data-d="${fk}"]:not([disabled])`);
+      if (!f) {   // the cursor day can't be chosen (outside min / max): the first day that can takes the Tab stop
+        grid.querySelectorAll('.ui-day[tabindex="0"]').forEach(b => { b.tabIndex = -1; });
+        f = grid.querySelector('.ui-day:not([disabled]):not(.out)') || grid.querySelector('.ui-day:not([disabled])');
+        if (f) f.tabIndex = 0;
+      }
+      if (focus && f) f.focus({ preventScroll: true });
       this._pop.place();
     }
   }
@@ -6055,7 +6175,7 @@ const UI = (() => {
     _draw() {
       if (!this.isConnected) return;
       const t = tparse(this._v), text = this._all ? 'All day' : t ? niceTime(t[0], t[1]) : '';
-      const html = `<span class="ui-ic">${IC.clock}</span><span class="ui-face${text ? '' : ' ui-ph'}" id="${this._fid || (this._fid = nid('face'))}">${h(text || this.getAttribute('placeholder') || 'No time')}</span>${t && !this._all && this.clearable && !this.disabled ? `<button type="button" class="ui-clear" tabindex="-1" aria-label="Clear the time">${IC.x}</button>` : ''}`;
+      const html = `<span class="ui-ic">${IC.clock}</span><span class="ui-face${text ? '' : ' ui-ph'}" id="${this._fid || (this._fid = nid('face'))}">${h(text || this.getAttribute('placeholder') || 'Add time')}</span>${t && !this._all && this.clearable && !this.disabled ? `<button type="button" class="ui-clear" tabindex="-1" aria-label="Clear the time">${IC.x}</button>` : ''}<span class="ui-chev" aria-hidden="true">${IC.chev}</span>`;
       if (this._html !== html) { this.innerHTML = html; this._html = html; }
       if (this._lab) this.setAttribute('aria-labelledby', `${this._lab.id} ${this._fid}`);
     }
@@ -6074,21 +6194,27 @@ const UI = (() => {
         el.innerHTML = `${this.hasAttribute('allday') ? `<label class="ui-row"><span>All day</span><input type="checkbox" role="switch" class="ui-allday"${this._all ? ' checked' : ''}></label>` : ''}
           <div class="ui-time-body"><div class="ui-quick" role="group" aria-label="Quick picks">${TIME_CHIPS.map(([n, v, ic]) => `<button type="button" class="ui-ttile" data-t="${v}">${IC[ic]}<span><b>${n}</b><small>${h(niceTime(...tparse(v)))}</small></span><i class="ui-tcheck" aria-hidden="true">${IC.check}</i></button>`).join('')}</div>
           <div class="ui-time-h" aria-hidden="true">Exact time</div>
-          <div class="ui-time-exact"><ui-num class="ui-th" aria-label="Hour" min="${h12 ? 1 : 0}" max="${h12 ? 12 : 23}" wrap pad="2"></ui-num><span class="ui-time-sep" aria-hidden="true">:</span><ui-num class="ui-tm" aria-label="Minute" min="0" max="59" step="${step}" wrap pad="2"></ui-num>${h12 ? `<div class="ui-ampm" role="radiogroup" aria-label="AM or PM"><button type="button" role="radio" data-ap="am">AM</button><button type="button" role="radio" data-ap="pm">PM</button></div>` : ''}</div></div>
+          <div class="ui-time-exact"><ui-num class="ui-th" bare allow-empty placeholder="––" aria-label="Hour" min="${h12 ? 1 : 0}" max="${h12 ? 12 : 23}" wrap${h12 ? '' : ' pad="2"'}></ui-num><span class="ui-time-sep" aria-hidden="true">:</span><ui-num class="ui-tm" bare allow-empty placeholder="––" aria-label="Minute" min="0" max="59" step="${step}" wrap pad="2"></ui-num>${h12 ? `<div class="ui-ampm" role="radiogroup" aria-label="AM or PM"><button type="button" role="radio" data-ap="am">AM</button><button type="button" role="radio" data-ap="pm">PM</button></div>` : ''}</div></div>
           <div class="ui-foot ui-foot-v"><button type="button" class="ui-quiet" data-now>Now</button><span class="ui-foot-sp"></span>${this.clearable ? '<button type="button" class="ui-quiet" data-clear>Clear</button>' : ''}<button type="button" class="ui-foot-btn ui-done">Done</button></div>`;
-      }, { cls: 'ui-time-pop', role: 'dialog', maxH: 560, label: `Choose ${label.toLowerCase()}`, title: label, match: false, onClose: () => { this._pop = null; this.setAttribute('aria-expanded', 'false'); this.classList.remove('open'); if (this._dirty) { this._dirty = false; fire(this, 'change'); } } });
+      }, { cls: 'ui-time-pop', role: 'dialog', maxH: 600, label: `Choose ${label.toLowerCase()}`, title: label, head: label, match: false, onClose: () => { this._pop = null; this.setAttribute('aria-expanded', 'false'); this.classList.remove('open'); if (this._dirty) { this._dirty = false; fire(this, 'change'); } } });
       this.setAttribute('aria-expanded', 'true'); this.classList.add('open');
       const el = this._pop.el, H = el.querySelector('.ui-th'), M = el.querySelector('.ui-tm');
       const show = () => {
-        const t = tparse(this._v) || [new Date().getHours(), 0], pm = t[0] >= 12;
-        H.value = h12 ? (t[0] % 12 || 12) : t[0]; M.value = t[1];
-        el.querySelectorAll('[data-ap]').forEach(b => b.setAttribute('aria-checked', (b.dataset.ap === 'pm') === pm));
+        const t = this._all ? null : tparse(this._v);
+        const typing = w => w.contains(document.activeElement);   // the well being typed in keeps what was typed
+        if (!typing(H)) H.value = t ? (h12 ? (t[0] % 12 || 12) : t[0]) : '';   // nothing set: nothing shown
+        if (!typing(M)) M.value = t ? t[1] : '';
+        el.querySelectorAll('[data-ap]').forEach(b => b.setAttribute('aria-checked', !!t && (b.dataset.ap === 'pm') === (t[0] >= 12)));
         el.querySelectorAll('[data-t]').forEach(b => { const on = !this._all && b.dataset.t === this._v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
         const body = el.querySelector('.ui-time-body'); body.classList.toggle('off', this._all); body.inert = this._all;
       };
       const read = () => {
-        let hh = parseInt(H.value, 10), mm = parseInt(M.value, 10); if (isNaN(hh) || isNaN(mm)) return;
-        if (h12) { const pm = el.querySelector('[data-ap="pm"]').getAttribute('aria-checked') === 'true'; hh = hh % 12 + (pm ? 12 : 0); }
+        let hh = parseInt(H.value, 10), mm = parseInt(M.value, 10);
+        if (isNaN(hh) && isNaN(mm)) return;
+        if (isNaN(mm)) mm = 0;   // an hour alone means "on the hour"
+        if (isNaN(hh)) { if (H.contains(document.activeElement)) return; const n = new Date().getHours(); hh = h12 ? (n % 12 || 12) : n; }   // an hour being retyped: wait for it
+        if (hh > (h12 ? 12 : 23) || (h12 && hh < 1) || mm > 59) return;   // half-typed or out of range: keep the time until it makes sense
+        if (h12) { const pmB = el.querySelector('[data-ap="pm"]'), amB = el.querySelector('[data-ap="am"]'); let pm = pmB.getAttribute('aria-checked') === 'true'; if (!pm && amB.getAttribute('aria-checked') !== 'true') pm = new Date().getHours() >= 12; hh = hh % 12 + (pm ? 12 : 0); }
         this._setV(`${hh}:${pad2(mm)}`); show();
       };
       el.addEventListener('change', e => { if (e.target.classList.contains('ui-allday')) { this._all = e.target.checked; if (!this._all && !this._v) this._v = '09:00'; this._dirty = true; this._draw(); fire(this, 'input'); show(); return; } if (e.target === H || e.target === M) read(); });
@@ -6096,9 +6222,9 @@ const UI = (() => {
       el.addEventListener('click', e => {
         const c = e.target.closest('[data-t]'), ap = e.target.closest('[data-ap]');
         if (c) { this._setV(c.dataset.t); this._pop.close('select'); }
-        else if (e.target.closest('[data-now]')) { const n = new Date(), mm = Math.round(n.getMinutes() / step) * step, d = new Date(n.getFullYear(), n.getMonth(), n.getDate(), n.getHours(), mm); if (this._all) { this._all = false; const sw = el.querySelector('.ui-allday'); if (sw) sw.checked = false; this._dirty = true; } this._setV(`${d.getHours()}:${pad2(d.getMinutes())}`); show(); }
+        else if (e.target.closest('[data-now]')) { const n = new Date(), up = Math.round(n.getMinutes() / step) * step, mm = n.getHours() === 23 && up >= 60 ? 60 - step : up, d = new Date(n.getFullYear(), n.getMonth(), n.getDate(), n.getHours(), mm); if (this._all) { this._all = false; const sw = el.querySelector('.ui-allday'); if (sw) sw.checked = false; this._dirty = true; } this._setV(`${d.getHours()}:${pad2(d.getMinutes())}`); show(); }   // (just before midnight: the last slot of today, not 00:00)
         else if (e.target.closest('[data-clear]')) { this._all = false; this._setV('', true); this._dirty = false; this._pop.close('select'); }
-        else if (ap) { el.querySelectorAll('[data-ap]').forEach(b => b.setAttribute('aria-checked', b === ap)); read(); }
+        else if (ap) { el.querySelectorAll('[data-ap]').forEach(b => b.setAttribute('aria-checked', b === ap)); if (H.value === '' && M.value === '') { const n = new Date(); H.value = n.getHours() % 12 || 12; M.value = 0; } read(); }
         else if (e.target.closest('.ui-done')) this._pop.close('select');
       });
       show();
@@ -6109,6 +6235,8 @@ const UI = (() => {
 
   /* ---------- <ui-color value="#rrggbb" [palette="#a,#b"]> : a swatch that opens a small palette ---------- */
   const hexOk = s => /^#[0-9a-f]{6}$/i.test(s || '');
+  const hslHex = (hh, sat, li) => { sat /= 100; li /= 100; const k = n => (n + hh / 30) % 12, a = sat * Math.min(li, 1 - li), f = n => Math.round(255 * (li - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))))).toString(16).padStart(2, '0'); return `#${f(0)}${f(8)}${f(4)}`; };
+  const hueOf = hex => { if (!hexOk(hex)) return 170; const r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (!d) return 0; const hh = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return Math.round((hh * 60 + 360) % 360); };
   class UIColor extends HTMLElement {
     static get observedAttributes() { return ['value', 'disabled']; }
     constructor() { super(); this._v = '#4fb3a5'; this._pop = null; }
@@ -6131,25 +6259,37 @@ const UI = (() => {
     get value() { return this._v; }
     set value(v) { if (hexOk(v)) { this._v = v.toLowerCase(); this._draw(); } }
     get palette() { const p = (this.getAttribute('palette') || '').split(',').map(s => s.trim().toLowerCase()).filter(hexOk); return p.length ? p : cfg.colors; }
-    _draw() { if (!this.isConnected) return; this.style.setProperty('--ui-c', this._v); if (!this.firstChild) this.innerHTML = '<i class="ui-swatch" aria-hidden="true"></i>'; this.setAttribute('aria-label', `${this._name}: ${this._v}`); }
-    _pick(v, keep) { const changed = v !== this._v; this._v = v; this._draw(); if (!keep && this._pop) this._pop.close('select'); if (changed) { fire(this, 'input', 'change'); } }
+    /** What a person would call this colour: its palette name, or the hex for a custom one. */
+    get colorName() { return (cfg.colorNames && cfg.colorNames[this._v]) || this._v; }
+    _draw() { if (!this.isConnected) return; this.style.setProperty('--ui-c', this._v); const html = `<i class="ui-swatch" aria-hidden="true"></i>${this.hasAttribute('named') ? `<span class="ui-color-n">${h(this.colorName)}</span><span class="ui-chev" aria-hidden="true">${IC.chev}</span>` : ''}`; if (this._html !== html) { this.innerHTML = html; this._html = html; } this.setAttribute('aria-label', `${this._name}: ${this.colorName}`); }
+    _pick(v, keep) {   // keep: the panel stays open (hue, hex): 'input' now, one 'change' when it closes
+      const changed = v !== this._v; this._v = v; this._draw();
+      if (changed) fire(this, 'input');
+      if (keep) return;
+      if (this._pop) this._pop.close('select'); else if (changed) fire(this, 'change');
+    }
     open() {
       if (this.disabled || this._pop) return;
-      const pal = this.palette;
+      const pal = this.palette, from = this._v;
       this._pop = pop(this, el => {
-        el.innerHTML = `<div class="ui-swatches" role="radiogroup" aria-label="${h(this._name)}">${pal.map(c => `<button type="button" role="radio" class="ui-sw" data-c="${c}" aria-checked="${c === this._v}" aria-label="${c}" style="--ui-c:${c}">${c === this._v ? IC.check : ''}</button>`).join('')}</div>
-          <label class="ui-hex"><span>Custom</span><i class="ui-swatch" style="--ui-c:${this._v}"></i><input type="text" value="${this._v}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Hex colour"></label>
+        el.innerHTML = `<div class="ui-swatches" role="radiogroup" aria-label="${h(this._name)}">${pal.map(c => `<button type="button" role="radio" class="ui-sw" data-c="${c}" aria-checked="${c === this._v}" aria-label="${h((cfg.colorNames && cfg.colorNames[c]) || c)}" style="--ui-c:${c}"><i aria-hidden="true">${IC.check}</i></button>`).join('')}</div>
+          <div class="ui-custom"><span class="ui-custom-h">Custom</span><input type="range" class="ui-hue" min="0" max="359" step="1" value="${hueOf(this._v)}" data-bubble="off" aria-label="Hue">
+          <label class="ui-hex"><i class="ui-swatch" style="--ui-c:${this._v}"></i><input type="text" value="${this._v}" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Hex colour"></label></div>
           <div class="ui-foot ui-foot-v">${hexOk(this.getAttribute('default')) ? '<button type="button" class="ui-quiet" data-default>Default</button>' : ''}<span class="ui-foot-sp"></span><button type="button" class="ui-foot-btn ui-done">Done</button></div>`;
-      }, { cls: 'ui-color-pop', role: 'dialog', maxH: 560, label: `Choose ${this._name.toLowerCase()}`, title: this._name, match: false, onClose: () => { this._pop = null; this.setAttribute('aria-expanded', 'false'); } });
+      }, { cls: 'ui-color-pop', role: 'dialog', maxH: 600, label: `Choose ${this._name.toLowerCase()}`, title: this._name, head: this._name, match: false, onClose: () => { this._pop = null; this.setAttribute('aria-expanded', 'false'); if (this._v !== from) fire(this, 'change'); } });
       this.setAttribute('aria-expanded', 'true');
-      const el = this._pop.el, hex = el.querySelector('.ui-hex input');
+      const el = this._pop.el, hex = el.querySelector('.ui-hex input'), hue = el.querySelector('.ui-hue');
+      const mark = () => { el.querySelectorAll('.ui-sw').forEach(b => b.setAttribute('aria-checked', b.dataset.c === this._v)); el.querySelector('.ui-hex .ui-swatch').style.setProperty('--ui-c', this._v); };
+      hue.addEventListener('input', e => { e.stopPropagation(); const v = hslHex(+hue.value, 52, 56); hex.value = v; this._pick(v, true); mark(); });
+      hue.addEventListener('change', e => e.stopPropagation());
       el.addEventListener('click', e => { const s = e.target.closest('.ui-sw'); if (s) this._pick(s.dataset.c); else if (e.target.closest('[data-default]')) this._pick(this.getAttribute('default').toLowerCase()); else if (e.target.closest('.ui-done')) this._pop.close('select'); });
       el.addEventListener('keydown', e => {
         const s = e.target.closest('.ui-sw'); if (!s) return;
-        const all = [...el.querySelectorAll('.ui-sw')], i = all.indexOf(s), d = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 7, ArrowUp: -7 }[e.key];
+        const cols = getComputedStyle(s.parentElement).gridTemplateColumns.split(' ').filter(Boolean).length || 8;
+        const all = [...el.querySelectorAll('.ui-sw')], i = all.indexOf(s), d = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
         if (d) { e.preventDefault(); const n = all[Math.max(0, Math.min(all.length - 1, i + d))]; n.focus(); }
       });
-      hex.addEventListener('input', e => { e.stopPropagation(); let v = hex.value.trim(); if (v && v[0] !== '#') v = '#' + v; if (hexOk(v)) { el.querySelector('.ui-hex .ui-swatch').style.setProperty('--ui-c', v); this._pick(v.toLowerCase(), true); } });
+      hex.addEventListener('input', e => { e.stopPropagation(); let v = hex.value.trim(); if (v && v[0] !== '#') v = '#' + v; if (hexOk(v)) { this._pick(v.toLowerCase(), true); hue.value = hueOf(this._v); mark(); } });
       hex.addEventListener('change', e => e.stopPropagation());
       hex.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this._pop.close('select'); } });
       if (!this._pop.sheet) requestAnimationFrame(() => { const f = el.querySelector('.ui-sw[aria-checked="true"]') || el.querySelector('.ui-sw'); if (f) f.focus(); });
@@ -6163,13 +6303,18 @@ const UI = (() => {
     connectedCallback() {
       if (this._in) return;
       const lab = wireLabel(this), name = this.getAttribute('aria-label') || (lab ? lab.textContent.trim() : 'Tags');
-      this.innerHTML = `<span class="ui-tag-list"></span><input type="text" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="${h(name)}" maxlength="${+this.getAttribute('maxlength') || 24}">`;
+      this.innerHTML = `<span class="ui-tag-list"></span><input type="text" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="${h(name)}">`;   // (no maxlength: a pasted list is split first, then each tag is cut to the limit)
       this._in = this.querySelector('input'); this._list = this.querySelector('.ui-tag-list');
       this.removeAttribute('aria-label');
       if (this.hasAttribute('value')) this._tags = this._split(this.getAttribute('value'));
       this._draw();
       const stop = e => e.stopPropagation();
-      this._in.addEventListener('input', e => { stop(e); if (/,/.test(this._in.value)) { this._add(this._in.value.replace(/,/g, '')); return; } this._suggest(); });
+      this._in.addEventListener('input', e => {
+        stop(e);
+        if (/,/.test(this._in.value)) { const parts = this._in.value.split(','), rest = parts.pop(); this._addMany(parts); this._in.value = rest.trimStart().slice(0, this._ml); this._suggest(); return; }   // "Physics, Chemistry" → two tags
+        if (this._in.value.length > this._ml) this._in.value = this._in.value.slice(0, this._ml);
+        this._suggest();
+      });
       this._in.addEventListener('change', stop);
       this._in.addEventListener('focus', () => this._suggest());
       this._in.addEventListener('blur', () => { setTimeout(() => { if (!this.contains(document.activeElement) && !(this._pop && this._pop.root.contains(document.activeElement))) { if (this._in.value.trim()) this._add(this._in.value); this._closeS(); } }, 120); });
@@ -6196,11 +6341,17 @@ const UI = (() => {
     _draw() {
       this._list.innerHTML = this._tags.map((t, i) => `<span class="ui-tag">${h(t)}<button type="button" data-rm="${i}" tabindex="-1" aria-label="Remove ${h(t)}"${this.disabled ? ' disabled' : ''}>${IC.x}</button></span>`).join('');
       this._in.disabled = this.disabled;
-      this._in.placeholder = this._tags.length ? '' : (this.getAttribute('placeholder') || '');
+      this._in.placeholder = this._tags.length ? (this._tags.length >= (+this.getAttribute('max') || 99) ? '' : 'Add tag') : (this.getAttribute('placeholder') || 'Add tag');
       this._in.readOnly = this._tags.length >= this.max;   // at the limit the field stays (Backspace still removes the last tag) but takes no text
       this.classList.toggle('full', this._in.readOnly);
     }
-    _add(t) { t = String(t).trim(); this._in.value = ''; if (t && this._tags.length < this.max && !this._tags.some(x => x.toLowerCase() === t.toLowerCase())) { this._tags.push(t); this._draw(); fire(this, 'input', 'change'); } this._suggest(); }
+    get _ml() { return +this.getAttribute('maxlength') || 24; }
+    _addMany(list) {
+      let n = 0;
+      for (let t of list) { t = String(t).trim().slice(0, this._ml); if (t && this._tags.length < this.max && !this._tags.some(x => x.toLowerCase() === t.toLowerCase())) { this._tags.push(t); n++; } }
+      if (n) { this._draw(); fire(this, 'input', 'change'); }
+    }
+    _add(t) { t = String(t).trim().slice(0, this._ml); this._in.value = ''; if (t && this._tags.length < this.max && !this._tags.some(x => x.toLowerCase() === t.toLowerCase())) { this._tags.push(t); this._draw(); fire(this, 'input', 'change'); } this._suggest(); }
     _remove(i) { this._tags.splice(i, 1); this._draw(); fire(this, 'input', 'change'); this._suggest(); }
     _closeS() { if (this._pop) this._pop.close('api'); }
     _setAct(i) { if (!this._pop || !this._sugs.length) return; this._act = (i + this._sugs.length) % this._sugs.length; this._pop.el.querySelectorAll('.ui-opt').forEach((r, n) => { r.classList.toggle('act', n === this._act); if (n === this._act) { this._in.setAttribute('aria-activedescendant', r.id); r.scrollIntoView({ block: 'nearest' }); } }); }
@@ -6234,18 +6385,19 @@ const UI = (() => {
   function menu(anchor, items, o = {}) {
     const p = pop(anchor, el => {
       el.innerHTML = items.map((it, i) => it === '-' ? '<div class="ui-sep" role="separator"></div>'
-        : `<button type="button" class="ui-mi${it.danger ? ' danger' : ''}" role="${it.checked !== undefined ? 'menuitemcheckbox' : 'menuitem'}"${it.checked !== undefined ? ` aria-checked="${!!it.checked}"` : ''} data-i="${i}" tabindex="-1"${it.disabled ? ' disabled' : ''}>${it.icon ? `<span class="ui-mi-ic" aria-hidden="true">${it.icon}</span>` : ''}<span class="ui-mi-l">${h(it.label)}</span>${it.hint ? `<span class="ui-mi-h">${h(it.hint)}</span>` : ''}${it.checked ? `<span class="ui-tick">${IC.check}</span>` : ''}</button>`).join('');
+        : `<button type="button" class="ui-mi${it.danger ? ' danger' : ''}" role="${it.checked !== undefined ? 'menuitemcheckbox' : 'menuitem'}"${it.checked !== undefined ? ` aria-checked="${!!it.checked}"` : ''} data-i="${i}" tabindex="-1"${it.disabled ? ' disabled' : ''}>${it.icon ? `<span class="ui-mi-ic" aria-hidden="true">${it.icon}</span>` : ''}<span class="ui-mi-l">${h(it.label)}</span>${it.disabled ? `<span class="ui-mi-h lock" aria-hidden="true">${IC.lock}</span>` : it.hint ? `<span class="ui-mi-h">${h(it.hint)}</span>` : ''}${it.checked ? `<span class="ui-tick">${IC.check}</span>` : ''}</button>`).join('');
     }, { cls: 'ui-menu', role: 'menu', label: o.label || 'Menu', align: o.align || 'start', match: false, title: o.label || '', onClose: o.onClose });
     const el = p.el, live = () => [...el.querySelectorAll('.ui-mi:not([disabled])')], ta = typeAhead();
     el.addEventListener('click', e => { const b = e.target.closest('.ui-mi'); if (!b || b.disabled) return; const it = items[+b.dataset.i]; p.close('select'); if (it.run) it.run(); });
-    el.addEventListener('keydown', e => {
+    p.root.addEventListener('keydown', e => {   // (on the sheet itself: a sheet starts with the sheet focused)
+      if (e.target.closest && e.target.closest('.ui-sheet-x') && (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ')) return;
       const bs = live(), i = bs.indexOf(document.activeElement), k = e.key;
       const go = n => { e.preventDefault(); bs[(n + bs.length) % bs.length].focus(); };
       if (k === 'ArrowDown') go(i + 1); else if (k === 'ArrowUp') go(i - 1); else if (k === 'Home') go(0); else if (k === 'End') go(bs.length - 1);
       else if (k === 'Tab') { e.preventDefault(); p.close('esc'); }
       else if (k.length === 1) { const n = ta(k, bs.map(b => b.querySelector('.ui-mi-l').textContent), i); if (n >= 0) go(n); }
     });
-    requestAnimationFrame(() => { const f = live()[0]; if (f) f.focus({ preventScroll: true }); });
+    if (!p.sheet) requestAnimationFrame(() => { const f = live()[0]; if (f) f.focus({ preventScroll: true }); });   // (a sheet starts with nothing focused: Tab or a tap goes in)
     return p;
   }
 
@@ -6258,10 +6410,15 @@ const UI = (() => {
       const q = s => dlg.querySelector(s), okB = q('#cfOk'), noB = q('#cfNo'), type = q('#cfType');
       q('#cfTitle').textContent = o.title || ''; q('#cfBody').textContent = o.body || ''; q('#cfBody').classList.toggle('hidden', !o.body);
       type.classList.toggle('hidden', !o.type); type.value = ''; type.placeholder = o.type ? `Type ${o.type} to confirm` : '';
-      okB.textContent = o.ok || (o.mode === 'alert' ? 'OK' : 'OK'); okB.className = 'btn ' + (o.danger ? 'danger solid' : 'primary'); okB.disabled = !!o.type;
+      const ic = o.icon || (o.danger ? (/^(delete|remove|erase|clear)\b/i.test(o.ok || '') ? 'trash' : 'warn') : '');   // a destructive question shows what kind of thing is about to happen
+      q('#cfIc').innerHTML = ic && IC[ic] ? IC[ic] : ''; dlg.classList.toggle('has-ic', !!(ic && IC[ic]));
+      okB.innerHTML = (o.danger && ic === 'trash' ? IC.trash : '') + `<span>${h(o.ok || 'OK')}</span>`; okB.className = 'btn ' + (o.danger ? 'danger solid' : 'primary'); okB.disabled = !!o.type;
       noB.textContent = o.cancel || 'Cancel'; noB.classList.toggle('hidden', o.mode === 'alert');
       dlg.classList.toggle('danger', !!o.danger);
-      const done = v => { okB.onclick = noB.onclick = dlg.oncancel = type.oninput = null; dlg.close(); res(v); };
+      let settled = false;
+      const done = v => { if (settled) return; settled = true; okB.onclick = noB.onclick = dlg.oncancel = type.oninput = null; dlg.removeEventListener('close', gone); if (dlg.open) dlg.close(); res(v); };
+      const gone = () => done(false);   // closed by other code (Ctrl+K closes every open dialog): that is a "no", and the next question can come
+      dlg.addEventListener('close', gone);
       type.oninput = () => { okB.disabled = type.value.trim().toUpperCase() !== String(o.type).toUpperCase(); };
       okB.onclick = () => done(true); noB.onclick = () => done(false); dlg.oncancel = e => { e.preventDefault(); done(false); };
       dlg.showModal();
@@ -6280,7 +6437,7 @@ const UI = (() => {
   /** Paint a slider's fill (call after setting .value from code; user input is handled here). */
   function range(el) { if (el && el.type === 'range') el.style.setProperty('--ui-fill', (pct(el) * 100).toFixed(1) + '%'); }
   function showBubble(el) {
-    if (el.dataset.bubble === 'off') return;
+    if (el.dataset.bubble === 'off' || !(el.dataset.bubble === 'on' || el.dataset.scale || el.dataset.unit)) return;   // only a slider that says how to show its value (data-scale / data-unit / data-bubble="on")
     if (!bubble) { bubble = document.createElement('output'); bubble.className = 'ui-bubble'; bubble.setAttribute('aria-hidden', 'true'); }
     const hst = UI.topDialog() || document.body; if (bubble.parentNode !== hst) hst.appendChild(bubble);
     const scale = +el.dataset.scale || 1, unit = el.dataset.unit || '', v = +el.value * scale;
@@ -6301,7 +6458,7 @@ const UI = (() => {
   function scan(root = document) {
     if (!root.querySelectorAll) return;
     root.querySelectorAll('input[type="range"]').forEach(range);
-    root.querySelectorAll('input[type="checkbox"]:not([role]):not([data-check])').forEach(c => c.setAttribute('role', 'switch'));
+    root.querySelectorAll('input[type="checkbox"]:not([role]):not([data-check])').forEach(c => { if (!c.closest('.daychips, .sub-check, .hs-seats')) c.setAttribute('role', 'switch'); });   // (those are drawn as chips / ticks: several can be on, so they stay checkboxes)
   }
   let queued = false;
   const later = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; scan(document); }); };
@@ -6326,7 +6483,7 @@ const UI = (() => {
     tipEl.style.top = Math.round(below ? r.bottom + 8 : r.top - t.height - 8) + 'px';
     tipFor = a;
   }
-  const tipOf = e => (e.target && e.target.closest ? e.target.closest('[data-tip]') : null);
+  const tipOf = e => { const a = e.target && e.target.closest ? e.target.closest('[data-tip]') : null; return a && !(a instanceof SVGElement) ? a : null; };   // (chart marks are SVG and fill their card's own tip box)
   document.addEventListener('pointerover', e => { if (e.pointerType === 'touch') return; const a = tipOf(e); if (a === tipFor) return; tipHide(); if (a) tipT = setTimeout(() => tipShow(a), 450); }, true);
   document.addEventListener('pointerout', e => { const a = tipOf(e); if (a && (!e.relatedTarget || !a.contains(e.relatedTarget))) tipHide(); }, true);
   document.addEventListener('focusin', e => { const a = tipOf(e); let kb = false; try { kb = !!a && a.matches(':focus-visible'); } catch (err) {} if (kb) { tipHide(); tipShow(a); } }, true);
@@ -6351,7 +6508,7 @@ UI.cfg.sound = name => { try { uiSound(name); } catch (e) { /* sounds not ready 
 UI.cfg.preset = { fav: null, create: null, edit: null };
 UI.RENDER.preset = (() => {
   const h = UI.h;
-  const rhythm = o => o.dataset.f ? `<span class="ui-rhy" aria-hidden="true"><b>${h(o.dataset.f)}</b><i>/</i><b>${h(o.dataset.b || '0')}</b>${o.dataset.r ? `<i>×</i><b>${h(o.dataset.r)}</b>` : ''}</span><span class="ui-sr">, ${h(o.dataset.f)} minutes focus, ${h(o.dataset.b || '0')} minutes break${o.dataset.r ? `, ${h(o.dataset.r)} rounds` : ''}</span>` : '';
+  const rhythm = o => o.dataset.f ? `<span class="ui-rhy" aria-hidden="true"><b>${h(o.dataset.f)} / ${h(o.dataset.b || '0')}</b>${o.dataset.r ? `<i>× ${h(o.dataset.r)}</i>` : ''}</span><span class="ui-sr">, ${h(o.dataset.f)} minutes focus, ${h(o.dataset.b || '0')} minutes break${o.dataset.r ? `, ${h(o.dataset.r)} rounds` : ''}</span>` : '';
   const head = o => `<i class="ui-dot"${o.dataset.dot ? ` style="background:${h(o.dataset.dot)}"` : ''}></i><span class="ui-opt-l">${h((o.label || o.textContent || '').trim())}</span>`;
   return {
     search: true,
@@ -6365,11 +6522,12 @@ UI.RENDER.preset = (() => {
       const fav = os.filter(o => o.dataset.fav === '1');
       const rec = os.filter(o => o.dataset.fav !== '1' && o.dataset.recent !== undefined && o.dataset.recent !== '').sort((a, b) => (+a.dataset.recent || 0) - (+b.dataset.recent || 0)).slice(0, 3);
       const rest = os.filter(o => !fav.includes(o) && !rec.includes(o));
-      return [{ label: 'Favourites', items: fav }, { label: 'Recent', items: rec }, { label: fav.length || rec.length ? 'All presets' : '', items: rest }];
+      const key = 'focus / break × rounds';   // what the numbers on the right mean, said once at the top
+      return [{ label: 'Favourites', hint: key, items: fav }, { label: 'Recent', hint: fav.length ? '' : key, items: rec }, { label: fav.length || rec.length ? 'All presets' : '', hint: fav.length || rec.length ? '' : key, items: rest }];
     },
     footer: [
       { label: 'New preset', icon: UI.IC.plus, run: sel => { const f = UI.cfg.preset.create; if (f) f(sel); } },
-      { label: 'Edit presets', icon: '', run: sel => { const f = UI.cfg.preset.edit; if (f) f(sel); } },
+      { label: 'Edit presets', icon: UI.IC.edit, run: sel => { const f = UI.cfg.preset.edit; if (f) f(sel); } },
     ],
     action(name, o, sel) { if (name === 'fav' && UI.cfg.preset.fav) UI.cfg.preset.fav(o, sel); },
   };
@@ -6387,7 +6545,9 @@ function renderGallery() {
   if (!el || !DEBUG) return;
   if (!window.LOG) { window.LOG = []; for (const t of ['input', 'change']) document.addEventListener(t, e => { if (e.target.id && /^gx/.test(e.target.id)) LOG.push(`${t}:${e.target.id}=${e.target.value ?? ''}`); }); }
   const cell = (title, html) => `<div class="card gx-cell"><h2>${title}</h2>${html}</div>`;
-  el.innerHTML = `<div class="gx-head"><h1>Component gallery</h1><p class="muted">Every control of the 2.0 library. Development only.</p></div>
+  const ICO = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const toastDemo = (cls, ic, t, b, act) => `<div class="toast-item in gx-toast ${cls}"><span class="gx-ti" aria-hidden="true">${ICO(ic)}</span><span class="gx-tt"><b>${t}</b><small>${b}</small></span>${act ? `<button class="btn small" type="button">${act}</button>` : ''}</div>`;
+  el.innerHTML = `<div class="gx-head"><h1>Component gallery</h1><p class="muted">Every control of the 2.0 library, in every state. Development only.</p></div>
   <div class="gx-grid">
     ${cell('Select', `<label class="field" for="gxs1">Week starts on</label><ui-select id="gxs1"><option value="1">Monday</option><option value="0" selected>Sunday</option><option value="6">Saturday</option></ui-select>
       <label class="field" for="gxs2">Subject (long list: search)</label><ui-select id="gxs2"><option value="">None</option><option>Physics</option><option>Chemistry</option><option>Maths</option><option>Biology</option><option>English</option><option disabled>History (locked)</option><option>Geography</option><option>Computer science</option><option>Economics</option></ui-select>
@@ -6400,24 +6560,41 @@ function renderGallery() {
         <option value="mock" data-dot="#c25480" data-f="90" data-b="20" data-r="2">Mock test</option>
         <option value="read" data-dot="#5a9e4b" data-f="40" data-b="8" data-r="3">Reading</option>
         <option value="rev" data-dot="#8a6fc2" data-f="30" data-b="5" data-r="4">Revision</option></ui-select>
-      <p class="lbl" style="margin:8px 0 0">Favourites and recent presets come first; the star toggles a favourite without closing the list.</p>`)}
-    ${cell('Number stepper', `<label class="field" for="gxn1">Daily goal</label><ui-num id="gxn1" value="120" min="10" max="720" step="5" suffix="min"></ui-num>
-      <span class="field">Disabled</span><ui-num aria-label="Disabled number" value="4" disabled></ui-num>`)}
+      <p class="field-msg">Favourites and recent presets come first; the star toggles a favourite without closing the list.</p>`)}
+    ${cell('Text field', `<div class="field-top"><label class="field" for="gxf1">What are you working on?</label><small>optional</small></div><input type="text" id="gxf1" placeholder="e.g. Physics – Rotational Motion" maxlength="80">
+      <div class="field-top"><label class="field" for="gxf2">Preset name</label><small>12 / 60</small></div><input type="text" id="gxf2" value="Deep work 2"><p class="field-msg">Shown in the preset list and on your stats.</p>
+      <label class="field" for="gxf3">Due date (something is wrong)</label><input type="text" id="gxf3" value="14 Nov 2026" aria-invalid="true" aria-describedby="gxf3e"><p class="field-msg err" id="gxf3e">${UI.IC.warn}<span>That day has passed. Pick today or later.</span></p>
+      <label class="field" for="gxf4">Disabled</label><input type="text" id="gxf4" value="Sign in to add notes" disabled>
+      <label class="field" for="gxf5">Notes</label><textarea id="gxf5" placeholder="Anything to remember for this task"></textarea>`)}
     ${cell('Date', `<label class="field" for="gxd1">Due date</label><ui-date id="gxd1"></ui-date>
       <label class="field" for="gxd2">Exam date (required)</label><ui-date id="gxd2" required value="2026-12-20"></ui-date>
       <label class="field" for="gxd3">Range</label><ui-date id="gxd3" range quick="off"></ui-date>`)}
     ${cell('Time', `<label class="field" for="gxt1">Time</label><ui-time id="gxt1" value="14:30"></ui-time>
       <label class="field" for="gxt2">Reminder time (can be all day)</label><ui-time id="gxt2" allday></ui-time>`)}
-    ${cell('Colour and tags', `<span class="field">Colour</span><ui-color id="gxc1" aria-label="Session colour" value="#c25480" default="#2f8f83"></ui-color>
-      <label class="field" for="gxg1">Tags</label><ui-tags id="gxg1" value="Physics, JEE" placeholder="e.g. JEE, Study" max="4"></ui-tags>`)}
-    ${cell('Slider and switch', `<label class="field" for="gxr1">Ambient volume</label><input type="range" id="gxr1" min="0" max="1" step="0.05" value="0.5" data-scale="100" data-unit="%">
-      <div class="gx-row"><span>Switch on</span><input type="checkbox" id="gxk1" checked aria-label="Switch on"></div>
+    ${cell('Number stepper', `<label class="field" for="gxn1">Daily goal</label><ui-num id="gxn1" value="120" min="10" max="720" step="5" suffix="minutes"></ui-num>
+      <span class="field">Disabled</span><ui-num aria-label="Disabled number" value="4" suffix="rounds" disabled></ui-num>`)}
+    ${cell('Colour and tags', `<span class="field">Colour (swatch only, and with its name)</span><div class="gx-wrap"><ui-color id="gxc1" aria-label="Session colour" value="#c25480" default="#2f8f83"></ui-color><ui-color id="gxc2" aria-label="Subject colour" value="#3a7ca5" named></ui-color></div>
+      <div class="field-top"><label class="field" for="gxg1">Subject / tags</label><small>up to 4</small></div><ui-tags id="gxg1" value="Physics, JEE" placeholder="e.g. JEE, Study" max="4"></ui-tags>`)}
+    ${cell('Switch, tick box, radio', `<div class="gx-row"><span>Switch on</span><input type="checkbox" id="gxk1" checked aria-label="Switch on"></div>
       <div class="gx-row"><span>Switch off</span><input type="checkbox" aria-label="Switch off"></div>
-      <div class="gx-row"><span>Switch disabled</span><input type="checkbox" aria-label="Switch disabled" disabled></div>`)}
-    ${cell('Buttons', `<div class="gx-wrap"><button class="btn primary" type="button">Primary</button><button class="btn" type="button">Secondary</button><button class="btn ghost" type="button">Ghost</button><button class="btn danger" type="button">Danger</button><button class="btn primary" type="button" disabled>Disabled</button><button class="btn small" type="button">Small</button><button class="linkbtn" type="button">Link</button><button class="iconbtn" type="button" id="gxtip1" aria-label="Skip to break" data-tip="Skip to break" data-key="S"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 5 9 7-9 7zM18 5v14"/></svg></button></div>
-      <div class="seg" role="group" aria-label="Segmented" style="justify-self:start"><button class="active" type="button">Day</button><button type="button">Week</button><button type="button">Month</button></div>`)}
-    ${cell('Menu, dialog, confirm, toast', `<div class="gx-wrap"><button class="btn" type="button" id="gxmenuBtn">Menu</button><button class="btn" type="button" id="gxdlgBtn">Dialog</button><button class="btn" type="button" id="gxcfBtn">Confirm</button><button class="btn" type="button" id="gxalBtn">Alert</button><button class="btn" type="button" id="gxtoBtn">Toast</button><button class="btn" type="button" id="gxtuBtn">Toast with Undo</button></div>`)}
-    ${cell('Empty state, skeleton, progress', `${sceneEmpty('wave', 'big-icon', '<h3 style="margin:8px 0 4px">Nothing here yet</h3><p class="lbl" style="margin:0">Add something and it shows up here.</p>')}${skelRows(2)}<div class="progress" style="margin-top:12px"><i data-fill="0.62"></i></div>`)}
+      <div class="gx-row"><span>Switch disabled</span><input type="checkbox" aria-label="Switch disabled" disabled></div>
+      <label class="gx-check"><input type="checkbox" data-check checked><span>Remind me 10 min before</span></label>
+      <label class="gx-check"><input type="checkbox" data-check><span>Repeat every week</span></label>
+      <label class="gx-check"><input type="checkbox" data-check id="gxkm"><span>All subtasks · 2 of 5</span></label>
+      <label class="gx-check"><input type="checkbox" data-check disabled><span>Share with clan</span></label>
+      <label class="gx-check"><input type="radio" name="gxr" checked><span>Focus and overtime</span></label>
+      <label class="gx-check"><input type="radio" name="gxr"><span>Focus only</span></label>`)}
+    ${cell('Slider', `<div class="field-top"><label class="field" for="gxr1">Ambient volume</label><small id="gxr1v">50%</small></div><input type="range" id="gxr1" min="0" max="1" step="0.05" value="0.5" data-scale="100" data-unit="%" style="width:100%">
+      <span class="field">Disabled</span><input type="range" min="0" max="1" step="0.05" value="0.3" disabled aria-label="Disabled slider" style="width:100%">`)}
+    ${cell('Buttons', `<div class="gx-wrap"><button class="btn primary" type="button">${ICO('<path d="M5 12.5 9.5 17 19 7.5"/>')}Save task</button><button class="btn" type="button">Cancel</button><button class="btn ghost" type="button">${ICO('<path d="M12 5v14M5 12h14"/>')}Add subtasks</button></div>
+      <div class="gx-wrap"><button class="btn danger solid" type="button">${UI.IC.trash}Delete</button><button class="btn danger" type="button">Leave clan</button><button class="linkbtn" type="button">Quiet link</button></div>
+      <div class="gx-wrap"><button class="btn primary" type="button" disabled>Save task</button><button class="btn" type="button" disabled>Cancel</button><button class="btn primary loading" type="button" aria-busy="true"><span class="spin"></span>Saving…</button></div>
+      <div class="gx-wrap"><button class="btn small" type="button">Small 32</button><button class="btn" type="button">Medium 40</button><button class="btn primary big" type="button">${ICO('<path d="m7 5 11 7-11 7z" fill="currentColor"/>')}Start</button></div>
+      <div class="gx-wrap"><button class="iconbtn" type="button" id="gxtip1" aria-label="Skip to break" data-tip="Skip to break" data-key="S">${ICO('<path d="m6 5 9 7-9 7zM18 5v14"/>')}</button><button class="iconbtn" type="button" aria-label="Sound" data-tip="Sound">${ICO('<path d="M4 9.5v5h3.5L12 18V6L7.5 9.5zM15.5 9a4 4 0 0 1 0 6"/>')}</button><button class="iconbtn" type="button" aria-label="Edit" disabled>${UI.IC.edit}</button>
+        <div class="seg" role="group" aria-label="Segmented"><button class="active" type="button">Day</button><button type="button">Week</button><button type="button">Month</button></div></div>`)}
+    ${cell('Menu, dialog, confirm', `<div class="gx-wrap"><button class="btn" type="button" id="gxmenuBtn">Menu</button><button class="btn" type="button" id="gxdlgBtn">Dialog</button><button class="btn" type="button" id="gxcfBtn">Confirm</button><button class="btn" type="button" id="gxalBtn">Alert</button><button class="btn" type="button" id="gxtoBtn">Toast</button><button class="btn" type="button" id="gxtuBtn">Toast with Undo</button></div>`)}
+    ${cell('Toasts', `<div class="gx-toasts">${toastDemo('ok', '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/>', 'Session saved', '+25 min on Physics · 45m to your goal')}${toastDemo('', '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 7.6v.4"/>', 'Task completed', 'Finish chapter 5 problems', 'Undo')}${toastDemo('err', '<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17.2v.3"/>', 'Couldn’t sync', 'You’re offline. Changes are kept on this device.', 'Retry')}</div>`)}
+    ${cell('Empty state, skeleton, progress', `${sceneEmpty('wave', 'big-icon', '<h3 style="margin:8px 0 4px">Nothing here yet</h3><p class="lbl" style="margin:0">Add something and it shows up here.</p>')}${skelRows(2)}<div class="field-top" style="margin-top:12px"><span class="field">Daily goal</span><small>62%</small></div><div class="progress" role="progressbar" aria-valuenow="62" aria-valuemin="0" aria-valuemax="100" aria-label="Daily goal"><i data-fill="62"></i></div>`)}
   </div>
   <div class="gx-spacer"></div>
   <div class="card gx-cell gx-low"><label class="field" for="gxs5">Near the bottom edge (opens upward)</label><ui-select id="gxs5"><option>One</option><option>Two</option><option>Three</option><option>Four</option><option>Five</option></ui-select></div>
@@ -6425,6 +6602,8 @@ function renderGallery() {
     <label class="field" for="gxds1">Repeat</label><ui-select id="gxds1"><option value="none">Doesn’t repeat</option><option value="day">Every day</option><option value="week">Every week</option></ui-select>
     <label class="field" for="gxdd1" style="margin-top:10px">Date</label><ui-date id="gxdd1"></ui-date>
     <div class="btn-row" style="justify-content:flex-end;margin-top:14px"><button class="btn" type="button" id="gxfdClose">Close</button></div></dialog>`;
+  { const m = $('#gxkm'); if (m) m.indeterminate = true; }
+  $('#gxr1').addEventListener('input', e => { $('#gxr1v').textContent = Math.round(e.target.value * 100) + '%'; });
   UI.cfg.tagSuggest = UI.cfg.tagSuggest || (() => []);
   const sug = UI.cfg.tagSuggest; UI.cfg.tagSuggest = t => (t && t.id === 'gxg1' ? ['Physics', 'Chemistry', 'Maths', 'Biology', 'JEE', 'NEET', 'Revision', 'Mock test'] : sug(t));
   const pf = UI.cfg.preset.fav, pc = UI.cfg.preset.create, pe = UI.cfg.preset.edit;   // the gallery's sample presets answer for themselves
@@ -6432,10 +6611,10 @@ function renderGallery() {
   UI.cfg.preset.fav = (o, sel) => { if (sel.id !== 'gxp1') return pf && pf(o, sel); if (o.dataset.fav === '1') delete o.dataset.fav; else o.dataset.fav = '1'; LOG.push('fav:' + o.value + '=' + (o.dataset.fav || '0')); };
   UI.cfg.preset.create = sel => (sel.id === 'gxp1' ? LOG.push('preset:new') : pc && pc(sel));
   UI.cfg.preset.edit = sel => (sel.id === 'gxp1' ? LOG.push('preset:edit') : pe && pe(sel)); }
-  $('#gxmenuBtn').onclick = e => UI.menu(e.currentTarget, [{ label: 'Edit', hint: 'E', run: () => LOG.push('menu:edit') }, { label: 'Duplicate', run: () => LOG.push('menu:dup') }, '-', { label: 'Delete', danger: true, run: () => LOG.push('menu:del') }, { label: 'Locked', disabled: true }], { label: 'Preset actions' });
+  $('#gxmenuBtn').onclick = e => UI.menu(e.currentTarget, [{ label: 'Edit', icon: UI.IC.edit, hint: 'E', run: () => LOG.push('menu:edit') }, { label: 'Duplicate', icon: UI.IC.copy, hint: 'D', run: () => LOG.push('menu:dup') }, { label: 'Add to favourites', icon: UI.IC.star, run: () => LOG.push('menu:fav') }, { label: 'Rename (unlocks at level 5)', icon: UI.IC.edit, disabled: true }, '-', { label: 'Delete…', icon: UI.IC.trash, danger: true, run: () => LOG.push('menu:del') }], { label: 'Preset actions' });
   $('#gxdlgBtn').onclick = () => $('#gxformDlg').showModal();
   $('#gxfdClose').onclick = () => $('#gxformDlg').close();
-  $('#gxcfBtn').onclick = async () => { LOG.push('confirm:' + await UI.confirm({ title: 'Delete this preset?', body: 'Sessions you logged with it stay.', ok: 'Delete', danger: true })); };
+  $('#gxcfBtn').onclick = async () => { LOG.push('confirm:' + await UI.confirm({ title: 'Delete “Sprint”?', body: 'Sessions you logged with it stay in your history.', ok: 'Delete preset', cancel: 'Keep preset', danger: true })); };
   $('#gxalBtn').onclick = () => UI.alert({ title: 'Saved on this device', body: 'It will sync when you are back online.' });
   $('#gxtoBtn').onclick = () => toast('Preset saved', 2600, true);
   $('#gxtuBtn').onclick = () => toastUndo('Preset “Sprint” deleted', () => LOG.push('undo'));
@@ -10181,8 +10360,9 @@ const systemDark = () => matchMedia('(prefers-color-scheme: dark)').matches;
    worked out from them here — once per palette and mode, pure arithmetic, cached — and written inline on <html> next
    to the palette. No palette needs extra values, and no browser feature (color-mix, relative colours) is required.
      layers     --frame (header, sidebar) · --card-quiet · --card-hi (the hero card) · --pop-bg (panels, dialogs)
-     controls   --ctl-bg (a field's well) · --ctl-bd / --ctl-bd-hover (its lip) · --raise (a button's pad) · --track
-     washes     --hover · --press · --hair (a surface's rim) · --divider (rules inside a surface) · --pop-bd · --pad-bd
+     controls   --ctl-bg (a field's well) · --ctl-bd / --ctl-bd-hover (its lip) · --pad (a button: the card's white in light,
+                a lift in dark) · --raise (the same lift, for label chips) · --accent-tint (a chosen segment) · --track
+     washes     --sel (selected text) · --hover · --press · --hair (a surface's rim) · --divider (rules inside a surface) · --pop-bd · --pad-bd
                 --scrim (tinted with the accent) · --hi (top highlight) · --shadow-1…4, --shadow-w (tinted too) · --lamp
      accent     --accent-fill / --accent-fill-hover (filled buttons) · --on-accent (text on them) · --accent-text
                 (the accent as text or an icon) · --focus (focus ring, progress lines)
@@ -10243,7 +10423,7 @@ function derivedFor(key, dark, vars) {
     const [bd, q] = reach(colMix(text, surface, .3), text, c => [well, surface, hi, pop, quiet, bg].every(x => colRatio(c, x) >= 3.05));
     hex('ctl-bd', bd); hex('ctl-bd-hover', colMix(text, bd, Math.min(1, .3 + q * .5)));
     hex('track', colMix(text, surface, .14));
-    rgba('raise', text, k.raise); rgba('hover', text, .07); rgba('press', text, .12); rgba('hair', text, k.hair); rgba('pop-bd', text, dark ? .12 : .1); rgba('pad-bd', text, dark ? .17 : .15);
+    rgba('raise', text, k.raise); out.pad = dark ? colA(text, k.raise) : colHex(surface); rgba('accent-tint', accent, dark ? .26 : .2); rgba('hover', text, .07); rgba('press', text, .12); rgba('hair', text, k.hair); rgba('pop-bd', text, dark ? .16 : .18); rgba('sel', accent, dark ? .42 : .3); rgba('pad-bd', text, dark ? .17 : .15);
     rgba('divider', text, .11); rgba('scrim', colMix(accent, K, .22), k.scrim); rgba('hi', W, k.hi);
     const sh = colMix(accent, colMix(bg, K, .16), .1);   // a near-black that carries the palette's hue
     rgba('shadow-1', sh, k.shadow); rgba('shadow-w', sh, k.shadow * 1.6); rgba('shadow-2', sh, k.shadow * 1.8); rgba('shadow-3', sh, k.shadow * 2.4); rgba('shadow-4', sh, k.shadow * 3.2);

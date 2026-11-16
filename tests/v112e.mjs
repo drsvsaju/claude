@@ -75,3 +75,4 @@ for (const [w, h, touch] of viewports) {
 }
 console.log('errors', JSON.stringify(errs), '| problems', total);
 await b.close();
+process.exit(total ? 1 : 0);   // v2.0: layout problems fail the suite (it used to exit 0)

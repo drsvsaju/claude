@@ -108,3 +108,4 @@ await ev(A, () => { S.exams.push({ id: 'ex1', name: 'JEE Main', date: dayKey(add
 check('exam added on A → on B (exams sync the same way)', (await until(B, () => S.exams.some(x => x.id === 'ex1'))) >= 0);
 log('errors', errs, '| failures', fails);
 await b.close();
+process.exit(fails ? 1 : 0);   // v2.0: a failing check fails the suite (it used to exit 0)

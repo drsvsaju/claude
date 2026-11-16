@@ -178,3 +178,4 @@ const after = await ev(A1, async () => { const d = (await FB.getDocFromServer(us
 check('Erase on one browser → the other one is cleared too, and nothing is merged back into the cloud', ms >= 0 && after.bag === 0 && after.cloud === 0 && after.lo === 0, JSON.stringify(after));
 log('errors', JSON.stringify(errs), '| failures', fails);
 await b.close();
+process.exit(fails ? 1 : 0);   // v2.0: a failing check fails the suite (it used to exit 0)
