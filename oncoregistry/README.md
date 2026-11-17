@@ -4,7 +4,7 @@ A one-file web app for collecting oncology research data. It runs like a lightwe
 
 **Try it without any setup:** open the page and press **Try the demo**. That loads 120 synthetic patients, a small team and several weeks of activity. Nothing is written to the browser; reloading starts a fresh demo.
 
-Current version: **1.3**. It uses the Focus app's 2.0 "Soft depth" design; see *Version 1.3* below.
+Current version: **2.0**. It is built on the architecture of the Focus app (Pomodorolist) 2.0: its "Soft depth" design and its own control library. See *Version 2.0* below.
 
 ## What it does
 
@@ -18,15 +18,26 @@ Current version: **1.3**. It uses the Focus app's 2.0 "Soft depth" design; see *
 | **Survival** | OS and PFS from diagnosis are calculated for each patient. The dashboard shows Kaplan–Meier curves (overall or by stage, ECOG, sex, metastatic status, site, payer or centre) with median and 95% CI, 1/2/5-year survival, number at risk and the log-rank p-value. |
 | **Export** | Analysis-ready CSV files: one row per patient with derived `os_months`, `os_event`, `pfs_months`, `pfs_event` and toxicity summaries. Separate long tables for treatments, biomarkers, toxicity and follow-up (linked by `study_id`), a data dictionary and a JSON backup. Coded answers can be exported as labels (for Excel/SPSS) or codes (for STATA/R). |
 | **Today (home)** | Each study opens on a Focus-style home page. It shows a daily-goal ring (records you worked on today), your current and longest streak, and a quick **Register patient** button. Type a patient's number (e.g. `12` → `GBC-0012`) or hospital ID to open their record. It also shows chips for recently opened patients (you can pin them), a **Due for follow-up** list (no contact for 90+ days, adjustable), your unfinished drafts and the study's recruitment progress. |
+| **Calendar** | When each patient falls due for follow-up (last contact + the follow-up interval), visits recorded and registrations, by month or as an agenda (overdue, then the next 8 weeks). **Download .ics** puts the next six months of due follow-ups into Google Calendar, Outlook or a phone calendar, with Study IDs only. |
 | **Profile** | Levels, tier badges and achievements in the Focus app's style. For example: first patient, 100 registered, 25 records completed, 100 follow-up visits, a 30-day streak. There is also your own activity chart by day, week, month or year, with the daily-goal line. |
 | **Team** | A leaderboard for this week, this month or all time, plus the members and invitations page. Points favour complete data: registering a patient 10, marking a record complete 15, a follow-up visit 5, a treatment 3, an edit 3 (counted once per record per day), verifying 5. Everything is worked out from the audit trail, so nothing extra is stored. |
 | **Preferences** | Theme (system, light or dark), accent colour, daily goal, working days (days off never break a streak), the week's first day, the follow-up interval, and a switch to turn progression off for a plain registry. Preferences are saved on each device. |
-| **Shortcuts** | `/` opens a patient or searches, `N` registers a patient, `Ctrl+S` saves the open record. |
+| **Shortcuts** | `/` opens a patient or searches, `N` registers a patient, `Ctrl+S` saves the open record, `G` then `T`/`P`/`C`/`D`/`M` goes to Today, Patients, Calendar, Dashboard or Team. |
 | **Paper CRF** | A printable blank form for clinics without a computer at the bedside. |
 | **Works offline** | Records open and can be edited without internet and sync later. Only *registering* a new patient needs a connection, because that is when the unique Study ID is assigned. |
 | **Conflicting edits** | If two people edit the same record, the second save is refused (enforced by the server) instead of silently overwriting the first person's work. |
 
 | **Find anything** | **Command palette** (`Ctrl K`, or the search button): type a Study ID or number to open a patient, or search for pages, actions (register, export, print the CRF) and settings. **Inbox** (bell): invitations, follow-ups due, drafts, achievements and colleagues' changes. |
+
+## Version 2.0: the Focus app's 2.0 architecture
+
+- **The control library.** Every dropdown, date field and number setting is now the app's own control, ported from Focus 2.0. Each one keeps the contract of the browser control it replaces (same id, `.value`, `input`/`change` events), so the data model and saving are unchanged. Dropdowns open a list you can type into (with search in long lists). On a phone they open as a sheet from the bottom that you can drag away.
+- **Typed dates for the case record form.** Dates are typed day first: `12032021`, `12/3/21` and `12-3-2021` all become **12/03/2021**. A calendar with month and year jumps is behind the small button. A date that doesn't exist (for example 31/02/2021) is marked in red and left empty, so it shows up as missing instead of being saved wrong. Clinical numbers (age, weight, labs) stay plain fields, so typed values are never silently clamped.
+- **Calendar** (Study → Calendar, `G` then `C`): see *What it does*.
+- **Streak pause** (Settings → Work & goals): up to 30 days of leave or a conference count as days off.
+- **One dialog shell.** Every dialog has a close button. Questions such as *Leave without saving?* and *Log out with unsaved changes?* use the app's own confirm dialog instead of the browser's. Suggestions for regimens, CTCAE terms and histology appear under the field (they were browser datalists).
+- **Smaller things.** Link previews (title and description) when the address is shared, the ribbon icon in the browser tab, tooltips on icon buttons, a *Skip to content* button for keyboard users, and nothing animates behind an open dialog.
+- **Unchanged.** Data, `firestore.rules` (55 checks pass) and existing studies. Version 1.x pages keep working against the same database.
 
 ## Version 1.3: the Focus app's 2.0 "Soft depth" design
 
