@@ -4,6 +4,9 @@ A copy of the test harness that normally runs from a scratch folder outside the 
 suites survive a reset of that folder. Nothing in this folder is uploaded to the live site.
 
 ## Restore and run
+0. After a container restart everything outside the repository is gone: `sh tests/restore.sh` does steps 1–3 (it also
+   links the pre-installed Playwright and puts the Firebase SDK beside the test page, importing itself locally).
+   `tools/probe.mjs <page> <w> <h> '<js>' [--big]` runs page-side code on the demo (or the large) account.
 1. Copy this folder to a working folder (the scripts expect `<scratch>/fb`), then `npm ci` there.
 2. `sh ensure.sh` starts the test site on :8000 and the Auth + Firestore emulators (project `demo-pomo`).
 3. `sh tools/site.sh` (it lives one level up as `v1143/site.sh` in the working copy) builds the test page from the
