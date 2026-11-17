@@ -202,12 +202,17 @@ const used = await D.ev(async () => {
   const nw = [...document.querySelectorAll('#tab-bag .item.equipped .pv .tag.new')][0]; out.newOnEquipped = nw ? same(nw, getComputedStyle(document.documentElement).getPropertyValue('--on-danger').trim()) : 'none';
   S.ui.questView = 'pass'; showTab('quests'); await sl(400); const got = document.querySelector('.pt.got'); out.got = got ? getComputedStyle(got).opacity : 'none';
   S.ui.gardenView = 'almanac'; showTab('garden'); await sl(500); const none = document.querySelector('.gd-mut.none'); out.none = none ? getComputedStyle(none).opacity : 'none';
-  showTab('timer'); await sl(300); const act = document.querySelector('.sidenav button.active .nv-l'); out.nav = act ? same(act, getComputedStyle(document.documentElement).getPropertyValue('--t-1').trim() || getComputedStyle(document.documentElement).getPropertyValue('--text').trim()) : null;
+  showTab('timer'); await sl(300); const act = document.querySelector('.sidenav button.active .nv-l'); out.nav = act ? getComputedStyle(act).color === getComputedStyle(act.closest('button')).color && getComputedStyle(act).color !== getComputedStyle(document.querySelector('.sidenav button:not(.active) .nv-l')).color : null;
+  // from the design review: a rarity word has its dot, a subject tag its tinted chip, "overdue" its warning sign
+  showTab('bag'); await sl(400); const rr = document.querySelector('#tab-bag .bi-src .rar'); out.dot = rr ? getComputedStyle(rr, '::before').content !== 'none' && getComputedStyle(rr, '::before').backgroundColor !== 'rgba(0, 0, 0, 0)' : null;
+  S.ui.remView = 'todo'; S.ui.todoFilter = 'all'; showTab('reminders'); await sl(500); const tg = document.querySelector('#todoList .td-tag'); out.tag = tg ? getComputedStyle(tg).backgroundColor !== 'rgba(0, 0, 0, 0)' : null;
+  const ov = document.querySelector('#todoList .td-due.over'); out.over = ov ? getComputedStyle(ov, '::before').content !== 'none' : 'none';
+  showTab('timer');
   applyTheme(); S.ui.gardenView = 'garden'; S.ui.questView = 'boss';
   return out;
 });
-check('…and they are used: a Legendary label is drawn in its ink, the red “New” tag keeps its own ink on an equipped item, “claimed” and “not found yet” dim the picture and not the words, the open section in the side column is plain text on its tint',
-  used.rar === true && (used.newOnEquipped === true || used.newOnEquipped === 'none') && (used.got === '1' || used.got === 'none') && (used.none === '1' || used.none === 'none') && used.nav === true, JSON.stringify(used));
+check('…and they are used: a Legendary label is drawn in its ink, the red “New” tag keeps its own ink on an equipped item, “claimed” and “not found yet” dim the picture and not the words, the open section in the side column has its label and icon in one colour that differs from the others; a rarity word has a dot in the rarity’s colour, a subject tag is a tinted chip, “overdue” has a warning sign',
+  used.rar === true && (used.newOnEquipped === true || used.newOnEquipped === 'none') && (used.got === '1' || used.got === 'none') && (used.none === '1' || used.none === 'none') && used.nav === true && used.dot === true && used.tag === true && (used.over === true || used.over === 'none'), JSON.stringify(used));
 
 /* ---------- phone: targets ---------- */
 const tg = await M.ev(async () => {

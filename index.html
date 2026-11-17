@@ -760,7 +760,7 @@ button.pc-rank:hover { border-color: var(--pc-acc, var(--accent)); } span.pc-ran
 .pt .pt-n { font-size: 11px; font-weight: 800; color: var(--muted); }
 .pt .pt-ic { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; background: var(--heat0); font-size: 22px; overflow: hidden; }
 .pt .pt-ic svg { max-width: 42px; max-height: 42px; }
-.pt .pt-l { font-size: 11.5px; line-height: 1.25; min-height: 28px; overflow-wrap: anywhere; }
+.pt .pt-l { font-size: 11.5px; line-height: 1.25; min-height: 28px; overflow-wrap: anywhere; white-space: normal; max-width: 100%; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }   /* v2.0 phase 4: two lines inside its tile (the row's nowrap made a long reward name run under its neighbours; the tile's label has the full name) */
 .pt .pt-s { margin-top: auto; font-size: 11px; }
 .pt .btn { padding: 4px 10px; font-size: 12px; margin-top: auto; }
 .pt.big { border-color: color-mix(in srgb, var(--ea, var(--accent)) 55%, var(--line)); }
@@ -1731,7 +1731,7 @@ body.focus-dim :is(.sidenav, #tab-timer .mason > .card:not(.timer-card)):is(:hov
 .rev-list .rv-t { font-weight: 600; }
 .rev-list .rv-s { font-size: 12.5px; color: var(--muted); }
 .rev-list .rv-s .due { color: var(--accent-text, var(--accent)); font-weight: 600; }
-.rev-list .rv-s .over { color: var(--warn-text, var(--warn)); font-weight: 600; }
+.rev-list .rv-s .over { color: var(--danger-text, var(--danger)); font-weight: 600; }
 .rev-dots { letter-spacing: 2px; color: var(--accent-text, var(--accent)); font-size: 13px; }
 .rev-acts { display: flex; gap: 6px; flex-wrap: wrap; }
 .rev-acts .btn { padding: 5px 11px; font-size: 12.5px; min-width: 0; }
@@ -3545,8 +3545,8 @@ body.first-load #todayBar { opacity: 0; }
 .todo.pri-low .td-pri { background: #6aa6c9; }
 .td-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 1px; }
 .td-due.today { color: var(--accent-text, var(--accent)); font-weight: 600; }
-.td-due.over { color: var(--warn-text, var(--warn)); font-weight: 600; }
-.td-tag { color: var(--tc, var(--muted)); font-weight: 600; overflow-wrap: anywhere; }   /* a long unbroken tag or deck subject wraps instead of pushing the row wide */
+.td-due.over { color: var(--danger-text, var(--danger)); font-weight: 600; }
+.td-tag { color: var(--tct, var(--tc, var(--muted))); font-weight: 600; overflow-wrap: anywhere; background: color-mix(in srgb, var(--tc, transparent) 14%, transparent); border-radius: var(--r-6, 6px); padding: 1px 6px; }   /* v2.0 phase 4: a label chip — the fill carries the subject's colour, the words are its ink */   /* a long unbroken tag or deck subject wraps instead of pushing the row wide */
 .todo.overdue .rem-fg { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--warn) 70%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--warn) 7%, var(--surface)), var(--surface) 40%); }
 .todo.leaving .rem-fg { opacity: .45; transition: opacity .4s; }
 .todo.done .rt { text-decoration: line-through; color: var(--muted); }
@@ -3554,7 +3554,7 @@ body.first-load #todayBar { opacity: 0; }
 .todo-dlg textarea { width: 100%; min-height: 70px; resize: vertical; font: inherit; }
 .todo-dlg label.lbl { display: block; margin: 10px 0 4px; }
 .today-todo button { border: 0; background: none; color: var(--accent-text, var(--accent)); cursor: pointer; padding: 0; font: inherit; text-align: left; }
-.today-todo .over { color: var(--warn-text, var(--warn)); }
+.today-todo .over { color: var(--danger-text, var(--danger)); }
 @media (hover: none) { .hide-touch { display: none; } }
 
 /* ---------- Clans (v1.14) ---------- */
@@ -4547,8 +4547,6 @@ dialog[tabindex="-1"]:focus { outline: none; }
 /* ----- v2.0 phase 4: contrast (every pair is measured by tests/tools/a11y4, in every theme) ----- */
 /* text that sits on the page itself has the colour wash behind it, not a card: a stronger secondary colour there */
 .greet, .sidenav .nv-h, .sidenav button:not(.active) .nv-l, .gd-title .lbl, .bag-head .lbl, .shop-head .lbl, .pg-head .lbl, .tab > .lbl, .tab > p.lbl { color: color-mix(in srgb, var(--t-2, var(--muted)) 50%, var(--t-1, var(--text))); }
-/* the open section in the side column: its bar, icon and weight say "here"; the label itself is plain text on the tint */
-.sidenav button.active .nv-l { color: var(--t-1, var(--text)); }
 /* a chip in a row of categories sits on a raised pad over the wash: its label is a step stronger than secondary */
 .catrow button:not(.active) { color: color-mix(in srgb, var(--t-2, var(--muted)) 45%, var(--t-1, var(--text))); }
 .cmd-list li.sel .g { color: var(--t-1, var(--text)); }
@@ -4556,6 +4554,11 @@ dialog[tabindex="-1"]:focus { outline: none; }
 .gd-mut.none { opacity: 1; filter: grayscale(1); color: var(--t-2, var(--muted)) !important; }
 .aura-tiers .at.locked { opacity: 1; color: var(--t-2, var(--muted)); }
 .aura-tiers .at.locked .dot { opacity: .45; }
+/* …and a small lock on it, so "not reached yet" is not told by the dot's faintness alone */
+.aura-tiers .at.locked { position: relative; }
+.aura-tiers .at.locked::before { content: ''; position: absolute; top: 9px; left: 50%; width: 12px; height: 12px; margin-left: -6px; background: var(--t-2, var(--muted)); z-index: 1;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath d='M8 10.5V8a4 4 0 0 1 8 0v2.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='10.5' width='14' height='10' rx='2.5'/%3E%3Cpath d='M8 10.5V8a4 4 0 0 1 8 0v2.5'/%3E%3C/svg%3E") center / contain no-repeat; }
 .mi.missed .mi-pv { opacity: 1; }   /* stays grey */
 .mi.missed .mi-n, .mi-n { opacity: 1; }
 .pt.got { opacity: 1; }
@@ -4570,11 +4573,24 @@ dialog[tabindex="-1"]:focus { outline: none; }
 [role="button"][tabindex]:not(button):focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; border-radius: var(--r-8, 8px); }
 @media (pointer: coarse) {
   .po-react button { min-width: 44px; }
-  .ui-num-well > input { min-width: 44px; }
   .cmd-list li { min-height: 44px; }
   .td-grip { position: relative; }
   .td-grip::after { content: ''; position: absolute; inset: 0 -8px; }
 }
+/* ----- v2.0 phase 4, from the design review ----- */
+/* overdue: a warning sign before the words (a state is never told by its colour alone) */
+.td-due.over::before, .today-todo .over::before, .rev-list .rv-s .over::before { content: ''; display: inline-block; width: 11px; height: 11px; margin-right: 4px; vertical-align: -1px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 3 19.5h18z'/%3E%3Cpath d='M12 10v4.5M12 17.2v.3'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4 3 19.5h18z'/%3E%3Cpath d='M12 10v4.5M12 17.2v.3'/%3E%3C/svg%3E") center / contain no-repeat; }
+/* rarity: a dot in the rarity's own colour carries the hue, the word is its ink; Common is the quietest again */
+.bi-src .rar::before, .rc-rar::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--rc); margin-right: 5px; vertical-align: 1px; }
+.r-common .bi-src .rar { color: var(--t-2, var(--muted)); font-weight: 600; }
+/* the open section in the side column: label and icon in one deep accent; headings a step quieter than the items */
+.sidenav [data-tab].active, .sidenav [data-tab].active .nv-l { color: color-mix(in srgb, var(--accent-text, var(--accent)) 70%, var(--t-1, var(--text))); }
+.sidenav .nv-h { color: color-mix(in srgb, var(--t-2, var(--muted)) 82%, var(--t-1, var(--text))); }
+/* category chips: the chosen one stands out again */
+.catrow button:not(.active) { color: color-mix(in srgb, var(--t-2, var(--muted)) 65%, var(--t-1, var(--text))); }
+.catrow button.active { box-shadow: inset 0 0 0 1px var(--accent-text, var(--accent)); }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -11077,10 +11093,18 @@ let derivedSet = [];
    plain colour as its fallback for the first paint; the stylesheet writes the same var() by hand. */
 const INKS = new Set();
 let inkCtx = null, inksScanned = false;
+const colHsl = c => { const r = c[0] / 255, g = c[1] / 255, b = c[2] / 255, mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; if (!d) return [0, 0, l]; const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(h * 60 + 360) % 360, d / (1 - Math.abs(2 * l - 1)), l]; };
+const hslCol = (h, s, l) => { const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2, q = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x]; return q.map(v => (v + m) * 255); };
 const inkOf = hex => {
   const c = colParse(hex); if (!c || !inkCtx) return hex;
   const own = colMix(c, inkCtx.surface, .14);   // a label is often on a soft tint of its own colour
-  for (let q = 0; q <= 1.0001; q += .04) { const x = colMix(inkCtx.text, c, q); if (colRatio(x, own) >= 4.55 && inkCtx.layers.every(l => colRatio(x, l) >= 4.55)) return colHex(x); }
+  const ok = x => colRatio(x, own) >= 4.55 && inkCtx.layers.every(l => colRatio(x, l) >= 4.55);
+  if (ok(c)) return colHex(c);
+  // Darker in its own hue on a light palette, lighter on a dark one: the lightness moves, hue and saturation stay.
+  // (Mixing with the text colour, the first version, turned a pink into plum and two different blues into one navy.)
+  const [h, sat, l] = colHsl(c), down = colLum(inkCtx.text) < colLum(inkCtx.surface);
+  for (let q = l; down ? q >= .08 : q <= .94; q += down ? -.015 : .015) { const x = hslCol(h, sat, q); if (ok(x)) return colHex(x); }
+  for (let q = 0; q <= 1.0001; q += .04) { const x = colMix(inkCtx.text, c, q); if (ok(x)) return colHex(x); }
   return colHex(inkCtx.text);
 };
 function ink(col) {
@@ -11092,7 +11116,8 @@ function ink(col) {
 function applyInks(key) {
   if (!inksScanned) { inksScanned = true; try { for (const el of document.querySelectorAll('style')) for (const m of el.textContent.matchAll(/--ink-([0-9a-f]{6})/g)) INKS.add(m[1]); } catch (e) { /* older browsers: the fallbacks stay */ } }
   inkCtx = inkCtxCache.get(key) || null;
-  if (!inkCtx) return;
+  if (!inkCtx || (key === applyInks.key && INKS.size === applyInks.n)) return;   // the same palette and the same colours as last time: nothing to write
+  applyInks.key = key; applyInks.n = INKS.size;
   const st = document.documentElement.style;
   for (const k of INKS) st.setProperty('--ink-' + k, inkOf('#' + k));
 }
@@ -17349,7 +17374,7 @@ function cardsSection() {
   const rows = decks.map(d => {
     const cs = deckCards(d.id), dd = cs.filter(c => cardDue(c, tk)).length, learned = cs.filter(c => +c.ivl >= 21).length;
     return `<li class="rem deck" data-did="${esc(d.id)}"><div class="rem-fg">
-      <div class="rem-main" data-dopen><div class="rt">${esc(d.name)}${d.subject ? ` <span class="td-tag" style="--tc:${esc(ink(colorFor(d.subject)))}">${esc(d.subject)}</span>` : ''}</div>
+      <div class="rem-main" data-dopen><div class="rt">${esc(d.name)}${d.subject ? ` <span class="td-tag" style="--tc:${esc(colorFor(d.subject))};--tct:${esc(ink(colorFor(d.subject)))}">${esc(d.subject)}</span>` : ''}</div>
         <div class="rs td-meta"><span>${cs.length} card${cs.length === 1 ? '' : 's'}</span>${dd ? `<span class="td-due today">${dd} due</span>` : cs.length ? '<span>nothing due</span>' : ''}${learned ? `<span>${learned} learned</span>` : ''}</div></div>
       <div class="rem-acts"><button class="btn small primary" data-dreview="${esc(d.id)}"${cs.length ? '' : ' disabled'}>${dd ? `Review ${dd}` : 'Practise'}</button><button class="iconbtn" data-dedit="${esc(d.id)}" title="Edit deck" aria-label="Edit ${esc(d.name)}">${EDIT_SVG}</button></div></div></li>`;
   }).join('');
@@ -22261,7 +22286,7 @@ function clearOldTodos() {
 function todoRow(t) {
   const pri = TODO_PRI[t.pri] || TODO_PRI.med, chk = (t.check || []).length, chkDone = (t.check || []).filter(x => x.d).length;
   const meta = [todoDueText(t) && `<span class="td-due${todoOverdue(t) ? ' over' : todoDueToday(t) ? ' today' : ''}">${esc(todoDueText(t))}</span>`,
-    t.tag && `<span class="td-tag" style="--tc:${esc(ink(colorFor(t.tag)))}">${esc(t.tag)}</span>`,
+    t.tag && `<span class="td-tag" style="--tc:${esc(colorFor(t.tag))};--tct:${esc(ink(colorFor(t.tag)))}">${esc(t.tag)}</span>`,
     chk && `<span>☑ ${chkDone}/${chk}</span>`, t.notes && '<span title="Has notes">📝</span>',
     t.done && `<span>Done ${new Date(t.done).toLocaleDateString([], { day: 'numeric', month: 'short' })}</span>`].filter(Boolean).join('');
   return `<li class="rem todo pri-${esc(t.pri || 'med')}${t.done ? ' done' : ''}${todoOverdue(t) ? ' overdue' : ''}" data-tid="${esc(t.id)}">

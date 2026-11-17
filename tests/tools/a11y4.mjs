@@ -1,5 +1,5 @@
 // v2.0 phase 4 — contrast, computed from what is actually drawn.
-//   node a11y4.mjs <page> <outdir> [--skins default|all] [--phone] [--only timer,stats]
+//   node a11y4.mjs <page> <outdir> [--skins default|all] [--from 20] [--few] [--phone] [--only timer,stats]
 // For every state (theme × light/dark × tab or dialog) the page is photographed with its text made transparent, so
 // each text's real background is known whatever is behind it (washes, glass, gradients); the text colour comes from
 // the computed style, with every ancestor's opacity. a11y4.py turns the two into contrast ratios.
@@ -19,7 +19,8 @@ const p = await ctx.newPage(); p.on('pageerror', e => console.log('PAGEERROR', e
 await p.goto('http://localhost:8000/' + page); await p.waitForSelector('#authView:not(.hidden)');
 await p.evaluate(() => startPreview()); await p.waitForSelector('#appView:not(.hidden)'); await wait(3500);
 await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); const s = document.createElement('style'); s.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; } .toasts, #pomeoBubble, #tipPop { display: none !important; } * { content-visibility: visible !important; }'; document.head.append(s); });   // (off-screen tiles are skipped by the browser and would be blank in a full-page picture)
-const skins = val('--skins') === 'all' ? await p.evaluate(() => Object.keys(SKINS)) : ['th_default'];
+let skins = val('--skins') === 'all' ? await p.evaluate(() => Object.keys(SKINS)) : ['th_default'];
+if (val('--from')) skins = skins.slice(+val('--from'));   // --from 20: carry on with the 21st theme (a full run takes hours)
 // the states: every tab, the sub-views with their own content, and the dialogs with the most text
 const VIEWS = [
   ['timer', "showTab('timer')"], ['reminders', "S.ui.remView = 'reminders'; showTab('reminders')"], ['todo', "S.ui.remView = 'todo'; showTab('reminders')"], ['cards', "S.ui.remView = 'cards'; showTab('reminders')"],
@@ -32,10 +33,11 @@ const VIEWS = [
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],
 ];
 const SUB = ['timer', 'stats-week', 'quests-boss', 'quests-pass', 'profile', 'friends', 'garden', 'shop', 'bag', 'settings', 'reminders', 'todo', 'clan', 'board', 'dlg-presets', 'dlg-inbox'];   // for the other themes: the screens that use every token
+if (args.includes('--few')) SUB.splice(0, SUB.length, 'timer', 'stats-week', 'quests-pass', 'profile', 'friends', 'bag', 'clan', 'todo');   // --few: eight screens for the other themes
 const only = val('--only') ? val('--only').split(',') : null;
 // Only the glyphs are hidden. The colour property itself stays, because backgrounds, borders and icons are often drawn
 // in "currentColor" and must still be in the picture.
-const HIDE = ':root:root:root:root *, :root:root:root:root *::before, :root:root:root:root *::after { -webkit-text-fill-color: transparent !important; text-shadow: none !important; text-decoration-color: transparent !important; } svg text, svg tspan { fill: transparent !important; stroke: transparent !important; } ::placeholder { -webkit-text-fill-color: transparent !important; }';
+const HIDE = ':root:root:root:root *, :root:root:root:root *::before, :root:root:root:root *::after { -webkit-text-fill-color: transparent !important; text-shadow: none !important; text-decoration-color: transparent !important; } svg text, svg tspan { fill: transparent !important; stroke: transparent !important; } ::placeholder { -webkit-text-fill-color: transparent !important; } :root:root:root:root .ncg, :root:root:root:root .m-rainbow { background-image: none !important; }';   // (a gradient name is a background clipped to its glyphs: it has to go too)
 const collect = () => p.evaluate(() => {
   const out = [], seen = new Set();
   const dlg = [...document.querySelectorAll('dialog[open]')].pop();

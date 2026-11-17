@@ -27,7 +27,7 @@ for (const vn of VARIANTS) {
     return { ctx, p };
   };
   // a calm page: no toasts or speech bubbles drifting into the picture, the demo banner out of the way
-  const CALM = `.toasts, #pomeoBubble, .pv-banner, #tipPop, .ach-toast, #cursorGlow { display: none !important; } html { scroll-behavior: auto !important; } body.previewing { --pv-h: 0px !important; }`;
+  const CALM = `.toasts, #pomeoBubble, .pv-banner, #tipPop, .ach-toast, #cursorGlow { display: none !important; } html { scroll-behavior: auto !important; } body.previewing { --pv-h: 0px !important; } * { content-visibility: visible !important; }`;   // (tiles the browser skips off screen would be blank in a full-page picture, v2.0 phase 4)
   const enterDemo = async p => {
     await p.goto(`${SITE}/${PAGE}`); await p.waitForSelector('#authView:not(.hidden)');
     await p.evaluate(() => { const s = document.getElementById('introSkip'); if (s) s.click(); });

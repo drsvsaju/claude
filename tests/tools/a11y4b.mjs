@@ -54,9 +54,10 @@ for (const [name, code] of VIEWS) {
       const ti = el.getAttribute('tabindex');
       if (!dis && el.matches('[role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="radio"], [role="slider"]') && !el.matches('a[href], button, input, select, textarea, summary') && ti === null) out.push(['role without tabindex', sig(el), '']);
       if (phone && !dis) {
-        const r = el.getBoundingClientRect(), a = getComputedStyle(el, '::after'), ext = a.content !== 'none' && a.position === 'absolute' ? Math.abs(parseFloat(a.top) || 0) : 0;
-        const w = r.width + 2 * ext, h = r.height + 2 * ext, inline = getComputedStyle(el).display === 'inline' && el.tagName === 'A';
-        if (!inline && (w < 43.5 || h < 43.5) && !(el.matches('input[type="checkbox"], input[type="radio"]') && el.closest('label')) && !el.closest('label.sw, .sw')) out.push(['target under 44 px', sig(el), `${Math.round(w)}×${Math.round(h)}`]);
+        const r = el.getBoundingClientRect(), a = getComputedStyle(el, '::after'), on = a.content !== 'none' && a.position === 'absolute', neg = v => (on ? Math.max(0, -(parseFloat(v) || 0)) : 0);   // a target enlarged by an invisible ::after
+        const w = r.width + neg(a.left) + neg(a.right), h = r.height + neg(a.top) + neg(a.bottom), inline = getComputedStyle(el).display === 'inline' && el.tagName === 'A';
+        const inStepper = el.matches('input') && el.closest('ui-num');   // the number between a stepper's − and + (those are the targets; the field is as tall as they are)
+        if (!inline && !inStepper && (w < 43.5 || h < 43.5) && !(el.matches('input[type="checkbox"], input[type="radio"]') && el.closest('label')) && !el.closest('label.sw, .sw')) out.push(['target under 44 px', sig(el), `${Math.round(w)}×${Math.round(h)}`]);
       }
     }
     // things that act on a click but cannot be reached by keyboard: a pointer cursor on something that is not focusable, has no focusable ancestor and no focusable child
@@ -84,7 +85,7 @@ for (const [name, code] of VIEWS) {
 await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(d => d.close()));
 for (const [name, code] of VIEWS.filter(v => !v[0].startsWith('dlg'))) {
   await p.evaluate(c => { (0, eval)(c); scrollTo(0, 0); }, code); await wait(300);
-  const sigs = await p.evaluate(() => { const seen = new Set(), out = []; for (const el of document.querySelectorAll('#appView button, #appView a[href], #appView input, #appView [tabindex="0"], #appView summary, #appView ui-select, #appView ui-num')) { if (!el.getClientRects().length || el.matches(':disabled') || el.closest('dialog, [inert], [aria-hidden="true"]')) continue; const k = el.tagName + '.' + [...el.classList].slice(0, 2).join('.'); if (seen.has(k)) continue; seen.add(k); el.setAttribute('data-fx', out.length); out.push(k); if (out.length >= 40) break; } return out; });
+  const sigs = await p.evaluate(() => { const seen = new Set(), out = []; for (const el of document.querySelectorAll('#appView button, #appView a[href], #appView input, #appView [tabindex="0"], #appView summary, #appView ui-select, #appView ui-num')) { if (!el.getClientRects().length || el.matches(':disabled') || el.closest('dialog, [inert], [aria-hidden="true"]') || getComputedStyle(el).visibility !== 'visible' || (el.matches('ui-num, ui-select, ui-date, ui-time') && el.hasAttribute('disabled'))) continue; { const r = el.getBoundingClientRect(); if (r.right < 0 || r.left > innerWidth) continue; } const k = el.tagName + '.' + [...el.classList].slice(0, 2).join('.'); if (seen.has(k)) continue; seen.add(k); el.setAttribute('data-fx', out.length); out.push(k); if (out.length >= 40) break; } return out; });
   for (let i = 0; i < sigs.length; i++) {
     const r = await p.evaluate(i => { const el = document.querySelector(`[data-fx="${i}"]`); if (!el) return null; const snap = e => { const c = getComputedStyle(e); return [c.outlineStyle !== 'none' && parseFloat(c.outlineWidth) > 0 ? c.outlineWidth + c.outlineColor : '', c.boxShadow, c.borderColor, c.backgroundColor].join('|'); }; const inner = el.matches('ui-select, ui-num, ui-date, ui-time') ? (el.querySelector('button, input') || el) : el; const a = snap(inner) + snap(inner.parentElement); try { inner.focus({ focusVisible: true }); } catch (e) { inner.focus(); } const f = document.activeElement === inner, b2 = snap(inner) + snap(inner.parentElement); inner.blur(); el.removeAttribute('data-fx'); return { focused: f, ring: a !== b2 }; }, i);
     if (r && !r.focused) note('cannot take focus', sigs[i], name, '');
