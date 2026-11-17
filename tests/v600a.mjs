@@ -50,15 +50,15 @@ await A.ev(() => { const t = S.timer, n = dxNow(); t.focusStartedAt = Date.now()
 const logged = await A.ev(() => { const s = S.sessions[S.sessions.length - 1], vis = el => !!el && el.getClientRects().length > 0; return { id: s.id, int: s.int, dx: s.dx, row: vis($('#debriefRow')) && $('#debriefRow').textContent.replace(/\s+/g, ' ').trim(), opts: [...document.querySelectorAll('#debriefRow [data-debrief]')].map(x => x.textContent.trim()), sum: $('#sumHead').textContent, dxAfter: dxNow(), btn: vis($('#dxBtn')) }; });
 check('“I got distracted” is there only during a focus block (button, or the key D); a tap counts and nothing else happens (no dialog, no toast), and the count is in the button’s name',
   !idle.shown && idle.n === 0 && run.shown && /Count it/.test(run.label0) && run.afterTap[0] === '1' && /Counted 1 time/.test(run.afterTap[1]) && !run.afterTap[2] && !run.afterTap[3] && tally.n === '2' && tally.status === 'running', JSON.stringify({ idle, run, tally }));
-check('The logged block keeps the intention and the tally (int, dx); the after-row asks “did you do it?” with Yes / Partly / Not yet and Skip, and the summary names the distractions; the tally starts again at 0',
-  logged.int === 'Finish Q1–15 and check the answers' && logged.dx === 2 && /Finish Q1–15 and check the answers/.test(logged.row || '') && /did you do it/.test(logged.row || '') && logged.opts.length === 3 && /Partly/.test(logged.opts[1]) && /2 distractions/.test(logged.sum) && logged.dxAfter === 0 && !logged.btn, JSON.stringify(logged));
+check('The logged block keeps the intention and the tally (int, dx); the after-row asks “How far did you get?” with All of it / Part of it / Not yet and Skip, and the summary names the distractions; the tally starts again at 0',
+  logged.int === 'Finish Q1–15 and check the answers' && logged.dx === 2 && /Finish Q1–15 and check the answers/.test(logged.row || '') && /How far did you get\?/.test(logged.row || '') && logged.opts.length === 3 && /Part of it/.test(logged.opts[1]) && /2 distractions/.test(logged.sum) && logged.dxAfter === 0 && !logged.btn, JSON.stringify(logged));
 await A.ev(() => document.querySelector('#debriefRow [data-debrief="2"]').click()); await wait(400);
 const partly = await A.ev(id => ({ v: S.debrief[id], said: $('#debriefRow').textContent.trim(), intent: S.timer.intent }), logged.id);
 await until(A, () => !localEditPending, null, 8000); await wait(1500);
 const cloud = await ownerGet('users/' + uid);
 const months = await A.ev(async () => { const snap = await FB.getDoc(monthRef(monthKey(Date.now()))); return snap.exists() ? snap.data().sessions.map(s => ({ int: s.int, dx: s.dx })) : []; });
-check('“Partly” is stored for that block, says so kindly, and leaves the intention in place for the next block; the cloud has the answer in users/{uid}.debrief and the block in the month’s log with int and dx',
-  partly.v === 2 && /Partly/.test(partly.said) && partly.intent === logged.int && (cloud.debrief || {})[logged.id] === 2 && months.some(s => s.int === logged.int && s.dx === 2), JSON.stringify({ partly, cloudDebrief: cloud.debrief, months }));
+check('“Part of it” is stored for that block, says so kindly, and leaves the intention in place for the next block; the cloud has the answer in users/{uid}.debrief and the block in the month’s log with int and dx',
+  partly.v === 2 && /Part of it/.test(partly.said) && partly.intent === logged.int && (cloud.debrief || {})[logged.id] === 2 && months.some(s => s.int === logged.int && s.dx === 2), JSON.stringify({ partly, cloudDebrief: cloud.debrief, months }));
 const pub = await ownerGet('publicProfiles/' + uid).catch(() => null), pst = await ownerGet('publicStats/' + uid).catch(() => null);
 check('Neither the public profile nor the public stats carry an intention, an answer or a tally', !/Finish Q1|debrief|"int"|"dx"/.test(JSON.stringify(pub || {}) + JSON.stringify(pst || {})), '');
 
@@ -68,7 +68,7 @@ const hist = await A.ev(async () => {
   const li = [...document.querySelectorAll('#tab-stats li')].find(x => x.querySelector('.intent')), out = { intent: li && li.querySelector('.intent').textContent.replace(/\s+/g, ' ').trim(), title: li && li.querySelector('.intent').title, dx: li && (li.querySelector('.dx-tag') || {}).textContent };
   showTab('timer'); return out;
 });
-check('The day’s list shows the block’s intention with its answer and the counted distractions', /Finish Q1–15 and check the answers/.test(hist.intent || '') && /◐/.test(hist.intent || '') && /partly/.test(hist.title || '') && hist.dx === '2×', JSON.stringify(hist));
+check('The day’s list shows the block’s intention with its answer and the counted distractions', /Finish Q1–15 and check the answers/.test(hist.intent || '') && /◐/.test(hist.intent || '') && /part of it/.test(hist.title || '') && hist.dx === '2×', JSON.stringify(hist));
 
 // ---------- 4. "Yes" clears the intention; the resume card ----------
 await block(A, 25); await finish(A);
@@ -139,7 +139,7 @@ const dm = await D.ev(async () => {
 });
 const after = await D.ev(() => JSON.stringify(Object.fromEntries(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)]))));
 check('The demo has intentions with answers and a few counted distractions: “Pick up where you left off” on its Timer, and “Intentions” and “Distractions” among its focus insights; nothing is written',
-  /Pick up where you left off/.test(dm.resume) && dm.n >= 10 && dm.ans >= 10 && dm.boxes.includes('Intentions') && dm.boxes.includes('Distractions') && /\d+ of \d+ done/.test(dm.vals.join(' ')) && /an hour/.test(dm.vals.join(' ')) && D.net.length === 0 && D.before === after, JSON.stringify({ dm, net: D.net.length }));
+  /Pick up where you left off/.test(dm.resume) && dm.n >= 10 && dm.ans >= 10 && dm.boxes.includes('Intentions') && dm.boxes.includes('Distractions') && /\d+ of \d+ done/.test(dm.vals.join(' ')) && /\d+ in 7 days/.test(dm.vals.join(' ')) && D.net.length === 0 && D.before === after, JSON.stringify({ dm, net: D.net.length }));
 const M = await demo(390, 844);
 const ph = await M.ev(async () => {
   const sl = ms => new Promise(r => setTimeout(r, ms)), out = {};

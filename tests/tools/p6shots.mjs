@@ -37,7 +37,7 @@ const IDLE = "const t = S.timer; t.phase = 'focus'; t.status = 'idle'; renderTim
 const TIMER = IDLE + " showTab('timer'); scrollTo(0, 0);";
 const BREAK = "const t = S.timer; t.phase = 'short'; t.status = 'idle'; renderTimer(); showTab('timer'); scrollTo(0, 0);";
 const SESSION = TIMER + " const c = document.querySelector('#nameInput').closest('.card'); c.setAttribute('data-shot', 'session'); if (typeof renderIntent === 'function') { S.timer.intent = 'Finish HC Verma Q1–15 and check the answers'; intOpen = true; renderIntent(); } c.scrollIntoView({ block: 'center' }); document.activeElement && document.activeElement.blur();";
-const AFTER = TIMER + " const s = S.sessions[S.sessions.length - 1]; offerNote(s.id); await new Promise(r => setTimeout(r, 300)); document.querySelector('#noteRow').scrollIntoView({ block: 'center' });";
+const AFTER = TIMER + " const s = S.sessions[S.sessions.length - 1]; if (S.debrief) delete S.debrief[s.id]; offerNote(s.id); await new Promise(r => setTimeout(r, 300)); document.querySelector('#noteRow').scrollIntoView({ block: 'center' });";
 const STATS = IDLE + " showTab('stats'); await new Promise(r => setTimeout(r, 1800)); renderEnergyCard(); const c = document.querySelector('#energySlot .card'); c.setAttribute('data-shot', 'ins'); c.scrollIntoView({ block: 'center' });";
 const ROW = k => TIMER + ` const g = S.game, day = n => dayKey(addDays(startOfDay(new Date()), n)); g.pauses = {}; g.pauseEnds = {}; g.repairs = {}; g.rest = {}; delete g.claims.milestones[100];
   if ('${k}' === 'rest-set') g.rest[day(-30)] = (new Date().getDay() + 6) % 7;
@@ -51,7 +51,7 @@ let p = await open(1280, 860, 'light');
 await shot(p, 'today-card--d-light', TIMER, '.today-card');
 await shot(p, 'timer-break--d-light', BREAK, '.timer-card');
 await shot(p, 'session-card--d-light', SESSION, '[data-shot=session]');
-await shot(p, 'after-block--d-light', AFTER, '.timer-card');
+await shot(p, 'after-block--d-light', AFTER, '#noteRow');
 await shot(p, 'insights--d-light', STATS, '[data-shot=ins]');
 if (isNew) {
   for (const k of ['rest-set', 'paused', 'rest', 'grad', 'mend'])   // (mend last: it takes yesterday's blocks out of the sample)

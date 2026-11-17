@@ -4790,6 +4790,8 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .int-row input { flex: 1; min-width: 0; }
 .debrief .opts { grid-template-columns: repeat(3, 1fr); }
 .debrief .eq span { min-width: 0; overflow-wrap: anywhere; }
+.debrief .db-int { margin: 0 0 8px; font-size: var(--fs-14, 14px); line-height: 1.4; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.debrief .opts button .db-ic { display: grid; place-items: center; height: 23px; color: var(--accent-text, var(--accent)); }
 .debrief .eq b { font-weight: 600; }
 .timer-card .dx-btn { position: absolute; top: 12px; right: 104px; z-index: 3; }
 .dx-btn svg { width: 18px; height: 18px; }
@@ -4812,11 +4814,15 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .streak-care .sc-tx { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; min-width: 0; flex: 1; line-height: 1.35; }
 .streak-care .sc-tx b { font-size: var(--fs-13, 13px); font-weight: 600; }
 .streak-care .sc-go { flex: none; color: var(--t-2, var(--muted)); display: grid; }
-.streak-care .sc-grad { flex: none; display: grid; color: var(--accent-text, var(--accent)); }
-.streak-care .sc-bar { position: absolute; left: 8px; right: 8px; bottom: 0; height: 3px; margin: 0; }
+.streak-care .sc-grad { flex: none; display: inline-flex; align-items: center; gap: 5px; color: var(--accent-text, var(--accent)); font-size: var(--fs-12, 12px); font-weight: 600; }
+@media (max-width: 420px) { .streak-care .sc-gw { display: none; } }
+.streak-care .sc-bar { position: absolute; left: 46px; right: 8px; bottom: 1px; height: 3px; margin: 0; }
+.streak-care .sc-bar i, #scMend .sn-bar i { background: var(--accent) !important; }   /* the calm colour: not the streak's flame, not the milestone's bar */
+.streak-care[data-k="mend"] { padding-bottom: 10px; margin-bottom: 4px; }
 .streak-care[data-k="pause"] .sc-ic, .streak-care[data-k="rest"] .sc-ic { background: var(--ok-soft); color: var(--ok-text, var(--ok)); }
 .streak-care[data-k="mend"] .sc-ic { background: var(--accent-soft, var(--hover)); color: var(--accent-text, var(--accent)); }
-#streakDlg { width: min(460px, calc(100vw - 24px)); } #scTitle:focus { outline: none; }
+@media (min-width: 641px) { #streakDlg { width: 460px; } }   /* a phone keeps the sheet every dialog is */
+#scTitle:focus { outline: none; }
 .sc-nums { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 22px; padding: 0 0 12px; }
 .sc-nums > div { display: flex; align-items: baseline; gap: 6px; }
 .sc-nums b { font-size: var(--fs-24, 24px); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -4827,7 +4833,8 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .sc-sec > p.lbl { margin: 6px 0 0; line-height: 1.45; }
 .sc-row { display: flex; align-items: center; gap: 12px; }
 .sc-row.hidden { display: none; }
-.sc-row .sc-l { flex: 1; min-width: 0; font-size: var(--fs-14, 14px); }
+.sc-row .sc-l { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; font-size: var(--fs-14, 14px); }
+.sc-row .sc-ic { display: grid; flex: none; color: var(--t-2, var(--muted)); }
 .sc-row ui-select { width: 150px; flex: none; }
 .sc-row ui-num { width: 150px; flex: none; }
 .sc-h { display: flex; align-items: center; gap: 8px; font-size: var(--fs-14, 14px); }
@@ -4843,8 +4850,10 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .brk-row > .lbl { flex-basis: 100%; text-align: center; }
 .brk-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--r-pill, 999px); background: var(--surface); color: var(--t-1, var(--text)); font: inherit; font-size: var(--fs-13, 13px); cursor: pointer; transition: background-color .15s, border-color .15s; }
 .brk-chip:hover { background: var(--hover); }
-.brk-chip svg { color: var(--t-2, var(--muted)); flex: none; }
-#brkDlg { width: min(420px, calc(100vw - 24px)); } #brkTitle:focus { outline: none; }
+.brk-chip svg { color: var(--t-2, var(--muted)); flex: none; } .brk-chip .f-s { display: none; }
+@media (max-width: 480px) { .brk-row { display: grid; grid-template-columns: repeat(4, 1fr); } .brk-row.hidden { display: none; } .brk-row > .lbl { grid-column: 1 / -1; } .brk-chip { flex-direction: column; justify-content: center; gap: 3px; padding: 8px 2px; border-radius: var(--r-12, 12px); font-size: var(--fs-12, 12px); } .brk-chip .f-l { display: none; } .brk-chip .f-s { display: inline; } }
+@media (min-width: 641px) { #brkDlg { width: 420px; } }
+#brkTitle:focus { outline: none; }
 .brk-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .brk-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-12, 12px); background: var(--surface); color: var(--t-1, var(--text)); font: inherit; text-align: left; cursor: pointer; transition: background-color .15s, border-color .15s; }
 .brk-tile:hover { background: var(--hover); }
@@ -4867,12 +4876,14 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 @media (prefers-reduced-motion: reduce) { .brk-orb, .brk-orb.in, .brk-orb.out { transition: none; transform: scale(1); } }
 [data-motion="reduced"] .brk-orb, [data-motion="off"] .brk-orb { transition: none !important; transform: scale(1) !important; }
 /* ----- v2.0 phase 6d: the week in review at the top of Focus insights ----- */
-.ins-week { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 0 0 14px; padding: 0 0 14px; border-bottom: 1px solid var(--hair, var(--line)); }
+.ins-week { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 0 0 12px; }
 .ins-week .k { flex-basis: 100%; font-size: var(--fs-12, 12px); color: var(--t-2, var(--muted)); }
 .ins-week .v { font-size: var(--fs-24, 24px); font-weight: 600; font-variant-numeric: tabular-nums; }
 .ins-week .s { font-size: var(--fs-13, 13px); color: var(--t-2, var(--muted)); }
-.ins-week .ins-take { flex-basis: 100%; margin: 8px 0 0; font-size: var(--fs-14, 14px); line-height: 1.45; }
+.ins-take { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin: 0 0 14px; padding: 10px 12px; border-radius: var(--r-12, 12px); background: var(--accent-soft, var(--hover)); font-size: var(--fs-14, 14px); line-height: 1.45; }
+.ins-take > span { flex: 1; min-width: 200px; } .ins-take .linkbtn { margin: -4px -8px -4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .ins-hint { margin-top: 14px; }
+@media (min-width: 1000px) { .ins-grid.g3 { grid-template-columns: repeat(3, 1fr); } }   /* five or nine boxes: rows of three instead of one left over */
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -5865,13 +5876,13 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
   <p class="lbl" style="margin:0 0 12px">A streak is there to help you show up. These keep it kind.</p>
   <div class="sc-nums" id="scNums"></div>
   <div class="sc-sec">
-    <div class="sc-row"><label class="sc-l" for="scRest"><b>Rest day</b></label>
+    <div class="sc-row"><label class="sc-l" for="scRest"><span class="sc-ic" data-ic="moon"></span><b>Rest day</b></label>
       <ui-select id="scRest"><option value="-1">None</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></ui-select></div>
     <p class="lbl" id="scRestNote"></p>
   </div>
   <div class="sc-sec">
     <div class="sc-row hidden" id="scPauseOn"><span class="sc-l" id="scPauseState"></span><button class="btn small" type="button" id="scPauseEnd">End pause</button></div>
-    <div class="sc-row" id="scPauseOff"><label class="sc-l" for="scPauseN"><b>Pause</b></label>
+    <div class="sc-row" id="scPauseOff"><label class="sc-l" for="scPauseN"><span class="sc-ic" data-ic="pause"></span><b>Pause</b></label>
       <ui-num id="scPauseN" min="1" max="7" step="1" value="3" suffix="days" aria-label="Days to pause"></ui-num><button class="btn small" type="button" id="scPauseGo">Start pause</button></div>
     <p class="lbl" id="scPauseNote"></p>
   </div>
@@ -9498,8 +9509,8 @@ function streakCareChanged() {
 function streakCareLine(idx, cur, longest) {
   const tk = todayKey(), p = pauseInfo().cur, o = p ? null : repairOffer(idx);
   if (p) return { ic: SC_IC.pause, t: 'Streak paused', s: `Back on ${fmtDayShort(dayKey(addDays(parseDay(p.to), 1)))}`, k: 'pause' };
-  if (o) return { ic: SC_IC.mend, t: `Mend ${WD_LONG[parseDay(o.day).getDay()]}`, s: `${fmtMin(o.got)} of ${fmtMin(o.need)} today`, k: 'mend', pct: Math.min(1, o.got / o.need) };
-  if (!goalMetDay(idx, tk) && streakKeeper()(tk) === 'rest') return { ic: ICONS.moon, t: 'Rest day', s: 'Your streak is safe today', k: 'rest' };
+  if (o) return { ic: SC_IC.mend, t: `Mend ${WD_LONG[parseDay(o.day).getDay()]}`, s: `Optional · ${fmtMin(o.left)} more today brings it back`, k: 'mend', pct: Math.min(1, o.got / o.need) };
+  if (!goalMetDay(idx, tk) && streakKeeper()(tk) === 'rest') return { ic: ICONS.moon, t: 'Rest day', s: 'No focus needed today', k: 'rest' };
   if (!cur && longest > 1) return { ic: SC_IC.care, t: 'A fresh start', s: isGraduate(longest) ? 'The habit is already yours' : `Your best is ${longest} days`, k: 'fresh' };
   const r = restInfo();
   return { ic: SC_IC.care, t: 'Streak care', s: r.next >= 0 ? `Rest day: ${WD_LONG[r.next]}` : 'Rest day, pause, mending', k: 'care' };
@@ -9511,7 +9522,7 @@ function renderStreakCare(idx, cur, longest) {
   if (el.dataset.sig === sig) return;
   el.dataset.sig = sig; el.dataset.k = l.k;
   el.innerHTML = `<span class="sc-ic">${iconSVG(l.ic, 18)}</span><span class="sc-tx"><b>${esc(l.t)}</b><span class="lbl">${esc(l.s)}</span></span>` +
-    (isGraduate(longest) ? `<span class="sc-grad" title="${GRAD_DAYS}-day graduate">${iconSVG(SC_IC.grad, 16)}<span class="vh">${GRAD_DAYS}-day graduate</span></span>` : '') +
+    (isGraduate(longest) ? `<span class="sc-grad" title="${GRAD_DAYS}-day graduate">${iconSVG(SC_IC.grad, 16)}<span class="sc-gw" aria-hidden="true">${GRAD_DAYS} days</span><span class="vh">${GRAD_DAYS}-day graduate</span></span>` : '') +
     `<span class="sc-go" aria-hidden="true">${iconSVG('<path d="m9 6 6 6-6 6"/>', 16)}</span>` +
     (l.pct === undefined ? '' : `<span class="sn-bar sc-bar"><i style="transform:translateX(${(l.pct * 100 - 100).toFixed(1)}%)"></i></span>`);
 }
@@ -9535,11 +9546,12 @@ function renderStreakDlg() {
   sel.value = String(r.next); sel.toggleAttribute('disabled', r.locked);
   $('#scRestNote').textContent = r.locked ? `You can change it again on ${fmtDayShort(r.changeOn)}.`
     : r.now !== r.next ? (r.next < 0 ? 'No rest day from tomorrow.' : `Starts tomorrow. ${WD_LONG[r.next]}s will not break your streak.`)
-    : r.next < 0 ? 'One day a week that never breaks your streak. It starts tomorrow and can change once a week.' : `${WD_LONG[r.next]}s never break your streak. It can change once a week.`;
+    : r.next < 0 ? 'One day a week that never breaks your streak. It starts tomorrow, and you can change it once a week.' : `${WD_LONG[r.next]}s never break your streak. You can change your rest day once a week.`;
   // pause
   $('#scPauseOn').classList.toggle('hidden', !p.cur);
   $('#scPauseOff').classList.toggle('hidden', !!p.cur);
-  if (p.cur) $('#scPauseState').innerHTML = `<b>Paused</b> · back on ${esc(fmtDayShort(dayKey(addDays(parseDay(p.cur.to), 1))))}`;
+  if (p.cur) $('#scPauseState').innerHTML = `<span class="sc-ic">${iconSVG(SC_IC.pause, 18)}</span><b>Paused</b> · back on ${esc(fmtDayShort(dayKey(addDays(parseDay(p.cur.to), 1))))}`;
+  for (const el of $('#streakDlg').querySelectorAll('.sc-ic[data-ic]')) if (!el.firstChild) el.innerHTML = iconSVG(el.dataset.ic === 'moon' ? ICONS.moon : SC_IC.pause, 18);
   const num = $('#scPauseN'), can = !p.cur && p.room > 0;
   num.setAttribute('max', Math.max(1, p.room)); if (+num.value > p.room || !+num.value) num.value = Math.min(3, Math.max(1, p.room));
   num.toggleAttribute('disabled', !can); $('#scPauseGo').disabled = !can;
@@ -9553,14 +9565,14 @@ function renderStreakDlg() {
   mend.innerHTML = o
     ? `<div class="sc-h"><span class="sc-ic">${iconSVG(SC_IC.mend, 18)}</span><b>Mend ${esc(WD_LONG[parseDay(o.day).getDay()])}</b><span class="lbl sc-r">${fmtMin(o.got)} of ${fmtMin(o.need)}</span></div>
        <div class="sn-bar"><i style="transform:translateX(${(Math.min(1, o.got / o.need) * 100 - 100).toFixed(1)}%)"></i></div>
-       <p class="lbl">Reach ${fmtMin(o.need)} of focus ${o.lastDay ? 'today' : 'today or tomorrow'} and ${esc(fmtDayShort(o.day))} is mended: your streak carries on. A fresh start is fine too.</p>`
+       <p class="lbl">Optional. Reach ${fmtMin(o.need)} of focus ${o.lastDay ? 'today' : 'today or tomorrow'} and ${esc(fmtDayShort(o.day))} is mended: your streak carries on. A fresh start is fine too.</p>`
     : `<div class="sc-h"><span class="sc-ic">${iconSVG(SC_IC.mend, 18)}</span><b>Mending</b></div>
-       <p class="lbl">Once a month, one missed day can be mended in the two days after it by reaching twice your goal in a day (never more than 2 hours extra). It appears here when it applies${Object.values(S.game.repairs).some(ts => monthKey(+ts) === todayKey().slice(0, 7)) ? '; this month’s is used' : ''}.</p>`;
+       <p class="lbl">Missed a day? Once a month you can bring it back within two days, by reaching twice your goal in one day (at most 2 hours extra).${Object.values(S.game.repairs).some(ts => monthKey(+ts) === todayKey().slice(0, 7)) ? ' This month’s is used.' : ''}</p>`;
   // freezes
   const fz = $('#scFreeze'), g = USER && S.settings.gamification ? game() : null;
   fz.classList.toggle('hidden', !g);
-  if (g) fz.innerHTML = `<div class="sc-h"><span class="sc-ic">${iconSVG(ICONS.freeze, 18)}</span><b>Streak Freezes</b><span class="lbl sc-r">${g.freezesHeld} of ${MAX_FREEZES} held</span></div>
-    <p class="lbl">Used by itself on a missed day. Freezes cost coins, and coins only come from focus.</p>`;
+  if (g) fz.innerHTML = `<div class="sc-h"><span class="sc-ic">${iconSVG(ICONS.freeze, 18)}</span><b>Streak Freezes</b><span class="lbl sc-r">You have ${g.freezesHeld} of ${MAX_FREEZES}</span></div>
+    <p class="lbl">Used automatically when you miss a day. Freezes cost coins, and coins only come from focus.</p>`;
   // what kept the streak lately
   const kept = keptDays(idx);
   $('#scKept').classList.toggle('hidden', !kept.length);
@@ -14542,14 +14554,15 @@ function offerNote(sessionId) {
   sumFor = sessionId;
   renderSumHead();
   renderDebriefRow(sessionId);
-  renderEnergyRow(sessionId);
+  energyNext = debriefFor ? sessionId : null;   // v2.0: one question at a time — the check-in follows the answer about the intention
+  renderEnergyRow(energyNext ? null : sessionId);
   $('#noteRow').classList.remove('hidden');
   landStamp(s);
 }
-function hideNote() { noteFor = null; subSum = null; sumFor = null; energyFor = null; clearTimeout(energyT); debriefFor = null; clearTimeout(debriefT); $('#noteRow').classList.add('hidden'); }
+function hideNote() { noteFor = null; subSum = null; sumFor = null; energyFor = null; energyNext = null; clearTimeout(energyT); debriefFor = null; clearTimeout(debriefT); $('#noteRow').classList.add('hidden'); }
 /** Close the after-session row once nothing in it is waiting for an answer. */
 function maybeHideAfter() {
-  if ($('#noteRow .note-row').classList.contains('hidden') && (!revFor || $('#revSchedule').disabled) && !(subSum && subSum.left.length) && !energyFor && !debriefFor) hideNote();
+  if ($('#noteRow .note-row').classList.contains('hidden') && (!revFor || $('#revSchedule').disabled) && !(subSum && subSum.left.length) && !energyFor && !energyNext && !debriefFor) hideNote();
 }
 function saveNote() {
   const v = $('#noteInput').value.trim().slice(0, 120);
@@ -20621,9 +20634,9 @@ function recentEnergy() {
    The focus rating stays the existing 4-step check-in: a 5-step one would be dropped by older versions of the app
    (they keep 1–4) and would split the history in two scales.
    ========================================================================== */
-const DEBRIEF = [null, { m: '✓', e: '👍', t: 'Yes' }, { m: '◐', e: '🤏', t: 'Partly' }, { m: '–', e: '⏳', t: 'Not yet' }];   // m: the mark in a list, e: on the button (like the check-in's faces)
+const DEBRIEF = [null, { m: '✓', e: '<circle cx="12" cy="12" r="8" fill="currentColor"/>', t: 'All of it' }, { m: '◐', e: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16Z" fill="currentColor" stroke="none"/>', t: 'Part of it' }, { m: '–', e: '<circle cx="12" cy="12" r="8"/>', t: 'Not yet' }];   // m: the mark in a list, e: on the button (like the check-in's faces)
 const intentOn = () => S.settings.intent !== false;
-let debriefFor = null, debriefT = 0, intOpen = false;
+let debriefFor = null, debriefT = 0, intOpen = false, energyNext = null;   // energyNext: the block whose check-in waits for the answer about the intention
 function renderIntent() {
   const tg = $('#intToggle'), ed = $('#intEd'), inp = $('#intInput');
   if (!tg || !USER) return;
@@ -20664,8 +20677,9 @@ function renderDebriefRow(sessionId) {
   el.classList.toggle('hidden', !debriefFor);
   if (!debriefFor) return;
   el.classList.remove('done');
-  el.innerHTML = `<div class="eq"><span>🎯 <b>${esc(s.int)}</b> · did you do it?</span><button class="linkbtn" data-dskip>Skip</button></div>
-    <div class="opts">${[1, 2, 3].map(n => `<button data-debrief="${n}"><span aria-hidden="true">${DEBRIEF[n].e}</span>${DEBRIEF[n].t}</button>`).join('')}</div>`;
+  el.innerHTML = `<div class="eq"><span>How far did you get?</span><button class="linkbtn" data-dskip>Skip</button></div>
+    <div class="db-int"><span aria-hidden="true">🎯</span> <b>${esc(s.int)}</b></div>
+    <div class="opts">${[1, 2, 3].map(n => `<button data-debrief="${n}"><span class="db-ic" aria-hidden="true">${iconSVG(DEBRIEF[n].e, 22)}</span>${DEBRIEF[n].t}</button>`).join('')}</div>`;
   debriefT = setTimeout(skipDebrief, 30000);   // ignored → quietly goes away
 }
 function answerDebrief(n, id = debriefFor) {
@@ -20678,14 +20692,16 @@ function answerDebrief(n, id = debriefFor) {
   if (id === debriefFor) {
     const el = $('#debriefRow');
     el.classList.add('done');
-    el.innerHTML = `<div class="eq"><span>${n === 1 ? '👍 Done. Nicely finished.' : n === 2 ? '🤏 Partly. It stays as your intention for the next block.' : '⏳ Not yet. It stays as your intention for the next block.'}</span></div>`;
+    el.innerHTML = `<div class="eq"><span>${n === 1 ? 'All of it. Nicely finished.' : n === 2 ? 'Part of it. It stays as your intention for the next block.' : 'Not yet. It stays as your intention for the next block.'}</span></div>`;
     debriefFor = null;
-    setTimeout(() => { el.classList.add('hidden'); maybeHideAfter(); }, 1800);
+    setTimeout(() => { el.classList.add('hidden'); debriefThen(); }, 1800);
   }
   renderIntent(); renderResume();
   if (S.ui.tab === 'stats') renderStats();
 }
-function skipDebrief() { clearTimeout(debriefT); debriefFor = null; $('#debriefRow').classList.add('hidden'); maybeHideAfter(); }
+function skipDebrief() { clearTimeout(debriefT); debriefFor = null; $('#debriefRow').classList.add('hidden'); debriefThen(); }
+/** After the answer (or Skip): the focus check-in for the same block, if one is due. */
+function debriefThen() { const id = energyNext; energyNext = null; if (id && id === noteFor && !debriefFor) renderEnergyRow(id); maybeHideAfter(); }
 $('#debriefRow').addEventListener('click', e => {
   const b = e.target.closest('[data-debrief]');
   if (b) answerDebrief(+b.dataset.debrief);
@@ -20748,7 +20764,7 @@ const BRK_IC = {
   eyes: '<path d="M2.5 12S6 6 12 6s9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>',
   water: '<path d="M12 3.5s6 6.2 6 10.5a6 6 0 0 1-12 0c0-4.3 6-10.5 6-10.5Z"/>',
 };
-const BRK_ACTS = [['breathe', 'Breathe', 'A calm minute'], ['stretch', 'Stretch', 'Eight short cards'], ['eyes', 'Rest your eyes', '20 seconds, far away'], ['water', 'Water', 'A glass now']];
+const BRK_ACTS = [['breathe', 'Breathe', 'A calm minute'], ['stretch', 'Stretch', 'Eight short cards'], ['eyes', 'Rest your eyes', '20 seconds, far away', 'Eyes'], ['water', 'Water', 'A glass now']];   // id, name, what it is, a short name for the narrow row
 const BRK_BREATH = [['Breathe in', 4], ['Hold', 4], ['Breathe out', 6]];   // 14 seconds a round
 const BRK_ROUNDS = 4;                                                      // about a minute
 const BRK_EYES = 20, BRK_HOLD = 20;                                        // seconds
@@ -20771,7 +20787,7 @@ function renderBrkRow() {
   if (!el) return;
   const on = breakActsOn() && S.timer.phase !== 'focus';
   el.classList.toggle('hidden', !on);
-  if (on && !el.firstChild) el.innerHTML = '<span class="lbl">On your break</span>' + BRK_ACTS.map(([id, t]) => `<button type="button" class="brk-chip" data-brk="${id}">${iconSVG(BRK_IC[id], 16)}<span>${t}</span></button>`).join('');
+  if (on && !el.firstChild) el.innerHTML = '<span class="lbl">Ideas for your break</span>' + BRK_ACTS.map(([id, t, , sh]) => `<button type="button" class="brk-chip" data-brk="${id}" aria-label="${t}">${iconSVG(BRK_IC[id], 16)}<span${sh ? ' class="f-l"' : ''}>${t}</span>${sh ? `<span class="f-s">${sh}</span>` : ''}</button>`).join('');
   if (!on && $('#brkDlg').open && focusActive()) $('#brkDlg').close();   // a focus block began: the break is over
 }
 function brkStop() { if (BRK.iv) { clearInterval(BRK.iv); BRK.iv = 0; } }
@@ -20785,7 +20801,9 @@ function openBreak(act = '') {
 }
 function brkSub() {
   const t = S.timer, left = t.phase !== 'focus' && t.status === 'running' ? Math.max(0, t.endAt - Date.now()) : 0;
-  $('#brkSub').textContent = left ? `${t.phase === 'long' ? 'Long break' : 'Break'} · ${fmtClock(left)} left` : t.phase !== 'focus' ? 'Your break is waiting. Take what you need.' : 'A short pause helps the next block.';
+  const el = $('#brkSub'), txt = left ? `${t.phase === 'long' ? 'Long break' : 'Break'} · ${fmtClock(left)} left` : BRK.act ? '' : t.phase !== 'focus' ? (t.status === 'paused' ? 'Your break is paused. Take what you need.' : 'Your break timer has not started. Take what you need.') : 'A short pause helps the next block.';
+  if (el.textContent !== txt) el.textContent = txt;
+  el.classList.toggle('hidden', !txt);
 }
 const brkBar = pct => `<div class="sn-bar brk-bar"><i style="transform:translateX(${(Math.min(1, pct) * 100 - 100).toFixed(1)}%)"></i></div>`;
 function brkShow(act) {
@@ -20795,7 +20813,7 @@ function brkShow(act) {
   $('#brkTitle').textContent = menu ? 'Break ideas' : (BRK_ACTS.find(a => a[0] === act) || [])[1] || 'Break ideas';
   $('#brkBack').classList.toggle('hidden', menu);
   body.dataset.act = act;
-  if (menu) body.innerHTML = `<div class="brk-menu">${BRK_ACTS.map(([id, t, d]) => `<button type="button" class="brk-tile" data-brk="${id}"><span class="brk-ic">${iconSVG(BRK_IC[id], 22)}</span><b>${t}</b><span class="lbl">${id === 'water' && waterToday() ? `${waterToday()} today` : d}</span></button>`).join('')}</div>`;
+  if (menu) body.innerHTML = `<div class="brk-menu">${BRK_ACTS.map(([id, t, d]) => `<button type="button" class="brk-tile" data-brk="${id}"><span class="brk-ic">${iconSVG(BRK_IC[id], 22)}</span><b>${t}</b><span class="lbl">${id === 'water' && waterToday() ? `${waterToday()} ${waterToday() === 1 ? 'glass' : 'glasses'} today` : d}</span></button>`).join('')}</div>`;
   else if (act === 'breathe') body.innerHTML = `<div class="brk-stage"><div class="brk-orb" id="brkOrb"><span id="brkN" aria-hidden="true"></span></div><div class="brk-cue" id="brkCue" aria-live="polite"></div><div class="lbl" id="brkRound"></div></div>`;
   else if (act === 'stretch') body.innerHTML = `<div class="brk-card"><div class="lbl" id="brkRound"></div><div aria-live="polite"><b class="brk-big" id="brkCue"></b><p id="brkText"></p></div>${brkBar(0)}<div class="lbl" id="brkHint" aria-hidden="true"></div></div><div class="btn-row brk-acts"><button class="btn primary" type="button" id="brkNext">Next stretch</button></div><p class="lbl brk-note">Gentle only: nothing should hurt.</p>`;
   else if (act === 'eyes') body.innerHTML = `<div class="brk-stage"><div class="brk-orb still" id="brkOrb"><span id="brkN" aria-hidden="true"></span></div><div class="brk-cue" id="brkCue" aria-live="polite"></div><p class="lbl">The 20-20-20 rest: every 20 minutes, look about 6 metres (20 feet) away for 20 seconds.</p></div>`;
@@ -20818,14 +20836,14 @@ function brkTick() {
     cue(BRK_BREATH[i][0]);
     orb.className = 'brk-orb ' + ['in', 'hold', 'out'][i];
     $('#brkN').textContent = Math.ceil(BRK_BREATH[i][1] - w);
-    $('#brkRound').textContent = `Round ${Math.floor(e / round) + 1} of ${BRK_ROUNDS}`;
+    $('#brkRound').textContent = `Breath ${Math.floor(e / round) + 1} of ${BRK_ROUNDS}`;
   } else if (BRK.act === 'stretch') {
     const s = BRK_STRETCH[BRK.si % BRK_STRETCH.length];
     cue(s[0]);
     $('#brkText').textContent = s[1];
     $('#brkRound').textContent = `Stretch ${BRK.si % BRK_STRETCH.length + 1} of ${BRK_STRETCH.length}`;
     $('#brkBody .brk-bar i').style.transform = `translateX(${(Math.min(1, e / BRK_HOLD) * 100 - 100).toFixed(1)}%)`;
-    $('#brkHint').textContent = e >= BRK_HOLD ? 'Swap sides, or go on to the next one.' : `Hold for about ${Math.ceil(BRK_HOLD - e)} s`;
+    $('#brkHint').textContent = e >= BRK_HOLD ? 'Swap sides, or go on to the next one.' : `${Math.ceil(BRK_HOLD - e)} s left`;
   } else if (BRK.act === 'eyes') {
     if (e >= BRK_EYES) { if (!BRK.done) { BRK.done = true; brkStop(); $('#brkN').textContent = '✓'; cue('Done. Blink a few times.'); uiSound('tap'); } return; }
     cue('Look at something far away');
@@ -20852,7 +20870,8 @@ function intentInsights() {
   let mins = 0, dx = 0;
   for (const s of ss) { const m = s.duration / 60000, k = part(new Date(s.start).getHours()), g = (by[k] ||= { dx: 0, min: 0 }); mins += m; dx += +s.dx || 0; g.dx += +s.dx || 0; g.min += m; }
   const worst = Object.entries(by).filter(([, v]) => v.min >= 120 && v.dx).map(([k, v]) => ({ k, r: v.dx / v.min * 60 })).sort((a, b) => b.r - a.r)[0] || null;
-  return { n: ans.length, done, partly, dxPerHour: dx && mins >= 60 ? dx / mins * 60 : null, worst };
+  const d7 = Date.now() - 7 * DAY_MS, dx7 = ss.filter(s => s.start >= d7).reduce((a, s) => a + (+s.dx || 0), 0);
+  return { n: ans.length, done, partly, dxPerHour: dx && mins >= 60 ? dx / mins * 60 : null, dx7, worst };
 }
 
 /**
@@ -20861,11 +20880,11 @@ function intentInsights() {
  * already loaded of what they publish (their weekly minutes) — no extra reads, nothing new published.
  */
 function logInsights() {
-  const now = Date.now(), d7 = now - 7 * DAY_MS, d14 = now - 14 * DAY_MS, d60 = now - 60 * DAY_MS;
+  const now = Date.now(), d7 = now - 7 * DAY_MS, d14 = now - 14 * DAY_MS, d30 = now - 30 * DAY_MS;
   const mins = ss => Math.round(ss.reduce((a, s) => a + (+s.duration || 0), 0) / 60000);
   const week = mins(S.sessions.filter(s => s.start >= d7)), before = mins(S.sessions.filter(s => s.start >= d14 && s.start < d7));
-  // overtime and early finishes, over 60 days (blocks that say what was planned)
-  const planned = S.sessions.filter(s => s.start >= d60 && +s.planned > 0), over = planned.filter(s => +s.ot > 0), early = planned.filter(s => s.early).length;
+  // overtime and early finishes, over 30 days (blocks that say what was planned)
+  const planned = S.sessions.filter(s => s.start >= d30 && +s.planned > 0), over = planned.filter(s => +s.ot > 0), early = planned.filter(s => s.early).length;
   const ot = planned.length >= 5 && (over.length || early) ? { n: over.length, of: planned.length, avg: over.length ? over.reduce((a, s) => a + +s.ot, 0) / over.length : 0, early } : null;
   // the weekly plan
   const w = planWeek(), behind = w.list.filter(r => r.status === 'behind').sort((a, b) => b.behindBy - a.behindBy)[0] || null;
@@ -20889,7 +20908,7 @@ function primeFriendStats() {
 }
 /** One sentence to act on, from what the week showed. Never a judgement. */
 function weekTakeaway(L, J) {
-  if (L.plan && L.plan.behind) return `${L.plan.behind.name} is ${fmtMin(L.plan.behind.behindBy)} behind this week’s plan: a block of it next?`;
+  if (L.plan && L.plan.behind) return `${fmtMin(L.plan.behind.behindBy)} of ${L.plan.behind.name} would put this week’s plan on track.`;
   if (J.worst) return `Most distractions come in the ${J.worst.k}. That may be the time for lighter work.`;
   if (L.ot && L.ot.n >= 3 && L.ot.n / L.ot.of >= 0.4) return `You often keep going past the timer (${L.ot.n} of ${L.ot.of} blocks). A longer preset may suit you.`;
   if (J.n >= 5 && J.done / J.n >= 0.7) return `You finish what you set out to do: ${J.done} of ${J.n} intentions.`;
@@ -20942,10 +20961,10 @@ function renderEnergyCard() {
     rated10 && I.lenNote ? box('Session length', I.lenNote) : '',
     rated10 && I.days.length ? box('Best days', I.days.map(d => D[d.k]).join(' & '), energyWord(I.days[0].a)) : '',
     rated10 && I.subjTop ? box('By subject', esc(I.subjTop.k) + ' feels best', I.subjLow && I.subjLow.k !== I.subjTop.k ? `${esc(I.subjLow.k)} is the toughest` : '') : '',
-    J.n >= 3 ? box('Intentions', `${J.done} of ${J.n} done`, J.partly ? `${J.partly} partly` : 'last 60 days') : '',
-    J.dxPerHour !== null ? box('Distractions', `${J.dxPerHour.toFixed(1)} an hour`, J.worst ? `most in the ${J.worst.k}` : 'counted by you') : '',
-    L.ot ? box('Overtime', `${L.ot.n} of ${L.ot.of} blocks`, [L.ot.n ? `about ${Math.max(1, Math.round(L.ot.avg))} min past the timer` : '', L.ot.early ? `${L.ot.early} finished early` : ''].filter(Boolean).join(' · ')) : '',
-    L.plan ? box('Weekly plan', `${L.plan.ok} of ${L.plan.n} on track`, L.plan.behind ? `${esc(L.plan.behind.name)} is ${fmtMin(L.plan.behind.behindBy)} behind` : 'nothing behind') : '',
+    J.n >= 3 ? box('Intentions', `${J.done} of ${J.n} done`, `${J.partly ? J.partly + ' in part · ' : ''}60 days`) : '',
+    J.dxPerHour !== null ? box('Distractions', `${J.dx7} in 7 days`, J.worst ? `mostly in the ${J.worst.k}` : 'counted by you') : '',
+    L.ot ? box('Past the timer', `${L.ot.n} of ${L.ot.of} blocks`, [L.ot.n ? `by about ${Math.max(1, Math.round(L.ot.avg))} min` : '', L.ot.early ? `${L.ot.early} finished early` : '', '30 days'].filter(Boolean).join(' · ')) : '',
+    L.plan ? box('Weekly plan', `${L.plan.ok} of ${L.plan.n} on track`, L.plan.behind ? `${esc(L.plan.behind.name)} needs ${fmtMin(L.plan.behind.behindBy)}` : 'this week') : '',
     L.friends && L.friends.ahead ? box('Among friends', L.friends.ahead === L.friends.n ? `Ahead of all ${L.friends.n}` : `Ahead of ${L.friends.ahead} of ${L.friends.n}`, 'this week, by focus time') : '',
   ].filter(Boolean);
   const hint = rated10 || off ? '' : `<p class="muted" style="margin:0;font-size:14px">Keep checking in after sessions to unlock insights — ${I.n}/10 so far.</p><div class="ins-progress"><i style="width:${I.n * 10}%"></i></div>`;
@@ -20954,10 +20973,10 @@ function renderEnergyCard() {
     return;
   }
   const diff = L.week - L.before, take = weekTakeaway(L, J);
-  const week = L.week || L.before ? `<div class="ins-week"><div class="k">Last 7 days</div><div class="v">${fmtMin(L.week)}</div><div class="s">${!L.before ? 'of focus' : diff > 0 ? `${fmtMin(diff)} more than the 7 days before` : diff < 0 ? `the 7 days before: ${fmtMin(L.before)}` : 'the same as the 7 days before'}</div>${take ? `<p class="ins-take">${esc(take)}</p>` : ''}</div>` : '';
+  const week = L.week || L.before ? `<div class="ins-week"><div class="k">Last 7 days</div><div class="v">${fmtMin(L.week)}</div><div class="s">${!L.before ? 'of focus' : diff > 0 ? `${fmtMin(diff)} more than the 7 days before` : diff < 0 ? `the 7 days before: ${fmtMin(L.before)}` : 'the same as the 7 days before'}</div></div>${take ? `<p class="ins-take"><span>${esc(take)}</span>${L.plan && L.plan.behind ? `<button class="linkbtn" type="button" data-goplan="${esc(L.plan.behind.name)}">Focus on ${esc(L.plan.behind.name)}</button>` : ''}</p>` : ''}` : '';
   el.innerHTML = `<div class="card"><div class="row between" style="margin-bottom:8px"><h2 style="margin:0">⚡ Focus insights</h2>${rated10 ? `<span class="lbl">${I.n} check-ins</span>` : ''}</div>
     ${week}
-    ${boxes.length ? `<div class="ins-grid">${boxes.join('')}</div>` : ''}
+    ${boxes.length ? `<div class="ins-grid${boxes.length % 4 === 1 && boxes.length > 4 ? ' g3' : ''}">${boxes.join('')}</div>` : ''}
     ${hint ? `<div class="ins-hint">${hint}</div>` : ''}
     ${rated10 ? `<div class="lbl" style="margin-top:14px">Average focus · last 4 weeks</div>
     <div class="ins-chart" role="img" aria-label="Average focus rating for the last 4 weeks">${I.weeks.map(w => `<div><i style="height:${w.n ? Math.max(6, (w.a / 4) * 64) : 2}px;${w.n ? '' : 'opacity:.25'}" title="${w.n ? energyWord(w.a) + ' · ' + w.n + ' check-ins' : 'No check-ins'}"></i>${w.label}</div>`).join('')}</div>` : ''}</div>`;
@@ -22614,6 +22633,7 @@ $('#setFestive').addEventListener('change', e => { S.settings.festive = e.target
 $('#setRipen').addEventListener('change', e => { S.settings.ripen = e.target.checked; save(); paintRing(); });
 $('#setMinPomeo').addEventListener('change', e => { S.settings.minPomeo = e.target.checked; save(); renderAll(); });
 $('#setEnergy').addEventListener('change', e => { S.settings.energy = e.target.value; save(); if (S.ui.tab === 'stats') renderStats(); });
+$('#energySlot').addEventListener('click', e => { const gp = e.target.closest('[data-goplan]'); if (gp) { loadChip(gp.dataset.goplan, S.activePresetId); showTab('timer'); } });   // the suggestion's action, as on the Today card
 $('#setBreakActs').addEventListener('change', e => { S.settings.breakActs = e.target.checked; save(); renderBrkRow(); });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-brk]');

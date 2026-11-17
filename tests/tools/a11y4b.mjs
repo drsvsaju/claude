@@ -24,6 +24,11 @@ const VIEWS = [
   ['clan', "showTab('clan')"], ['board', "showTab('board')"], ['shop', "showTab('shop')"], ['bag', "showTab('bag')"], ['room', "showTab('room')"], ['settings', "showTab('settings')"], ['about', "showTab('about')"],
   ['cal-month', "S.ui.calView = 'month'; CAL.anchor = null; showTab('calendar')"], ['cal-week', "S.ui.calView = 'week'; CAL.anchor = null; CAL.scroll = null; showTab('calendar')"], ['cal-agenda', "S.ui.calView = 'agenda'; CAL.anchor = null; showTab('calendar')"],
   ['dlg-day', "S.ui.calView = 'month'; showTab('calendar'); calOpenDay(todayKey())"], ['dlg-block', "showTab('calendar'); openBlockForm({})"], ['dlg-reminder-allday', "showTab('reminders'); openRemForm(); document.querySelector('#remAllDay').click()"],
+  // v2.0 phase 6: streak care, break ideas, the after-block question
+  ['dlg-streak', "showTab('timer'); openStreakCare()"], ['dlg-streak-paused', "showTab('timer'); S.game.pauses[todayKey()] = 3; G = null; renderToday(); openStreakCare()"],
+  ['timer-break', "S.game.pauses = {}; G = null; const t = S.timer; t.phase = 'short'; t.status = 'idle'; renderTimer(); showTab('timer')"],
+  ['dlg-break-menu', "showTab('timer'); openBreak('')"], ['dlg-break-breathe', "showTab('timer'); openBreak('breathe')"], ['dlg-break-stretch', "showTab('timer'); openBreak('stretch')"], ['dlg-break-water', "showTab('timer'); openBreak('water')"],
+  ['after-block', "const t = S.timer; t.phase = 'focus'; t.status = 'idle'; renderTimer(); showTab('timer'); const s = S.sessions[S.sessions.length - 1]; delete S.debrief[s.id]; offerNote(s.id)"],
   ['dlg-presets', "showTab('timer'); document.querySelector('#managePresets').click()"], ['dlg-reminder', "showTab('reminders'); document.querySelector('#remAdd').click()"], ['dlg-inbox', "showTab('timer'); document.querySelector('#inboxBtn').click()"],
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],
 ];
@@ -59,7 +64,8 @@ for (const [name, code] of VIEWS) {
         const r = el.getBoundingClientRect(), a = getComputedStyle(el, '::after'), on = a.content !== 'none' && a.position === 'absolute', neg = v => (on ? Math.max(0, -(parseFloat(v) || 0)) : 0);   // a target enlarged by an invisible ::after
         const w = r.width + neg(a.left) + neg(a.right), h = r.height + neg(a.top) + neg(a.bottom), inline = getComputedStyle(el).display === 'inline' && el.tagName === 'A';
         const inStepper = el.matches('input') && el.closest('ui-num');   // the number between a stepper's − and + (those are the targets; the field is as tall as they are)
-        if (!inline && !inStepper && getComputedStyle(el).pointerEvents !== 'none' && (w < 43.5 || h < 43.5) && !(el.matches('input[type="checkbox"], input[type="radio"]') && el.closest('label')) && !el.closest('label.sw, .sw')) out.push(['target under 44 px', sig(el), `${Math.round(w)}×${Math.round(h)}`]);
+        const landing = ti === '-1' && !el.matches('a[href], button, input, select, textarea, summary, [role]');   // a heading that only receives the focus when its dialog opens is not a target
+        if (!inline && !inStepper && !landing && getComputedStyle(el).pointerEvents !== 'none' && (w < 43.5 || h < 43.5) && !(el.matches('input[type="checkbox"], input[type="radio"]') && el.closest('label')) && !el.closest('label.sw, .sw')) out.push(['target under 44 px', sig(el), `${Math.round(w)}×${Math.round(h)}`]);
       }
     }
     // things that act on a click but cannot be reached by keyboard: a pointer cursor on something that is not focusable, has no focusable ancestor and no focusable child

@@ -32,7 +32,7 @@ const HELP = () => {
     toasts: () => [...document.querySelectorAll('.toast-item')].map(x => x.textContent.trim()),
     sl: ms => new Promise(r => setTimeout(r, ms)),
     add(list) { const t0 = startOfDay(new Date()); for (const [off, min, o] of list) { const st = +addDays(t0, off) + 9 * 3600e3 + S.sessions.length * 60000; S.sessions.push({ id: 'sd' + S.sessions.length, name: (o && o.name) || 'Physics', start: st, end: st + min * 6e4, duration: min * 6e4, planned: min * 6e4, ...(o || {}) }); } S.sessions.sort((a, b) => a.start - b.start); G = null; },
-    ins() { renderEnergyCard(); const el = $('#energySlot'); return { html: el.innerHTML, text: el.textContent.replace(/\s+/g, ' ').trim(), boxes: [...el.querySelectorAll('.ins')].map(x => [x.querySelector('.k').textContent, x.querySelector('.v').textContent, (x.querySelector('.s') || {}).textContent || '']), week: el.querySelector('.ins-week') ? [el.querySelector('.ins-week .v').textContent, el.querySelector('.ins-week .s').textContent, (el.querySelector('.ins-take') || {}).textContent || ''] : null, hint: !!el.querySelector('.ins-progress'), chart: !!el.querySelector('.ins-chart'), img: !!el.querySelector('img') }; },
+    ins() { renderEnergyCard(); const el = $('#energySlot'); return { html: el.innerHTML, text: el.textContent.replace(/\s+/g, ' ').trim(), boxes: [...el.querySelectorAll('.ins')].map(x => [x.querySelector('.k').textContent, x.querySelector('.v').textContent, (x.querySelector('.s') || {}).textContent || '']), week: el.querySelector('.ins-week') ? [el.querySelector('.ins-week .v').textContent, el.querySelector('.ins-week .s').textContent] : null, take: (el.querySelector('.ins-take > span') || {}).textContent || '', go: (el.querySelector('.ins-take [data-goplan]') || {}).textContent || '', hint: !!el.querySelector('.ins-progress'), chart: !!el.querySelector('.ins-chart'), img: !!el.querySelector('img') }; },
   };
 };
 
@@ -48,11 +48,11 @@ const offer = await G1.ev(() => {
   T.onFocus(false); out.idle = T.vis($('#brkRow'));
   T.onFocus(true); out.focus = T.vis($('#brkRow')); out.ideasFocus = T.ideas().length; out.refused = openBreak('breathe') === false && !$('#brkDlg').open;
   T.onFocus(false); out.ideasIdle = T.ideas();
-  T.onBreak(); out.brk = T.vis($('#brkRow')); out.chips = [...$('#brkRow').querySelectorAll('.brk-chip')].map(x => x.textContent.trim()); out.label = $('#brkRow').getAttribute('aria-label');
+  T.onBreak(); out.brk = T.vis($('#brkRow')); out.chips = [...$('#brkRow').querySelectorAll('.brk-chip')].map(x => x.getAttribute('aria-label')); out.shown = [...$('#brkRow').querySelectorAll('.brk-chip span')].filter(x => T.vis(x)).map(x => x.textContent).join(); out.label = $('#brkRow').getAttribute('aria-label');
   return out;
 });
 check('The row of break ideas is under the timer on a break only (not while a focus block waits or runs); during focus the ideas are not in the palette and cannot be opened; between blocks the palette has all four',
-  !offer.idle && !offer.focus && offer.ideasFocus === 0 && offer.refused && offer.ideasIdle.length === 4 && offer.brk && offer.chips.join() === 'Breathe,Stretch,Rest your eyes,Water' && offer.label === 'Break ideas', JSON.stringify(offer));
+  !offer.idle && !offer.focus && offer.ideasFocus === 0 && offer.refused && offer.ideasIdle.length === 4 && offer.brk && offer.chips.join() === 'Breathe,Stretch,Rest your eyes,Water' && offer.shown === offer.chips.join() && offer.label === 'Break ideas', JSON.stringify(offer));
 
 // ---------- 2. the breathing minute ----------
 await G1.p.click('#brkRow [data-brk="breathe"]'); await wait(400);
@@ -66,8 +66,8 @@ const br = await G1.ev(async () => {
 });
 check('“Breathe” opens a guided minute: in for 4, hold for 4, out for 6, four rounds, then “Done. Notice how you feel.” with “Once more”; the words are announced (the countdown is not), and with reduced motion the circle does not grow or shrink',
   br.open && br.title === 'Breathe' && br.focus && br.live === 'polite' && br.nHidden === 'true' && br.back
-  && br.t1.cue === 'Breathe in' && br.t1.n === '3' && /\bin\b/.test(br.t1.orb) && br.t1.round === 'Round 1 of 4' && br.t5.cue === 'Hold' && br.t5.n === '3' && br.t9.cue === 'Breathe out' && br.t9.n === '5' && /out/.test(br.t9.orb)
-  && br.t15.cue === 'Breathe in' && br.t15.round === 'Round 2 of 4' && br.t55.round === 'Round 4 of 4' && br.end.cue === 'Done. Notice how you feel.' && br.end.n === '✓' && br.iv === 0 && br.more && br.again.cue === 'Breathe in' && br.again.iv
+  && br.t1.cue === 'Breathe in' && br.t1.n === '3' && /\bin\b/.test(br.t1.orb) && br.t1.round === 'Breath 1 of 4' && br.t5.cue === 'Hold' && br.t5.n === '3' && br.t9.cue === 'Breathe out' && br.t9.n === '5' && /out/.test(br.t9.orb)
+  && br.t15.cue === 'Breathe in' && br.t15.round === 'Breath 2 of 4' && br.t55.round === 'Breath 4 of 4' && br.end.cue === 'Done. Notice how you feel.' && br.end.n === '✓' && br.iv === 0 && br.more && br.again.cue === 'Breathe in' && br.again.iv
   && (br.calm[0] === 'none' || br.calm[0] === 'matrix(1, 0, 0, 1, 0, 0)') && !/transform/.test(br.calm[2]), JSON.stringify(br));
 
 // ---------- 3. stretch cards, the eye rest, water ----------
@@ -97,11 +97,11 @@ const after = await G1.ev(async () => {
   return out;
 });
 check('“All ideas” goes back to the four tiles; the stretch cards hold about 20 seconds each, go round all eight and carry on where they were; the eye rest counts 20 seconds and says when it is done',
-  acts.menu === 'Breathe,Stretch,Rest your eyes,Water|false|Break ideas' && acts.s1.cue === 'Neck' && acts.s1.round === 'Stretch 1 of 8' && acts.s1.hint === 'Hold for about 20 s' && /Swap sides/.test(acts.s1b.hint) && acts.text && acts.note
-  && acts.s2.cue === 'Shoulders' && acts.s2.round === 'Stretch 2 of 8' && /Hold for about 20 s/.test(acts.s2.hint) && acts.wrap === 'Shoulders' && acts.resume === 'Chest'
+  acts.menu === 'Breathe,Stretch,Rest your eyes,Water|false|Break ideas' && acts.s1.cue === 'Neck' && acts.s1.round === 'Stretch 1 of 8' && acts.s1.hint === '20 s left' && /Swap sides/.test(acts.s1b.hint) && acts.text && acts.note
+  && acts.s2.cue === 'Shoulders' && acts.s2.round === 'Stretch 2 of 8' && acts.s2.hint === '20 s left' && acts.wrap === 'Shoulders' && acts.resume === 'Chest'
   && acts.e1.cue === 'Look at something far away' && acts.e1.n === '19' && acts.e2.cue === 'Done. Blink a few times.' && acts.e2.n === '✓' && acts.eIv === 0 && acts.eText, JSON.stringify(acts));
 check('Water counts glasses for today on this device only (kept across a reload, a new day starts at none); Done closes and stops the clock, and a focus block that starts closes the dialog',
-  acts.w0 === 'None counted yet today' && acts.w1 === '1 glass today' && acts.w2 === '2 glasses today' && acts.stored === 2 && acts.tile === '2 today' && acts.otherDay === 0 && acts.closed && after.water === 2 && after.open && after.closedByFocus, JSON.stringify({ acts: { w0: acts.w0, w1: acts.w1, w2: acts.w2, stored: acts.stored, tile: acts.tile, otherDay: acts.otherDay, closed: acts.closed }, after }));
+  acts.w0 === 'None counted yet today' && acts.w1 === '1 glass today' && acts.w2 === '2 glasses today' && acts.stored === 2 && acts.tile === '2 glasses today' && acts.otherDay === 0 && acts.closed && after.water === 2 && after.open && after.closedByFocus, JSON.stringify({ acts: { w0: acts.w0, w1: acts.w1, w2: acts.w2, stored: acts.stored, tile: acts.tile, otherDay: acts.otherDay, closed: acts.closed }, after }));
 
 // ---------- 4. the setting ----------
 const set = await G1.ev(async () => {
@@ -112,6 +112,25 @@ const set = await G1.ev(async () => {
   return out;
 });
 check('Settings › “Break ideas” switches it off (no row on a break, nothing in the palette) and on again', set.row && set.off && !set.rowOff && set.ideasOff === 0 && set.on && set.rowOn, JSON.stringify(set));
+
+// ---------- 4b. after a block: one question at a time ----------
+await G1.ev(() => {
+  S.settings.energy = 'always'; S.settings.intent = true; S.settings.overtime = false; showTab('timer');
+  S.timer.intent = 'Read the chapter summary and write five lines about what the teacher said in class this week';
+  const t = S.timer; t.phase = 'focus'; t.status = 'idle'; startTimer(); t.planned = 25 * 60000; t.focusStartedAt = Date.now() - t.planned; t.dxFor = t.focusStartedAt; t.endAt = Date.now() - 1;
+});
+await wait(3200);
+const seq = await G1.ev(async () => {
+  const vis = T.vis, out = { debrief: vis($('#debriefRow')), energy: vis($('#energyRow')), ask: ($('#debriefRow .eq span') || {}).textContent, int: ($('#debriefRow .db-int b') || {}).textContent, opts: [...document.querySelectorAll('#debriefRow [data-debrief]')].map(x => x.textContent.trim()).join('|'), icons: document.querySelectorAll('#debriefRow [data-debrief] svg').length };
+  const lh = parseFloat(getComputedStyle($('#debriefRow .db-int')).lineHeight); out.twoLines = $('#debriefRow .db-int').getBoundingClientRect().height <= lh * 2 + 2;
+  document.querySelector('#debriefRow [data-debrief="2"]').click(); await T.sl(300); out.said = $('#debriefRow').textContent.trim(); out.energyDuring = vis($('#energyRow'));
+  await T.sl(2100); out.debriefGone = !vis($('#debriefRow')); out.energyAfter = vis($('#energyRow')) && /How focused did you feel/.test($('#energyRow').textContent); out.row = vis($('#noteRow'));
+  document.querySelectorAll('dialog[open]').forEach(d => d.close()); hideNote(); const t = S.timer; t.phase = 'focus'; t.status = 'idle'; renderTimer();
+  return out;
+});
+check('After a block with an intention the card asks one thing at a time: “How far did you get?” with the intention on its own line (at most two lines) and three plain marks; the focus check-in follows the answer',
+  seq.debrief && !seq.energy && seq.ask === 'How far did you get?' && /^Read the chapter summary/.test(seq.int || '') && seq.opts === 'All of it|Part of it|Not yet' && seq.icons === 3 && seq.twoLines
+  && /Part of it\. It stays as your intention/.test(seq.said) && !seq.energyDuring && seq.debriefGone && seq.energyAfter && seq.row, JSON.stringify(seq));
 
 // ---------- 5. Focus insights from the log alone ----------
 const ins = await G1.ev(async () => {
@@ -128,13 +147,13 @@ const ins = await G1.ev(async () => {
   return out;
 });
 const wk = ins.week;
-check('With no blocks and no check-ins the card is the invitation to check in, as before (nothing at all when check-ins are off); with blocks it opens with “Last 7 days” against the 7 before and an Overtime box (blocks past the timer, their average, finished early)',
+check('With no blocks and no check-ins the card is the invitation to check in, as before (nothing at all when check-ins are off); with blocks it opens with “Last 7 days” against the 7 before and a “Past the timer” box (how many blocks, by how much, finished early)',
   /Keep checking in after sessions to unlock insights — 0\/10 so far\./.test(ins.empty.text) && ins.empty.hint && !ins.empty.week && ins.emptyOff === ''
-  && wk.week && wk.week[0] === '5h' && wk.week[1] === '2h 30m more than the 7 days before' && wk.boxes.some(x => x[0] === 'Overtime' && x[1] === '3 of 9 blocks' && x[2] === 'about 7 min past the timer · 1 finished early') && wk.hint && !wk.chart, JSON.stringify({ empty: ins.empty.text, emptyOff: ins.emptyOff, week: wk.week, boxes: wk.boxes, hint: wk.hint }));
+  && wk.week && wk.week[0] === '5h' && wk.week[1] === '2h 30m more than the 7 days before' && wk.boxes.some(x => x[0] === 'Past the timer' && x[1] === '3 of 9 blocks' && x[2] === 'by about 7 min · 1 finished early · 30 days') && wk.hint && !wk.chart, JSON.stringify({ empty: ins.empty.text, emptyOff: ins.emptyOff, week: wk.week, boxes: wk.boxes, hint: wk.hint }));
 const pb = ins.plan.boxes.find(x => x[0] === 'Weekly plan') || [];
-check('A weekly plan adds “Weekly plan · N of M on track” naming the subject furthest behind, and the week’s one-line suggestion points at it (a subject’s name is shown as text, never as markup); with check-ins off the boxes stay and the invitation goes; a first week says “of focus”',
-  /^\d of 2 on track$/.test(pb[1] || '') && /<img src=x onerror=alert\(1\)> is .* behind/.test(pb[2] || '') && /behind this week’s plan: a block of it next\?/.test(ins.plan.week[2]) && !ins.plan.img && ins.L.plan.behind.name === '<img src=x onerror=alert(1)>'
-  && ins.off.boxes.length >= 2 && !ins.off.hint && ins.off.week && ins.first && ins.first[1] === 'of focus', JSON.stringify({ pb, take: ins.plan.week, off: ins.off.boxes, hint: ins.off.hint, first: ins.first }));
+check('A weekly plan adds “Weekly plan · N of M on track” naming the subject furthest behind, and the week’s one-line suggestion points at it with a “Focus on …” action (a subject’s name is shown as text, never as markup); with check-ins off the boxes stay and the invitation goes; a first week says “of focus”',
+  /^\d of 2 on track$/.test(pb[1] || '') && /^<img src=x onerror=alert\(1\)> needs /.test(pb[2] || '') && /of <img src=x onerror=alert\(1\)> would put this week’s plan on track\./.test(ins.plan.take) && ins.plan.go === 'Focus on <img src=x onerror=alert(1)>' && !ins.plan.img && ins.L.plan.behind.name === '<img src=x onerror=alert(1)>'
+  && ins.off.boxes.length >= 2 && !ins.off.hint && ins.off.week && ins.first && ins.first[1] === 'of focus', JSON.stringify({ pb, take: ins.plan.take, go: ins.plan.go, off: ins.off.boxes, hint: ins.off.hint, first: ins.first }));
 await G1.ctx.close();
 
 // ====================== the demo ======================
@@ -149,14 +168,14 @@ const demo = await DM.ev(async () => {
   out.direct = brkDrank(); if ($('#pvDlg').open) $('#pvDlg').close(); out.same = ui0 === JSON.stringify(S.ui.water || null) && $('#brkCue').textContent === out.sample;
   $('#brkClose').click(); T.onFocus(false);
   showTab('stats'); await T.sl(1500);                              // friends' weekly minutes arrive through the shared cache
-  const I = T.ins(); out.week = I.week; out.boxes = I.boxes.map(x => x[0]); out.ot = I.boxes.find(x => x[0] === 'Overtime'); out.fr = I.boxes.find(x => x[0] === 'Among friends') || null; out.L = logInsights().friends; out.chart = I.chart;
+  const I = T.ins(); out.week = I.week; out.boxes = I.boxes.map(x => x[0]); out.ot = I.boxes.find(x => x[0] === 'Past the timer'); out.fr = I.boxes.find(x => x[0] === 'Among friends') || null; out.L = logInsights().friends; out.chart = I.chart;
   return out;
 });
 await wait(1200);
 const s1 = await storage(DM);
 check('The demo shows the break ideas (a sample water count; “I had a glass” explains instead of counting) and the fuller insights card (the week, overtime, the plan, friends when ahead of any), and writes nothing',
   demo.row && demo.sample === '3 glasses today' && /keep your own water count/.test(demo.prompt || '') && demo.direct === false && demo.same
-  && demo.week && /^\d+h/.test(demo.week[0]) && demo.boxes.includes('Best time of day') && demo.boxes.includes('Intentions') && demo.boxes.includes('Overtime') && demo.boxes.includes('Weekly plan') && /finished early/.test(demo.ot[2]) && demo.chart
+  && demo.week && /^\d+h/.test(demo.week[0]) && demo.boxes.includes('Best time of day') && demo.boxes.includes('Intentions') && demo.boxes.includes('Past the timer') && demo.boxes.includes('Weekly plan') && /finished early/.test(demo.ot[2]) && demo.chart
   && demo.L && demo.L.n >= 2 && (demo.L.ahead > 0) === !!demo.fr && (!demo.fr || /^Ahead of (all )?\d/.test(demo.fr[1]))
   && s0 === s1 && DM.net.length === n0, JSON.stringify({ demo, net: DM.net.slice(n0), storageSame: s0 === s1 }));
 await DM.ctx.close();
@@ -166,7 +185,7 @@ const PH = await page(390, 844, 'phone');
 await guest(PH); await PH.ev(HELP);
 await PH.ev(() => { showTab('timer'); T.onBreak(); $('#brkRow').scrollIntoView({ block: 'center' }); });
 await wait(300);
-const ph1 = await PH.ev(() => { const r = el => el.getBoundingClientRect(); return { chips: [...$('#brkRow').querySelectorAll('.brk-chip')].map(el => [Math.round(r(el).width), Math.round(r(el).height), r(el).left >= 0 && r(el).right <= innerWidth]), over: document.documentElement.scrollWidth > innerWidth }; });
+const ph1 = await PH.ev(() => { const r = el => el.getBoundingClientRect(); return { words: [...$('#brkRow').querySelectorAll('.brk-chip span')].filter(x => x.getClientRects().length).map(x => x.textContent).join(), oneRow: new Set([...$('#brkRow').querySelectorAll('.brk-chip')].map(el => Math.round(r(el).top))).size === 1, chips: [...$('#brkRow').querySelectorAll('.brk-chip')].map(el => [Math.round(r(el).width), Math.round(r(el).height), r(el).left >= 0 && r(el).right <= innerWidth]), over: document.documentElement.scrollWidth > innerWidth }; });
 await PH.p.tap('#brkRow [data-brk="stretch"]'); await wait(500);
 const ph2 = await PH.ev(async () => {
   const r = el => el.getBoundingClientRect(), dlg = $('#brkDlg'), out = { open: dlg.open, over: document.documentElement.scrollWidth > innerWidth };
@@ -176,8 +195,8 @@ const ph2 = await PH.ev(async () => {
   dlg.close();
   return out;
 });
-check('On a phone (390 px) the four chips fit the row and are 44 px tall, the dialog fits the screen, and every button in it is at least 44 px',
-  ph1.chips.length === 4 && ph1.chips.every(c => c[1] >= 44 && c[2]) && !ph1.over && ph2.open && !ph2.over && ph2.small.length === 0 && ph2.inside && ph2.smallMenu.length === 0 && ph2.tiles.every(h => h >= 44), JSON.stringify({ ph1, ph2 }));
+check('On a phone (390 px) the four chips sit in one row (the eye rest is “Eyes” there, with its full name for a screen reader) and are 44 px tall, the dialog fits the screen, and every button in it is at least 44 px',
+  ph1.chips.length === 4 && ph1.chips.every(c => c[1] >= 44 && c[2]) && ph1.oneRow && ph1.words === 'Breathe,Stretch,Eyes,Water' && !ph1.over && ph2.open && !ph2.over && ph2.small.length === 0 && ph2.inside && ph2.smallMenu.length === 0 && ph2.tiles.every(h => h >= 44), JSON.stringify({ ph1, ph2 }));
 await PH.ctx.close();
 
 check('No page errors', errs.length === 0, errs.join(' | '));
