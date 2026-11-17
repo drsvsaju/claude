@@ -94,7 +94,7 @@ for (const w of W) {
     await A.p.click(want === 'drawer' ? '#navBurger' : '#navMore'); await wait(420);
     const m = await A.ev(() => ({ open: document.body.classList.contains('nav-open'), items: [...document.querySelectorAll('#tabs [data-tab]:not(.hidden)')].filter(e => { const r = e.getBoundingClientRect(); return r.right > 0 && r.left < innerWidth; }).length,
       cut: [...document.querySelectorAll('#tabs .nv-l')].filter(e => e.scrollWidth > e.clientWidth + 1).length, groups: [...document.querySelectorAll('#tabs .nv-h')].map(h => h.textContent).join(','), focus: document.activeElement.dataset.tab }));
-    check(`${w}px: the menu slides in with every section (12: the Garden since 1.15, Study sessions since 1.19.1, Posts since 1.20), grouped, full labels`, m.open && m.items === 12 && !m.cut && m.groups === 'Focus,Progress,Social', JSON.stringify(m));
+    check(`${w}px: the menu slides in with every section (13: the Garden since 1.15, Study sessions since 1.19.1, Posts since 1.20, the Calendar since 2.0), grouped, full labels`, m.open && m.items === 13 && !m.cut && m.groups === 'Focus,Progress,Social', JSON.stringify(m));
     await A.p.keyboard.press('Escape'); await wait(350);
     check(`${w}px: Escape closes it and focus returns to the button`, await A.ev(t => !document.body.classList.contains('nav-open') && document.activeElement.id === t, want === 'drawer' ? 'navBurger' : 'navMore'));
   }

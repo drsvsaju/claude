@@ -36,7 +36,7 @@ check('The default look: no card and no tile in the page is blurred (only the wa
   ['timer', 'stats', 'profile'].every(t => blur.lite[t].cards === 0 && blur.lite[t].tiles === 0 && blur.lite[t].n > 0) && blur.top && ['timer', 'stats', 'profile'].every(t => blur.full[t].cards > 0 && blur.full[t].tiles === 0) && blur.side === 'none', JSON.stringify(blur));
 const T = await device('tab', 900, {}, { overtime: true });
 await T.p.goto(U); await T.p.waitForSelector('#authView:not(.hidden)'); await T.ev(() => { const s = document.getElementById('introSkip'); if (s) s.click(); startPreview(); }); await T.p.waitForSelector('#appView:not(.hidden)'); await wait(3000);
-const scrim = await T.ev(async () => { const sl = ms => new Promise(r => setTimeout(r, ms)); document.querySelectorAll('dialog[open]').forEach(x => x.close()); const v = () => getComputedStyle($('#navScrim')).visibility; const a = v(); navOpen(true); await sl(400); const o = v(); navOpen(false); await sl(500); return { closed: a, open: o, again: v() }; });
+const scrim = await T.ev(async () => { const sl = ms => new Promise(r => setTimeout(r, ms)); document.querySelectorAll('dialog[open]').forEach(x => x.close()); const v = () => getComputedStyle($('#navScrim')).visibility; const a = v(); navOpen(true); await sl(400); const o = v(); navOpen(false); for (let i = 0; i < 30 && v() !== 'hidden'; i++) await sl(100); return { closed: a, open: o, again: v() }; });   // (waits for the 0.22 s transition to end: a fixed half second was not always enough on a busy machine)
 check('The navigation scrim is not painted while the drawer is closed (it was a full-screen blurred layer at opacity 0), and is there when the drawer opens', blur.scrim === 'hidden' && scrim.closed === 'hidden' && scrim.open === 'visible' && scrim.again === 'hidden', JSON.stringify(scrim));
 await T.ctx.close();
 
@@ -202,7 +202,9 @@ const used = await D.ev(async () => {
   const nw = [...document.querySelectorAll('#tab-bag .item.equipped .pv .tag.new')][0]; out.newOnEquipped = nw ? same(nw, getComputedStyle(document.documentElement).getPropertyValue('--on-danger').trim()) : 'none';
   S.ui.questView = 'pass'; showTab('quests'); await sl(400); const got = document.querySelector('.pt.got'); out.got = got ? getComputedStyle(got).opacity : 'none';
   S.ui.gardenView = 'almanac'; showTab('garden'); await sl(500); const none = document.querySelector('.gd-mut.none'); out.none = none ? getComputedStyle(none).opacity : 'none';
-  showTab('timer'); await sl(300); const act = document.querySelector('.sidenav button.active .nv-l'); out.nav = act ? getComputedStyle(act).color === getComputedStyle(act.closest('button')).color && getComputedStyle(act).color !== getComputedStyle(document.querySelector('.sidenav button:not(.active) .nv-l')).color : null;
+  showTab('timer'); await sl(300); const navOk = () => { const act = document.querySelector('.sidenav button.active .nv-l'); return act ? getComputedStyle(act).color === getComputedStyle(act.closest('button')).color && getComputedStyle(act).color !== getComputedStyle(document.querySelector('.sidenav button:not(.active) .nv-l')).color : null; };
+  for (let i = 0; i < 30 && navOk() === false; i++) await sl(100);   // the label's colour is a transition: read it when it has arrived
+  out.nav = navOk();
   // from the design review: a rarity word has its dot, a subject tag its tinted chip, "overdue" its warning sign
   showTab('bag'); await sl(400); const rr = document.querySelector('#tab-bag .bi-src .rar'); out.dot = rr ? getComputedStyle(rr, '::before').content !== 'none' && getComputedStyle(rr, '::before').backgroundColor !== 'rgba(0, 0, 0, 0)' : null;
   S.ui.remView = 'todo'; S.ui.todoFilter = 'all'; showTab('reminders'); await sl(500); const tg = document.querySelector('#todoList .td-tag'); out.tag = tg ? getComputedStyle(tg).backgroundColor !== 'rgba(0, 0, 0, 0)' : null;
