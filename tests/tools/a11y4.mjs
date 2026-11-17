@@ -39,11 +39,13 @@ const VIEWS = [
   ['dlg-streak-mend', "showTab('timer'); openStreakCare()"],
   ['timer-break', "const t = S.timer; t.phase = 'short'; t.status = 'idle'; renderTimer(); showTab('timer')"],
   ['dlg-break-menu', "showTab('timer'); openBreak('')"], ['dlg-break-breathe', "showTab('timer'); openBreak('breathe'); BRK.t0 = Date.now() - 2600; brkTick()"], ['dlg-break-stretch', "showTab('timer'); openBreak('stretch')"], ['dlg-break-water', "showTab('timer'); openBreak('water')"],
+  // v2.0 phase 7: the invite page, a gift, the profile with its invite card
+  ['friends-invite', "S.ui.friendsView = 'invite'; SOC.friend = null; showTab('friends')"], ['dlg-invite-gift', "showTab('timer'); showRewardReveal({ kicker: 'Invite milestone', title: '3 friends joined and stayed', items: ['frame_i_link'], coins: 150, pal: ['#2f8f83', '#f0a35f'], note: 'Next: 5 friends', key: 'a11y' + Date.now() })"],
   ['stats-insights', "const t = S.timer; t.phase = 'focus'; t.status = 'idle'; renderTimer(); showTab('stats'); renderEnergyCard(); document.querySelector('#energySlot').scrollIntoView({ block: 'center' })"],
   ['dlg-presets', "showTab('timer'); document.querySelector('#managePresets').click()"], ['dlg-reminder', "showTab('reminders'); document.querySelector('#remAdd').click()"], ['dlg-inbox', "showTab('timer'); document.querySelector('#inboxBtn').click()"],
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],
 ];
-const SUB = ['timer', 'stats-week', 'quests-boss', 'quests-pass', 'profile', 'friends', 'garden', 'shop', 'bag', 'settings', 'reminders', 'todo', 'clan', 'board', 'cal-month', 'cal-week', 'dlg-presets', 'dlg-inbox', 'dlg-streak-paused', 'dlg-streak-mend', 'timer-break', 'dlg-break-menu', 'dlg-break-breathe', 'stats-insights'];   // for the other themes: the screens that use every token
+const SUB = ['timer', 'stats-week', 'quests-boss', 'quests-pass', 'profile', 'friends', 'garden', 'shop', 'bag', 'settings', 'reminders', 'todo', 'clan', 'board', 'cal-month', 'cal-week', 'dlg-presets', 'dlg-inbox', 'dlg-streak-paused', 'dlg-streak-mend', 'timer-break', 'dlg-break-menu', 'dlg-break-breathe', 'stats-insights', 'friends-invite', 'dlg-invite-gift'];   // for the other themes: the screens that use every token
 if (args.includes('--few')) SUB.splice(0, SUB.length, 'timer', 'stats-week', 'quests-pass', 'profile', 'friends', 'bag', 'clan', 'todo', 'cal-month', 'cal-week');   // --few: ten screens for the other themes
 const only = val('--only') ? val('--only').split(',') : null;
 // Only the glyphs are hidden. The colour property itself stays, because backgrounds, borders and icons are often drawn

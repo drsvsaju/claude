@@ -28,6 +28,8 @@ const VIEWS = [
   ['dlg-streak', "showTab('timer'); openStreakCare()"], ['dlg-streak-paused', "showTab('timer'); S.game.pauses[todayKey()] = 3; G = null; renderToday(); openStreakCare()"],
   ['timer-break', "S.game.pauses = {}; G = null; const t = S.timer; t.phase = 'short'; t.status = 'idle'; renderTimer(); showTab('timer')"],
   ['dlg-break-menu', "showTab('timer'); openBreak('')"], ['dlg-break-breathe', "showTab('timer'); openBreak('breathe')"], ['dlg-break-stretch', "showTab('timer'); openBreak('stretch')"], ['dlg-break-water', "showTab('timer'); openBreak('water')"],
+  // v2.0 phase 7: the invite page, a gift, the profile with its invite card
+  ['friends-invite', "S.ui.friendsView = 'invite'; SOC.friend = null; showTab('friends')"], ['dlg-invite-gift', "showTab('timer'); showRewardReveal({ kicker: 'Invite milestone', title: '3 friends joined and stayed', items: ['frame_i_link'], coins: 150, pal: ['#2f8f83', '#f0a35f'], note: 'Next: 5 friends', key: 'a11y' + Date.now() })"],
   ['after-block', "const t = S.timer; t.phase = 'focus'; t.status = 'idle'; renderTimer(); showTab('timer'); const s = S.sessions[S.sessions.length - 1]; delete S.debrief[s.id]; offerNote(s.id)"],
   ['dlg-presets', "showTab('timer'); document.querySelector('#managePresets').click()"], ['dlg-reminder', "showTab('reminders'); document.querySelector('#remAdd').click()"], ['dlg-inbox', "showTab('timer'); document.querySelector('#inboxBtn').click()"],
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],

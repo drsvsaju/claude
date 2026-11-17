@@ -49,6 +49,7 @@ if (isNew) {
   await shot(p, 'invite--d-light', "S.ui.friendsView = 'invite'; SOC.friend = null; showTab('friends'); scrollTo(0, 0);");
   await shot(p, 'invite-gift--d-light', "showTab('timer'); showRewardReveal({ kicker: 'Invite milestone', title: '3 friends joined and stayed', items: ['frame_i_link'], coins: 150, pal: ['#2f8f83', '#f0a35f'], note: 'Next: 5 friends', key: 'shot' + Date.now() });", '#rewardDlg', 1600);
   await shot(p, 'invite-welcome--d-light', "showTab('timer'); showRewardReveal({ kicker: 'Welcome gift', title: 'Three days in. Nice start.', items: ['ti_i_newleaf'], coins: 150, pal: ['#2f8f83', '#7cc07a'], note: '@siverieg gets a thank-you too.', key: 'shotw' + Date.now() });", '#rewardDlg', 1600);
+  await shot(p, 'profile-invite--d-light', "showTab('profile'); document.querySelector('.inv-pcard').scrollIntoView({ block: 'center' });", '.inv-pcard');
   await shot(p, 'friend-profile--d-light', "S.ui.friendsView = 'friends'; showTab('friends'); await openFriend('demo_f4'); scrollTo(0, 0);", '.fp-head');
   await p.context().close(); p = await demo(1280, 900, 'dark');
   await shot(p, 'invite--d-dark', "S.ui.friendsView = 'invite'; SOC.friend = null; showTab('friends'); scrollTo(0, 0);");

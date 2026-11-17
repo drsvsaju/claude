@@ -3098,7 +3098,7 @@ body.sp-handoff #mascot { opacity: 0; }
 .reward-dlg::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 160px; pointer-events: none;
   background: radial-gradient(60% 100% at 50% 0%, color-mix(in srgb, var(--rw1, var(--accent)) 30%, transparent), transparent 70%); }
 .rw-pomeo .mascot { position: static; width: 72px; height: 72px; margin: 0 auto; display: block; }
-.rw-kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--rw1, var(--accent)); font-weight: 700; position: relative; }
+.rw-kicker { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: color-mix(in srgb, var(--rw1, var(--accent)) 35%, var(--t-1, var(--text))); font-weight: 700; position: relative; }   /* v2.0: the reward's own colour, pulled towards the text colour so it reads in every theme */
 .reward-dlg h3 { margin: 4px 0 12px; font-size: 20px; position: relative; }
 .rw-items { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; position: relative; margin-bottom: 8px; }
 .rw-item { width: 128px; padding: 10px 8px; border-radius: 14px; border: 1.5px solid var(--rc, var(--line)); background: var(--surface); }
@@ -4903,8 +4903,10 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .ins-hint { margin-top: 14px; }
 @media (min-width: 1000px) { .ins-grid.g3 { grid-template-columns: repeat(3, 1fr); } }   /* five or nine boxes: rows of three instead of one left over */
 /* ----- v2.0 phase 7: invites (the sign-in greeting, Friends › Invite, the profile card) ----- */
-.ref-hello { margin: 12px 0 10px; padding: 9px 12px; border-radius: var(--r-12, 12px); background: var(--accent-soft, var(--hover)); color: var(--t-1, var(--text)); font-size: var(--fs-14, 14px); font-weight: 600; text-align: center; overflow-wrap: anywhere; }
-.ref-add { margin-top: 10px; }
+.reward-dlg .dlg-title { padding-left: 40px; } @media (max-width: 640px) { .reward-dlg .dlg-title { padding-left: 44px; } }   /* centred: the same room on both sides of the close button */
+.ref-hello { margin: 12px 0 10px; padding: 10px 12px; border-radius: var(--r-12, 12px); background: var(--accent-soft, var(--hover)); color: var(--t-1, var(--text)); font-size: var(--fs-14, 14px); overflow-wrap: anywhere; }
+.ref-hello .ref-who { font-weight: 600; text-align: center; }
+.ref-hello .ref-add { margin-top: 6px; } .ref-hello .ref-hint { margin: 0; color: var(--t-2, var(--muted)); line-height: 1.4; }
 .inv-card .desc { margin: 0 0 12px; }
 .inv-link { display: flex; gap: 8px; }
 .inv-link input { flex: 1; min-width: 0; font-size: var(--fs-14, 14px); }
@@ -4913,7 +4915,9 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .inv-own .desc { margin: 0; }
 .inv-next { margin: 4px 0 12px; } .inv-bar i { background: var(--accent) !important; }
 .inv-nt { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: var(--fs-14, 14px); }
-#friendsBody > .inv-card ~ .card { margin-top: 16px; }
+.inv-grid { display: grid; gap: 16px; align-items: start; } .inv-col { display: grid; gap: 16px; min-width: 0; }
+@media (min-width: 1000px) { .inv-grid { grid-template-columns: 1fr 1fr; } }
+.inv-msg { margin: 10px 0 0; }
 .inv-people, .inv-miles { list-style: none; margin: 0; padding: 0; }
 .inv-people li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--hair, var(--line)); font-size: var(--fs-14, 14px); overflow-wrap: anywhere; }
 .inv-miles li { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--hair, var(--line)); }
@@ -5043,7 +5047,11 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
             <button type="button" role="tab" data-mode="signup">Sign up</button>
             <button type="button" role="tab" data-mode="login">Log in</button>
           </div>
-          <p class="ref-hello hidden" id="refHello" role="status"></p>
+          <div class="ref-hello hidden" id="refHello">
+            <div class="ref-who" id="refHelloText" role="status"></div>
+            <label class="stay ref-add hidden" id="refAddWrap"><input type="checkbox" id="refAdd" checked aria-describedby="refAddHint"> <span id="refAddText"></span></label>
+            <div class="hint ref-hint" id="refAddHint"></div>
+          </div>
           <p class="lead" id="authLead">Keep your sessions, streaks and stats in sync on every device.</p>
           <form class="auth-form" id="authForm" novalidate>
             <label class="field" for="authUser">Username</label>
@@ -5066,7 +5074,6 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
               </div>
               <div class="hint" id="pw2Hint" aria-live="polite"></div>
               <p class="pw-warn" id="pwWarn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20Z"/><path d="M12 10v4M12 17h.01"/></svg>There’s no password reset yet, so pick one you’ll remember.</p>
-              <label class="stay ref-add hidden" id="refAddWrap"><input type="checkbox" id="refAdd" checked> <span id="refAddText"></span></label>
             </div>
 
             <label class="stay"><input type="checkbox" id="authStay" checked> Stay logged in on this device</label>
@@ -11142,7 +11149,7 @@ ITEMS.push(
   { id: 'ti_i_buddy', cat: 'title', name: 'Study Buddy', desc: 'Brought a friend who stayed', price: -1, rarity: 'rare', how: 'Invite 1 friend who stays' },
   { id: 'frame_i_link', cat: 'frame', name: 'Linked frame', desc: 'A ring with two links joined', price: -1, rarity: 'epic', how: 'Invite 3 friends who stay' },
   { id: 'au_i_together', cat: 'aura', name: 'Together aura', desc: 'A warm glow in two colours', price: -1, rarity: 'epic', how: 'Invite 5 friends who stay' },
-  { id: 'ti_i_guide', cat: 'title', name: 'Study Guide', desc: 'Ten friends found their focus', price: -1, rarity: 'epic', how: 'Invite 10 friends who stay' },
+  { id: 'ti_i_guide', cat: 'title', name: 'Trailblazer', desc: 'Ten friends found their focus', price: -1, rarity: 'epic', how: 'Invite 10 friends who stay' },
   { id: 'ti_i_ambassador', cat: 'title', name: 'Ambassador', desc: 'Twenty-five friends brought along', price: -1, rarity: 'legendary', how: 'Invite 25 friends who stay' },
   { id: 'frame_i_laurel', cat: 'frame', name: 'Laurel frame', desc: 'A wreath around your badge', price: -1, rarity: 'legendary', how: 'Invite 25 friends who stay' },
   // v1.19 ranks: the first time ever at each rank (see RANK_ITEMS)
@@ -12176,7 +12183,7 @@ function renderProfile() {
   const badge = on ? withAura(badgeSVG(g.tier, { size: 44, frame: equippedId('frame'), avatar: myAvatar() }), g.streak.cur, myAura())
     : hasAvatar(myAvatar()) ? avatarSVG(myAvatar(), 44) : `<span class="avatar big" style="width:44px;height:44px;font-size:18px">${USER.guest ? '?' : esc(USER.username[0].toUpperCase())}</span>`;
   void badge;
-  $('#profileHead').innerHTML = playerCardHTML() + clanProfileCard() + pomeoCard() + inviteProfileCard();
+  $('#profileHead').innerHTML = playerCardHTML() + clanProfileCard() + inviteProfileCard() + pomeoCard();
   if (on) renderProgress();
   else $('#progressView').innerHTML = `<div class="card empty-card"><p class="muted">Levels, badges and achievements are hidden.</p><button class="btn" id="openSettings2">Turn them on in Settings</button></div>`;
 }
@@ -13046,7 +13053,8 @@ document.querySelectorAll('link[data-static-icon]').forEach(l => l.remove());   
    and capped, and nothing here is worth farming.
    ========================================================================== */
 const INVITE_MILES = [1, 3, 5, 10, 25];
-const INVITE_COINS = { in: 150, m1: 100, m3: 150, m5: 250, m10: 400, m25: 800 };
+const INVITE_EACH = 50, INVITE_EACH_MAX = 25;   // the inviter's thank-you for every friend who stayed (so “you both get a gift” is true each time)
+const INVITE_COINS = { in: 150, m1: 100, m3: 150, m5: 250, m10: 400, m25: 800, ...Object.fromEntries(Array.from({ length: INVITE_EACH_MAX }, (_, i) => ['f' + (i + 1), INVITE_EACH])) };
 const INVITE_ITEMS = { in: ['ti_i_newleaf'], m1: ['ti_i_buddy'], m3: ['frame_i_link'], m5: ['au_i_together'], m10: ['ti_i_guide'], m25: ['ti_i_ambassador', 'frame_i_laurel'] };
 const REF_GAP_MS = 18 * 3600e3, REF_WINDOW_MS = 14 * 864e5, REF_STEP_MIN = 20, REF_TOTAL_MIN = 180, REF_CHECKS = 3;
 const REF_KEY = 'pomodorolist-invite', REF_NEW_KEY = 'pomodorolist-new-account', REF_ADD_KEY = 'pomodorolist-invite-add';
@@ -13057,7 +13065,7 @@ const withRef = url => (USER && !USER.guest && USER.username && !/[?&]ref=/.test
 const pendingRef = () => { try { return sessionStorage.getItem(REF_KEY) || ''; } catch (e) { return ''; } };
 function shareInvite(btn) {
   if (S.invite && !S.invite.shared && !isPreview()) { S.invite.shared = true; save(); }
-  return shareLink({ title: 'Pomodorolist', text: `Study with me on Pomodorolist — I’m @${USER.username}`, url: inviteLink(), btn, what: 'Invite link' });
+  return shareLink({ title: 'Pomodorolist', text: inviteMessage(), url: inviteLink(), btn, what: 'Invite link' });
 }
 /** ?ref=username (or the older ?invite=) is remembered for this tab and taken out of the address bar. */
 function captureInvite() {
@@ -13074,8 +13082,11 @@ function renderRefHello(name = pendingRef()) {
   el.classList.toggle('hidden', !name);
   wrap.classList.toggle('hidden', !name || authMode !== 'signup');
   if (!name) return;
-  el.textContent = `@${name} invited you to study together`;
+  $('#refHelloText').textContent = `@${name} invited you to study together`;
   $('#refAddText').textContent = `Add @${name} as a friend`;
+  const up = authMode === 'signup';
+  $('#refAddHint').classList.toggle('hidden', !up);
+  $('#refAddHint').textContent = `@${name} will see that you joined. Friends see each other’s study time and streak; you can remove a friend at any time.`;
 }
 /** Called when a sign-up succeeds, before the account loads: remember that it is new, and the checkbox. */
 function inviteMarkNew() {
@@ -13171,7 +13182,7 @@ function inviteWelcome() {
   save();
   const name = S.invite.ref ? S.invite.ref.name : '', body = `+${INVITE_COINS.in} coins · ${inviteItemNames(['in']).join(', ')}`;
   inboxAdd({ type: 'info', key: 'inv:in', title: `🎁 Welcome gift${name ? ` · you came with @${name}` : ''}`, body, go: { tab: 'friends', view: 'invite' } });
-  if (S.settings.gamification) showRewardReveal({ kicker: 'Welcome gift', title: 'Three days in. Nice start.', items: INVITE_ITEMS.in.filter(id => ITEM_BY_ID[id]), coins: INVITE_COINS.in, pal: ['#2f8f83', '#7cc07a'], note: name ? `@${name} gets a thank-you too.` : '', key: 'inv:in' });
+  if (S.settings.gamification) showRewardReveal({ kicker: 'Welcome gift', title: 'Three days in. Nice start.', items: INVITE_ITEMS.in.filter(id => ITEM_BY_ID[id]), coins: INVITE_COINS.in, note: name ? `@${name} gets a thank-you too.` : '', key: 'inv:in' });
   else toast(`Welcome gift: ${body}`, 4200, true);
 }
 /** The inviter's side: read the count (rarely) and claim what it has reached. */
@@ -13183,19 +13194,21 @@ async function inviteSync(force = false) {
     const d = await FB.getDoc(FB.doc(FB.db, 'inviteStats', USER.uid));
     iv.readAt = Date.now();
     iv.n = Math.max(iv.n || 0, d.exists() ? Math.max(0, Math.floor(+d.data().n || 0)) : 0);
+    let each = 0;
+    for (let i = 1; i <= Math.min(iv.n, INVITE_EACH_MAX); i++) if (inviteClaim('f' + i)) each++;
     const got = INVITE_MILES.filter(m => iv.n >= m && inviteClaim('m' + m));
     save();
-    if (got.length) inviteMilestones(got);
+    if (got.length || each) inviteMilestones(got, each);
     if (S.ui.tab === 'friends' && S.ui.friendsView === 'invite') renderFriends(true);
     return true;
   } catch (e) { console.warn('invite stats', e.code || e); return false; }
 }
-function inviteMilestones(got) {
-  const keys = got.map(m => 'm' + m), top = got[got.length - 1], coins = keys.reduce((a, k) => a + INVITE_COINS[k], 0), items = keys.flatMap(k => INVITE_ITEMS[k] || []).filter(id => ITEM_BY_ID[id]);
-  const next = INVITE_MILES.find(m => m > top), title = `${top} ${top === 1 ? 'friend' : 'friends'} joined and stayed`;
-  inboxAdd({ type: 'info', key: 'inv:' + keys.join(','), title: `🤝 ${title}`, body: `+${fmtNum(coins)} coins${items.length ? ' · ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : ''}`, go: { tab: 'friends', view: 'invite' } });
-  if (S.settings.gamification) showRewardReveal({ kicker: 'Invite milestone', title, items, coins, pal: ['#2f8f83', '#f0a35f'], note: next ? `Next: ${next} friends` : 'Every invite milestone reached.', key: 'inv:' + keys.join(',') });
-  else toast(`🤝 ${title}`, 4200, true);
+function inviteMilestones(got, each = 0) {
+  const keys = got.map(m => 'm' + m), n = S.invite.n, coins = keys.reduce((a, k) => a + INVITE_COINS[k], 0) + each * INVITE_EACH, items = keys.flatMap(k => INVITE_ITEMS[k] || []).filter(id => ITEM_BY_ID[id]);
+  const title = `${n} ${n === 1 ? 'friend' : 'friends'} joined and stayed`, body = `+${fmtNum(coins)} coins${items.length ? ' · ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : ''}`;
+  inboxAdd({ type: 'info', key: 'inv:n' + n, title: `🤝 ${title}`, body, go: { tab: 'friends', view: 'invite' } });
+  if (got.length && S.settings.gamification) showRewardReveal({ kicker: 'A thank-you', title, items, coins, key: 'inv:n' + n });   // (no “next” here: a thank-you is not a nudge)
+  else toast(`🤝 ${title} · ${body}`, 4200, true);
 }
 /** Who joined through my link (for the invite page only; at most once in ten minutes). */
 async function inviteLoadList() {
@@ -13211,51 +13224,54 @@ async function inviteLoadList() {
   if (S.ui.tab === 'friends' && S.ui.friendsView === 'invite') renderFriends(true);
 }
 /** The invite page (Friends › Invite). */
+const INVITE_KIND = { title: 'title', frame: 'badge frame', aura: 'aura' };
+const inviteGiftText = k => [`${fmtNum(INVITE_COINS[k])} coins`, ...(INVITE_ITEMS[k] || []).filter(id => ITEM_BY_ID[id]).map(id => `${INVITE_KIND[ITEM_BY_ID[id].cat] || ITEM_BY_ID[id].cat} “${ITEM_BY_ID[id].name.replace(/ (frame|aura)$/, '')}”`)].join(' · ');
+const inviteMessage = () => `Study with me on Pomodorolist — I’m @${USER.username}`;
 function renderInvite(fromLoad) {
-  const iv = S.invite || {}, n = iv.n || 0, cl = S.game.claims.invite, nx = INVITE_MILES.find(m => m > n), prev = [0, ...INVITE_MILES].filter(m => m <= n).pop();
+  const iv = S.invite || {}, n = iv.n || 0, cl = S.game.claims.invite, nx = INVITE_MILES.find(m => m > n);
   if (!fromLoad) { inviteLoadList(); inviteSync(Date.now() - (iv.readAt || 0) > 5 * 60000); }
-  const list = INV.list, joined = list ? list.length : null, mine = inviteNext();
-  const text = `Study with me on Pomodorolist — I’m @${USER.username}`;
+  const list = INV.list, joined = list ? Math.max(list.length, n) : null, mine = inviteNext();
   const rows = INVITE_MILES.map(m => {
-    const k = 'm' + m, names = inviteItemNames([k]);
-    return `<li class="inv-m${cl[k] ? ' got' : n >= m ? ' due' : ''}"><span class="inv-n">${m}</span><span class="inv-w"><b>${m === 1 ? 'A friend' : m + ' friends'} joined and stayed</b><span class="lbl">${fmtNum(INVITE_COINS[k])} coins${names.length ? ' · ' + esc(names.join(' · ')) : ''}</span></span><span class="inv-s lbl">${cl[k] ? 'Yours ✓' : ''}</span></li>`;
+    const k = 'm' + m;
+    return `<li class="inv-m${cl[k] ? ' got' : ''}"><span class="inv-n">${m}</span><span class="inv-w"><b>${m === 1 ? 'Your first friend who stays' : m + ' friends who stayed'}</b><span class="lbl">${esc(inviteGiftText(k))}</span></span><span class="inv-s lbl">${cl[k] ? 'Yours ✓' : ''}</span></li>`;
   }).join('');
   const people = !list ? '<div class="lbl">Loading…</div>' : !list.length ? '<div class="empty">No one yet. Send your link to someone you would like to study beside.</div>'
-    : `<ul class="inv-people">${list.map(x => `<li><span>@${esc(x.name)}</span><span class="lbl">${x.state === 'active' ? 'Stayed ✓' : `Joined · day ${Math.min(REF_CHECKS, x.checks + 1)} of ${REF_CHECKS}`}</span></li>`).join('')}</ul>`;
+    : `<ul class="inv-people">${list.map(x => `<li><span>@${esc(x.name)}</span><span class="lbl">${x.state === 'active' ? 'Stayed ✓' : 'Joined'}</span></li>`).join('')}</ul>`;
   const own = !mine ? '' : `<div class="card inv-own"><h2>You came with @${esc(iv.ref.name)}</h2><p class="desc">${mine.state === 'active' ? `You stayed: your welcome gift is in your bag, and @${esc(iv.ref.name)} got a thank-you.`
     : mine.state === 'ended' ? 'The two weeks for the welcome gift are over. Everything else works as always.'
-    : `Day ${mine.day + 1} of ${REF_CHECKS}. Keep studying as you like: after three days of focus (3 hours in all) you both get a gift.`}</p></div>`;
-  $('#friendsBody').innerHTML = `<div class="card inv-card">
+    : `Study as you like: once you have focused on three days (3 hours in all) within two weeks of joining, you both get a gift.`}</p></div>`;
+  $('#friendsBody').innerHTML = `<div class="inv-grid"><div class="inv-col">
+    <div class="card inv-card">
       <h2>Invite a friend</h2>
-      <p class="desc">When a friend joins through your link and keeps studying for three days, you both get a gift. No spam: the link only goes where you send it.</p>
+      <p class="desc">When a friend joins through your link and studies on three days (3 hours in all) within two weeks, you both get a gift: ${fmtNum(INVITE_COINS.in)} coins and a title for them, ${INVITE_EACH} coins for you, and more at 1, 3, 5, 10 and 25 friends.</p>
       <div class="inv-link"><input type="text" id="invLink" readonly value="${esc(inviteLink())}" aria-label="Your invite link"><button class="btn primary" type="button" data-inv="copy">Copy link</button></div>
-      <div class="btn-row inv-share">${navigator.share ? '<button class="btn" type="button" data-inv="share">Share…</button>' : ''}<a class="btn" data-inv="wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(text + ' ' + inviteLink())}">WhatsApp</a><button class="btn" type="button" data-inv="discord">Copy for Discord</button></div>
+      <div class="btn-row inv-share">${navigator.share ? '<button class="btn" type="button" data-inv="share">Share…</button>' : ''}<a class="btn" data-inv="wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(inviteMessage() + ' ' + inviteLink())}">Send on WhatsApp</a><button class="btn" type="button" data-inv="discord">Copy for Discord</button></div>
+      <p class="lbl inv-msg">The message says: “${esc(inviteMessage())}”, with your link. We never message anyone for you.</p>
     </div>
     ${own}
     <div class="card">
-      <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Friends you brought</h2><span class="lbl">${n} stayed${joined !== null ? ` · ${joined} joined` : ''}</span></div>
-      ${nx ? `<div class="inv-next"><div class="inv-nt"><span>Next gift at <b>${nx} ${nx === 1 ? 'friend' : 'friends'}</b></span><span class="lbl">${nx - n} to go</span></div><div class="sn-bar inv-bar"><i style="transform:translateX(${((n - prev) / (nx - prev) * 100 - 100).toFixed(1)}%)"></i></div></div>` : '<p class="lbl" style="margin:0 0 8px">Every invite milestone reached.</p>'}
+      <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Friends who joined through your link</h2><span class="lbl">${joined !== null ? `${joined} joined · ` : ''}${n} stayed</span></div>
+      ${nx ? `<div class="inv-next"><div class="inv-nt"><span>Next gift when <b>${nx} ${nx === 1 ? 'friend has' : 'friends have'} stayed</b></span><span class="lbl">${nx - n} to go</span></div><div class="sn-bar inv-bar"><i style="transform:translateX(${(n / nx * 100 - 100).toFixed(1)}%)"></i></div></div>` : '<p class="lbl" style="margin:0 0 8px">Every invite gift reached.</p>'}
       ${people}
-    </div>
-    <div class="card"><h2>Gifts</h2><ul class="inv-miles">${rows}</ul>
-      <p class="lbl" style="margin:10px 0 0">A friend counts once they have studied on three days (3 hours in all) within two weeks of joining. They get a welcome gift too: ${fmtNum(INVITE_COINS.in)} coins and the title “${esc((ITEM_BY_ID[INVITE_ITEMS.in[0]] || {}).name || '')}”. These looks cannot be had any other way.</p></div>`;
+    </div></div>
+    <div class="inv-col"><div class="card"><h2>Gifts for you</h2><ul class="inv-miles">${rows}</ul>
+      <p class="lbl" style="margin:10px 0 0">Plus ${INVITE_EACH} coins for every friend who stays (up to ${INVITE_EACH_MAX}). “Stayed” means they focused on three days, 3 hours in all, within two weeks of joining.</p></div></div></div>`;
 }
-/** On the profile: how many friends I brought, and the way to the invite page. */
-function inviteProfileCard() {
-  if (!USER || USER.guest) return '';
-  const n = (S.invite && S.invite.n) || 0;
-  return `<div class="card inv-pcard"><div class="inv-pw"><b>${n ? `Brought ${n} ${n === 1 ? 'friend' : 'friends'}` : 'Invite a friend'}</b><div class="lbl">${n ? 'who joined through your link and stayed' : 'You both get a gift when they stay'}</div></div><button class="btn small" type="button" data-goinvite>${n ? 'Invite more' : 'Invite'}</button></div>`;
-}
-document.addEventListener('click', e => { if (e.target.closest('[data-goinvite]')) { S.ui.friendsView = 'invite'; SOC.friend = null; showTab('friends'); } });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-inv]');
   if (!b) return;
   if (S.invite && !S.invite.shared && !isPreview()) { S.invite.shared = true; save(); }
-  const text = `Study with me on Pomodorolist — I’m @${USER.username}`;
   if (b.dataset.inv === 'copy') copyText(inviteLink(), { btn: b, what: 'Invite link' });
-  else if (b.dataset.inv === 'discord') copyText(`${text}\n${inviteLink()}`, { btn: b, what: 'Message for Discord' });
+  else if (b.dataset.inv === 'discord') copyText(`${inviteMessage()}\n${inviteLink()}`, { btn: b, what: 'Message for Discord' });
   else if (b.dataset.inv === 'share') shareInvite(b);
 });
+/** On the profile: how many friends I brought, and the way to the invite page. */
+function inviteProfileCard() {
+  if (!USER || USER.guest) return '';
+  const n = (S.invite && S.invite.n) || 0;
+  return `<div class="card inv-pcard"><div class="inv-pw"><b>${n ? `Brought ${n} ${n === 1 ? 'friend' : 'friends'}` : 'Study beside a friend'}</b><div class="lbl">${n ? 'who joined through your link and stayed' : 'You both get a gift when they join and stay'}</div></div><button class="btn small" type="button" data-goinvite>Invite a friend</button></div>`;
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-goinvite]')) { S.ui.friendsView = 'invite'; SOC.friend = null; showTab('friends'); } });
 function handleInvite() {
   if (isPreview()) return;
   const name = sessionStorage.getItem('pomodorolist-invite');
@@ -21631,7 +21647,7 @@ function demoDocs() {
     pinned: [{ name: 'Physics', presetId: 'p-deep' }],
     game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb', title: 'ti_s_unbreak' },
       tierFrom: '2000-01-03', rest: { [dayKey(addDays(startOfDay(now), -70))]: addDays(startOfDay(now), -25).getDay() }, pauses: { [dayKey(addDays(startOfDay(now), -36))]: 2 },   // v2.0 sample: a weekly rest day (never the empty day that starts the sample's streak, so its length stays the same) and a two-day pause
-      claims: { invite: { m1: Date.now() - 20 * 864e5 }, bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])),
+      claims: { invite: { m1: Date.now() - 20 * 864e5, f1: Date.now() - 20 * 864e5, f2: Date.now() - 6 * 864e5 }, bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])),
         pass: (() => { const ev = eventAt(Date.now()), o = {}; if (ev && ev.start >= PASS_FROM) { for (let i = 1; i <= 3; i++) o[`${ev.id}:p:${i}`] = Date.now() - (5 - i) * 864e5; for (let i = 1; i <= 2; i++) o[`${ev.id}:f:${i}`] = Date.now() - (5 - i) * 864e5; } return o; })() }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
     cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:14', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
     loadouts: [{ id: 'demo_lo1', name: 'Exam mode', look: { theme: 'th_ocean', avatar: 'av_owl', frame: 'frame_double', color: 'col_teal', aura: 'au_streak', pomhat: 'hat_grad', pomacc: 'acc_glasses', pomskin: 'skin_none', title: 'ti_none' } },

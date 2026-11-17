@@ -10,11 +10,11 @@ const R = Date.now().toString(36).slice(-5), nA = 'hosta_' + R, nB = 'gstb_' + R
 const ago = h => new Date(Date.now() - h * 3600e3);
 const ready = async d => { await d.p.waitForFunction(() => typeof firstLoadDone !== 'undefined' && firstLoadDone && SOC.started, null, { timeout: 20000 }); await wait(2500); for (let i = 0; i < 2; i++) { await d.ev(() => { if ($('#tutDlg') && $('#tutDlg').open) finishTutorial(); document.querySelectorAll('dialog[open]:not(#rewardDlg)').forEach(x => x.close()); }); await wait(300); } };
 const land = async (d, query) => { await d.p.goto('http://localhost:8000/index.html?emulator=1' + query); await d.p.waitForSelector('#authView:not(.hidden)'); await d.ev(() => { const s = document.getElementById('introSkip'); if (s) s.click(); }); await wait(300); };
-const hello = d => d.ev(() => { const vis = el => !!el && el.getClientRects().length > 0; return { text: vis($('#refHello')) ? $('#refHello').textContent : '', add: vis($('#refAddWrap')) ? $('#refAddText').textContent : '', checked: $('#refAdd').checked, search: location.search, stored: sessionStorage.getItem('pomodorolist-invite') }; });
+const hello = d => d.ev(() => { const vis = el => !!el && el.getClientRects().length > 0; return { text: vis($('#refHello')) ? $('#refHelloText').textContent : '', add: vis($('#refAddWrap')) ? $('#refAddText').textContent : '', hint: vis($('#refAddHint')) ? $('#refAddHint').textContent : '', checked: $('#refAdd').checked, search: location.search, stored: sessionStorage.getItem('pomodorolist-invite') }; });
 const join = async (d, name, query, { friend = true } = {}) => {
   await land(d, query);
   await d.p.click('[data-mode=signup] >> visible=true'); await d.p.fill('#authUser', name); await d.p.fill('#authPass', 'secret12'); await d.p.fill('#authPass2', 'secret12');
-  if (!friend) await d.p.click('#refAdd');
+  if (!friend) await d.p.click('#refAddWrap');
   await d.p.click('#authSubmit'); await ready(d);
 };
 // a check-in becomes due: 19 hours ago on the server and on this device, and `min` published focus minutes
@@ -44,8 +44,8 @@ const head = await L.ev(async () => {
   return out;
 });
 const raw = fs.readFileSync(new URL('./site/index.html', import.meta.url), 'utf8').slice(0, 6000);
-check('A link with ?ref=<name> greets by that name on the sign-in page (“@name invited you to study together”) without a Firestore read, offers “Add @name as a friend” (ticked) only when signing up, and leaves the address bar clean; the older ?invite= works and other parts of a link stay; a name that is not a username shows nothing',
-  l1.text === `@${nA} invited you to study together` && l1.search === '?emulator=1' && l1.stored === nA && l2.add === `Add @${nA} as a friend` && l2.checked && l3.add === '' && l3.text === l1.text && net0 === 0
+check('A link with ?ref=<name> greets by that name on the sign-in page (“@name invited you to study together”) without a Firestore read, offers “Add @name as a friend” (ticked, with what that means and that the inviter will see you joined) only when signing up, and leaves the address bar clean; the older ?invite= works and other parts of a link stay; a name that is not a username shows nothing',
+  l1.text === `@${nA} invited you to study together` && l1.search === '?emulator=1' && l1.stored === nA && l2.add === `Add @${nA} as a friend` && l2.checked && new RegExp(`@${nA} will see that you joined`).test(l2.hint) && /remove a friend at any time/.test(l2.hint) && l3.add === '' && l3.hint === '' && l3.text === l1.text && net0 === 0
   && l4.text === l1.text && /session=ABC234/.test(l4.search) && !/invite=/.test(l4.search) && l5.text === '' && l6.text === '', JSON.stringify({ l1, l2, l3, net0, l4, l5, l6 }));
 check('The page as served has a descriptive title, a description, Open Graph and Twitter tags with an absolute 1200×630 image and its alt text, a canonical address, an apple-touch-icon and two static icons; when it runs, only the live tab icon is left; the picture and icon files are there; there is no web app manifest and no service worker',
   /study timer/.test(head.title) && head.desc.length > 80 && /Pomodorolist/.test(head.ogt) && head.ogd.length > 40 && /^https:\/\/.+\/assets\/og-image\.png$/.test(head.img) && head.w === '1200' && head.h === '630' && head.alt.length > 20 && head.card === 'summary_large_image' && head.timg === head.img && /^https:\/\//.test(head.url) && /^https:\/\//.test(head.canon || '')
@@ -107,7 +107,7 @@ await A.ev(() => { S.ui.friendsView = 'invite'; showTab('friends'); }); await wa
 const a1 = await A.ev(c0 => {
   const txt = $('#friendsBody').textContent.replace(/\s+/g, ' '), vis = el => !!el && el.getClientRects().length > 0;
   return { n: S.invite.n, claim: !!S.game.claims.invite.m1, title: game().owned.has('ti_i_buddy'), coins: game().balance - c0, reveal: $('#rewardDlg').open && $('#rewardDlg').textContent.replace(/\s+/g, ' ').slice(0, 140),
-    link: $('#invLink').value, seg: [...$$('#friendsSeg button')].map(x => x.textContent.trim().replace(/\d+$/, '')).join(), head: (/(\d+) stayed · (\d+) joined/.exec(txt) || []).slice(1).join('/'), next: /Next gift at 3 friends/.test(txt) && /2 to go/.test(txt),
+    link: $('#invLink').value, seg: [...$$('#friendsSeg button')].map(x => x.textContent.trim().replace(/\d+$/, '')).join(), head: (/(\d+) joined · (\d+) stayed/.exec(txt) || []).slice(1).join('/'), next: /Next gift when 3 friends have stayed/.test(txt) && /2 to go/.test(txt), promise: /you both get a gift: 150 coins and a title for them, 50 coins for you, and more at 1, 3, 5, 10 and 25 friends/.test(txt), msg: /We never message anyone for you/.test(txt), kinds: /title “Study Buddy”/.test(txt) && /badge frame “Linked”/.test(txt) && /aura “Together”/.test(txt),
     people: [...document.querySelectorAll('.inv-people li')].map(li => li.textContent.replace(/\s+/g, ' ').trim()), miles: [...document.querySelectorAll('.inv-miles li')].map(li => (li.classList.contains('got') ? '✓' : '·') + li.querySelector('.inv-n').textContent).join(' '),
     wa: (document.querySelector('[data-inv="wa"]') || {}).href || '', copy: vis(document.querySelector('[data-inv="copy"]')), discord: vis(document.querySelector('[data-inv="discord"]')) };
 }, a0.coins);
@@ -116,10 +116,10 @@ await A.ev(() => showTab('profile')); await wait(400);
 const prof = await A.ev(() => ({ card: ($('.inv-pcard') || {}).textContent || '', shared: S.invite.shared }));
 await A.p.click('[data-goinvite]'); await wait(400);
 const went = await A.ev(() => S.ui.tab === 'friends' && S.ui.friendsView === 'invite' && !!$('#invLink'));
-check('The inviter reads their count only once they open the invite page (or have shared the link): 1 friend stayed → 100 coins and the title “Study Buddy”, once, with a reveal',
-  a0.n === 0 && quietSync === false && a1.n === 1 && a1.claim && a1.title && a1.coins === 100 && /Invite milestone/.test(a1.reveal || '') && /Study Buddy/.test(a1.reveal || ''), JSON.stringify({ a0, quietSync, a1: { n: a1.n, claim: a1.claim, title: a1.title, coins: a1.coins, reveal: a1.reveal } }));
-check('Friends › Invite shows the link (?ref=<me>), Copy, WhatsApp and “Copy for Discord”, “1 stayed · 2 joined”, the next gift, both friends with where they are, and the five gifts with the first marked; the profile says “Brought 1 friend” and leads back here',
-  a1.link.endsWith('?ref=' + nA) && /Invite$/.test(a1.seg) && a1.head === '1/2' && a1.next && a1.people.length === 2 && a1.people.some(x => x.includes('@' + nB) && /Stayed/.test(x)) && a1.people.some(x => x.includes('@' + nC) && /Joined · day 1 of 3/.test(x))
+check('The inviter reads their count only once they open the invite page (or have shared the link): 1 friend stayed → 50 coins for that friend and 100 more with the title “Study Buddy” for the first, once, with a reveal that does not ask for more',
+  a0.n === 0 && quietSync === false && a1.n === 1 && a1.claim && a1.title && a1.coins === 150 && /A thank-you/.test(a1.reveal || '') && /1 friend joined and stayed/.test(a1.reveal || '') && /Study Buddy/.test(a1.reveal || '') && !/Next/.test(a1.reveal || ''), JSON.stringify({ a0, quietSync, a1: { n: a1.n, claim: a1.claim, title: a1.title, coins: a1.coins, reveal: a1.reveal } }));
+check('Friends › Invite says exactly what both sides get, shows the link (?ref=<me>), Copy, WhatsApp and “Copy for Discord” with the message that goes out, “2 joined · 1 stayed”, the next gift, both friends (only “Joined” or “Stayed”), and the five gifts by kind with the first marked; the profile says “Brought 1 friend” and leads back here',
+  a1.link.endsWith('?ref=' + nA) && /Invite$/.test(a1.seg) && a1.head === '2/1' && a1.next && a1.promise && a1.msg && a1.kinds && a1.people.length === 2 && a1.people.some(x => x.includes('@' + nB) && /Stayed/.test(x)) && a1.people.some(x => x.includes('@' + nC) && /Joined$/.test(x))
   && a1.miles === '✓1 ·3 ·5 ·10 ·25' && /^https:\/\/wa\.me\/\?text=/.test(a1.wa) && decodeURIComponent(a1.wa).includes('?ref=' + nA) && a1.copy && a1.discord && /Brought 1 friend/.test(prof.card) && went, JSON.stringify({ a1, prof, went }));
 
 // ---------- 4. a second device, a friend's profile, other share links ----------
@@ -161,7 +161,7 @@ const demo = await DM.ev(async () => {
   const sl = ms => new Promise(r => setTimeout(r, ms)), out = {}, g0 = JSON.stringify(S.game) + JSON.stringify(S.invite);
   S.ui.friendsView = 'invite'; showTab('friends'); await sl(600);
   const txt = $('#friendsBody').textContent.replace(/\s+/g, ' ');
-  out.head = (/(\d+) stayed · (\d+) joined/.exec(txt) || []).slice(1).join('/'); out.people = document.querySelectorAll('.inv-people li').length; out.miles = document.querySelectorAll('.inv-miles li').length; out.link = /\?ref=demo_scholar$/.test($('#invLink').value);
+  out.head = (/(\d+) joined · (\d+) stayed/.exec(txt) || []).slice(1).join('/'); out.people = document.querySelectorAll('.inv-people li').length; out.miles = document.querySelectorAll('.inv-miles li').length; out.link = /\?ref=demo_scholar$/.test($('#invLink').value);
   document.querySelector('[data-inv="discord"]').click(); await sl(300); out.sync = await inviteSync(true); out.check = await inviteCheckIn();
   showTab('profile'); await sl(300); out.card = ($('.inv-pcard') || {}).textContent || '';
   S.ui.friendsView = 'friends'; showTab('friends'); await openFriend('demo_f4'); await sl(400); out.friend = (document.querySelector('.fp-head .lbl') || {}).textContent || '';
@@ -171,7 +171,7 @@ const demo = await DM.ev(async () => {
 await wait(1200);
 const s1 = await storage(DM);
 check('The demo has an invite page with sample friends (2 stayed, 3 joined), “Brought 2 friends” on the profile and “brought 3 friends” on a friend’s; copying a message changes nothing, and nothing is written',
-  demo.head === '2/3' && demo.people === 3 && demo.miles === 5 && demo.link && demo.sync === false && demo.check === false && /Brought 2 friends/.test(demo.card) && /brought 3 friends/.test(demo.friend) && demo.same && s0 === s1 && DM.net.length === n0, JSON.stringify({ demo, net: DM.net.slice(n0), storageSame: s0 === s1 }));
+  demo.head === '3/2' && demo.people === 3 && demo.miles === 5 && demo.link && demo.sync === false && demo.check === false && /Brought 2 friends/.test(demo.card) && /brought 3 friends/.test(demo.friend) && demo.same && s0 === s1 && DM.net.length === n0, JSON.stringify({ demo, net: DM.net.slice(n0), storageSame: s0 === s1 }));
 await DM.ctx.close();
 
 const PH = await page(390, 844, 'phone');
