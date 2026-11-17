@@ -20,7 +20,12 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   The component gallery is shot with `--page 'index.html?debug=1'`.
 - `v200a.mjs` (v2.0): the control library, on the Component gallery of the demo account — the native contract of
   `<ui-select>`, keyboard maps, ARIA, panels inside dialogs, phone sheets, the preset chooser, every palette's contrast
-  on every layer, and that the demo writes nothing. Suites named `v2*` run without `ot-classic.mjs`.
+  on every layer, and that the demo writes nothing. Suites named `v2*` and `v3*` run without `ot-classic.mjs`.
+- `v300a.mjs` (v2.0 phase 3): the shared shell and vocabulary — the dialog title, close button and phone bottom sheet,
+  one filled accent button per view on every tab, counts instead of dots, no dashed edge on a working control — the
+  timer ring (full at rest, empties clockwise, nothing loops during a block), and one check for each fault the screen
+  audit and the design review found (collection bar, chart labels, the stale coin count, the collapsed flashcard on
+  touch screens, exams, reminder delete, phone rows and tab strips). `tools/mk03.sh` builds the before / after pairs.
 - `perfp1.mjs`: a quick render / tab-switch / theme-application timing of two builds side by side.
 - `ui-compat.mjs` (v2.0, preloaded for every suite by the runners): the older suites keep calling `page.selectOption()`,
   `page.fill()` on a date / time / number, `page.on('dialog')` or a `window.confirm` stub, and this layer makes those

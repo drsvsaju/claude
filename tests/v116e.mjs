@@ -44,9 +44,9 @@ const buy = await G.ev(() => {
   const p0 = garden().produce, ok = gardenBuy('av_pumpkin'), p1 = garden().produce;
   const rec = S.gbuys.find(x => x.item === 'av_pumpkin');
   S.ui.gardenView = 'decor'; showTab('garden');
-  return { p0, ok, p1, rec: rec && rec.price, owned: isOwned('av_pumpkin'), avatar: myAvatar(), inOwned: game().owned.has('av_pumpkin'), coins: game().spent, card: ($('.gd-look[data-id="av_pumpkin"] .tag') || {}).textContent, btn: ($('.gd-look[data-id="av_pumpkin"] .act button') || {}).textContent, again: gardenBuy('av_pumpkin'), n: S.gbuys.filter(x => x.item === 'av_pumpkin').length };
+  return { p0, ok, p1, rec: rec && rec.price, owned: isOwned('av_pumpkin'), avatar: myAvatar(), inOwned: game().owned.has('av_pumpkin'), coins: game().spent, card: ($('.gd-look[data-id="av_pumpkin"] .act') || {}).textContent, tag: ($('.gd-look[data-id="av_pumpkin"] .tag') || {}).textContent || '', btn: !!$('.gd-look[data-id="av_pumpkin"] .act button'), again: gardenBuy('av_pumpkin'), n: S.gbuys.filter(x => x.item === 'av_pumpkin').length };
 });
-check('With 360 produce the pumpkin avatar costs 35: a gbuys record, produce 360 → 325, owned, equipped at once (no coins spent), the card says Equipped, buying it again is refused', buy.p0 === 360 && buy.ok && buy.p1 === 325 && buy.rec === 35 && buy.owned && buy.avatar === 'av_pumpkin' && buy.inOwned && buy.coins === 0 && /Equipped/.test(buy.card) && /Equipped/.test(buy.btn) && buy.again === false && buy.n === 1, JSON.stringify(buy));
+check('With 360 produce the pumpkin avatar costs 35: a gbuys record, produce 360 → 325, owned, equipped at once (no coins spent), the card says Equipped (v2.0: once, as a state line in its action slot — not a tag plus a disabled button), buying it again is refused', buy.p0 === 360 && buy.ok && buy.p1 === 325 && buy.rec === 35 && buy.owned && buy.avatar === 'av_pumpkin' && buy.inOwned && buy.coins === 0 && /Equipped/.test(buy.card) && !/Equipped/.test(buy.tag) && !buy.btn && buy.again === false && buy.n === 1, JSON.stringify(buy));
 // ---------- 4. every category applies ----------
 const all = await G.ev(() => {
   const mig = gardenMig(); mig.xp = 4000; GD = null; G = null;   // garden level 6: everything unlocked

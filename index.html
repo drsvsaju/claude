@@ -184,7 +184,7 @@ h2 { font-size: var(--fs-14, 14px); font-weight: 600; letter-spacing: 0; color: 
 .nv-foot { margin-top: auto; padding-top: 10px; }
 .nv-collapse svg { transition: transform .25s var(--ease); }
 :root.nav-mini .nv-collapse svg { transform: scaleX(-1); }
-.nav-scrim { position: fixed; inset: 0; z-index: 58; background: rgba(10, 14, 20, .38); opacity: 0; pointer-events: none; transition: opacity .22s var(--ease); }
+.nav-scrim { position: fixed; inset: 0; z-index: 58; background: var(--scrim, rgba(10, 12, 12, .5)); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .22s var(--ease); }
 .nav-scrim.on { opacity: 1; pointer-events: auto; }
 .btmbar { display: none; }
 
@@ -1266,8 +1266,8 @@ dialog.gt-dlg::backdrop { background: rgba(0, 0, 0, .18); backdrop-filter: none;
 
 /* Focus mode: everything but the timer steps back while a focus block runs */
 .top, .sidenav, .btmbar, .greet, #tab-timer .mason > .card:not(.timer-card) { transition: opacity .6s var(--ease); }
-body.focus-dim :is(.top, .sidenav, .btmbar, .greet, #tab-timer .mason > .card:not(.timer-card)) { opacity: .26; }
-body.focus-dim :is(.top, .sidenav, .btmbar, #tab-timer .mason > .card:not(.timer-card)):is(:hover, :focus-within) { opacity: 1; }
+body.focus-dim :is(.sidenav, .greet, #tab-timer .mason > .card:not(.timer-card)) { opacity: .26; }
+body.focus-dim :is(.sidenav, #tab-timer .mason > .card:not(.timer-card)):is(:hover, :focus-within) { opacity: 1; }
 
 /* Tomato mascot */
 .mascot { position: absolute; top: 10px; left: 12px; width: 40px; height: 40px; overflow: visible; }
@@ -4278,6 +4278,250 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
   .dlg-x:not(.plant):not(.rem-check) { width: 44px; height: 44px; min-height: 0; margin: -12px -10px 0 0; }   /* a full-size target on a phone */
   dialog .dlg-title { padding-right: 44px; min-height: 30px; }
 }
+/* ----- shared vocabulary (v2.0) ----- */
+/* One filled accent per view. A small "primary" is a row or tile action (Join, Claim, Accept…): a neutral pad in bold
+   ink. The view's own lead action (.lead: the page-header button, the lead card's action) keeps the fill. */
+.btn.small.primary:not(.lead):not(:disabled), .item .act .btn.primary:not(.lead):not(:disabled) { background: var(--pad, var(--surface)); border-color: var(--ctl-bd, var(--line)); color: var(--t-1, var(--text)); box-shadow: var(--e-pad, none); padding: 0 13px; min-width: 0; }
+.btn.small.primary:not(.lead):not(:disabled):hover, .item .act .btn.primary:not(.lead):not(:disabled):hover { background: var(--press, var(--surface)); border-color: var(--ctl-bd-hover, var(--muted)); }
+.btn.small.primary { min-width: 0; }
+.btn.small.primary.lead { padding: 0 16px; }
+/* One count pill: neutral inside tabs and chips; ink with inverse text when it asks for something. Never red, never a bare dot where there is a number. */
+.seg .cnt:not(:empty), .rem-seg .cnt:not(:empty), #bagCats .cnt:not(:empty), .todo-filters .cnt:not(:empty), .catrow .cnt:not(:empty), h2 .cnt:not(:empty) {
+  display: inline-block; box-sizing: border-box; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 9px; background: var(--hover, var(--line)); color: var(--t-1, var(--text));
+  font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; font-variant-numeric: tabular-nums; opacity: 1; vertical-align: 1px; }
+.seg .cnt.att:not(:empty), .rem-seg .cnt.due:not(:empty), h2 .cnt.att:not(:empty), #reqCount:not(:empty) { background: var(--t-1, var(--text)); color: var(--pop-bg, var(--surface)); }
+/* a navigation badge: the same pill when it has a number; a dot only when there is nothing to count */
+.tbadge { background: var(--t-1, var(--text)); font-style: normal; }
+.tbadge:not(:empty) { box-sizing: border-box; width: auto; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; color: var(--pop-bg, var(--surface)); font-size: 11px; font-weight: 600; line-height: 18px; text-align: center; font-variant-numeric: tabular-nums; }
+.sidenav .tbadge:not(:empty) { margin-top: -9px; right: 10px; }
+.nav-burger .tbadge:not(:empty), #navMore .tbadge:not(:empty), .lvchip .tbadge:not(:empty), #bagDot:not(:empty) { top: -4px; right: -4px; }
+/* A label chip states a fact; it is never pressed, so it is not a pill (a pill is something you press). */
+.pill, .lchip, .boss-meta .pill, .arena-card .boss-meta .pill, .ql-meta .pill {
+  display: inline-flex; align-items: center; gap: 4px; box-sizing: border-box; min-height: 22px; padding: 1px 8px; margin: 0; border: 0; border-radius: var(--r-6, 6px);
+  background: var(--raise, var(--hover)); color: var(--t-1, var(--text)); font-size: var(--fs-12, 12px); font-weight: 600; line-height: 1.2; white-space: nowrap; vertical-align: middle; }
+.pass-hero .pill.warn { border-radius: var(--r-6, 6px); }
+.lchip .ok-check, .lchip svg { width: 13px; height: 13px; flex: none; color: var(--accent-text, var(--accent)); stroke: currentColor; }
+/* the state of a tile whose action slot has nothing to do: one quiet line, not a disabled button */
+.item .act .lchip { flex: 1; justify-content: center; min-height: var(--h-sm, 32px); background: transparent; color: var(--t-2, var(--muted)); }
+/* A dashed edge means one thing: this control can't be used now. Everything else that was dashed is solid. */
+.rkl-div.nx { border-style: solid; border-color: var(--rk); }
+.rkl-div.nx::after { content: 'Next'; position: absolute; top: 3px; right: 6px; font-size: 10px; font-weight: 700; color: var(--t-2, var(--muted)); }
+.pt.cur { outline: 2px solid color-mix(in srgb, var(--ea, var(--accent)) 70%, transparent); outline-offset: 2px; }
+.cta-card, .mastered-badge, .ci-code, .rc-rally { border-style: solid; }
+.lb.pinned { border-top-style: solid; }
+/* One empty state: the line drawing above one sentence, centred, wherever it sits (a list row, a grid, a card body). */
+.empty:not(.card) { display: block; grid-column: 1 / -1; list-style: none; border: 0; }
+/* One back pad: a quiet pad above the page title on the left — navigation never spends the accent. */
+.linkbtn.back { display: inline-flex; align-items: center; gap: 2px; box-sizing: border-box; height: 32px; padding: 0 13px 0 9px; border: 1px solid var(--ctl-bd, var(--line)); border-radius: 999px; background: var(--pad, var(--surface)); box-shadow: var(--e-pad, none); color: var(--t-2, var(--muted)); font-size: var(--fs-13, 13px); font-weight: 500; position: relative; }
+.linkbtn.back:hover { background: var(--press, var(--surface)); color: var(--t-1, var(--text)); }
+@media (pointer: coarse) { .linkbtn.back::after { content: ''; position: absolute; inset: -6px; } }
+/* ----- the timer ring (v2.0, direction 4.23) -----
+   Full at rest; it empties clockwise as time runs. A thin line on a track of the same width, minute ticks just inside
+   it, and a small cap with a leaf at the head. No halo behind it. Ring styles from the shop keep their own strokes. */
+.timer-card { padding-top: 22px; }
+.ring { width: min(78vw, 320px); margin: 6px auto 20px; background: radial-gradient(circle, color-mix(in srgb, var(--accent) 5%, transparent) 0, transparent 66%); border-radius: 50%; }
+.ring .track { stroke: var(--track, var(--line)); stroke-width: 3.6; }
+.ring .prog { stroke: var(--accent-fill, var(--accent)); stroke-width: 3.6; }
+.ring.rs-thin .track, .ring.rs-thin .prog { stroke-width: 1.8; }
+.ring .ring-ticks line { stroke: var(--text); stroke-width: .9; stroke-linecap: round; opacity: .2; }
+.ring .ring-ticks line.t5 { stroke-width: 1.3; opacity: .42; }
+.ring .ring-cap circle { fill: var(--pop-bg, var(--surface)); stroke: var(--accent-fill, var(--accent)); stroke-width: 1.6; }
+.ring .ring-cap path { fill: var(--accent-fill, var(--accent)); }
+.ring.break .ring-cap circle { stroke: var(--muted); } .ring.break .ring-cap path { fill: var(--muted); }
+#ring.ot .ring-cap circle { stroke: var(--warn, #e0a030); } #ring.ot .ring-cap path { fill: var(--warn, #e0a030); }
+.ring.rs-dots .ring-ticks, .ring.rs-dots .ring-cap { display: none; }
+.ring-center .phase-label { font-size: var(--fs-13, 13px); font-weight: 600; letter-spacing: 0; color: var(--accent-text, var(--accent)); margin-bottom: 8px; }
+.ring-center .phase-label.break { color: var(--t-2, var(--muted)); }
+.ring-center .phase-label.ot { color: var(--warn-text, var(--warn, #c98a1a)); }
+.time { font-size: 76px; font-weight: 500; }
+.ring-sub { font-size: var(--fs-14, 14px); color: var(--t-2, var(--muted)); margin-top: 8px; max-width: 62%; }
+.ring-center .dots { align-items: center; margin-top: 10px; }
+.ring-center .dots::after { content: attr(data-l); margin-left: 4px; font-size: var(--fs-12, 12px); color: var(--t-2, var(--muted)); }
+@media (max-width: 640px) {
+  .ring { width: min(66vw, 240px); margin: 2px auto 16px; }
+  .ring .track, .ring .prog { stroke-width: 5.2; }
+  .ring .ring-ticks line:not(.t5) { display: none; }
+  .time { font-size: 60px; }
+  .ring-center .phase-label { margin-bottom: 4px; }
+  .ring-sub { margin-top: 4px; font-size: var(--fs-13, 13px); }
+  .ring-center .dots { margin-top: 6px; }
+}
+/* Focus dims what is around the timer, but a bar stays opaque: its contents fade, not the bar, so nothing behind it shows through. */
+body.focus-dim :is(.top, .btmbar) > * { opacity: .3; transition: opacity .2s; }
+body.focus-dim :is(.top, .btmbar):is(:hover, :focus-within) > * { opacity: 1; }
+/* ----- the Today card (v2.0): how much of the day's goal is done leads; streak, milestone and rank are flat rows ----- */
+.today-card .td-goal { margin-top: 14px; }
+.today-card .td-goal-top { align-items: baseline; margin-top: 2px; }
+.today-card #todayText { font-size: var(--fs-14, 14px); color: var(--t-2, var(--muted)); }
+.today-card #todayText b { font-size: 26px; font-weight: 600; line-height: 1.15; color: var(--t-1, var(--text)); margin-right: 3px; font-variant-numeric: tabular-nums; }
+.today-card .progress { height: 6px; margin-top: 8px; background: var(--track, var(--heat0)); }
+.today-card .progress i { background: var(--accent-fill, var(--accent)); }
+.today-card .streak-nums { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--hair, var(--line)); }
+.today-card .streak-nums > div { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.today-card .streak-nums .big { font-size: 22px; font-weight: 600; }
+.today-card .streak-nums > div:last-child { flex-direction: row-reverse; }
+.today-card .streak-nums > div:last-child .big { font-size: var(--fs-14, 14px); font-weight: 600; }
+.today-card .streak-nums > div:last-child .big small { font-size: var(--fs-12, 12px); margin-left: 3px; }
+.today-card .streak-next, .today-card .rank-line { margin: 12px 0 0; padding: 0; border: 0; border-radius: 0; background: none; }
+.today-card .sn-bar, .today-card .rl-bar { height: 4px; background: var(--track, var(--line)); }
+.today-card .today-extra { margin-top: 14px; padding-top: 12px; border-top-color: var(--hair, var(--line)); gap: 6px; font-size: var(--fs-13, 13px); color: var(--t-2, var(--muted)); }
+.today-card .today-extra button { font-size: inherit; color: var(--accent-text, var(--accent)); font-weight: 600; }
+/* the preset manager's own "Close" gives way to the dialog's close button */
+dialog > .dlg-xw ~ * #closeDlg { display: none; }
+/* ----- details from the screen audit (v2.0) ----- */
+dialog[tabindex="-1"]:focus { outline: none; }
+.ib-item .ib-x { opacity: 1; color: var(--t-2, var(--muted)); }
+.ib-item .ib-rd { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid var(--ctl-bd, var(--line)); font-size: 13px; line-height: 1; display: inline-grid; place-items: center; flex: none; }
+.ib-item .ib-rd:hover, .ib-item .ib-x:hover { background: var(--hover, transparent); color: var(--t-1, var(--text)); }
+@media (pointer: coarse) { .ib-item .ib-rd { display: none; } }   /* a tap on the row marks it read; "Mark all read" is in the head */
+/* ----- the page header (v2.0): the page's name in the same place on every page; view tabs under it, on the left ----- */
+.pg-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; min-height: 32px; }
+.pg-title, .rem-head h1, .gd-title h1, .bag-title, .rm-head h1, .posts-hero h1, .sess-hero h1 { font-size: 20px; font-weight: 600; letter-spacing: 0; line-height: 1.25; margin: 0; color: var(--t-1, var(--text)); }
+.linkbtn.back + .pg-head { margin-top: 12px; }
+.q-switch { justify-content: flex-start; }
+:root[data-minimal] .pg-head { margin-bottom: 10px; }
+.hdr-count { background: var(--t-1, var(--text)); color: var(--pop-bg, var(--surface)); font-weight: 600; font-size: 11px; }   /* a count is ink, not an alarm */
+.ring-center .dots span { border-color: var(--t-2, var(--muted)); }
+.ring-center .dots span.done, .ring-center .dots span.current { border-color: var(--accent-text, var(--accent)); }
+.ring-center .dots span.done { background: var(--accent-text, var(--accent)); }
+/* ----- faults from the phone screenshots (v2.0) ----- */
+.show-touch { display: none; }
+@media (hover: none) { .show-touch { display: block; } #remBody.hidden + .rem-tip, #remBody:empty + .rem-tip { display: none; } }
+.rem-tip { margin: 8px 4px 0; }
+/* the daily reward's cells: the claimed tick has its own line (it sat on top of the day number in a 40 px cell) */
+.track7 .d.got::after { position: static; display: block; margin-top: 1px; line-height: 1; color: var(--accent-text, var(--accent)); }
+/* a title or a name colour in a small reward tile is a glyph; its name is the tile's label (the text was cut to "Mon Stı") */
+.pt .pt-ic .titlepv, .pt .pt-ic .namepv { font-size: 0; line-height: 0; }
+.pt .pt-ic .titlepv::before { content: 'Aa'; font-size: 17px; line-height: 1; font-weight: 700; color: var(--t-1, var(--text)); }
+.pt .pt-ic .namepv::before { content: '@'; font-size: 20px; line-height: 1; font-weight: 700; }
+@media (max-width: 640px) {
+  /* a clan session in Reminders: its name and time get the row; "remind me" and the calendar button sit under them */
+  .crem .rem-fg { flex-wrap: wrap; row-gap: 6px; }
+  .crem .rem-acts { flex: 1 0 100%; justify-content: flex-end; }
+  /* the garden's lists start on the first screen: off the Garden view the egg card goes and the level card is one line + its bar */
+  .gd-head:not(.gv-garden) .gd-egg, .gd-head:not(.gv-garden) .gd-level > .lbl, .gd-head:not(.gv-garden) .gd-level > .gd-boost { display: none; }
+  .gd-head:not(.gv-garden) .gd-level { flex: none; padding: 10px 12px; }
+  .gd-head:not(.gv-garden) .gd-level .xpbar { margin: 6px 0 0; }
+}
+/* ----- more faults from the screen audit (v2.0) ----- */
+/* with the sign-up card open its own button is the one filled accent on the page */
+.lp.auth-open .lp-cta .btn.primary.lp-preview { background: var(--pad, var(--surface)); border-color: var(--ctl-bd, var(--line)); color: var(--t-1, var(--text)); box-shadow: var(--e-pad, none); }
+/* the command palette's current row: a bar and a fill you can see on a washed-out panel (the fill alone was 1.15:1) */
+.cmd-list li.sel { background: var(--accent-tint, var(--accent-soft)); box-shadow: inset 3px 0 0 var(--accent-text, var(--accent)); font-weight: 600; }
+/* to-do priority by shape as well as colour: high = a ringed dot, medium = a dot, low = a hollow ring */
+.td-pri { box-sizing: border-box; opacity: 1; }
+.todo.pri-high .td-pri { background: var(--danger-text, #c8452f); box-shadow: 0 0 0 2px var(--pop-bg, var(--surface)), 0 0 0 3.5px var(--danger-text, #c8452f); opacity: 1; }
+.todo.pri-med .td-pri { background: var(--t-2, var(--muted)); opacity: 1; }
+.todo.pri-low .td-pri { background: transparent; border: 1.5px solid var(--t-2, var(--muted)); }
+/* a challenge row: the whole name, then a bar that is not a metre long */
+.chal .cp { grid-template-columns: minmax(0, 190px) minmax(48px, 420px) auto; justify-content: start; }
+.chal .cp .nm { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.chal .cp .nm .cp-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) { .chal .cp { grid-template-columns: minmax(0, 1.25fr) minmax(40px, 1fr) auto; } }
+/* The flashcard keeps its height on touch screens: the 44 px touch-target rule (a heavier selector) had replaced the card's
+   200 px minimum, so on every phone the card was a 44 px strip with its "Question" label and flip hint squeezed out. */
+.cd-card:not(.plant):not(.rem-check) { min-height: 200px; }
+.tut-opt:not(.plant):not(.rem-check) { min-height: 64px; }
+/* ----- motion (v2.0, direction 6): three durations (120 / 200 / 320 ms), ease-out for what arrives, ease-in for what leaves;
+   transform and opacity only. Reduced keeps the opacity; Off has none (the global Off rule). ----- */
+:root[data-motion="full"] .tab.active, :root[data-motion="full"] .view-in { animation: pageIn var(--d-2, 200ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)) both; }
+:root[data-motion="full"] .tab.active.from-r { animation: v2FromR var(--d-2, 200ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)) both; }
+:root[data-motion="full"] .tab.active.from-l { animation: v2FromL var(--d-2, 200ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)) both; }
+:root[data-motion="reduced"] .tab.active, :root[data-motion="reduced"] .view-in { animation: fadeIn var(--d-1, 120ms) both; }
+@keyframes v2FromR { from { opacity: 0; transform: translateX(12px); } }
+@keyframes v2FromL { from { opacity: 0; transform: translateX(-12px); } }
+@media (min-width: 641px) {
+  :root[data-motion="full"] dialog[open]:not(.ui-pop, .sheet, .cmd, .tut, .gt-dlg) { animation: v2DlgIn var(--d-3, 320ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)) both; }
+}
+@keyframes v2DlgIn { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+:root:not([data-motion="off"]) dialog[open]:not(.ui-pop)::backdrop { animation: fadeIn var(--d-2, 200ms) both; }
+/* a bar's value moves in 320 ms (it took 900) */
+.xpbar i, .progress i, .chal .bar i { transition: transform var(--d-3, 320ms) var(--ease-out, cubic-bezier(.2, .8, .2, 1)); }
+:root[data-motion="reduced"] :is(.xpbar i, .progress i, .chal .bar i) { transition-duration: var(--d-1, 120ms); }
+/* the timer's controls keep their places: Start / Pause stays in the middle whatever the buttons beside it say */
+@media (min-width: 560px) {
+  .controls { display: grid; grid-template-columns: 1fr auto 1fr; }
+  .controls > #resetBtn { justify-self: end; } .controls > #skipBtn { justify-self: start; }
+}
+/* nothing glows: the running button had a pulsing halo for the whole block */
+#mainBtn.running::after { animation: none !important; opacity: 0 !important; }
+/* the Trophy Hall on a phone: two columns, names break between words (three 95 px tiles cut "Procrastinati / on Dragon") */
+@media (max-width: 640px) { .hall { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hall-card, .hall-card * { overflow-wrap: break-word; hyphens: none; } .hall-card { min-width: 0; } }
+/* a session row on a phone: the time gets its own line, so the name is not squeezed to "Phy…" */
+@media (max-width: 520px) { .sesslist .t { flex: 0 0 100%; min-width: 0; font-size: var(--fs-12, 12px); margin-bottom: -4px; } }
+/* small labels inside content are sentence case too (the sidebar's section heads and the comparison table keep their capitals) */
+.prog-hero .tiername, .lv-kicker, .tour-step, .ac-k, .pomeo-pop .pp-kicker, .boss-kicker, .trophy .tm, .cd-k, .wr-k, .ib-group, .tut-step, .hc-m span, .rw-kicker, .bi-src .rar, .pc-h, .up-row .up-tag, .rc-mon { text-transform: none; letter-spacing: 0; }
+/* What's new: a list of releases you can open, not a wall of paragraphs */
+.changelog { gap: 0; }
+.changelog li { display: block; border-top: 1px solid var(--hair, var(--line)); }
+.changelog li:first-child { border-top: 0; }
+.changelog details > summary { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; cursor: pointer; list-style: none; padding: 9px 0; border-radius: var(--r-8, 8px); }
+.changelog details > summary::-webkit-details-marker { display: none; }
+.changelog details > summary::after { content: ''; width: 7px; height: 7px; margin: 0 6px 3px 0; border-right: 1.75px solid var(--t-2, var(--muted)); border-bottom: 1.75px solid var(--t-2, var(--muted)); transform: rotate(45deg); align-self: center; }
+.changelog details[open] > summary::after { transform: rotate(225deg); margin-bottom: -3px; }
+.changelog .v { color: var(--accent-text, var(--accent)); }
+.changelog .d { display: block; grid-column: auto; margin: 0 0 12px 70px; max-width: 70ch; font-size: var(--fs-13, 13px); line-height: 1.55; color: var(--t-2, var(--muted)); }
+@media (max-width: 640px) { .changelog .d { margin-left: 0; } }
+/* ----- from the independent screenshot review (v2.0 phase 3) ----- */
+.q-s { display: none; }
+/* the profile chip's count sits on the avatar's corner (it covered the last digit of "Lv 19") */
+.lvchip { position: relative; }
+.lvchip .tbadge:not(:empty) { top: -6px; left: 20px; right: auto; }
+.park-ic { font-weight: 700; font-size: 15px; line-height: 1; color: var(--t-1, var(--text)); }
+/* a break's breathing guide is a soft pulse under Full motion only; at rest there is no band round the ring */
+.ring.breathing .ring-glow { opacity: 0; }
+:root[data-motion="full"] .ring.breathing .ring-glow { opacity: .45; }
+/* overtime ("+03:03") is one character longer: a size smaller, so it stays inside the ticks */
+#ring.ot .time { font-size: 62px; }
+/* "live" is the accent dot everywhere (it was red on the Timer and in the clan, teal in the sidebar) */
+.clan-now i, .live-dot { background: var(--accent-fill, var(--accent)); }
+/* one numeral style for key numbers: 600, tabular, on one line */
+.big { font-weight: 600; font-size: 26px; letter-spacing: -.01em; white-space: nowrap; }
+.today-card .streak-nums .big { font-size: 22px; }
+/* a status on a tile is a 6 px label chip, like every other fact (they were accent-outlined pills) */
+.item .pv .tag, .phase-tag { border-radius: var(--r-6, 6px); }
+.item .pv .tag { border: 0; background: var(--pop-bg, var(--surface)); color: var(--t-1, var(--text)); font-weight: 600; padding: 2px 7px; box-shadow: 0 0 0 1px var(--hair, var(--line)); }
+.item.equipped .pv .tag { color: var(--t-1, var(--text)); }
+.item.equipped .pv .tag .ok-check { color: var(--accent-text, var(--accent)); }
+#bagSearch { border-radius: var(--r-8, 8px); }   /* a field you type in is a square well */
+@media (max-width: 640px) {
+  /* the phone's top bar: the rank badge lives on the Profile, so the chip is the avatar alone; 44 px targets without bigger circles */
+  .lvchip .lv-rk, .lvchip .lvn, .lvchip .uname { display: none; }
+  .lvchip { padding: 2px; margin-left: 4px; }
+  .lvchip .tbadge:not(:empty) { left: auto; right: -5px; }
+  .top .iconbtn, .top .coinpill, .top .lvchip { position: relative; }
+  .top .iconbtn::after, .top .lvchip::after { content: ''; position: absolute; inset: -4px; }
+  #navMore .tbadge:not(:empty) { right: 6px; }
+  /* tab strips fit instead of being cut mid-label */
+  .q-em, #questSeg .q-l { display: none; }
+  #questSeg .q-s { display: inline; }
+  #questSeg button, #gardenSeg button { padding-left: 9px; padding-right: 9px; font-size: var(--fs-13, 13px); }
+  #questSeg .cnt:not(:empty), #gardenSeg .gd-n { margin-left: 4px; }
+  /* what a row is about wraps to a second line before it is cut */
+  .todo .rt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  .chal .cp { grid-template-columns: minmax(0, 1fr) auto; }
+  .chal .cp .nm { grid-column: 1 / -1; }
+  .cmd-in kbd { display: none; }
+  #csPts { flex-basis: 100%; padding-right: 44px; }
+  #ring.ot .time { font-size: 50px; }
+  .big { font-size: clamp(17px, 5.4vw, 24px); }
+  /* the garden's tabs keep their place on every view: title, one compact level row, the tabs, then the egg card (Garden view only) */
+  #gardenBody { display: flex; flex-direction: column; }
+  #gardenBody > * { order: 5; }
+  #gardenBody > .gd-head { display: contents; }
+  .gd-head > .gd-title { order: 1; margin-bottom: 10px; }
+  .gd-head > .gd-level { order: 2; flex: none; padding: 10px 12px; margin-bottom: 10px; }
+  .gd-head > .gd-level > .lbl, .gd-head > .gd-level > .gd-boost { display: none; }
+  .gd-head > .gd-level .xpbar { margin: 6px 0 0; }
+  #gardenBody > .gd-seg { order: 3; }
+  .gd-head > .gd-egg { order: 4; flex: none; margin-bottom: 12px; }
+}
+/* Friends on one column (phone, tablet): what needs an answer comes first */
+@media (max-width: 859px) { .fr-cards > .fr-req { order: -1; } }
+/* stat tiles use the same numeral as every other key number, on one line */
+.tile .v { font-weight: 600; font-size: 22px; letter-spacing: -.01em; white-space: nowrap; }
+.tiles4 .tile .v { font-size: 19px; }
+@media (max-width: 480px) { .tile .v { font-size: 17px; } }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -4574,11 +4818,9 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
             <button class="pomeo-btn" id="pomeoBtn" aria-label="Pomeo, your tomato buddy. Tap to say hi, hold to pet."></button>
             <div class="pomeo-bubble hidden" id="pomeoBubble" role="status" aria-live="polite"></div>
           </div>
- <button class="iconbtn park-btn hidden" id="parkBtn" title="Park a distracting thought (P)" aria-label="Park a distracting thought">🅿️</button>
+ <button class="iconbtn park-btn hidden" id="parkBtn" title="Park a distracting thought (P)" aria-label="Park a distracting thought"><span class="park-ic" aria-hidden="true">P</span></button>
           <div class="park-pop hidden" id="parkPop"><input type="text" id="parkInput" maxlength="140" placeholder="Park a thought… (Enter)" aria-label="Distracting thought" autocomplete="off"><button class="btn small" id="parkSave">Park</button></div>
           <button class="iconbtn corner" id="muteBtn" title="Toggle sound" aria-label="Toggle sound"></button>
-          <div class="phase-label" id="phaseLabel">Focus</div>
-          <div class="dots" id="roundDots"></div>
           <div class="ring" id="ring">
             <div class="ring-glow"></div>
             <div class="ring-burst"></div>
@@ -4586,12 +4828,16 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
             <svg viewBox="0 0 260 260" aria-hidden="true">
               <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.25"/></linearGradient><linearGradient id="ringGradEv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--rg1, var(--accent))"/><stop offset=".5" style="stop-color:var(--rg2, var(--accent))"/><stop offset="1" style="stop-color:var(--rg3, var(--accent))"/></linearGradient></defs>
               <g class="ringdots" id="ringDots"></g>
+              <g class="ring-ticks" id="ringTicks"></g>
               <circle class="track" cx="130" cy="130" r="120"></circle>
               <circle class="prog" id="ringProg" cx="130" cy="130" r="120"></circle>
+              <g class="ring-cap" id="ringCap" transform="translate(250 130) rotate(90)"><circle r="7.4"/><path d="M-3.5 3.3C-3.7-1-1-3.6 3.6-3.5 3.7 1.1 1 3.6-3.5 3.3Z"/></g>
             </svg>
             <div class="ring-center">
+              <div class="phase-label" id="phaseLabel">Focus</div>
               <div class="time" id="timeText">25:00</div>
               <div class="ring-sub" id="ringSub"></div>
+              <div class="dots" id="roundDots"></div>
             </div>
           </div>
           <div class="ot-line hidden" id="otLine" aria-live="polite"></div>
@@ -4653,16 +4899,19 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
           </div>
         </div>
         <div class="card exam-card empty" id="examCard" role="button" tabindex="0" aria-label="Exam countdown — tap to manage exams"></div>
-        <div class="card">
+        <div class="card today-card">
           <div class="row between"><h2 style="margin:0">Today</h2><span class="lbl" id="todayDate"></span></div>
-          <div class="streak-nums" style="margin-top:12px">
+          <div class="td-goal">
+            <div class="lbl">Focus today</div>
+            <div class="row between td-goal-top"><span id="todayText">0m of 1h</span><span class="lbl" id="todayPct">0%</span></div>
+            <div class="progress"><i id="todayBar" style="width:0%"></i></div>
+          </div>
+          <div class="streak-nums">
             <div><div class="big" id="curStreak">0<small>days</small></div><div class="lbl">Current streak</div></div>
             <div><div class="big" id="bestStreak">0<small>days</small></div><div class="lbl">Longest streak</div></div>
           </div>
           <div class="streak-next hidden" id="streakNext"></div>
           <div class="rank-line hidden" id="rankLine"></div>
-          <div class="row between"><span id="todayText">0m of 1h</span><span class="lbl" id="todayPct">0%</span></div>
-          <div class="progress"><i id="todayBar" style="width:0%"></i></div>
           <div class="today-extra" id="todayExtra"></div>
         </div>
         <div class="card garden-peek hidden" id="gardenPeek" role="button" tabindex="0" aria-label="Your garden — open the Garden tab"></div>
@@ -4686,11 +4935,12 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
   <section class="tab" id="tab-reminders">
     <div class="row between rem-head">
       <h1>Reminders</h1>
-      <button class="btn primary small" id="remAdd">+ Add reminder</button>
+      <button class="btn primary small lead" id="remAdd">+ Add reminder</button>
     </div>
     <div id="remPerm"></div>
     <div class="seg rem-seg" id="remSeg" role="group" aria-label="Show"></div>
     <div id="remBody"></div>
+    <p class="lbl show-touch rem-tip">Tap a reminder to change it · swipe right = done, left = delete</p>
     <div id="todoBody" class="hidden"></div>
     <div id="cardsBody" class="hidden"></div>
     <p class="rem-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -4699,6 +4949,7 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
 
   <!-- ================================ QUESTS TAB (weekly boss) ================================ -->
   <section class="tab" id="tab-quests">
+    <div class="pg-head"><h1 class="pg-title">Quests</h1></div>
     <div id="questBody"></div>
   </section>
 
@@ -4709,6 +4960,7 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
 
   <!-- ================================ STATS TAB ================================ -->
   <section class="tab" id="tab-stats">
+    <div class="pg-head"><h1 class="pg-title">Stats</h1></div>
     <div class="stats-head">
       <div class="seg" id="statsSeg">
         <button data-view="day">Day</button>
@@ -4738,6 +4990,7 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
 
   <!-- ================================ FRIENDS TAB (friends · leaderboard · challenges) ================================ -->
   <section class="tab" id="tab-friends">
+    <div class="pg-head"><h1 class="pg-title">Friends</h1></div>
     <div class="stats-head">
       <div class="seg" id="friendsSeg">
         <button data-view="friends">Friends<span class="cnt" id="reqCount"></span></button>
@@ -4765,20 +5018,24 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
   <!-- ================================ LEADERBOARD TAB ================================ -->
   <!-- ================================ CLAN TAB ================================ -->
   <section class="tab" id="tab-clan">
+    <div class="pg-head"><h1 class="pg-title">Clan</h1></div>
     <div id="clanBody"></div>
   </section>
 
   <section class="tab" id="tab-board">
+    <div class="pg-head"><h1 class="pg-title">Leaderboard</h1></div>
     <div id="boardBody"></div>
   </section>
 
   <!-- ================================ SHOP TAB ================================ -->
   <section class="tab" id="tab-shop">
+    <div class="pg-head"><h1 class="pg-title">Shop</h1></div>
     <div id="shopView"></div>
   </section>
 
   <!-- ================================ PROFILE TAB (level, badges, achievements, settings link) ================================ -->
   <section class="tab" id="tab-profile">
+    <div class="pg-head"><h1 class="pg-title">Profile</h1></div>
     <div id="profileHead"></div>
     <div id="progressView"></div>
   </section>
@@ -4792,6 +5049,7 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
   <section class="tab" id="tab-settings">
     <div class="set-wrap">
       <button class="linkbtn back" id="settingsBack">‹ Profile</button>
+      <div class="pg-head"><h1 class="pg-title">Settings</h1></div>
       <div class="set-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="search" id="setSearch" placeholder="Search settings" aria-label="Search settings" autocomplete="off">
@@ -4886,8 +5144,8 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
           <ui-select id="setTheme" aria-label="Theme"><option value="auto">System</option><option value="light">Light</option><option value="dark">Dark</option></ui-select>
         </div>
         <div class="setting" data-k="glossed interface glass gloss blur frosted translucent transparency">
-          <div><div>Glossed Interface</div><div class="desc" id="glassDesc">Frosted, translucent cards over soft colour. Lite (the default) is gentle and easy on older phones; Full adds more blur and shine. Saved on this device.</div></div>
-          <ui-select id="setGlass" aria-label="Glossed Interface"><option value="off">Glossed Interface: Off</option><option value="lite">Glossed Interface: Lite</option><option value="full">Glossed Interface: Full</option></ui-select>
+          <div><div>Glossed Interface</div><div class="desc" id="glassDesc">Frosted, translucent cards over soft colour. Glossed (the default) is gentle and easy on older phones; Extra glossy adds more blur and shine. Saved on this device.</div></div>
+          <ui-select id="setGlass" aria-label="Glossed Interface"><option value="off">Plain</option><option value="lite">Glossed</option><option value="full">Extra glossy</option></ui-select>
         </div>
         <div class="setting" data-k="focus atmosphere background gradient calm mood glow">
           <div><div>Focus atmosphere</div><div class="desc">A slow background glow on the Timer: calmer and deeper as a focus block goes on, lighter during breaks</div></div>
@@ -5075,7 +5333,7 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
   <p class="muted" id="otIdleBody" style="margin:0"></p>
   <div class="btn-row" style="justify-content:flex-end;margin-top:14px;flex-wrap:wrap"><button class="btn" type="button" id="otIdleNo"></button><button class="btn primary" type="button" id="otIdleYes">Yes, count it</button></div>
 </dialog>
-<dialog id="rankLadderDlg" class="rkl-dlg" aria-labelledby="rklTitle"><div id="rklBody"></div><div class="btn-row" style="justify-content:flex-end;margin-top:12px"><button class="btn" type="button" id="rklBoard">Ranks board</button><button class="btn primary" type="button" id="rklClose">Close</button></div></dialog>
+<dialog id="rankLadderDlg" class="rkl-dlg" aria-labelledby="rklTitle"><div id="rklBody"></div><div class="btn-row" style="justify-content:flex-end;margin-top:12px"><button class="btn" type="button" id="rklBoard">Ranks board</button><button class="btn" type="button" id="rklClose">Close</button></div></dialog>
 <dialog id="sessHostDlg" class="hs-dlg" aria-labelledby="hsTitle"><div id="hsBody"></div></dialog>
 <dialog id="clanCreateDlg" class="clan-dlg" aria-labelledby="ccTitle">
   <h2 id="ccTitle">Create a clan</h2>
@@ -5182,9 +5440,10 @@ dialog .dlg-title { font-size: var(--fs-17, 17px); font-weight: 600; letter-spac
       <div><label class="field" for="remSession">Session name (optional)</label><input type="text" id="remSession" maxlength="80" placeholder="Same as the title" autocomplete="off" data-suggest="names"></div>
     </div>
     <p class="err" id="remErr" style="color:var(--danger);font-size:13px;min-height:18px;margin:10px 0 0"></p>
-    <div class="btn-row" style="justify-content:flex-end;margin-top:6px">
-      <button type="button" class="btn" id="remCancel">Cancel</button>
-      <button type="submit" class="btn primary">Save</button>
+    <div class="btn-row" style="justify-content:space-between;margin-top:6px">
+      <button type="button" class="btn danger small hidden" id="remDelete">Delete</button>
+      <span class="btn-row" style="margin-left:auto"><button type="button" class="btn" id="remCancel">Cancel</button>
+      <button type="submit" class="btn primary">Save</button></span>
     </div>
   </form>
 </dialog>
@@ -5707,6 +5966,9 @@ const UI = (() => {
       /* A dialog opens at its top: the browser scrolls to whatever takes the first focus, which in a long dialog is often
          a button in its footer (the title was cut off). A field that took focus stays in view. */
       try { const f = document.activeElement; if (!was && !(f && this.contains(f) && f.matches('input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"]'))) this.scrollTop = 0; } catch (e) { /* best-effort */ }
+      /* The first focus never lands on a control that deletes something: Enter straight after opening would run it.
+         The dialog itself takes the focus instead (its title is read out; Tab goes to its first control). */
+      try { const f = document.activeElement; if (!was && f && f !== this && this.contains(f) && f.matches('.danger, [data-exdel], [data-del], [data-delp], [data-tdel], [data-ddel], [data-cdel], [data-rdel], [aria-label^="Delete"], [aria-label^="Remove"], [title^="Delete"]')) { this.setAttribute('tabindex', '-1'); this.focus({ preventScroll: true }); } } catch (e) { /* best-effort */ }
       const i = stack.indexOf(this); if (i >= 0) stack.splice(i, 1); stack.push(this);
       return r;
     };
@@ -7087,7 +7349,7 @@ function flipPlay(first, sel) {
 function setTimeDigits(str) {
   const el = $('#timeText');
   el.setAttribute('aria-label', str);
-  if (motion() !== 'full') { if (el.textContent !== str || el.querySelector('.dg')) el.textContent = str; return; }
+  if (motion() !== 'full' || S.timer.status === 'running') { if (el.textContent !== str || el.querySelector('.dg')) el.textContent = str; return; }   // (v2.0: no roll every second during a block)
   if (el.children.length !== str.length || !el.querySelector('.dg')) {
     el.innerHTML = [...str].map(c => `<span class="dg" aria-hidden="true"><span class="dc">${c}</span></span>`).join('');
     return;
@@ -7105,13 +7367,31 @@ function setTimeDigits(str) {
     cur.addEventListener('animationend', bye, { once: true }); setTimeout(bye, 450);
   });
 }
+/** Nothing loops while a focus block runs except the ring (direction 6): every endlessly repeating animation outside the
+    ring is paused — Pomeo's idle moves, live dots, the shimmer on bars, the drifting background — and picks up again when
+    the block ends or the student leaves the Timer. Checked again every few seconds for animations that start meanwhile. */
+let calmT = 0;
+function calmLoops() {
+  clearTimeout(calmT);
+  if (!document.getAnimations) return;
+  const on = document.body.classList.contains('focus-dim'), ring = $('#ring');
+  for (const a of document.getAnimations()) {
+    const fx = a.effect, t = fx && fx.target, tm = fx && fx.getComputedTiming ? fx.getComputedTiming() : null;
+    if (!t || !tm || tm.iterations !== Infinity || (ring && ring.contains(t))) continue;
+    if (on) { if (a.playState === 'running') { a.pause(); a.__calm = 1; } }
+    else if (a.__calm) { a.__calm = 0; try { a.play(); } catch (e) { /* its element is gone */ } }
+  }
+  if (on) calmT = setTimeout(calmLoops, 2500);
+}
 let ringRAF = 0, lastFinal = null;
 /** Draws the ring from the exact remaining time (called every frame while running). */
 function paintRing() {
   const rem = remainingMs(), planned = plannedMs(), p = planned ? clamp(1 - rem / planned, 0, 1) : 0;
-  $('#ringProg').style.strokeDashoffset = RING_C * (1 - p);
+  $('#ringProg').style.strokeDashoffset = -RING_C * p;   // v2.0: the arc is the time left — full at rest, it empties clockwise
+  const cap = paintRing.cap || (paintRing.cap = $('#ringCap')), a = p * 2 * Math.PI;
+  if (cap) cap.setAttribute('transform', `translate(${(130 + 120 * Math.cos(a)).toFixed(2)} ${(130 + 120 * Math.sin(a)).toFixed(2)}) rotate(90)`);
   const dots = Math.round(p * 60);
-  if (dots !== lastDots) { lastDots = dots; $$('#ringDots circle').forEach((c, i) => c.classList.toggle('on', i < dots)); }
+  if (dots !== lastDots) { lastDots = dots; $$('#ringDots circle').forEach((c, i) => c.classList.toggle('on', i >= dots)); }
   const fin = S.timer.status === 'running' && rem > 0 && rem <= 10000;
   if (fin !== lastFinal) { lastFinal = fin; $('#ring').classList.toggle('final', fin); }
   paintRipe(p);
@@ -8549,6 +8829,7 @@ function renderTimer() {
   const done = t.phase === 'focus' ? t.round - 1 : t.phase === 'long' ? p.rounds : t.round;
   $('#roundDots').innerHTML = Array.from({ length: p.rounds }, (_, i) =>
     `<span class="${i < done ? 'done' : (i === t.round - 1 && t.phase === 'focus' ? 'current' : '')}"></span>`).join('');
+  $('#roundDots').dataset.l = p.rounds > 1 ? `Round ${Math.min(t.round, p.rounds)} of ${p.rounds}` : '';
 
   $('#ringSub').textContent = t.phase === 'focus' ? (currentName() === 'Untitled' ? p.name : currentName()) : p.name;
   setMainBtn(ot ? 'Stop' : t.status === 'running' ? 'Pause' : t.status === 'paused' ? 'Resume' : (isBreak ? 'Start break' : 'Start'), t.status === 'running' && !ot);
@@ -8565,7 +8846,7 @@ function renderTimer() {
   $('#muteBtn').innerHTML = S.settings.sound ? ICON_SOUND : ICON_MUTE;
   $('#muteBtn').title = S.settings.sound ? 'Sound on — click to mute' : 'Muted — click for sound';
   if (document.body.classList.toggle('zen', extraOn('x_zen') && t.status === 'running' && t.phase === 'focus') !== zenWas) { zenWas = !zenWas; fitAllMasons(); }
-  document.body.classList.toggle('focus-dim', t.status === 'running' && t.phase === 'focus' && S.ui.tab === 'timer');
+  { const was = document.body.classList.contains('focus-dim'), now = t.status === 'running' && t.phase === 'focus' && S.ui.tab === 'timer'; document.body.classList.toggle('focus-dim', now); if (was !== now) calmLoops(); }
   setMascot();
   renderPark();
   if (t.status === 'running') ensureRingLoop();
@@ -8592,8 +8873,8 @@ UI.cfg.preset.fav = o => {
   if (p.fav) o.dataset.fav = '1'; else delete o.dataset.fav;
   save();
 };
-UI.cfg.preset.create = () => { if (isPreview()) { previewPrompt($('#managePresets')); return; } renderPresetList(); fillPresetForm(null); $('#presetDlg').showModal(); };
-UI.cfg.preset.edit = () => { if (isPreview()) { previewPrompt($('#managePresets')); return; } renderPresetList(); fillPresetForm(activePreset()); $('#presetDlg').showModal(); };
+UI.cfg.preset.create = () => { renderPresetList(); fillPresetForm(null); $('#presetDlg').showModal(); };
+UI.cfg.preset.edit = () => { renderPresetList(); fillPresetForm(activePreset()); $('#presetDlg').showModal(); };
 
 function renderChips() {
   const items = [...chipFavs().map(c => ({ ...c, pinned: true })), ...chipRecents().map(c => ({ ...c, pinned: false }))];
@@ -8628,7 +8909,7 @@ function renderToday() {
   $('#bestStreak').innerHTML = `${longest}<small>${longest === 1 ? 'day' : 'days'}</small>`;
   renderStreakNext(cur);
   renderRankLine();
-  $('#todayText').textContent = `${fmtMin(mins)} of ${fmtMin(goal)}${mins >= goal ? ' · goal met ✓' : ''}`;
+  $('#todayText').innerHTML = `<b>${fmtMin(mins)}</b> of ${fmtMin(goal)}${mins >= goal ? ' · goal met ✓' : ''}`;   // (the same words; the minutes done lead)
   const pct = Math.min(100, Math.round(mins / goal * 100));
   $('#todayPct').textContent = pct + '%';
   $('#todayBar').style.transform = `translateX(${pct - 100}%)`;
@@ -8702,7 +8983,7 @@ const chartWidth = () => clamp(($('#statsBody').clientWidth || 720) - 38, 300, 9
 
 /** Generic stacked bar chart. cols: [{ label, sub, total, segs, tip }] */
 function barChart(cols, { goal = 0, height = 240, width = 0 } = {}) {
-  const W = width || chartWidth(), H = height, L = 42, R = 8, T = 12, B = cols.some(c => c.sub) ? 38 : 26;
+  const W = width || chartWidth(), H = height, L = 54, R = 8, T = 12, B = cols.some(c => c.sub) ? 38 : 26;
   const plotH = H - T - B;
   const yMax = niceMax(Math.max(goal, 30, ...cols.map(c => c.total)));
   const cw = (W - L - R) / cols.length, bw = Math.min(cw * 0.64, 46);
@@ -8931,6 +9212,10 @@ function renderStats() {
 
   html += card('Top sessions', topList(top, total));
   $('#statsBody').innerHTML = html;
+  if (view === 'year') {   // (v2.0) show this week, not January
+    const sx = $('#statsBody .scroll-x'), now = Date.now();
+    if (sx && sx.scrollWidth > sx.clientWidth && r && r.start && now >= +r.start) { const end = +(r.end || now), f = Math.min(1, (now - r.start) / Math.max(1, end - r.start)); sx.scrollLeft = Math.max(0, f * sx.scrollWidth - sx.clientWidth * .75); }
+  }
 }
 
 /* ==========================================================================
@@ -9958,8 +10243,16 @@ const DEFAULTS = { avatar: 'av_default', pomhat: 'hat_none', pomacc: 'acc_none',
 const NAME_COLORS = { col_teal: '#2f9e8f', col_sky: '#4a90c2', col_coral: '#e07a5f', col_violet: '#8a6fd1', col_rose: '#c95c84', col_gold: '#c9a227', col_moss: '#5a8f3c', col_marigold: '#e08a1e' };   // moss + marigold: garden looks (v1.16)
 
 /* ---------- Derived game state (cached; cleared whenever state is saved) ---------- */
-let G = null;
-const game = () => G || (G = computeGame());
+let G = null, hdrBal, hdrSyncQ = false;
+/** The game state: computed once and kept until something invalidates it (G = null). When a recompute changes the coin
+    balance, the top bar's count follows on the next frame — the balance can change with nothing else on screen to redraw
+    it (friends, clan or boss data arriving after the first paint). */
+const game = () => {
+  if (G) return G;
+  G = computeGame();
+  if (hdrBal !== undefined && G.balance !== hdrBal && !hdrSyncQ) { hdrSyncQ = true; requestAnimationFrame(() => { hdrSyncQ = false; try { if (USER) renderHeaderChip(); } catch (e) { /* the next render shows it */ } }); }
+  return G;
+};
 
 /** Coins earned up to time t: 5 per session, plus goal / streak / achievement bonuses claimed by then. */
 function earnedAt(t) {
@@ -10909,6 +11202,7 @@ function renderHeaderChip() {
   if (!pill.firstChild) pill.innerHTML = `${COIN_SVG}<span data-count="hdrcoins" data-val="0">0</span>`;
   const cnt = pill.querySelector('[data-count]');
   cnt.dataset.val = g.balance;
+  hdrBal = g.balance;
   // Only a coin gain while you use the app counts up; loading (or catching up after a sync) shows the number at once.
   const live = shownCounts.hdrcoins !== undefined && g.balance > shownCounts.hdrcoins && (USER.guest || localOnly || (firstLoadDone && performance.now() - firstLoadAt > 2000));
   if (live) animateCounts(pill); else { shownCounts.hdrcoins = g.balance; cnt.__count = (cnt.__count || 0) + 1; cnt.textContent = fmtNum(g.balance); }
@@ -11088,13 +11382,13 @@ function itemCard(it, g) {
   let btn;
   if (isFreeze) btn = locked ? '' : g.freezesHeld >= MAX_FREEZES ? '<button class="btn" disabled>Holding the maximum</button>' : buy;
   else if (isBoost) btn = bst.left + it.n > BOOST_MAX_BLOCKS ? `<button class="btn" disabled>Holding the maximum (${BOOST_MAX_BLOCKS} blocks)</button>` : buy;
-  else if (equipped) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn off</button>` : it.cat === 'room' ? '<button class="btn" disabled>Placed</button>' : '<button class="btn" disabled>Equipped</button>';
+  else if (equipped) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn off</button>` : `<span class="lchip">${CHECK_SVG}${it.cat === 'room' ? 'Placed' : 'Equipped'}</span>`;
   else if (owned) btn = isExtra ? `<button class="btn" data-toggle-extra="${it.id}">Turn on</button>` : `<button class="btn" data-equip="${it.id}">${it.cat === 'room' ? 'Place' : 'Equip'}</button>`;
   else if (locked) btn = `<button class="btn" disabled>${LOCK_SVG} Level ${it.lvl}</button>`;
   else btn = buy;
   const canPreview = ['sound', 'ambient', 'effect'].includes(it.cat) && !['amb_none', 'fx_none'].includes(it.id);   // (rewards too, once owned)
   const play = canPreview ? `<button class="iconbtn sm" data-preview="${it.id}" title="Preview" aria-label="Preview ${esc(it.name)}">${PLAY_SVG}</button>` : '';
-  const state = equipped ? (it.cat === 'room' ? 'Placed' : 'Equipped') : owned && it.price ? 'Owned' : '';
+  const state = equipped ? (isExtra ? 'On' : '') : owned && it.price ? 'Owned' : '';   // (an equipped look says so once, in its action slot)
   const fresh = equipped && it.id === justEquipped;
   return `<div class="item${equipped ? ' equipped' : ''}${locked ? ' locked' : ''}" data-id="${it.id}">
     <div class="pv">${previewFor(it, g)}${state ? `<span class="tag">${fresh ? CHECK_SVG : ''}${state}</span>` : ''}</div>
@@ -12069,9 +12363,16 @@ async function joinChallenge(id) {
   } catch (e) { toast(/permission/i.test(String(e && e.message)) ? 'You’re already in a challenge this week' : 'Couldn’t join — try again'); return false; }
 }
 
+/** A navigation badge (v2.0): a count when there is something to count, a plain dot when there is only "something new". */
+function setBadge(el, on, n) {
+  if (!el) return;
+  el.classList.toggle('hidden', !on);
+  const t = on && n > 0 ? (n > 99 ? '99+' : String(n)) : '';
+  if (el.textContent !== t) el.textContent = t;
+}
 function updateFriendsDot() {
   const n = incoming().length;
-  $('#friendsBadge').classList.toggle('hidden', !(n || SOC.unread));
+  setBadge($('#friendsBadge'), !!(n || SOC.unread), n);
   $('#reqCount').textContent = n || '';
 }
 /** Called after every completed session (cloud accounts). */
@@ -12130,6 +12431,15 @@ function renderFriendsList(fromLoad) {
   $('#friendsBody').innerHTML = `
     ${recap}
     <div class="mason fr-cards">
+        ${""/* v2.0: the list people come for leads (the wide column); requests sit beside it and come first on a phone; adding a friend is a one-time job */}
+      <div class="card">
+        <div class="row between" style="margin-bottom:8px"><h2 style="margin:0">Friends</h2><span class="lbl">${fl.length} / ${MAX_FRIENDS}
+          <button class="linkbtn" id="refreshFriends" title="Refresh">↻</button></span></div>
+        ${fl.length ? `<ul class="plist">${rows}</ul>` : sceneEmpty('wave', 'e-people', 'No friends yet. Send a request by username, or share your invite link.')}
+      </div>
+        ${inc.length ? `<div class="card fr-req"><h2>Requests <span class="cnt att">${inc.length}</span></h2><ul class="plist">${inc.map(f => `
+          <li class="person">${personRow(f.from, f.fromName, null, '<div class="sub">wants to be friends</div>')}
+            <button class="btn small primary" data-accept="${f.id}">Accept</button><button class="btn small" data-decline="${f.id}">Decline</button></li>`).join('')}</ul></div>` : ''}
         <div class="card">
           <h2>Add a friend</h2>
           <form class="addrow" id="addFriendForm" autocomplete="off">
@@ -12141,17 +12451,9 @@ function renderFriendsList(fromLoad) {
             <span class="btn-row" style="gap:6px"><button class="btn small" data-copy-invite>Copy invite link</button><button class="btn small${canShareNative() ? '' : ' hidden'}" data-share-invite data-native-share>Share</button></span>
           </div>
         </div>
-        ${inc.length ? `<div class="card"><h2>Requests <span class="pill">${inc.length}</span></h2><ul class="plist">${inc.map(f => `
-          <li class="person">${personRow(f.from, f.fromName, null, '<div class="sub">wants to be friends</div>')}
-            <button class="btn small primary" data-accept="${f.id}">Accept</button><button class="btn small" data-decline="${f.id}">Decline</button></li>`).join('')}</ul></div>` : ''}
         ${out.length ? `<div class="card"><h2>Sent</h2><ul class="plist">${out.map(f => `
           <li class="person">${personRow(f.to, f.toName, null, '<div class="sub">waiting for them to accept</div>')}
             <button class="btn small" data-cancel="${f.id}">Cancel</button></li>`).join('')}</ul></div>` : ''}
-      <div class="card">
-        <div class="row between" style="margin-bottom:8px"><h2 style="margin:0">Friends</h2><span class="lbl">${fl.length} / ${MAX_FRIENDS}
-          <button class="linkbtn" id="refreshFriends" title="Refresh">↻</button></span></div>
-        ${fl.length ? `<ul class="plist">${rows}</ul>` : sceneEmpty('wave', 'e-people', 'No friends yet. Send a request by username, or share your invite link.')}
-      </div>
     </div>`;
 }
 
@@ -12446,7 +12748,7 @@ function twelveWeeks(days) {
 }
 function compareView(act, name) {
   const idx = game().idx, start = weekStartOf(new Date(), S.settings.weekStart);
-  const W = clamp($('#friendsBody').clientWidth - 38, 300, 980), H = 210, L = 42, B = 30, T = 10;
+  const W = clamp($('#friendsBody').clientWidth - 38, 300, 980), H = 210, L = 54, B = 30, T = 10;
   const mine = [], theirs = [];
   for (let i = 0; i < 7; i++) { const k = dayKey(addDays(start, i)); mine.push((idx[k] || {}).total || 0); theirs.push(act.days[k] || 0); }
   const yMax = niceMax(Math.max(30, ...mine, ...theirs)), plot = H - T - B, cw = (W - L) / 7, bw = Math.min(cw * 0.3, 22);
@@ -12517,7 +12819,7 @@ function showTab(tab) {
   const y = scrollMem[tab] || 0;   // restore once the tab has laid out (charts can grow it a moment later)
   window.scrollTo({ top: y, behavior: 'instant' });
   if (y) [60, 250].forEach(ms => setTimeout(() => { if (S.ui.tab === tab && Math.abs(window.scrollY - y) > 4) window.scrollTo({ top: y, behavior: 'instant' }); }, ms));
-  document.body.classList.toggle('focus-dim', tab === 'timer' && S.timer.status === 'running' && S.timer.phase === 'focus');
+  { const was = document.body.classList.contains('focus-dim'), now = tab === 'timer' && S.timer.status === 'running' && S.timer.phase === 'focus'; document.body.classList.toggle('focus-dim', now); if (was !== now) calmLoops(); }
   if (tab === 'timer') { ensureRingLoop(); renderGardenPeek(); }   // the glance card follows the garden (v1.17)
   saveLocal();
   animateIn($('#tab-' + tab));
@@ -13006,6 +13308,7 @@ function openRemForm(r) {
   now.setMinutes(now.getMinutes() < 30 ? 30 : 60, 0, 0);
   const v = r && r.id ? r : { title: r ? r.title : '', date: dayKey(now), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, repeat: 'none', days: [new Date().getDay()], before: 10, presetId: '', session: '' };
   $('#remDlgTitle').textContent = r && r.id ? 'Edit reminder' : 'New reminder';
+  $('#remDelete').classList.toggle('hidden', !(r && r.id));
   $('#remTitle').value = v.title;
   $('#remDate').value = v.date;
   $('#remTime').value = v.time;
@@ -13057,6 +13360,7 @@ $('#remForm').addEventListener('submit', e => {
   checkReminders();
 });
 $('#remCancel').addEventListener('click', () => $('#remDlg').close());
+$('#remDelete').addEventListener('click', () => { const r = remEditing && remById(remEditing); $('#remDlg').close(); if (r) deleteReminder(r); });
 function deleteReminder(r) {
   const i = S.reminders.indexOf(r);
   S.reminders = S.reminders.filter(x => x.id !== r.id);
@@ -13213,7 +13517,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) { ch
    ========================================================================== */
 const GLASS_KEY = 'pomodorolist-glass';
 const GLASS_DEFAULT = 'lite';
-const GLASS_NAMES = { off: 'Off', lite: 'Lite', full: 'Full' };
+const GLASS_NAMES = { off: 'Plain', lite: 'Glossed', full: 'Extra glossy' };   // v2.0: the same three words on the welcome page, in Settings, the tutorial and the palette
 const glassSupported = () => !!(window.CSS && CSS.supports('color', 'color-mix(in srgb, red 50%, blue)'));
 const blurSupported = () => !!(window.CSS && (CSS.supports('backdrop-filter', 'blur(1px)') || CSS.supports('-webkit-backdrop-filter', 'blur(1px)')));
 const RT_MQ = matchMedia('(prefers-reduced-transparency: reduce)');
@@ -14000,11 +14304,12 @@ function renderCollection() {
     return `<div class="item coll-it r-${itemRarity(it)}${own ? ' own' : ' locked'}" data-coll="${it.id}"><div class="pv">${pv}</div><div class="nm">${esc(it.name)}</div><div class="lbl coll-how">${own ? '✓ Collected' : esc(itemHow(it))}</div></div>`; }).join('');
   host.innerHTML = `<div class="row between coll-head"><h2 id="collTitle" style="margin:0">Collection log</h2><button class="iconbtn" data-coll-close aria-label="Close">✕</button></div>
     <div class="lbl">${have} of ${total} cosmetics collected${gd ? ` · ${gd.discovered.size} of ${GSPECIES.length} garden species · ${(typeof petsOwnedCount === 'function' ? petsOwnedCount() : 0)} pets` : ''}</div>
-    <div class="xpbar" style="margin:6px 0 10px"><i style="width:${(have / Math.max(1, total) * 100).toFixed(1)}%"></i></div>
+    <div class="xpbar" style="margin:6px 0 10px"><i data-fill="${(have / Math.max(1, total) * 100).toFixed(1)}" data-fill-key="collDlg"></i></div>
     <div class="catrow coll-cats" id="collCats">${collGroups().map(x => { const n = all.filter(it => x[2].includes(it.cat)); return `<button data-collcat="${x[0]}" class="${x[0] === grp ? 'active' : ''}">${x[1]} <span class="cnt">${n.filter(it => isOwned(it.id)).length}/${n.length}</span></button>`; }).join('')}</div>
     <div class="seg coll-f" id="collF">${[['all', 'All'], ['have', 'Collected'], ['missing', 'Missing']].map(([k, n]) => `<button data-collf="${k}" class="${k === f ? 'active' : ''}">${n}</button>`).join('')}</div>
     <div class="shopgrid coll-grid">${tiles || '<p class="lbl">Nothing here.</p>'}</div>
     ${gd ? '<div class="btn-row" style="margin-top:12px"><button class="btn small" data-coll-garden>Garden species and pets: open the almanac</button></div>' : ''}`;
+  animateFills(host);
 }
 document.addEventListener('click', e => {
   const host = e.target.closest('#collDlg');
@@ -14309,7 +14614,8 @@ const BOSS_SEEN_KEY = 'pomodorolist-boss-seen';
 function updateQuestDot() {
   const dot = $('#questDot');
   if (!dot) return;
-  dot.classList.toggle('hidden', !USER || minimal() || isPreview() || !rewardsReady() || !(pendingBossRewards().length || questClaimable() || passClaimableNow()));
+  const on = !(!USER || minimal() || isPreview() || !rewardsReady()) && !!(pendingBossRewards().length || questClaimable() || passClaimableNow());
+  setBadge(dot, on, on ? pendingBossRewards().length + questClaimN() + passClaimN() : 0);
 }
 function renderQuests() {
   const el = $('#questBody');
@@ -14317,10 +14623,10 @@ function renderQuests() {
   const view = ['quest', 'board', 'pass'].includes(S.ui.questView) ? S.ui.questView : 'boss', ev = currentEvent();
   const bossPend = rewardsReady() && pendingBossRewards().length, qPend = rewardsReady() && questClaimable();
   el.innerHTML = `<div class="q-switch"><div class="seg" id="questSeg">
-      <button data-qview="boss" class="${view === 'boss' ? 'active' : ''}">⚔️ Weekly boss${bossPend ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
-      <button data-qview="quest" class="${view === 'quest' ? 'active' : ''}">${ev ? ev.emoji : '🗺️'} Questline${qPend ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
-      <button data-qview="pass" class="${view === 'pass' ? 'active' : ''}">🎟️ Study Pass${rewardsReady() && passClaimableNow() ? '<i class="sdot" aria-label="Rewards to claim"></i>' : ''}</button>
-      <button data-qview="board" class="${view === 'board' ? 'active' : ''}">📋 Quest board</button></div></div>
+      <button data-qview="boss" class="${view === 'boss' ? 'active' : ''}"><span class="q-em" aria-hidden="true">⚔️ </span><span class="q-l">Weekly boss</span><span class="q-s">Boss</span>${bossPend ? `<span class="cnt att" aria-label="${bossPend} to claim">${bossPend}</span>` : ''}</button>
+      <button data-qview="quest" class="${view === 'quest' ? 'active' : ''}"><span class="q-em" aria-hidden="true">${ev ? ev.emoji : '🗺️'} </span>Questline${qPend ? `<span class="cnt att" aria-label="${questClaimN()} to claim">${questClaimN()}</span>` : ''}</button>
+      <button data-qview="pass" class="${view === 'pass' ? 'active' : ''}"><span class="q-em" aria-hidden="true">🎟️ </span><span class="q-l">Study Pass</span><span class="q-s">Pass</span>${rewardsReady() && passClaimableNow() ? `<span class="cnt att" aria-label="${passClaimN()} to claim">${passClaimN()}</span>` : ''}</button>
+      <button data-qview="board" class="${view === 'board' ? 'active' : ''}"><span class="q-em" aria-hidden="true">📋 </span><span class="q-l">Quest board</span><span class="q-s">Board</span></button></div></div>
     <div id="qView"></div>`;
   if (view === 'boss') renderBossView($('#qView')); else if (view === 'board') renderBoardView($('#qView')); else if (view === 'pass') renderPassView($('#qView')); else renderQuestline($('#qView'));
   animateIn(el);
@@ -14371,7 +14677,7 @@ function renderBossView(host) {
       ${canSquad && friendsN ? '<button class="btn primary small" id="squadEdit">Pick your squad</button>' : canSquad ? '<button class="btn small" data-gofriends>Add friends</button>' : ''}</div>` : '';
   const victory = st.done ? `<div class="victory${fresh ? ' fresh' : ''}"><span class="vt">🏆 Defeated!</span>
       <span>+${st.done.coins} coins${rec.wins > 1 ? ` · ${starText(rec.wins)} on its trophy` : ''}${rec.mastered ? ' · Mastered' : ''}</span>
-      ${pendHere ? `<button class="btn primary small" data-bclaim="${b.id}|${view}">Claim rewards 🎁</button>` : ''}</div>` : '';
+      ${pendHere ? `<button class="btn primary small lead" data-bclaim="${b.id}|${view}">Claim rewards 🎁</button>` : ''}</div>` : '';
   const log = st.formed ? battleLog(st) : [];
   const logHTML = log.length ? `<ul class="blog">${log.slice(0, 8).map(r => `<li${r.me ? ' class="me"' : ''}><span class="bl-pic">${r.me ? miniPic(USER.uid, USER.username || 'Y', 22) : miniPic(r.uid, r.who.slice(1), 22)}</span><span class="bl-t"><b>${r.me ? esc(r.who) : lookName(personLook(r.uid, r.who.replace(/^@/, '')), { tag: false })}</b> dealt <b class="bl-d">${fmtNum(r.dmg)} dmg</b></span><span class="lbl">${r.week ? 'this week' : bossAgo(r.t)}</span></li>`).join('')}</ul>${log.length > 8 ? `<p class="lbl" style="margin:8px 0 0">+ ${log.length - 8} more hits this week</p>` : ''}`
     : `<p class="muted" style="margin:0;font-size:14px">${noSquad ? 'Form a squad to see everyone’s hits here.' : 'No hits yet this week. Finish a focus block and Pomeo attacks!'}</p>`;
@@ -14595,15 +14901,14 @@ function loginTrackHTML(info) {
 function loginCard() {
   const info = loginToday();
   return `<div class="card" id="loginCard"><div class="row between"><h2 style="margin:0">Daily reward</h2>
-      ${info.claimed ? '<span class="lbl">Claimed today ✓</span>' : `<button class="btn primary small" data-claimlogin>Claim day ${info.day}</button>`}</div>
+      ${info.claimed ? '<span class="lbl">Claimed today ✓</span>' : `<button class="btn primary small lead" data-claimlogin>Claim day ${info.day}</button>`}</div>
     ${loginTrackHTML(info)}
     <p class="lbl" style="margin:6px 0 0">Open the app each day: the day count keeps climbing, every 7th day brings a bigger gift with a surprise cosmetic, and long runs earn a little more (up to +4 coins a day). Missing a day starts again at day 1 — your focus streak is separate.</p></div>`;
 }
 function updateLoginDot() {
   const show = loginOn() && !loginToday().claimed;
-  $('#profileDot').classList.toggle('hidden', !show);
-  const chipDot = $('#lvChip .tbadge');
-  if (chipDot) chipDot.classList.toggle('hidden', !show);
+  setBadge($('#profileDot'), show, 1);
+  setBadge($('#lvChip .tbadge'), show, 1);
 }
 function maybeShowLogin() {
   if (isPreview()) return;
@@ -14814,10 +15119,16 @@ $('#examForm').addEventListener('submit', e => {
 $('#examList').addEventListener('click', e => {
   const b = e.target.closest('[data-exdel]');
   if (!b) return;
+  const gone = S.exams.find(x => x.id === b.dataset.exdel), at = S.exams.indexOf(gone);
   S.exams = S.exams.filter(x => x.id !== b.dataset.exdel);
   save(); openExams(); renderExamCard();
+  if (gone) toastUndo(`Deleted “${gone.name}”`, () => { if (!S.exams.some(x => x.id === gone.id)) S.exams.splice(Math.max(0, at), 0, gone); save(); if ($('#examDlg').open) openExams(); renderExamCard(); });
 });
-$('#examClose').addEventListener('click', () => $('#examDlg').close());
+$('#examClose').addEventListener('click', () => {
+  // "Done" with a name and a date typed but not added used to drop the entry: it is added first (a refused one keeps the dialog open)
+  if ($('#examName').value.trim() && $('#examDate').value) { const n0 = S.exams.length; $('#examForm').requestSubmit(); if (S.exams.length === n0) return; }
+  $('#examDlg').close();
+});
 $('#examCard').addEventListener('click', openExams);
 
 /* ==========================================================================
@@ -16040,11 +16351,12 @@ let gdTip = { id: '', timer: 0 };
 function updateGardenDot() {
   const dot = $('#gardenDot');
   if (!dot) return;
-  dot.classList.toggle('hidden', !USER || minimal() || isPreview() || !rewardsReady() || !(garden().ready.length || seedRestocked()));
+  const on = !(!USER || minimal() || isPreview() || !rewardsReady()) && !!(garden().ready.length || seedRestocked());
+  setBadge(dot, on, on ? garden().ready.length : 0);
 }
 function gardenHeadHTML(g) {
   const pct = g.next ? Math.min(100, Math.round(g.into / g.need * 100)) : 100;
-  return `<div class="gd-head">
+  return `<div class="gd-head gv-${gardenView()}">
     <div class="gd-title"><h1>Garden</h1><div class="lbl">${SEASON_TEXT[gardenSeason()]} · ${WX_TEXT[gardenWeather()]} · ${gardenTod() === 'night' ? 'night' : gardenTod()}</div></div>
     <div class="gd-level card"><div class="row between"><b>Garden level ${g.level}</b><span class="gd-produce" title="Produce — harvest plants to earn it">${PRODUCE_SVG}<span data-count="produce" data-val="${g.produce}">${fmtNum(g.produce)}</span></span></div>
       <div class="xpbar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Garden XP"><i data-fill="${pct}" data-fill-key="gxp"></i></div>
@@ -16208,10 +16520,10 @@ function gardenLooksHTML(g) {
   const card = it => {
     const own = isOwned(it.id), eq = own && isEquippedItem(it), locked = !own && g.level < (it.glvl || 1), rar = itemRarity(it);
     const btn = locked ? `<button class="btn" disabled>${LOCK_SVG} Garden level ${it.glvl}</button>`
-      : eq ? `<button class="btn" disabled>${it.cat === 'room' ? 'Placed' : 'Equipped'}</button>`
+      : eq ? `<span class="lchip">${CHECK_SVG}${it.cat === 'room' ? 'Placed' : 'Equipped'}</span>`
       : own ? `<button class="btn primary" data-gequip="${it.id}">${it.cat === 'room' ? 'Place' : 'Equip'}</button>`
       : `<button class="btn buy" data-gbuy="${it.id}"${g.produce >= it.gprice ? '' : ' disabled'}>Buy</button>`;
-    return `<div class="item gd-item gd-look r-${rar}${locked ? ' locked' : ''}${eq ? ' equipped' : ''}" data-id="${it.id}"><div class="pv">${rewardPreview(it, gm)}${eq ? `<span class="tag">${CHECK_SVG}${it.cat === 'room' ? 'Placed' : 'Equipped'}</span>` : own ? '<span class="tag">Owned</span>' : ''}</div>
+    return `<div class="item gd-item gd-look r-${rar}${locked ? ' locked' : ''}${eq ? ' equipped' : ''}" data-id="${it.id}"><div class="pv">${rewardPreview(it, gm)}${!eq && own ? '<span class="tag">Owned</span>' : ''}</div>
       <div class="nm">${esc(it.name)}</div><div class="ds">${esc(it.desc)}</div>
       <div class="bi-src"><span class="rar">${RARITY_LABEL[rar]}</span><span>${own ? 'Yours' : PRODUCE_SVG + ' ' + it.gprice}</span><span>· ${esc(CAT_LABEL[it.cat] || it.cat)}</span></div>
       <div class="act">${btn}</div></div>`;
@@ -17566,7 +17878,7 @@ function openTemplates() {
   const list = (S.subTemplates || []).slice().sort((a, b) => (b.used || 0) - (a.used || 0));
   $('#tplList').innerHTML = list.length ? list.map(t => `<li><span class="nm"><b>${esc(t.name)}</b><small>${esc(t.items.join(' · '))}</small></span>
       <button class="btn small" data-tload="${esc(t.id)}">Load</button><button class="iconbtn" data-tdel="${esc(t.id)}" aria-label="Delete ${esc(t.name)}">${TRASH_SVG}</button></li>`).join('')
-    : '<li class="empty">No templates yet.</li>';
+    : '<li class="empty">No templates yet. Add subtasks to a session on the Timer, then choose “Save as template” to reuse the same list next time.</li>';
   $('#tplDlg').showModal();
 }
 $('#tplList').addEventListener('click', e => {
@@ -18000,7 +18312,7 @@ function renderInbox() {
     <li class="ib-item${x.read ? '' : ' unread'}" data-ib="${esc(x.id)}" tabindex="0" role="button" aria-label="${esc(x.title)}${x.read ? '' : ' (unread)'}">
       <span class="ib-dot" aria-hidden="true"></span><span class="ib-ic" aria-hidden="true">${x.who && (cached('publicProfiles', x.who) || cached('publicStats', x.who)) ? lookPic(personLook(x.who), 34) : (IB_TYPES[x.type] || IB_TYPES.info).ic}</span>
       <span class="ib-main"><span class="ib-t">${ibTitle(x)}</span>${x.body ? `<span class="ib-s" style="display:block">${esc(x.body)}</span>` : ''}<span class="ib-s" style="display:block">${ibWhen(x.at)}</span>${ibActionsHTML(x)}</span>
-      ${x.read ? '' : `<button class="ib-x" data-ibread aria-label="Mark as read" title="Mark as read">●</button>`}
+      ${x.read ? '' : `<button class="ib-x ib-rd" data-ibread aria-label="Mark as read" title="Mark as read">✓</button>`}
       <button class="ib-x" data-ibdel aria-label="Dismiss" title="Dismiss">✕</button></li>`).join('')}</ul>`).join('')
     : `<div class="empty e-inbox">${ibFilter === 'all' ? 'You’re all caught up. New requests, reminders and rewards will show up here.' : 'Nothing here yet.'}</div>`;
   $('#ibReadAll').disabled = !IB.some(x => !x.read);
@@ -18077,7 +18389,8 @@ function ibRefresh() {
    ========================================================================== */
 function renderAbout() {
   $$('.appver').forEach(x => { x.textContent = 'v' + APP_VERSION; });
-  $('#changelog').innerHTML = CHANGELOG.map(c => `<li><span class="v">v${c.v}</span><span class="t">${esc(c.t)}</span><span class="d">${esc(c.d)}</span></li>`).join('');
+  // v2.0: one line per release; the newest is open, the rest open on a tap (every release used to be one long expanded paragraph)
+  $('#changelog').innerHTML = CHANGELOG.map((c, i) => `<li><details${i === 0 ? ' open' : ''}><summary><span class="v">v${c.v}</span><span class="t">${esc(c.t)}</span></summary><p class="d">${esc(c.d)}</p></details></li>`).join('');
   $('#aboutPomeo').innerHTML = pomeoSVG({ state: 'happy', ...pomeoOutfit() });
 }
 function newsCheck() {
@@ -18157,7 +18470,7 @@ function cmdList(q) {
   add('☑️', 'Add subtask', 'Timer', focusSubAdd, 'new subtask checklist');
   if (focusActive()) add('🅿️', 'Park a thought', 'Timer', () => { showTab('timer'); openPark(); });
   add('🌓', 'Toggle dark mode', 'Appearance', cmdToggleDark, 'theme dark light night');
-  for (const lv of ['off', 'lite', 'full']) if (lv !== glass()) add('✨', `Glossed Interface: ${GLASS_NAMES[lv]}`, 'Appearance', () => { setGlass(lv); toast(`Glossed Interface: ${GLASS_NAMES[lv]}`, 1800, true); }, 'glossed interface glass gloss blur frosted');
+  for (const lv of ['off', 'lite', 'full']) if (lv !== glass()) add('✨', `Look: ${GLASS_NAMES[lv]}`, 'Appearance', () => { setGlass(lv); toast(`Look: ${GLASS_NAMES[lv]}`, 1800, true); }, 'glossed interface glass gloss blur frosted');
   add(S.settings.sound ? '🔇' : '🔊', S.settings.sound ? 'Mute all sounds' : 'Turn sounds on', 'Sounds', () => $('#muteBtn').click(), 'sound mute audio');
   add('🎚️', `Interface sounds: ${UIS.prefs.on ? 'off' : 'on'}`, 'Sounds', () => { UIS.prefs.on = !UIS.prefs.on; uisSave(); if (UIS.prefs.on) ensureAudio(); toast(`Interface sounds ${UIS.prefs.on ? 'on' : 'off'}`, 1800, true); }, 'ui sounds clicks');
   for (const mo of ['full', 'reduced', 'off']) if (mo !== motion()) add('✨', `Animations: ${mo[0].toUpperCase() + mo.slice(1)}`, 'Appearance', () => { localStorage.setItem(MOTION_KEY, mo); applyMotion(); sheenLoop(); renderTimer(); toast(`Animations: ${mo}`, 1800, true); }, 'motion');
@@ -19465,7 +19778,7 @@ function startPreview() {
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
 const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-sremind]', '[data-hrsvp]', '[data-sjoin]', '[data-sask]', '[data-shost]', '[data-sinvite]', '[data-sallow]', '[data-sdeny]', '[data-skick]', '[data-shand]', '[data-scode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
-  '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#managePresets', '#noteSave', '#revSchedule', '#examsBtn',
+  '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#remDelete', '#presetForm button[type="submit"]', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '[data-sell]', '[data-sellall]', '[data-fav]', '[data-compost]', '[data-gtask]', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-pclaim]', '[data-pclaimall]', '[data-preact]', '#setPosts', '[data-posttype]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
@@ -19627,6 +19940,9 @@ function questClaimable() {
   const st = questState(ev);
   return st.qs.some(q => q.done && !q.claimed) || (st.finalDone && !st.finalClaimed);
 }
+/** How many questline and Study Pass rewards wait to be claimed (the count pills on the Quests tabs). */
+function questClaimN() { const ev = currentEvent(); if (!ev || !USER || minimal()) return 0; const st = questState(ev); return st.qs.filter(q => q.done && !q.claimed).length + (st.finalDone && !st.finalClaimed ? 1 : 0); }
+const passClaimN = () => { const ev = currentEvent(); return ev && passEvent(ev) && USER && !minimal() ? passClaimable(ev).length : 0; };
 const passClaimableNow = () => { const ev = currentEvent(); return !!(ev && passEvent(ev) && USER && !minimal() && passClaimable(ev).length); };   // v1.20
 let questClaiming = false;
 async function claimQuest(evId, qid) {
@@ -19846,7 +20162,8 @@ function updateBagDot() {
   if (!btn) return;
   const on = !!USER && S.settings.gamification;
   btn.classList.toggle('hidden', !on);
-  $('#bagDot').classList.toggle('hidden', !on || isPreview() || !rewardsReady() || !bagNewCount());
+  const nb = !(!on || isPreview() || !rewardsReady()) ? bagNewCount() : 0;
+  setBadge($('#bagDot'), nb > 0, nb);
 }
 /** Called once on the first load of this version: what you already own isn't "new". */
 function initSeen() { if (!S.game.seenAt && !isPreview()) { S.game.seenAt = Date.now(); save(); } }
@@ -19901,10 +20218,10 @@ function bagCard(x, g) {
   const canPlay = ['sound', 'ambient', 'effect'].includes(it.cat);
   const btn = it.cat === 'extra' ? `<button class="btn" data-btoggle="${it.id}">${eq ? 'Turn off' : 'Turn on'}</button>`
     : it.cat === 'room' ? (eq ? `<button class="btn" data-rremove="${roomSlotOf(it.id)}">Remove</button>` : `<button class="btn primary" data-bequip="${it.id}">Place</button>`)
-    : eq && DEFAULTS[it.cat] === it.id ? '<button class="btn" disabled>In use</button>'
+    : eq && DEFAULTS[it.cat] === it.id ? `<span class="lchip">${CHECK_SVG}In use</span>`
     : eq ? `<button class="btn" data-bunequip="${it.cat}">Unequip</button>` : `<button class="btn primary" data-bequip="${it.id}">Equip</button>`;
   return `<div class="item bag-item r-${rar}${eq ? ' equipped' : ''}${bagSel === it.id ? ' sel' : ''}" data-bid="${it.id}" tabindex="0" aria-label="${esc(it.name)} · ${esc(CAT_LABEL[it.cat] || it.cat)}">
-    <div class="pv">${rewardPreview(it, g)}${fresh ? '<span class="tag new">New</span>' : eq ? `<span class="tag">${CHECK_SVG}Equipped</span>` : ''}</div>
+    <div class="pv">${rewardPreview(it, g)}${fresh ? '<span class="tag new">New</span>' : eq && !(DEFAULTS[it.cat] === it.id && it.cat !== 'extra' && it.cat !== 'room') ? `<span class="tag">${CHECK_SVG}Equipped</span>` : ''}</div>
     <div class="nm">${esc(it.name)}</div>
     <div class="bi-src"><span class="rar">${RARITY_LABEL[rar]}</span><span>${esc(x.src.label)}</span></div>
     <div class="act">${canPlay ? `<button class="iconbtn sm" data-preview="${it.id}" title="Preview" aria-label="Preview ${esc(it.name)}">${PLAY_SVG}</button>` : ''}${btn}</div></div>`;
@@ -20570,7 +20887,7 @@ document.addEventListener('click', e => {
   const cb = row.querySelector('input[type="checkbox"]');
   if (cb && !cb.disabled) cb.click();
 });
-$('#setGlass').addEventListener('change', e => { setGlass(e.target.value); toast(`Glossed Interface: ${GLASS_NAMES[glass()]}`, 1800, true); });
+$('#setGlass').addEventListener('change', e => { setGlass(e.target.value); toast(`Look: ${GLASS_NAMES[glass()]}`, 1800, true); });
 $('#setPomeo').addEventListener('change', e => { S.settings.pomeo = e.target.checked; save(); renderPomeo(); if (!e.target.checked) hideBubble(); });
 $('#setPomeoTalk').addEventListener('change', e => { S.settings.pomeoTalk = e.target.value; save(); });
 $('#setWater').addEventListener('change', e => { S.settings.waterNudge = e.target.checked; save(); });
@@ -20773,6 +21090,7 @@ $('#presetList').addEventListener('click', e => {
   const ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-delp]');
   if (ed) fillPresetForm(S.presets.find(p => p.id === ed.dataset.edit));
   if (dl && S.presets.length > 1) {
+    if (isPreview()) { previewPrompt($('#managePresets')); return; }
     const p = S.presets.find(x => x.id === dl.dataset.delp);
     const snap = { presets: S.presets.slice(), chips: S.chips.map(c => ({ ...c })), active: S.activePresetId };
     toastUndo(`Preset “${p.name}” deleted`, () => { S.presets = snap.presets; S.chips = snap.chips; S.activePresetId = snap.active; save(); renderPresetList(); renderAll(); });
@@ -20790,6 +21108,7 @@ const PRESET_LIMITS = { focus: [1, 240], short: [1, 120], long: [1, 180], rounds
 for (const [k, id] of [['focus', '#pfFocus'], ['short', '#pfShort'], ['long', '#pfLong'], ['rounds', '#pfRounds']]) { $(id).setAttribute('min', PRESET_LIMITS[k][0]); $(id).setAttribute('max', PRESET_LIMITS[k][1]); }   // the editor's steppers follow PRESET_LIMITS (v2.0: <ui-num> reads min / max from its attributes; its .min / .max have no setter)
 $('#presetForm').addEventListener('submit', e => {
   e.preventDefault();
+  if (isPreview()) { previewPrompt($('#managePresets')); return; }   // the demo shows the presets; it never changes them (Enter in a field lands here too)
   const n = (id, lo, hi) => clamp(Math.round(+$(id).value) || lo, lo, hi);
   const data = {
     name: $('#pfName').value.trim() || 'Untitled preset',
@@ -20851,6 +21170,10 @@ window.addEventListener('resize', () => {
    ========================================================================== */
 function initInputs() {
   $('#ringProg').style.strokeDasharray = RING_C;
+  $('#ringTicks').innerHTML = Array.from({ length: 60 }, (_, i) => {   // minute ticks, a longer one every five minutes
+    const a = i / 60 * Math.PI * 2, c = Math.cos(a), sn = Math.sin(a), r0 = 113, r1 = i % 5 ? 110.6 : 108;
+    return `<line${i % 5 ? '' : ' class="t5"'} x1="${(130 + r0 * c).toFixed(1)}" y1="${(130 + r0 * sn).toFixed(1)}" x2="${(130 + r1 * c).toFixed(1)}" y2="${(130 + r1 * sn).toFixed(1)}"/>`;
+  }).join('');
   $('#ringDots').innerHTML = Array.from({ length: 60 }, (_, i) => {
     const a = i / 60 * Math.PI * 2;
     return `<circle cx="${(130 + 120 * Math.cos(a)).toFixed(1)}" cy="${(130 + 120 * Math.sin(a)).toFixed(1)}" r="3"/>`;
@@ -21774,7 +22097,7 @@ function todoSection() {
       <button class="btn primary small" type="submit">Add</button><button class="btn small" type="button" id="todoMore" title="Due date, priority, notes…">More…</button></form>
     <div class="catrow todo-filters" role="tablist" aria-label="Show">${[['today', 'Today'], ['upcoming', 'Upcoming'], ['all', 'All'], ['done', 'Done']].map(([id, label]) => `<button role="tab" data-tfilter="${id}" class="${f === id ? 'active' : ''}" aria-selected="${f === id}">${label}${n[id] ? ` <span class="cnt">${n[id]}</span>` : ''}</button>`).join('')}</div>
     ${list.length ? `<ul class="rem-list todo-list" id="todoList">${list.map(todoRow).join('')}</ul>` : `<div class="empty">${empty}</div>`}
-    ${f === 'done' && list.length ? '<p class="lbl" style="margin:8px 0 0">Finished tasks clear themselves after 7 days.</p>' : f !== 'done' && list.length > 1 ? '<p class="lbl hide-touch" style="margin:8px 0 0">Drag ⋮⋮ to reorder · swipe on a phone: right = done, left = delete</p>' : ''}
+    ${f === 'done' && list.length ? '<p class="lbl" style="margin:8px 0 0">Finished tasks clear themselves after 7 days.</p>' : f !== 'done' && list.length > 1 ? '<p class="lbl hide-touch" style="margin:8px 0 0">Drag ⋮⋮ to reorder · swipe on a phone: right = done, left = delete</p><p class="lbl show-touch" style="margin:8px 0 0">Tap a task to change it · swipe right = done, left = delete</p>' : ''}
   </div>`;
 }
 function renderTodos() {
@@ -23355,8 +23678,8 @@ function updateSessBadge() {
   if (!b) return;
   const on = USER && !USER.guest;
   const asks = on ? SESS.reqs.length : 0, live = on && SESS.lobby.some(sessFriendLive), red = !!(asks || (on && SESS.unread));
-  b.classList.toggle('hidden', !(red || live));
-  b.classList.toggle('tb-live', !red && live);
+  setBadge(b, !!(red || live), asks);
+  b.classList.toggle('tb-live', !red && !!live);
   b.setAttribute('aria-label', asks ? `${asks} asking to join your session` : red ? 'New study-session invite' : live ? 'A friend is studying live now' : '');
 }
 /** The button on a session: Open / Rejoin / Waiting… / Full / Ask to join / Join. */
@@ -23648,7 +23971,12 @@ function renderClanBits() {
   if (S.ui.tab === 'reminders' && remView() !== 'todo') renderReminders();
   renderTodayExtra();
   const dot = $('#clanDot');
-  if (dot) dot.classList.toggle('hidden', !(inClan() && ((CLAN.lives || []).length || (isClanOfficer() && (CLAN.requests || []).length))));
+  if (dot) {   // a count when people ask to join (officers); the live mark when a clanmate studies now
+    const rq = inClan() && isClanOfficer() ? (CLAN.requests || []).length : 0, lv = inClan() && (CLAN.lives || []).length > 0;
+    setBadge(dot, !!(rq || lv), rq);
+    dot.classList.toggle('tb-live', !rq && lv);
+    dot.setAttribute('aria-label', rq ? `${rq} asking to join your clan` : lv ? 'A clanmate is studying live now' : 'Clan activity');
+  }
 }
 function noClanHTML() {
   const req = CLAN.myReq;
@@ -23953,7 +24281,7 @@ function renderClanShop() {
   $('#csNote').textContent = can ? '' : isClanOfficer() ? 'The leader can let officers use the clan shop in Settings.' : 'Only the leader (and officers, if allowed) can buy and change the clan’s look.';
   $('#csGrid').innerHTML = ids.map(id => {
     const p = CLAN_SHOP[id], owned = id === free || (d.owned || {})[id] || id.startsWith('ce_r_'), on = d[shopTab] === id, locked = p && d.level < p[1];
-    const btn = on ? '<button class="btn small" disabled>In use</button>' : owned ? `<button class="btn small" data-cuse="${id}"${can ? '' : ' disabled'}>Use</button>`
+    const btn = on ? `<span class="lchip">${CHECK_SVG}In use</span>` : owned ? `<button class="btn small" data-cuse="${id}"${can ? '' : ' disabled'}>Use</button>`
       : locked ? `<button class="btn small" disabled>Level ${p[1]}</button>` : `<button class="btn primary small" data-cbuy="${id}"${can && pts >= p[0] ? '' : ' disabled'}>${fmtNum(p[0])} pts</button>`;
     return `<div class="item r-${p ? clanShopRarity(id) : id.startsWith('ce_r_') ? (RAID_BY_ID[id.slice(5)].tier ? RAID_TIERS[RAID_BY_ID[id.slice(5)].tier].rar : 'legendary') : 'common'}${on ? ' equipped' : ''}"><div class="pv">${pv(id)}</div><div class="nm">${esc(id.startsWith('ce_r_') ? RAID_BY_ID[id.slice(5)].name + ' emblem' : clanShopName(id))}</div><div class="act">${btn}</div></div>`;
   }).join('');
@@ -24471,7 +24799,7 @@ function togetherTableHTML(d, people, demo) {
     <div class="lv-table">${pomeoOn() ? `<span class="lv-pomeo">${pomeoSVG({ state: mineSt === 'focus' ? 'focus' : 'happy', ...pomeoOutfit() })}</span>` : ''}${seats || '<span class="lbl">Just you so far</span>'}</div>
     <div class="lv-reacts" role="group" aria-label="Send a reaction">${CLAN_REACTIONS.map(e => `<button class="lv-r" data-react="${e}" aria-label="React ${e}">${e}</button>`).join('')}</div>
     <div class="btn-row" style="justify-content:center">
-      ${demo ? '<button class="btn primary small" data-cjoinlive="demo">Join</button>' : `<button class="btn primary small" data-gotab="timer">${t.status === 'idle' ? 'Start my timer' : 'Open my timer'}</button><button class="btn small" id="lvLeave">Leave table</button>`}
+      ${demo ? '<button class="btn primary small" data-gotab="timer">Open my timer</button><button class="btn small" data-cjoinlive="demo">Leave table</button>' : `<button class="btn primary small" data-gotab="timer">${t.status === 'idle' ? 'Start my timer' : 'Open my timer'}</button><button class="btn small" id="lvLeave">Leave table</button>`}
     </div>
     <p class="lbl lv-note">Everyone runs their own timer and preset — nobody controls yours. Stepping away or leaving only affects you, and your focus counts like any session. Session names show only for people who share them.</p>
   </div>`;
@@ -24726,15 +25054,16 @@ function navMirror() {
     if (!src) continue;
     b.classList.toggle('hidden', src.classList.contains('hidden'));
     const sd = src.querySelector('.tbadge'), bd = b.querySelector('.tbadge');
-    if (bd) { bd.classList.toggle('hidden', !dotOn(sd)); if (sd) bd.setAttribute('aria-label', sd.getAttribute('aria-label') || ''); }
+    if (bd) { bd.classList.toggle('hidden', !dotOn(sd)); if (sd) { bd.setAttribute('aria-label', sd.getAttribute('aria-label') || ''); bd.classList.toggle('tb-live', sd.classList.contains('tb-live')); if (bd.textContent !== sd.textContent) bd.textContent = sd.textContent; } }
   }
   const barTabs = new Set($$('#btmBar [data-tab]:not(.hidden)').map(b => b.dataset.tab));
   const lit = $$('#tabs [data-tab]:not(.hidden)').filter(b => dotOn(b.querySelector('.tbadge')));
-  $('#navMoreDot').classList.toggle('hidden', !lit.some(b => !barTabs.has(b.dataset.tab)));
-  $('#navBurgerDot').classList.toggle('hidden', !lit.length);
+  const sum = l => l.reduce((a, b) => a + (parseInt(b.querySelector('.tbadge').textContent, 10) || 0), 0), more = lit.filter(b => !barTabs.has(b.dataset.tab));
+  setBadge($('#navMoreDot'), !!more.length, sum(more));
+  setBadge($('#navBurgerDot'), !!lit.length, sum(lit));
 }
 new MutationObserver(() => { if (!navMirrorQ) { navMirrorQ = true; requestAnimationFrame(navMirror); } })
-  .observe($('#tabs'), { subtree: true, attributes: true, attributeFilter: ['class'] });
+  .observe($('#tabs'), { subtree: true, attributes: true, attributeFilter: ['class'], childList: true });
 /** Sidebar collapsed to icons (wide screens), remembered per device. */
 function navMini(on) {
   document.documentElement.classList.toggle('nav-mini', on);
