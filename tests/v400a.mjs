@@ -214,6 +214,39 @@ const used = await D.ev(async () => {
 check('…and they are used: a Legendary label is drawn in its ink, the red “New” tag keeps its own ink on an equipped item, “claimed” and “not found yet” dim the picture and not the words, the open section in the side column has its label and icon in one colour that differs from the others; a rarity word has a dot in the rarity’s colour, a subject tag is a tinted chip, “overdue” has a warning sign',
   used.rar === true && (used.newOnEquipped === true || used.newOnEquipped === 'none') && (used.got === '1' || used.got === 'none') && (used.none === '1' || used.none === 'none') && used.nav === true && used.dot === true && used.tag === true && (used.over === true || used.over === 'none'), JSON.stringify(used));
 
+// ---------- from the run over every theme: two places a fixed-colour fill sat under the text ----------
+const themed = await D.ev(async () => {
+  const sl = ms => new Promise(r => setTimeout(r, ms)), out = {};
+  const lum = c => { const f = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }; return .2126 * f(c[0]) + .7152 * f(c[1]) + .0722 * f(c[2]); };
+  const ratio = (x, y) => { const p = lum(x), q = lum(y); return +((Math.max(p, q) + .05) / (Math.min(p, q) + .05)).toFixed(2); };
+  const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const px = c => colParse(c) || (m => (m ? [m[1] * 255, m[2] * 255, m[3] * 255] : null))(/color\(srgb\s+([\d.e-]+)\s+([\d.e-]+)\s+([\d.e-]+)/.exec(c));   // a mixed colour is computed as color(srgb r g b)
+  for (const [sk, mode] of [['th_peach', 'light'], ['th_default', 'light'], ['th_default', 'dark'], ['th_nord', 'light']]) {
+    themePreviewId = sk === 'th_default' ? null : sk; applyTheme(mode); showTab('clan'); await sl(500);
+    const go = document.querySelector('#pvBanner .pv-go'), lv = document.querySelector('#tab-clan .clan-lv'), k = sk + '.' + mode;
+    if (go && go.getClientRects().length) out[k + '.banner'] = ratio(px(getComputedStyle(go).color), px(getComputedStyle(go).backgroundColor));
+    if (lv) { const acc = getComputedStyle(lv).getPropertyValue('--clan-acc').trim(); out[k + '.level'] = ratio(px(getComputedStyle(lv).color), colMix(px(acc), px(tok('--surface')), .12)); }   // the chip: 12 % of the clan's colour on the card
+  }
+  themePreviewId = null; applyTheme(); showTab('timer');
+  return out;
+});
+check('In a theme whose accent is light (Peach) the demo banner’s button is as readable as the banner itself, and a clan’s level is readable on the tint of its own colour (Nord): AA in each',
+  Object.keys(themed).length >= 6 && Object.values(themed).every(v => v >= 4.5), JSON.stringify(themed));
+
+// ---------- a cloud copy that changes nothing must not leave the garden pointing at plants that are gone ----------
+// (found by the phase's regression: a harvest straight after such a copy edited an object that was no longer in the account)
+const stale = await D.ev(() => {
+  const d = {}; for (const f of SYNC_LISTS) d[f] = JSON.parse(JSON.stringify(S[f] || []));
+  d.tomb = { ...S.tomb }; d.remFired = { ...S.remFired };
+  mergeSyncFrom(d);                       // the first copy may reorder keys
+  const before = garden();                // worked out and kept …
+  mergeSyncFrom(JSON.parse(JSON.stringify(d)));   // … then the same copy again: nothing changes, but every list is a new one
+  const g = garden();
+  return { changed: SYNC.changed, growing: g.growing.length, live: g.growing.every(p => S.plants.includes(p)), fresh: g !== before };
+});
+check('After a cloud copy that changes nothing, the garden is worked out again from the lists that are now in the account (every growing plant it holds is the live one)',
+  stale.changed === false && stale.growing > 0 && stale.live, JSON.stringify(stale));
+
 /* ---------- phone: targets ---------- */
 const tg = await M.ev(async () => {
   const sl = ms => new Promise(r => setTimeout(r, ms)), out = {};

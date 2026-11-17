@@ -30,7 +30,8 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   blurred card in the default look, the closed scrim not painted, the ring redrawn only when it has moved, a tab switch
   that does not rewrite the account, one render of the Profile, long lists that fill in idle moments (and still move by
   keyboard), the year heatmap in week columns, the page still behind a dialog, focus after a dialog closes, keyboard
-  reach, one heading per section, names for charts and fields, every ink × theme pair at 4.5:1, 44 px phone targets.
+  reach, one heading per section, names for charts and fields, every ink × theme pair at 4.5:1, 44 px phone targets, the two tinted fills the run over every theme found, and the
+  garden's state after a cloud copy that changes nothing (the stale-cache bug behind v115b's failures in full runs).
   Suites named `v2*`, `v3*` and `v4*` run without `ot-classic.mjs`.
 - `perf4.mjs` (phase 4): the numbers — `node perf4.mjs index.html [--big] [--phone] [--throttle 4] [--tag name]` prints
   one JSON line (start-up, every tab switch, the slowest interactions by Event Timing, frame rate, DOM size);
@@ -38,7 +39,7 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   into a large account (2 years of sessions, 50 friends, 240 to-dos…) without writing anything.
   `tools/prof.mjs` wraps every top-level function and prints where the time of one action goes.
 - `tools/a11y4.mjs` + `tools/a11y4.py` (phase 4): contrast computed from what is drawn — each state is photographed
-  with the glyphs transparent, so the real background behind every text is known; `--skins all` covers every theme.
+  with the glyphs transparent, so the real background behind every text is known; `--skins all` covers every theme, `--skins th_a,th_b` the named ones.
   `tools/a11y4b.mjs [--phone]`: names, keyboard reach, focus, headings, 44 px targets, reduced motion on every screen.
 - `perfp1.mjs`: a quick render / tab-switch / theme-application timing of two builds side by side.
 - `ui-compat.mjs` (v2.0, preloaded for every suite by the runners): the older suites keep calling `page.selectOption()`,

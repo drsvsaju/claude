@@ -44,7 +44,7 @@ let cloud2 = null; for (let i = 0; i < 20; i++) { cloud2 = await ownerGet('users
 check('…and the cloud copy has the joined water maps too', cloud2.plants.filter(p => !p.sum).every(p => Object.keys(p.w || {}).length === 2), JSON.stringify(cloud2.plants.map(p => p.w)));
 // ---------- 4. harvest on A → produce and the record on A2; A2 buys decor → A sees it ----------
 await A.ev(() => { const p = garden().growing[0]; p.w.fill = needOf(p); save(); });   // top it up so it is ready
-await until(A, () => garden().ready.length > 0, null, 15000);   // (a fixed 1.5 s was too short on a busy machine: nothing was ready and the harvest below threw)
+await until(A, () => garden().ready.length > 0, null, 15000);   // (twice in a full run nothing became ready: a cloud copy that changed nothing had replaced the plant objects while the garden still held the old ones, so the line above filled a plant that was no longer in the account — fixed in v2.0, mergeSyncFrom)
 const hv = await A.ev(() => { const p = garden().ready[0]; const h = gardenHarvest(p.id); return { id: h.id, y: h.y, produce: garden().produce }; });
 const hvA2 = await until(A2, id => garden().harvested.some(p => p.id === id) && garden().growing.length === 1, hv.id, 15000);
 check('A harvests → A2 shows the harvest, the empty plot and the same produce balance', hvA2 >= 0 && (await A2.ev(p => garden().produce === p, hv.produce)), JSON.stringify(hv));

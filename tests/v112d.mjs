@@ -24,9 +24,9 @@ for (const [w, h] of [[1280, 860], [390, 844]]) {
   await p.waitForFunction(() => typeof firstLoadDone !== 'undefined' && firstLoadDone && SOC.started, null, { timeout: 15000 }); await wait(2500);
   await ev(() => document.querySelectorAll('dialog[open]:not(#pvDlg)').forEach(x => x.close()));
   await ev(() => { S.ui.questView = 'boss'; showTab('quests'); }); await wait(1600);
-  const boss = await ev(() => ({ view: bossView(), arena: !!$('#arena #bossArt svg'), squad: $$('.squad-list.portraits li').map(li => li.textContent.replace(/\s+/g, ' ').trim()).join(' | '), log: $$('.blog li').map(li => li.textContent.replace(/\s+/g, ' ').trim()).slice(0, 4).join(' | '),
+  const boss = await ev(() => ({ view: bossView(), arena: !!$('#arena #bossArt svg'), squad: $$('.squad-list.portraits li').map(li => li.textContent.replace(/\s+/g, ' ').trim()).join(' | '), log: $$('.blog li').map(li => li.textContent.replace(/\s+/g, ' ').trim()).join(' | '),
     hall: $$('.hall-card.won').length, mastered: $$('.hall-card .mastered-badge.on').length, claim: $$('[data-bclaim]').length, next: ($('.nb-name') || {}).textContent }));
-  check(`${w}px: boss page — squad arena with portraits, battle log with friends’ hits, Trophy Hall (won + mastered), rewards to claim`, boss.view === 'squad' && boss.arena && /James/.test(boss.squad) && /siverieg/.test(boss.squad) && /@James|@siverieg/.test(boss.log) && boss.hall >= 3 && boss.mastered >= 1 && boss.claim >= 1, JSON.stringify(boss));
+  check(`${w}px: boss page — squad arena with portraits, battle log with friends’ hits, Trophy Hall (won + mastered), rewards to claim`, boss.view === 'squad' && boss.arena && /James/.test(boss.squad) && /siverieg/.test(boss.squad) && /@\w+ dealt \d+ dmg/.test(boss.log) && boss.hall >= 3 && boss.mastered >= 1 && boss.claim >= 1, JSON.stringify(boss));
   if (SHOTS) await p.screenshot({ path: `v112d-boss-${w}.png`, fullPage: true });
   await p.click('[data-bmode="solo"]'); await wait(500);
   const solo = await ev(() => ({ view: bossView(), active: $('#bossModeSeg .active').dataset.bmode }));

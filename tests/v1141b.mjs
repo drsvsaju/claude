@@ -62,7 +62,7 @@ async function open(scheme = 'light', w = 1180) {
         SOC.cache['publicProfiles/pal1'] = { v: prof, at: Date.now() };
         const L = personLook('pal1', 'pal'), html = lookPic(L, 30) + lookName(L);
         const good = it.cat === 'aura' ? html.includes('aura-x-' + it.id) && (!it.id.endsWith('_sq') || html.includes('aura-sq'))
-          : it.cat === 'color' ? html.includes('nc-' + it.id) || html.includes('color:' + NAME_COLORS[it.id])
+          : it.cat === 'color' ? html.includes('nc-' + it.id) || html.includes('color:' + NAME_COLORS[it.id]) || html.includes('color:' + ink(NAME_COLORS[it.id]))   /* v2.0: the colour's readable ink */
           : it.cat === 'avatar' ? html.includes(avatarArt(it.id).slice(0, 50))
           : html.includes(FRAMES[it.id].slice(0, 30));
         if (!good) out.pub.push(it.id);

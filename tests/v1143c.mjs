@@ -38,7 +38,7 @@ const INSPECT = `window.lookIn = (el, w) => {
   if (!el) return { missing: true };
   const h = el.innerHTML, au = el.querySelector('.aura');
   return { aura: w.aura === 'streak' ? !!el.querySelector('.aura:not([class*="aura-x-"])') : !!el.querySelector('.aura-x-' + w.aura),
-    squad: !!el.querySelector('.aura-sq'), color: !!el.querySelector('.nc-' + w.color) || (!NAME_GRADS[w.color] && [...el.querySelectorAll('[style*="color"]')].some(x => x.style.color && x.style.color.replace(/\s/g, '') === (() => { const t = document.createElement('i'); t.style.color = NAME_COLORS[w.color]; return t.style.color.replace(/\s/g, ''); })())), avatar: h.includes(avatarArt(w.avatar).slice(0, 60)),
+    squad: !!el.querySelector('.aura-sq'), color: !!el.querySelector('.nc-' + w.color) || (!NAME_GRADS[w.color] && [...el.querySelectorAll('[style*="color"]')].some(x => x.style.color && [NAME_COLORS[w.color], ink(NAME_COLORS[w.color])].some(c => { const t = document.createElement('i'); t.style.color = c; return t.style.color.replace(/\s/g, '') === x.style.color.replace(/\s/g, ''); })))   /* v2.0: the raw colour or its readable ink */, avatar: h.includes(avatarArt(w.avatar).slice(0, 60)),
     frame: h.includes(FRAMES[w.frame].slice(0, 40)), tag: el.textContent.includes('[' + w.tag + ']'), auraCls: au ? au.className : '' };
 };`;
 await B.ev(s => eval(s), INSPECT);

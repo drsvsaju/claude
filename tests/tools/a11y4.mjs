@@ -1,5 +1,5 @@
 // v2.0 phase 4 — contrast, computed from what is actually drawn.
-//   node a11y4.mjs <page> <outdir> [--skins default|all] [--from 20] [--few] [--phone] [--only timer,stats]
+//   node a11y4.mjs <page> <outdir> [--skins default|all|th_a,th_b] [--from 20] [--few] [--phone] [--only timer,stats]
 // For every state (theme × light/dark × tab or dialog) the page is photographed with its text made transparent, so
 // each text's real background is known whatever is behind it (washes, glass, gradients); the text colour comes from
 // the computed style, with every ancestor's opacity. a11y4.py turns the two into contrast ratios.
@@ -19,7 +19,7 @@ const p = await ctx.newPage(); p.on('pageerror', e => console.log('PAGEERROR', e
 await p.goto('http://localhost:8000/' + page); await p.waitForSelector('#authView:not(.hidden)');
 await p.evaluate(() => startPreview()); await p.waitForSelector('#appView:not(.hidden)'); await wait(3500);
 await p.evaluate(() => { document.querySelectorAll('dialog[open]').forEach(d => d.close()); const s = document.createElement('style'); s.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; } .toasts, #pomeoBubble, #tipPop { display: none !important; } * { content-visibility: visible !important; }'; document.head.append(s); });   // (off-screen tiles are skipped by the browser and would be blank in a full-page picture)
-let skins = val('--skins') === 'all' ? await p.evaluate(() => Object.keys(SKINS)) : ['th_default'];
+let skins = val('--skins') === 'all' ? await p.evaluate(() => Object.keys(SKINS)) : val('--skins') && val('--skins') !== 'default' ? val('--skins').split(',') : ['th_default'];
 if (val('--from')) skins = skins.slice(+val('--from'));   // --from 20: carry on with the 21st theme (a full run takes hours)
 // the states: every tab, the sub-views with their own content, and the dialogs with the most text
 const VIEWS = [

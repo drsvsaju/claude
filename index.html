@@ -2839,7 +2839,7 @@ dialog.tut { width: min(460px, calc(100vw - 24px)); padding: 20px; box-sizing: b
   padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top)); background: var(--accent-fill, var(--accent)); color: var(--on-accent, #fff); font-size: 13.5px; text-align: center; }
 .pv-banner b { font-weight: 600; }
 .pv-banner .btn { padding: 5px 14px; font-size: 13px; min-width: 0; border-color: transparent; }
-.pv-banner .pv-go { background: var(--on-accent, #fff); color: var(--accent-text, var(--accent)); font-weight: 600; }
+.pv-banner .pv-go { background: var(--on-accent, #fff); color: var(--accent-fill, var(--accent)); font-weight: 600; }
 .pv-banner .pv-exit { background: transparent; color: inherit; border-color: color-mix(in srgb, currentColor 45%, transparent); }
 body.previewing .top { top: var(--pv-h, 0px); }
 @media (max-width: 640px) { .pv-banner { font-size: 12.5px; gap: 4px 8px; padding: 6px 10px; padding-top: max(6px, env(safe-area-inset-top)); } .pv-banner .pv-long { display: none; } .pv-banner .btn { padding: 0 10px; font-size: 12.5px; } }
@@ -3579,7 +3579,7 @@ body.first-load #todayBar { opacity: 0; }
 .clan-emb { display: block; }
 .clan-title { flex: 1; min-width: 0; padding-bottom: 2px; }
 .clan-title h2 { margin: 0; font-size: 20px; overflow-wrap: anywhere; }
-.clan-lv { flex: none; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--clan-acc) 12%, transparent); color: var(--clan-acct, var(--clan-acc)); }
+.clan-lv { flex: none; font-weight: 700; font-size: 13px; padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--clan-acc) 12%, transparent); color: color-mix(in srgb, var(--clan-acct, var(--clan-acc)) 85%, var(--t-1)); }
 .clan-xp { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-top: 12px; }
 .clan-xp .lbl { font-size: 12px; }
 .clan-head .bar, .clan-quest .bar, .clan-raid .bar { position: relative; overflow: hidden; height: 8px; background: var(--heat0); border-radius: 999px; display: block; }
@@ -20757,6 +20757,7 @@ function mergeSyncFrom(d) {
   if (d.energy && typeof d.energy === 'object' && !Array.isArray(d.energy)) S.energy = { ...S.energy, ...d.energy };
   snapLists();
   SYNC.changed = SYNC_LISTS.some((f, i) => JSON.stringify(S[f]) !== before[i]);
+  G = null; GD = null;   // the lists are new objects even when nothing changed: derived state must not keep pointing at the old ones (v2.0)
   return ahead;
 }
 const SYNC = { changed: false, stale: [] };
