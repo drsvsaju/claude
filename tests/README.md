@@ -45,6 +45,12 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   (kept on the device), the tally (button and key D, no pop-up), the block's record (`int`, `dx`) and the answer in
   the profile (`debrief`), nothing published, the day's list, Yes clearing the intention, the resume card (when it
   shows, Not now, Resume), the second device, the setting, the demo (shown, nothing written) and a phone.
+- `v600b.mjs` (v2.0 phase 6): healthier streaks — the weekly rest day (from tomorrow, once a week), a pause (up to
+  7 days a month, ended early), a Streak Freeze not spent on a kept day, mending a missed day (twice the goal within
+  two days, once a month, said in True Minimalist too), graduation at 100 days, a questline's "days in a row", the
+  maps on a second device, a 1.20 client on the same account (its save leaves the new maps alone), the demo (shown,
+  nothing written) and a phone. The logic runs for a guest with the clock pinned (`page.clock`), so it does not depend
+  on the date; it needs the fixture `site/v120.html` (the 1.20 build, made by `restore.sh`).
   The runners treat three-digit suites (`v200a` …) as v2.0 ones; `v6`, `v6c`, `v7c` … are old and keep Overtime off.
 - `v500b.mjs`: the Calendar on a signed-up account — wiring (sidebar, key C, palette), the Month grid, the day dialog
   and the keyboard, dragging to another day with Undo, the Week (positions, overlap, drag over empty hours to plan a

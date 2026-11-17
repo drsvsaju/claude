@@ -4805,6 +4805,38 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .intent b { color: var(--t-1, var(--text)); font-weight: 700; }
 .dx-tag { margin-left: 8px; font-size: 12px; color: var(--t-2, var(--muted)); font-variant-numeric: tabular-nums; }
 @media (max-width: 480px) { .int-toggle { margin-left: 0; display: flex; } }
+/* ----- v2.0 phase 6b: streak care (the row on Today, the dialog) ----- */
+.streak-care { position: relative; display: flex; align-items: center; gap: 10px; width: calc(100% + 16px); margin: 8px -8px 0; padding: 6px 8px; border: 0; border-radius: var(--r-12, 12px); background: none; color: var(--t-1, var(--text)); font: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: background-color .15s, border-color .15s; }
+.streak-care:hover { background: var(--hover); }
+.streak-care .sc-ic { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: var(--hover); color: var(--t-2, var(--muted)); }
+.streak-care .sc-tx { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; min-width: 0; flex: 1; line-height: 1.35; }
+.streak-care .sc-tx b { font-size: var(--fs-13, 13px); font-weight: 600; }
+.streak-care .sc-go { flex: none; color: var(--t-2, var(--muted)); display: grid; }
+.streak-care .sc-grad { flex: none; display: grid; color: var(--accent-text, var(--accent)); }
+.streak-care .sc-bar { position: absolute; left: 8px; right: 8px; bottom: 0; height: 3px; margin: 0; }
+.streak-care[data-k="pause"] .sc-ic, .streak-care[data-k="rest"] .sc-ic { background: var(--ok-soft); color: var(--ok-text, var(--ok)); }
+.streak-care[data-k="mend"] .sc-ic { background: var(--accent-soft, var(--hover)); color: var(--accent-text, var(--accent)); }
+#streakDlg { width: min(460px, calc(100vw - 24px)); } #scTitle:focus { outline: none; }
+.sc-nums { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 22px; padding: 0 0 12px; }
+.sc-nums > div { display: flex; align-items: baseline; gap: 6px; }
+.sc-nums b { font-size: var(--fs-24, 24px); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sc-nums .sc-gradcard { flex-basis: 100%; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--r-12, 12px); background: var(--accent-soft, var(--hover)); color: var(--accent-text, var(--accent)); }
+.sc-nums .sc-gradcard span { display: flex; flex-direction: column; } .sc-nums .sc-gradcard b { font-size: var(--fs-14, 14px); color: var(--t-1, var(--text)); }
+.sc-sec { padding: 12px 0; border-top: 1px solid var(--hair, var(--line)); }
+.sc-sec:empty, .sc-sec.hidden { display: none; }
+.sc-sec > p.lbl { margin: 6px 0 0; line-height: 1.45; }
+.sc-row { display: flex; align-items: center; gap: 12px; }
+.sc-row.hidden { display: none; }
+.sc-row .sc-l { flex: 1; min-width: 0; font-size: var(--fs-14, 14px); }
+.sc-row ui-select { width: 150px; flex: none; }
+.sc-row ui-num { width: 150px; flex: none; }
+.sc-h { display: flex; align-items: center; gap: 8px; font-size: var(--fs-14, 14px); }
+.sc-h .sc-ic { display: grid; color: var(--t-2, var(--muted)); } .sc-h .sc-r { margin-left: auto; font-variant-numeric: tabular-nums; }
+#scMend[data-open="1"] .sc-ic { color: var(--accent-text, var(--accent)); }
+#scMend .sn-bar { margin: 8px 0 0; }
+.sc-kept ul { list-style: none; margin: 6px 0 0; padding: 0; }
+.sc-kept li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: var(--fs-13, 13px); }
+@media (max-width: 420px) { .sc-row { flex-wrap: wrap; } .sc-row .sc-l { flex-basis: 100%; } .sc-row ui-select, .sc-row ui-num { flex: 1; width: auto; } }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -5204,6 +5236,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
             <div><div class="big" id="curStreak">0<small>days</small></div><div class="lbl">Current streak</div></div>
             <div><div class="big" id="bestStreak">0<small>days</small></div><div class="lbl">Longest streak</div></div>
           </div>
+          <button class="streak-care" id="streakCare" type="button" aria-haspopup="dialog" title="Rest day, pause and mending"></button>
           <div class="streak-next hidden" id="streakNext"></div>
           <div class="rank-line hidden" id="rankLine"></div>
           <div class="today-extra" id="todayExtra"></div>
@@ -5379,6 +5412,10 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
         <div class="setting" data-k="goal minutes streak target">
           <div><div>Daily goal</div><div class="desc">Minutes of focus for a day to count toward your streak</div></div>
           <ui-num id="setGoal" min="5" max="1440" step="5" aria-label="Daily goal in minutes"></ui-num>
+        </div>
+        <div class="setting" data-k="streak care rest day pause mend repair freeze break holiday sick travel">
+          <div><div>Streak care</div><div class="desc">A weekly rest day, a pause for exams, travel or illness, and mending a missed day</div></div>
+          <button class="btn small" type="button" id="setStreakCare" aria-haspopup="dialog">Open</button>
         </div>
         <div class="setting" data-k="week monday sunday calendar">
           <div><div>Week starts on</div><div class="desc">For weekly stats and the garden</div></div>
@@ -5776,6 +5813,26 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 </dialog>
 
 <!-- Calendar (v2.0): one day, a planned focus block, export -->
+<dialog id="streakDlg" aria-labelledby="scTitle">
+  <h2 style="margin:0 0 2px" id="scTitle" tabindex="-1">Streak care</h2>
+  <p class="lbl" style="margin:0 0 12px">A streak is there to help you show up. These keep it kind.</p>
+  <div class="sc-nums" id="scNums"></div>
+  <div class="sc-sec">
+    <div class="sc-row"><label class="sc-l" for="scRest"><b>Rest day</b></label>
+      <ui-select id="scRest"><option value="-1">None</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option><option value="0">Sunday</option></ui-select></div>
+    <p class="lbl" id="scRestNote"></p>
+  </div>
+  <div class="sc-sec">
+    <div class="sc-row hidden" id="scPauseOn"><span class="sc-l" id="scPauseState"></span><button class="btn small" type="button" id="scPauseEnd">End pause</button></div>
+    <div class="sc-row" id="scPauseOff"><label class="sc-l" for="scPauseN"><b>Pause</b></label>
+      <ui-num id="scPauseN" min="1" max="7" step="1" value="3" suffix="days" aria-label="Days to pause"></ui-num><button class="btn small" type="button" id="scPauseGo">Start pause</button></div>
+    <p class="lbl" id="scPauseNote"></p>
+  </div>
+  <div class="sc-sec" id="scMend"></div>
+  <div class="sc-sec" id="scFreeze"></div>
+  <div class="sc-sec sc-kept" id="scKept"></div>
+  <div class="btn-row" style="justify-content:flex-end;margin-top:14px"><button class="btn" id="scClose" type="button">Done</button></div>
+</dialog>
 <dialog id="calDayDlg" aria-labelledby="calDayTitle">
   <h2 style="margin:0 0 2px" id="calDayTitle" tabindex="-1"></h2>
   <p class="lbl" id="calDayFocus" style="margin:0 0 10px"></p>
@@ -8321,7 +8378,7 @@ function mergeGame(local, remote) {
   const out = normalizeGame(remote), loc = normalizeGame(local);
   let ahead = false;
   const uni = (a, b) => { for (const [k, v] of Object.entries(b)) if (!(k in a)) { a[k] = v; ahead = true; } };
-  for (const k of ['purchases', 'trophies', 'grants', 'freezesUsed', 'plog']) uni(out[k], loc[k]);
+  for (const k of ['purchases', 'trophies', 'grants', 'freezesUsed', 'plog', 'rest', 'pauses', 'pauseEnds', 'repairs']) uni(out[k], loc[k]);
   for (const k of Object.keys(out.claims)) uni(out.claims[k], loc.claims[k]);
   for (const [k, v] of Object.entries(loc.equipped)) {
     const lt = +loc.eqAt[k] || 0, rt = +out.eqAt[k] || 0;
@@ -8709,7 +8766,7 @@ function mergeData(obj) {
   for (const kind of ['goalDays', 'milestones', 'achievements', 'social', 'challenges', 'login', 'bosses', 'wq', 'track', 'evo', 'season', 'rkup']) {
     for (const [k, v] of Object.entries(sg.claims[kind] || {})) if (!g.claims[kind][k] || v < g.claims[kind][k]) g.claims[kind][k] = v;
   }
-  for (const [k, v] of Object.entries(sg.freezesUsed)) if (!g.freezesUsed[k]) g.freezesUsed[k] = v;
+  for (const m of ['freezesUsed', 'rest', 'pauses', 'pauseEnds', 'repairs']) for (const [k, v] of Object.entries(sg[m] || {})) if (!(k in g[m])) g[m][k] = v;
   for (const [k, v] of Object.entries(sg.equipped)) if (!(k in g.equipped)) g.equipped[k] = v;
   for (const r of src.reminders) if (r && r.id && r.time && r.date && !S.reminders.some(x => x.id === r.id)) S.reminders.push(r);
   for (const [k, v] of Object.entries(src.notes)) if (!S.notes[k]) S.notes[k] = v;
@@ -9094,7 +9151,11 @@ function logSession(focusedMs, end, early = false, otMin = 0) {
   G = null;
   const news = reconcileRewards('collect');
   const earlyText = early ? `Finished early · ${fmtMin(focusedMs / 60000)} of ${fmtMin(t.planned / 60000)}` : otMin > 0 ? `${fmtMin(focusedMs / 60000)} with ${fmtMin(otMin)} overtime` : '';
-  if (!S.settings.gamification) { toast(earlyText ? `${earlyText} · ${name}` : `Logged ${fmtMin(focusedMs / 60000)} · ${name}`); socialAfterSession(); return; }
+  if (!S.settings.gamification) {
+    toast(earlyText ? `${earlyText} · ${name}` : `Logged ${fmtMin(focusedMs / 60000)} · ${name}`);
+    { const m = news.find(n => n.type === 'mend'); if (m) setTimeout(() => toast(mendToast(m.day), 4200, true), 900); }   // v2.0: a mended day is said in True Minimalist too (streaks are not a reward)
+    socialAfterSession(); return;
+  }
   const goalDays = news.filter(n => n.type === 'goal').length;
   toast(`${earlyText ? earlyText + ' · ' : ''}+${xpForSession(s)} XP · +${COINS_PER_SESSION + GOAL_BONUS * goalDays + subCoins} coins${goalDays ? ' · daily goal reached' : ''}`);
   setTimeout(() => uiSound('coin'), 900);
@@ -9230,15 +9291,248 @@ function setDailyGoal(v) {
   if (cur) { cur.g = g; cur.u = Date.now(); } else S.goalLog.push({ id: 'g' + k, d: k, g, p: old, u: Date.now() });
   S.settings.goalMin = g;
 }
+/* ==========================================================================
+   HEALTHIER STREAKS (v2.0)
+   A Streak Freeze, the weekly rest day, a pause and a mended day all do the same thing: the day keeps the streak
+   going and adds nothing to it. They are dated, add-only maps in S.game, so the past is never judged again and two
+   devices agree:
+     freezesUsed  day -> ts                       (as before)
+     rest         day it applies from -> weekday 0–6, or -1 for none
+     pauses       first paused day -> days (1–7)
+     pauseEnds    first paused day -> last paused day (a pause ended early)
+     repairs      the mended day -> when it was mended
+   ========================================================================== */
+const PAUSE_MAX = 7;      // days in one pause, and paused days in a calendar month
+const MEND_RUN = 3;       // a streak of at least this many days can be mended
+const MEND_EXTRA = 120;   // mending asks for twice the goal, never more than this many minutes on top of it
+const GRAD_DAYS = 100;    // from here the streak is "graduated": a permanent mark and quieter words
+const WD_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const SC_IC = {
+  care: '<path d="M5 19c0-8.5 5-13.5 14-14 0 9-5 14-13.5 14"/><path d="M5 19l7.5-7.5"/>',
+  pause: '<path d="M9 6v12M15 6v12"/>',
+  mend: '<path d="M12 20s-7-4.4-7-9.5A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.5C19 15.6 12 20 12 20Z"/><path d="M12 11v4M10 13h4"/>',
+  grad: '<path d="M3 9.5 12 5l9 4.5-9 4.5-9-4.5Z"/><path d="M7 12v4c1.5 1.3 3.2 2 5 2s3.5-.7 5-2v-4M21 9.5V15"/>',
+};
+/** The paused spans, oldest first: [{ from, to }] (day keys, both ends included). */
+function pauseSpans(g = S.game) {
+  const out = [], ends = (g && g.pauseEnds) || {};
+  for (const [from, n] of Object.entries((g && g.pauses) || {})) {
+    let to = dayKey(addDays(parseDay(from), n - 1));
+    if (ends[from] && ends[from] < to) to = ends[from];
+    if (to >= from) out.push({ from, to });
+  }
+  return out.sort((a, b) => (a.from < b.from ? -1 : 1));
+}
+/** The weekly rest day in force on a day (0–6), or -1: the latest choice that applies on or before it. */
+function restDayOn(k, g = S.game) {
+  let wd = -1, at = '';
+  for (const [from, v] of Object.entries((g && g.rest) || {})) if (from <= k && from >= at) { at = from; wd = v; }
+  return wd;
+}
+/** A function that says why a day keeps the streak without its goal: 'freeze' | 'mend' | 'pause' | 'rest', or ''. */
+function streakKeeper() {
+  const g = S.game || {}, frozen = g.freezesUsed || {}, mended = g.repairs || {}, spans = pauseSpans(g);
+  const rest = Object.entries(g.rest || {}).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  return k => {
+    if (frozen[k]) return 'freeze';
+    if (mended[k]) return 'mend';
+    for (const s of spans) if (k >= s.from && k <= s.to) return 'pause';
+    if (!rest.length || k < rest[0][0]) return '';
+    let wd = -1;
+    for (const [from, v] of rest) { if (from > k) break; wd = v; }
+    return wd >= 0 && parseDay(k).getDay() === wd ? 'rest' : '';
+  };
+}
+/** The rest day today and from tomorrow, and whether it can be changed now (a change applies from tomorrow, once a week). */
+function restInfo() {
+  const tomorrow = dayKey(addDays(startOfDay(new Date()), 1));
+  const last = Object.keys(S.game.rest || {}).sort().pop() || '';
+  const changeOn = last && last !== tomorrow ? dayKey(addDays(parseDay(last), 6)) : '';   // the day the next choice can be made
+  return { now: restDayOn(todayKey()), next: restDayOn(tomorrow), tomorrow, changeOn, locked: !!changeOn && todayKey() < changeOn };
+}
+function setRestDay(wd, el) {
+  if (isPreview()) { previewPrompt(el || $('#scRest')); return false; }   // the demo changes nothing
+  wd = Math.round(+wd);
+  const r = restInfo();
+  if (!(wd >= -1 && wd <= 6) || wd === r.next) return false;
+  if (r.locked) { toast(`Your rest day can change once a week · next on ${fmtDayShort(r.changeOn)}`, 3600); return false; }
+  S.game.rest[r.tomorrow] = wd;
+  streakCareChanged();
+  toast(wd < 0 ? 'No rest day from tomorrow' : `${WD_LONG[wd]} is your rest day from tomorrow`, 3200, true);
+  return true;
+}
+/** Paused days already used in a calendar month ('YYYY-MM'). */
+function pauseUsed(mk) {
+  let n = 0;
+  for (const s of pauseSpans()) for (let d = parseDay(s.from); dayKey(d) <= s.to; d = addDays(d, 1)) if (dayKey(d).slice(0, 7) === mk) n++;
+  return n;
+}
+/** The pause running today (or null), this month's allowance, and the longest pause that could start today. */
+function pauseInfo() {
+  const today = startOfDay(new Date()), tk = dayKey(today);
+  const cur = pauseSpans().find(s => tk >= s.from && tk <= s.to) || null;
+  const used = pauseUsed(tk.slice(0, 7)), startedToday = !!(S.game.pauses || {})[tk];
+  let room = 0;
+  if (!cur && !startedToday) {
+    const add = {};
+    for (; room < PAUSE_MAX; room++) {
+      const mk = dayKey(addDays(today, room)).slice(0, 7);
+      add[mk] = (add[mk] || 0) + 1;
+      if (pauseUsed(mk) + add[mk] > PAUSE_MAX) break;
+    }
+  }
+  return { cur, used, left: Math.max(0, PAUSE_MAX - used), room, startedToday };
+}
+function startPause(n, el) {
+  if (isPreview()) { previewPrompt(el || $('#scPauseGo')); return false; }
+  const p = pauseInfo();
+  n = clamp(Math.round(+n) || 1, 1, PAUSE_MAX);
+  if (p.cur) return false;
+  if (p.startedToday) { toast('A pause can start once a day · try again tomorrow', 3200); return false; }
+  if (n > p.room) { toast(p.room ? `You have ${p.room} pause ${p.room === 1 ? 'day' : 'days'} left this month` : 'No pause days left this month', 3200); return false; }
+  const tk = todayKey();
+  S.game.pauses[tk] = n;
+  streakCareChanged();
+  toast(`Streak paused · back on ${fmtDayShort(dayKey(addDays(parseDay(tk), n)))}`, 3600, true);
+  return true;
+}
+function endPause(el) {
+  if (isPreview()) { previewPrompt(el || $('#scPauseEnd')); return false; }
+  const p = pauseInfo().cur;
+  if (!p) return false;
+  S.game.pauseEnds[p.from] = dayKey(addDays(startOfDay(new Date()), -1));   // today counts again
+  streakCareChanged();
+  toast('Pause ended · today counts again', 3200, true);
+  return true;
+}
+/** What mending a missed day asks for today, in minutes: twice the goal (the higher of that day's and today's), capped. */
+const mendNeed = (missed, today) => { const g = Math.max(goalFor(missed), goalFor(today)); return Math.min(2 * g, g + MEND_EXTRA); };
+/**
+ * The open offer to mend a streak, or null. It exists when exactly one day in the last two missed its goal (and no
+ * freeze, rest day or pause covered it), the streak before it was MEND_RUN days or more, and no day was mended yet
+ * this calendar month. It stays open for the two days after the missed one; reaching the target in one of them
+ * mends it. Everything is derived from the session log, so two devices see the same offer.
+ */
+function repairOffer(idx) {
+  if (!S.game) return null;
+  idx = idx || buildIndex();
+  const keep = streakKeeper(), today = startOfDay(new Date()), tk = dayKey(today), mk = tk.slice(0, 7);
+  const ok = k => goalMetDay(idx, k) || !!keep(k);
+  if (Object.values(S.game.repairs || {}).some(ts => monthKey(+ts) === mk)) return null;
+  for (const back of [1, 2]) {
+    const m = dayKey(addDays(today, -back));
+    if (ok(m)) continue;
+    let run = 0, d = addDays(today, -back - 1);
+    while (run < MEND_RUN && ok(dayKey(d))) { if (goalMetDay(idx, dayKey(d))) run++; d = addDays(d, -1); }
+    if (run < MEND_RUN) return null;
+    const need = mendNeed(m, tk), got = Math.floor((idx[tk] || {}).total || 0);
+    return { day: m, need, got, left: Math.max(0, need - got), lastDay: back === 2, done: got >= need };
+  }
+  return null;
+}
+/** Mend the missed day once today's focus reaches the target. Returns the mended day, or ''. */
+function checkRepair(idx, now = Date.now()) {
+  if (isPreview()) return '';
+  const o = repairOffer(idx);
+  if (!o || !o.done) return '';
+  S.game.repairs[o.day] = now;
+  return o.day;
+}
+const mendToast = day => `${WD_LONG[parseDay(day).getDay()]} is mended · your streak carries on`;
+const isGraduate = longest => longest >= GRAD_DAYS || !!(S.game && S.game.claims && S.game.claims.milestones && S.game.claims.milestones[GRAD_DAYS]);
+function streakCareChanged() {
+  G = null;
+  save();
+  renderToday();
+  if ($('#streakDlg').open) renderStreakDlg();
+  if (typeof socialReady === 'function' && socialReady()) schedulePublish();   // a pause keeps a streak on the boards
+}
+/** What the row under the streak says: the one thing that matters about the streak today. */
+function streakCareLine(idx, cur, longest) {
+  const tk = todayKey(), p = pauseInfo().cur, o = p ? null : repairOffer(idx);
+  if (p) return { ic: SC_IC.pause, t: 'Streak paused', s: `Back on ${fmtDayShort(dayKey(addDays(parseDay(p.to), 1)))}`, k: 'pause' };
+  if (o) return { ic: SC_IC.mend, t: `Mend ${WD_LONG[parseDay(o.day).getDay()]}`, s: `${fmtMin(o.got)} of ${fmtMin(o.need)} today`, k: 'mend', pct: Math.min(1, o.got / o.need) };
+  if (!goalMetDay(idx, tk) && streakKeeper()(tk) === 'rest') return { ic: ICONS.moon, t: 'Rest day', s: 'Your streak is safe today', k: 'rest' };
+  if (!cur && longest > 1) return { ic: SC_IC.care, t: 'A fresh start', s: isGraduate(longest) ? 'The habit is already yours' : `Your best is ${longest} days`, k: 'fresh' };
+  const r = restInfo();
+  return { ic: SC_IC.care, t: 'Streak care', s: r.next >= 0 ? `Rest day: ${WD_LONG[r.next]}` : 'Rest day, pause, mending', k: 'care' };
+}
+function renderStreakCare(idx, cur, longest) {
+  const el = $('#streakCare');
+  if (!el) return;
+  const l = streakCareLine(idx, cur, longest), sig = [l.k, l.t, l.s, l.pct === undefined ? '' : l.pct.toFixed(3), isGraduate(longest)].join('|');
+  if (el.dataset.sig === sig) return;
+  el.dataset.sig = sig; el.dataset.k = l.k;
+  el.innerHTML = `<span class="sc-ic">${iconSVG(l.ic, 18)}</span><span class="sc-tx"><b>${esc(l.t)}</b><span class="lbl">${esc(l.s)}</span></span>` +
+    (isGraduate(longest) ? `<span class="sc-grad" title="${GRAD_DAYS}-day graduate">${iconSVG(SC_IC.grad, 16)}<span class="vh">${GRAD_DAYS}-day graduate</span></span>` : '') +
+    `<span class="sc-go" aria-hidden="true">${iconSVG('<path d="m9 6 6 6-6 6"/>', 16)}</span>` +
+    (l.pct === undefined ? '' : `<span class="sn-bar sc-bar"><i style="transform:translateX(${(l.pct * 100 - 100).toFixed(1)}%)"></i></span>`);
+}
+/** The days of the last eight weeks that kept the streak without their goal, newest first. */
+function keptDays(idx, n = 5) {
+  const keep = streakKeeper(), today = startOfDay(new Date()), out = [];
+  for (let i = 1; i <= 56 && out.length < n; i++) {
+    const k = dayKey(addDays(today, -i)), why = goalMetDay(idx, k) ? '' : keep(k);
+    if (why) out.push({ k, why });
+  }
+  return out;
+}
+const KEPT_WORD = { freeze: 'Streak Freeze', mend: 'mended', pause: 'paused', rest: 'rest day' };
+function renderStreakDlg() {
+  const idx = buildIndex(), { cur, longest } = computeStreaks(idx), r = restInfo(), p = pauseInfo(), o = p.cur ? null : repairOffer(idx), grad = isGraduate(longest);
+  const day = n => `${n} ${n === 1 ? 'day' : 'days'}`;
+  $('#scNums').innerHTML = `<div><b>${cur}</b><span class="lbl">${cur === 1 ? 'day' : 'days'} now</span></div><div><b>${longest}</b><span class="lbl">longest</span></div>` +
+    (grad ? `<div class="sc-gradcard">${iconSVG(SC_IC.grad, 20)}<span><b>${GRAD_DAYS}-day graduate</b><span class="lbl">The habit is yours. The number is a souvenir now.</span></span></div>` : '');
+  // rest day
+  const sel = $('#scRest');
+  sel.value = String(r.next); sel.toggleAttribute('disabled', r.locked);
+  $('#scRestNote').textContent = r.locked ? `You can change it again on ${fmtDayShort(r.changeOn)}.`
+    : r.now !== r.next ? (r.next < 0 ? 'No rest day from tomorrow.' : `Starts tomorrow. ${WD_LONG[r.next]}s will not break your streak.`)
+    : r.next < 0 ? 'One day a week that never breaks your streak. It starts tomorrow and can change once a week.' : `${WD_LONG[r.next]}s never break your streak. It can change once a week.`;
+  // pause
+  $('#scPauseOn').classList.toggle('hidden', !p.cur);
+  $('#scPauseOff').classList.toggle('hidden', !!p.cur);
+  if (p.cur) $('#scPauseState').innerHTML = `<b>Paused</b> · back on ${esc(fmtDayShort(dayKey(addDays(parseDay(p.cur.to), 1))))}`;
+  const num = $('#scPauseN'), can = !p.cur && p.room > 0;
+  num.setAttribute('max', Math.max(1, p.room)); if (+num.value > p.room || !+num.value) num.value = Math.min(3, Math.max(1, p.room));
+  num.toggleAttribute('disabled', !can); $('#scPauseGo').disabled = !can;
+  $('#scPauseNote').textContent = p.cur ? `${day(p.used)} of ${PAUSE_MAX} used this month. Paused days keep your streak and add nothing to it.`
+    : p.startedToday ? 'A pause can start once a day. Try again tomorrow.'
+    : p.room ? `For exams, travel or illness. ${p.left === PAUSE_MAX ? `Up to ${PAUSE_MAX} days a month` : `${day(p.left)} left this month`}; paused days keep your streak and add nothing to it.`
+    : `All ${PAUSE_MAX} pause days are used this month.`;
+  // mending
+  const mend = $('#scMend');
+  mend.dataset.open = o ? '1' : '';
+  mend.innerHTML = o
+    ? `<div class="sc-h"><span class="sc-ic">${iconSVG(SC_IC.mend, 18)}</span><b>Mend ${esc(WD_LONG[parseDay(o.day).getDay()])}</b><span class="lbl sc-r">${fmtMin(o.got)} of ${fmtMin(o.need)}</span></div>
+       <div class="sn-bar"><i style="transform:translateX(${(Math.min(1, o.got / o.need) * 100 - 100).toFixed(1)}%)"></i></div>
+       <p class="lbl">Reach ${fmtMin(o.need)} of focus ${o.lastDay ? 'today' : 'today or tomorrow'} and ${esc(fmtDayShort(o.day))} is mended: your streak carries on. A fresh start is fine too.</p>`
+    : `<div class="sc-h"><span class="sc-ic">${iconSVG(SC_IC.mend, 18)}</span><b>Mending</b></div>
+       <p class="lbl">Once a month, one missed day can be mended in the two days after it by reaching twice your goal in a day (never more than 2 hours extra). It appears here when it applies${Object.values(S.game.repairs).some(ts => monthKey(+ts) === todayKey().slice(0, 7)) ? '; this month’s is used' : ''}.</p>`;
+  // freezes
+  const fz = $('#scFreeze'), g = USER && S.settings.gamification ? game() : null;
+  fz.classList.toggle('hidden', !g);
+  if (g) fz.innerHTML = `<div class="sc-h"><span class="sc-ic">${iconSVG(ICONS.freeze, 18)}</span><b>Streak Freezes</b><span class="lbl sc-r">${g.freezesHeld} of ${MAX_FREEZES} held</span></div>
+    <p class="lbl">Used by itself on a missed day. Freezes cost coins, and coins only come from focus.</p>`;
+  // what kept the streak lately
+  const kept = keptDays(idx);
+  $('#scKept').classList.toggle('hidden', !kept.length);
+  $('#scKept').innerHTML = kept.length ? `<div class="field">Days that kept your streak</div><ul>${kept.map(x => `<li><span>${esc(fmtDayShort(x.k))}</span><span class="lbl">${KEPT_WORD[x.why]}</span></li>`).join('')}</ul>` : '';
+}
+function openStreakCare() {
+  const dlg = $('#streakDlg');
+  renderStreakDlg();
+  if (!dlg.open) { dlg.showModal(); $('#scTitle').focus({ preventScroll: true }); }
+}
 /**
  * Current streak: consecutive goal-met days ending today — or ending yesterday
- * if today's goal isn't met yet (today is still in progress). Frozen days bridge gaps.
+ * if today's goal isn't met yet (today is still in progress). Kept days bridge gaps.
  */
 function computeStreaks(idx) {
-  const frozen = (S.game && S.game.freezesUsed) || {};
+  const keep = streakKeeper();
   const met = d => goalMetDay(idx, dayKey(d));
-  // A day protected by a Streak Freeze keeps the streak alive but doesn't add to it.
-  const kept = d => met(d) || !!frozen[dayKey(d)];
+  // A day covered by a Streak Freeze, the rest day, a pause or mending keeps the streak alive but doesn't add to it.
+  const kept = d => met(d) || !!keep(dayKey(d));
   const today = startOfDay(new Date());
 
   let cur = 0, d = met(today) ? today : addDays(today, -1);
@@ -9373,6 +9667,7 @@ function renderToday() {
   }
   $('#bestStreak').innerHTML = `${longest}<small>${longest === 1 ? 'day' : 'days'}</small>`;
   renderStreakNext(cur);
+  renderStreakCare(idx, cur, longest);
   renderRankLine();
   $('#todayText').innerHTML = `<b>${fmtMin(mins)}</b> of ${fmtMin(goal)}${mins >= goal ? ' · goal met ✓' : ''}`;   // (the same words; the minutes done lead)
   const pct = Math.min(100, Math.round(mins / goal * 100));
@@ -9787,6 +10082,7 @@ const fmtNum = n => Math.round(n).toLocaleString();
 function normalizeGame(g) {
   g = g && typeof g === 'object' ? g : {};
   const map = v => (v && typeof v === 'object' && !Array.isArray(v) ? { ...v } : {});
+  const dmap = (v, ok) => Object.fromEntries(Object.entries(map(v)).filter(([k, x]) => DAY_RE.test(k) && ok(x)));   // a map keyed by day, bad entries dropped
   const c = map(g.claims);
   return {
     purchases: map(g.purchases),     // purchaseId -> { item, price, at }
@@ -9815,6 +10111,11 @@ function normalizeGame(g) {
     seenAt: +g.seenAt || 0,          // the bag was last opened (newer items are "New")
     tierFrom: DAY_RE.test(g.tierFrom || '') ? g.tierFrom : '',   // first week with the fixed boss HP (v1.13.1)
     freezesUsed: map(g.freezesUsed), // 'YYYY-MM-DD' -> ts (day protected by a Streak Freeze)
+    // v2.0 healthier streaks (all optional; an older version neither reads nor sends them, and the cloud merge keeps them):
+    rest: dmap(g.rest, v => Number.isInteger(v) && v >= -1 && v <= 6),       // day it applies from -> weekly rest day 0–6 (Sunday = 0), or -1 for none
+    pauses: dmap(g.pauses, v => Number.isInteger(v) && v >= 1 && v <= 7),    // first paused day -> days
+    pauseEnds: dmap(g.pauseEnds, v => DAY_RE.test(v)),                       // first paused day -> last paused day (ended early)
+    repairs: dmap(g.repairs, v => +v > 0),                                   // the mended day -> ts
   };
 }
 
@@ -10852,6 +11153,8 @@ function reconcileRewards(mode = 'quiet') {
   const g0 = game();
   const froze = useStreakFreezes(g0, now);
   if (froze) news.push({ type: 'freeze', n: froze });
+  const mended = checkRepair(g0.idx, now);   // v2.0: a missed day mended by twice the goal (after the freezes: a held freeze goes first)
+  if (mended) news.push({ type: 'mend', day: mended });
   const goalMin = Math.max(S.settings.goalMin, GOAL_BONUS_MIN);
   for (const [k, d] of Object.entries(g0.idx)) {
     if (d.total >= Math.max(goalFor(k), GOAL_BONUS_MIN) && !cl.goalDays[k]) { cl.goalDays[k] = now; news.push({ type: 'goal', key: k }); }
@@ -10941,6 +11244,7 @@ function announce(news, mode) {
   else if (miles.length && mode === 'initial') showStreakMilestones(miles, true);   // first load (an update, an import): a notice, not a dialog over the app
   for (const n of news) {
     if (n.type === 'freeze') toast(`Streak Freeze used for ${n.n === 1 ? 'a missed day' : n.n + ' missed days'} — your streak is safe`, 4000);
+    else if (n.type === 'mend') toast(mendToast(n.day), 4200, true);
     else if (mode !== 'loud') continue;
     else if (n.type === 'streak') continue;
     else if (n.type === 'ach') showAchCard(n.a);
@@ -10956,7 +11260,8 @@ function useStreakFreezes(g, now) {
   const idx = g.idx, used = S.game.freezesUsed, goal = S.settings.goalMin;
   const first = Object.keys(idx).sort()[0];
   if (!first) return 0;
-  const kept = d => goalMetDay(idx, dayKey(d)) || !!used[dayKey(d)];
+  const keep = streakKeeper();   // v2.0: a rest day, a paused day or a mended day needs no freeze
+  const kept = d => goalMetDay(idx, dayKey(d)) || !!used[dayKey(d)] || !!keep(dayKey(d));
   const today = startOfDay(new Date());
   const gap = [];
   let d = addDays(today, -1);
@@ -12736,7 +13041,7 @@ function minutesFor(d, period) {
 function resetText(period) {
   if (period === 'produce') return 'All produce ever harvested in the garden';
   if (period === 'harvests') return 'Plants harvested, all time';
-  if (period === 'streak') return 'Days in a row with the daily goal met · a missed day drops off';
+  if (period === 'streak') return 'Days in a row with the daily goal met · rest days, pauses and freezes keep a streak going';
   if (period === 'best') return 'Longest streak ever';
   if (period === 'season') { const m = Math.max(1, Math.round((seasonEnd(seasonKeyNow()) - Date.now()) / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60); return `Season ${seasonLabel(seasonKeyNow())} · ends in ${d ? `${d}d ${h}h` : `${h}h ${m % 60}m`} · at most 14 h a day count`; }
   const now = new Date();
@@ -20793,7 +21098,8 @@ function demoDocs() {
     recent: [{ name: 'Physics', presetId: 'p-deep', ts: Date.now() - 3600e3 }, { name: 'Maths', presetId: 'p-classic', ts: Date.now() - 7200e3 }, { name: 'Chemistry', presetId: 'p-deep', ts: Date.now() - 864e5 }],
     pinned: [{ name: 'Physics', presetId: 'p-deep' }],
     game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb', title: 'ti_s_unbreak' },
-      tierFrom: '2000-01-03', claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])),
+      tierFrom: '2000-01-03', rest: { [dayKey(addDays(startOfDay(now), -70))]: addDays(startOfDay(now), -25).getDay() }, pauses: { [dayKey(addDays(startOfDay(now), -36))]: 2 },   // v2.0 sample: a weekly rest day (never the empty day that starts the sample's streak, so its length stays the same) and a two-day pause
+      claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])),
         pass: (() => { const ev = eventAt(Date.now()), o = {}; if (ev && ev.start >= PASS_FROM) { for (let i = 1; i <= 3; i++) o[`${ev.id}:p:${i}`] = Date.now() - (5 - i) * 864e5; for (let i = 1; i <= 2; i++) o[`${ev.id}:f:${i}`] = Date.now() - (5 - i) * 864e5; } return o; })() }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
     cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:14', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
     loadouts: [{ id: 'demo_lo1', name: 'Exam mode', look: { theme: 'th_ocean', avatar: 'av_owl', frame: 'frame_double', color: 'col_teal', aura: 'au_streak', pomhat: 'hat_grad', pomacc: 'acc_glasses', pomskin: 'skin_none', title: 'ti_none' } },
@@ -20939,13 +21245,13 @@ function startPreview() {
 }
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
-const PV_BLOCK = ['#blkDelete', '#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
+const PV_BLOCK = ['#scPauseGo', '#scPauseEnd', '#blkDelete', '#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-sremind]', '[data-hrsvp]', '[data-sjoin]', '[data-sask]', '[data-shost]', '[data-sinvite]', '[data-sallow]', '[data-sdeny]', '[data-skick]', '[data-shand]', '[data-scode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#remDelete', '#presetForm button[type="submit"]', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '[data-sell]', '[data-sellall]', '[data-fav]', '[data-compost]', '[data-gtask]', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-pclaim]', '[data-pclaimall]', '[data-preact]', '#setPosts', '[data-posttype]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
-const PV_WHY = [['#blockForm,#calBody,#blkDelete', 'plan your study on a calendar'], ['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
+const PV_WHY = [['#streakDlg', 'set a rest day, pause your streak or mend a missed day'], ['#blockForm,#calBody,#blkDelete', 'plan your study on a calendar'], ['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-sjoin],[data-sask],[data-shost],[data-sinvite],[data-sallow],[data-sdeny],[data-skick],[data-shand],[data-scode],[data-sremind]', 'study live with friends'], ['[data-hrsvp]', 'join your clan’s sessions'], ['[data-sell],[data-sellall],[data-fav],[data-compost]', 'sell your harvests for produce'], ['[data-gtask]', 'claim garden tasks'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
@@ -21071,10 +21377,11 @@ function eventMetrics(ev) {
     if (S.notes[s.id]) notes++;
   }
   let streak = 0, run = 0, goalDays = 0;
+  const keep = streakKeeper();
   for (let d = new Date(from); d.getTime() < to && d <= new Date(); d = addDays(d, 1)) {
     const k = dayKey(d), ok = goalMetDay(idx, k);
     if (ok) goalDays++;
-    run = ok || S.game.freezesUsed[k] ? run + 1 : 0;
+    run = ok || S.game.freezesUsed[k] ? run + 1 : keep(k) ? run : 0;   // (a rest, paused or mended day carries the run)
     streak = Math.max(streak, run);
   }
   const parked = new Set();
@@ -22098,6 +22405,12 @@ $('#setFestive').addEventListener('change', e => { S.settings.festive = e.target
 $('#setRipen').addEventListener('change', e => { S.settings.ripen = e.target.checked; save(); paintRing(); });
 $('#setMinPomeo').addEventListener('change', e => { S.settings.minPomeo = e.target.checked; save(); renderAll(); });
 $('#setEnergy').addEventListener('change', e => { S.settings.energy = e.target.value; save(); if (S.ui.tab === 'stats') renderStats(); });
+$('#streakCare').addEventListener('click', openStreakCare);
+$('#setStreakCare').addEventListener('click', openStreakCare);
+$('#streakDlg').addEventListener('click', e => { if (e.target.id === 'streakDlg' || e.target.id === 'scClose') $('#streakDlg').close(); });
+$('#scRest').addEventListener('change', e => { setRestDay(e.target.value, e.target); renderStreakDlg(); });   // (drawn again either way: a refused change goes back)
+$('#scPauseGo').addEventListener('click', e => startPause($('#scPauseN').value, e.currentTarget));
+$('#scPauseEnd').addEventListener('click', e => endPause(e.currentTarget));
 $('#setIntent').addEventListener('change', e => { S.settings.intent = e.target.checked; save(); renderIntent(); renderResume(); renderDx(); });
 
 // Friends tab
