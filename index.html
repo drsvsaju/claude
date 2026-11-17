@@ -4599,6 +4599,163 @@ dialog[tabindex="-1"]:focus { outline: none; }
 .rm-ro { display: flex; align-items: center; min-height: var(--ctl-h, 40px); padding: 0 12px; border-radius: var(--r-8, 8px); background: var(--hover); color: var(--t-2, var(--muted)); font-size: 14px; }   /* what a control would say, where the control is not needed */
 .rem.allday .rtime { font-size: 12.5px; letter-spacing: .01em; color: var(--accent-text, var(--accent)); white-space: nowrap; }
 .today-allday button { border: 0; background: none; color: var(--accent-text, var(--accent)); cursor: pointer; padding: 0; font: inherit; text-align: left; }
+/* ----- v2.0 phase 5: Calendar ----- */
+.cal-head { gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.cal-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cal-card { padding: 0; overflow: hidden; }
+.cal-bar { display: flex; align-items: center; gap: 8px 12px; padding: 12px 16px; flex-wrap: wrap; }
+.cal-nav { display: flex; align-items: center; gap: 4px; }
+.cal-nav .iconbtn svg { width: 18px; height: 18px; }
+.cal-bar #calTitle { flex: 1; min-width: 150px; margin: 0; font-size: 17px; font-weight: 650; color: var(--t-1, var(--text)); text-transform: none; letter-spacing: 0; }
+.cal-legend { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--t-2, var(--muted)); }
+.cal-legend span:first-child { margin-right: 3px; }
+.cal-legend span:last-child { margin-left: 3px; }
+.cal-legend i { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--line); }
+/* a day's focus: the accent, deeper with the time (the text on it stays the text colour, and the accent used as text
+   is worked out to be readable on a 20 % accent surface) */
+.cal-legend .h1, .cal-day.h1, .cw-ad.h1 { background-color: color-mix(in srgb, var(--accent) 4%, transparent); }
+.cal-legend .h2, .cal-day.h2, .cw-ad.h2 { background-color: color-mix(in srgb, var(--accent) 7%, transparent); }
+.cal-legend .h3, .cal-day.h3, .cw-ad.h3 { background-color: color-mix(in srgb, var(--accent) 11%, transparent); }
+.cal-legend .h4, .cal-day.h4, .cw-ad.h4 { background-color: color-mix(in srgb, var(--accent) 16%, transparent); }
+.cal-hint { margin: 10px 4px 0; }
+@media (hover: none) { .cal-hint { display: none; } }
+
+/* items: a kind has one look everywhere (chip in a day, block in the hours, icon in a list) */
+.cal-chip, .cal-ev { border: 0; font: inherit; text-align: left; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; background: color-mix(in srgb, var(--t-1, var(--text)) 8%, var(--surface)); color: var(--t-1, var(--text)); }
+.cal-chip.mv, .cal-ev.mv { cursor: grab; }
+.cal-chip { display: flex; align-items: center; gap: 5px; width: 100%; min-width: 0; height: 22px; flex: none; padding: 0 7px; border-radius: 6px; font-size: 12px; line-height: 1; }
+.cc-i { flex: none; display: inline-grid; place-items: center; }
+.cc-i svg { width: 12px; height: 12px; }
+.cc-t { flex: none; font-variant-numeric: tabular-nums; font-weight: 600; }
+.cc-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-chip.k-rem, .cal-ev.k-rem, .cal-chip.k-rev, .cal-ev.k-rev { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent-text, var(--accent)); }
+.cal-chip.k-block, .cal-ev.k-block { background: var(--accent-fill, var(--accent)); color: var(--on-accent, #fff); }
+.cal-chip.k-todo, .cal-ev.k-todo { background: var(--surface); box-shadow: inset 0 0 0 1px var(--ctl-bd, var(--muted)); }
+.cal-chip.k-exam, .cal-ev.k-exam { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); color: var(--danger-text, var(--danger)); }
+.cal-chip.k-event, .cal-ev.k-event { background: color-mix(in srgb, var(--warn) 16%, var(--surface)); color: var(--warn-text, var(--warn)); }
+.cal-chip.done, .cal-ev.done { background: color-mix(in srgb, var(--t-1, var(--text)) 6%, var(--surface)); color: var(--t-2, var(--muted)); box-shadow: none; }
+.cal-chip.done .cc-n, .cal-ev.done .ce-n, .cal-row.done .cr-n { text-decoration: line-through; }
+.cal-chip:hover, .cal-ev:hover { filter: brightness(.96); }
+.cal-chip:focus-visible, .cal-ev:focus-visible, .cal-row:focus-visible, .cw-dbtn:focus-visible, .ag-d:focus-visible, .cd-more:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 1px; }
+.cal-chip.dragging, .cal-ev.dragging { opacity: .35; }
+.cal-ghost { opacity: .95; box-shadow: 0 10px 26px var(--shadow-3, rgba(0, 0, 0, .25)); }
+body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-select: none !important; -webkit-user-select: none !important; }
+
+/* Month */
+.cal-wd, .cal-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.cal-wd { border-top: 1px solid var(--line); }
+.cal-wd span { padding: 8px 10px 7px; font-size: 12px; font-weight: 600; color: var(--t-2, var(--muted)); }
+.cal-week { border-top: 1px solid var(--line); }
+.cal-day { position: relative; min-width: 0; min-height: 104px; padding: 6px 6px 8px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
+.cal-day:first-child { border-left: 0; }
+.cal-day:hover { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 32%, transparent); }
+.cal-day:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: -2px; }
+.cal-day.drop, .cw-ad.drop { box-shadow: inset 0 0 0 2px var(--accent); }
+.cd-top { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 24px; flex: none; }
+.cd-n { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 999px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--t-1, var(--text)); }
+.cal-day.out .cd-n { color: var(--t-2, var(--muted)); font-weight: 500; }
+.cal-day.out .cal-chip { opacity: .72; }
+.cal-day.today .cd-n, .cw-dh.today .cw-dn { background: var(--accent-fill, var(--accent)); color: var(--on-accent, #fff); }
+.cd-f { font-size: 11.5px; font-weight: 600; color: var(--accent-text, var(--accent)); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cd-more { height: 18px; flex: none; padding: 0 7px; border: 0; background: none; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--t-2, var(--muted)); text-align: left; cursor: pointer; border-radius: 6px; }
+.cd-more:hover { color: var(--t-1, var(--text)); background: var(--hover); }
+
+/* Week, and the Day on a phone */
+.cal-week-v { --gut: 56px; }
+.cw-head, .cw-all, .cw-grid { display: grid; grid-template-columns: var(--gut) repeat(7, minmax(0, 1fr)); }
+.cal-week-v.n1 .cw-head, .cal-week-v.n1 .cw-all, .cal-week-v.n1 .cw-grid { grid-template-columns: var(--gut) minmax(0, 1fr); }
+.cw-head { border-top: 1px solid var(--line); }
+.cw-dh { display: flex; align-items: center; justify-content: center; gap: 2px 6px; padding: 6px 4px; border-left: 1px solid var(--line); flex-wrap: wrap; min-width: 0; }
+.cw-dbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 3px 6px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--t-1, var(--text)); cursor: pointer; }
+.cw-dbtn:hover { background: var(--hover); }
+.cw-wd { font-size: 12px; font-weight: 600; color: var(--t-2, var(--muted)); }
+.cw-dn { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 5px; border-radius: 999px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cw-all { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cw-gut { font-size: 11px; color: var(--t-2, var(--muted)); }
+.cw-all .cw-gut { display: grid; place-items: center end; padding-right: 8px; }
+.cw-ad { min-width: 0; min-height: 34px; padding: 6px 4px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
+.cw-scroll { position: relative; max-height: min(62vh, 620px); overflow-y: auto; overscroll-behavior: contain; }
+.cw-scroll:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: -2px; }
+.cw-grid { position: relative; height: calc(24 * var(--cal-h)); }
+.cw-hours { position: relative; }
+.cw-hours span { position: absolute; right: 8px; transform: translateY(-50%); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cw-col { position: relative; min-width: 0; border-left: 1px solid var(--line); background-image: linear-gradient(var(--line) 1px, transparent 1px); background-size: 100% var(--cal-h); background-position: 0 -1px; cursor: cell; user-select: none; -webkit-user-select: none; }
+.cw-col.past { cursor: pointer; background-color: color-mix(in srgb, var(--t-1, var(--text)) 3%, transparent); }
+.cw-col.today { background-color: color-mix(in srgb, var(--accent) 5%, transparent); }
+.cal-ev { position: absolute; z-index: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 3px 7px; border-radius: 7px; font-size: 12px; line-height: 1.25; overflow: hidden; outline: 1px solid var(--surface); }
+.cal-ev.short { flex-direction: row; align-items: center; gap: 6px; padding-top: 0; padding-bottom: 0; }
+.cal-ev.short .ce-t { order: -1; font-weight: 600; }   /* a short one reads like a chip: the time, then the name */
+.ce-n { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.ce-n .cc-i { display: inline-grid; vertical-align: -2px; margin-right: 4px; }
+.ce-t { flex: none; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cw-now { position: absolute; left: 0; right: 0; z-index: 2; height: 2px; margin-top: -1px; background: var(--danger); pointer-events: none; }
+.cw-now::before { content: ''; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); }
+.cal-sel, .cal-mark { position: absolute; left: 2px; right: 2px; z-index: 3; padding: 3px 7px; border-radius: 7px; font-size: 12px; font-weight: 600; font-style: normal; font-variant-numeric: tabular-nums; overflow: hidden; pointer-events: none; background: color-mix(in srgb, var(--accent) 20%, var(--surface)); color: var(--accent-text, var(--accent)); box-shadow: inset 0 0 0 2px var(--accent); }
+.cal-mark { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, transparent); }
+
+/* Agenda, and the list of one day */
+.cal-agenda { padding: 2px 16px 12px; border-top: 1px solid var(--line); }
+.ag-day { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+.ag-day:first-child { border-top: 0; }
+.ag-h { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 4px; }
+.ag-d { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 32px; margin: -4px -6px; padding: 4px 6px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--t-1, var(--text)); text-align: left; cursor: pointer; }
+.ag-d:hover { background: var(--hover); }
+.ag-d b { font-size: 20px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ag-d span { font-size: 12.5px; color: var(--t-2, var(--muted)); }
+.ag-day.today .ag-d b { color: var(--accent-text, var(--accent)); }
+.cal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.cal-list .empty { padding: 10px 0; font-size: 13.5px; color: var(--t-2, var(--muted)); }
+.cal-row { display: grid; grid-template-columns: 76px 20px minmax(0, 1fr) auto; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 6px 10px; border: 0; border-radius: 10px; background: none; font: inherit; color: var(--t-1, var(--text)); text-align: left; cursor: pointer; }
+.cal-row:hover { background: var(--hover); }
+.cr-t { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--t-2, var(--muted)); white-space: nowrap; }
+.cal-row .cc-i svg { width: 16px; height: 16px; }
+.cal-row.k-rem .cc-i, .cal-row.k-rev .cc-i, .cal-row.k-block .cc-i { color: var(--accent-text, var(--accent)); }
+.cal-row.k-exam .cc-i { color: var(--danger-text, var(--danger)); }
+.cal-row.k-event .cc-i { color: var(--warn-text, var(--warn)); }
+.cr-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 550; }
+.cr-k { font-size: 12.5px; color: var(--t-2, var(--muted)); white-space: nowrap; }
+.cal-row.done .cr-n { color: var(--t-2, var(--muted)); }
+.cal-empty { padding: 30px 16px; text-align: center; border-top: 1px solid var(--line); }
+.cal-empty p { margin: 0 0 12px; }
+.cal-addrow { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.cal-addrow .field { display: block; }
+#calDayDlg { width: min(500px, calc(100vw - 24px)); }
+#calDayDlg .cal-list { max-height: min(46vh, 380px); overflow-y: auto; margin: 0 -10px; }
+#calExpDlg { width: min(460px, calc(100vw - 24px)); }
+
+@media (max-width: 900px) { .cal-day { min-height: 96px; } .cal-chip .cc-i { display: none; } }
+@media (max-width: 640px) {
+  .cal-bar { padding: 10px 12px; }
+  .cal-bar #calTitle { order: -1; flex-basis: 100%; }
+  .cal-legend { display: none; }   /* the title, then one row: earlier / today / later and Export */
+  .cal-bar #calExport { margin-left: auto; }
+  /* Month on a phone: a day is too narrow for words — its items are dots, and a tap opens the day */
+  .cal-wd span { padding: 7px 0 6px; text-align: center; }
+  .cal-day { min-height: 62px; padding: 4px 2px 6px; flex-direction: row; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 3px; }
+  .cal-day .cd-top { width: 100%; justify-content: center; }
+  .cal-day .cd-f, .cal-day .cd-more { display: none; }
+  #calBody .cal-day .cal-chip { width: 7px; height: 7px; min-height: 0; padding: 0; border-radius: 50%; box-shadow: none; pointer-events: none; background: var(--t-2, var(--muted)); }
+  .cal-day .cal-chip > * { display: none; }
+  #calBody .cal-day .cal-chip.k-rem, #calBody .cal-day .cal-chip.k-rev, #calBody .cal-day .cal-chip.k-block { background: var(--accent-fill, var(--accent)); }
+  #calBody .cal-day .cal-chip.k-exam { background: var(--danger); }
+  #calBody .cal-day .cal-chip.k-event { background: var(--warn); }
+  #calBody .cal-day .cal-chip.done { background: var(--t-3, var(--muted)); }
+  .cal-week-v { --gut: 50px; }
+  .cw-scroll { max-height: 58vh; }
+  .cw-col { cursor: pointer; }
+  .cal-agenda { padding: 2px 12px 10px; }
+  .ag-day { grid-template-columns: 1fr; }
+  .ag-h { flex-direction: row; align-items: center; justify-content: space-between; }
+  .ag-d { flex-direction: row; align-items: baseline; gap: 6px; }
+  .cal-row { grid-template-columns: 64px 20px minmax(0, 1fr); row-gap: 0; padding: 6px 8px; }
+  .cr-k { grid-column: 3; font-size: 12px; }
+}
+/* a finger in the Month: the day is the target (it opens with everything in it, in 44 px rows); its chips are not */
+@media (pointer: coarse) {
+  #calBody .cal-day .cal-chip, #calBody .cal-day .cd-more { min-height: 0; pointer-events: none; }
+  #calBody .cal-ev { min-height: 0; }   /* drawn 44 px or taller by its length (see CAL_MINLEN) */
+  #calBody .cw-ad .cal-chip { height: 44px; }
+}
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -4863,6 +5020,7 @@ dialog[tabindex="-1"]:focus { outline: none; }
   <div class="nv-grp" role="group" aria-labelledby="nvhFocus"><div class="nv-h" id="nvhFocus">Focus</div>
     <button type="button" title="Timer (1)" data-tab="timer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4"/><path d="M12 14l3-3"/><circle cx="12" cy="14" r="8"/></svg><span class="nv-l">Timer</span></button>
     <button type="button" title="Reminders (2)" data-tab="reminders" id="remTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nv-l">Reminders</span></button>
+    <button type="button" title="Calendar (C)" data-tab="calendar" id="calTabBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M16 2.5v4M8 2.5v4M3 10h18"/><path d="M8 14.5h.01M12 14.5h.01M16 14.5h.01M8 17.8h.01M12 17.8h.01"/></svg><span class="nv-l">Calendar</span></button>
   </div>
   <div class="nv-grp" role="group" aria-labelledby="nvhProgress"><div class="nv-h" id="nvhProgress">Progress</div>
     <button type="button" title="Stats (4)" data-tab="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><span class="nv-l">Stats</span></button>
@@ -5010,6 +5168,30 @@ dialog[tabindex="-1"]:focus { outline: none; }
   </section>
 
   <!-- ================================ REMINDERS TAB ================================ -->
+  <!-- ================================ CALENDAR TAB (v2.0) ================================ -->
+  <section class="tab" id="tab-calendar">
+    <div class="row between cal-head">
+      <h1>Calendar</h1>
+      <div class="cal-tools">
+        <div class="seg cal-seg" id="calSeg" role="group" aria-label="View"></div>
+        <button class="btn primary small lead" id="calAdd">+ Plan a block</button>
+      </div>
+    </div>
+    <div class="card cal-card">
+      <div class="cal-bar">
+        <div class="cal-nav">
+          <button class="iconbtn" id="calPrev" type="button" aria-label="Earlier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button class="btn small" id="calToday" type="button">Today</button>
+          <button class="iconbtn" id="calNext" type="button" aria-label="Later"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <h2 id="calTitle" aria-live="polite"></h2>
+        <div class="cal-legend" id="calLegend" title="A day’s colour deepens with the time you focused, up to your daily goal"><span>Less focus</span><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><span>more</span></div>
+        <button class="btn small" id="calExport" type="button">Export</button>
+      </div>
+      <div id="calBody"></div>
+    </div>
+    <p class="lbl cal-hint hide-touch" id="calHint"></p>
+  </section>
   <section class="tab" id="tab-reminders">
     <div class="row between rem-head">
       <h1>Reminders</h1>
@@ -5531,6 +5713,46 @@ dialog[tabindex="-1"]:focus { outline: none; }
   </form>
 </dialog>
 
+<!-- Calendar (v2.0): one day, a planned focus block, export -->
+<dialog id="calDayDlg" aria-labelledby="calDayTitle">
+  <h2 style="margin:0 0 2px" id="calDayTitle"></h2>
+  <p class="lbl" id="calDayFocus" style="margin:0 0 10px"></p>
+  <ul class="cal-list" id="calDayList"></ul>
+  <div class="cal-addrow" id="calDayAdd">
+    <span class="field">Add to this day</span>
+    <div class="btn-row"><button class="btn small" type="button" data-caladd="block">Focus block</button><button class="btn small" type="button" data-caladd="rem">Reminder</button><button class="btn small" type="button" data-caladd="todo">To-do</button><button class="btn small" type="button" data-caladd="exam">Exam</button></div>
+  </div>
+  <div class="btn-row" style="justify-content:flex-end;margin-top:14px"><button class="btn" id="calDayClose" type="button">Done</button></div>
+</dialog>
+<dialog id="blockDlg">
+  <form id="blockForm" novalidate>
+    <div class="row between" style="margin-bottom:12px"><h2 style="margin:0" id="blockDlgTitle">Plan a focus block</h2></div>
+    <div class="rform">
+      <div class="full"><label class="field" for="blkTitle">What will you study?</label><input type="text" id="blkTitle" maxlength="80" placeholder="e.g. Organic chemistry" autocomplete="off" data-suggest="names"></div>
+      <div><label class="field" for="blkDate">Date</label><ui-date id="blkDate" required></ui-date></div>
+      <div><label class="field" for="blkTime">Starts at</label><ui-time id="blkTime" required></ui-time></div>
+      <div><label class="field" for="blkDur">Length</label><ui-select id="blkDur"></ui-select></div>
+      <div><label class="field" for="blkBefore">Remind me</label>
+        <ui-select id="blkBefore"><option value="0">At the time</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option></ui-select></div>
+      <div class="full"><label class="field" for="blkPreset">Timer preset</label><ui-select id="blkPreset" kind="preset-compact"></ui-select></div>
+    </div>
+    <p class="lbl" style="margin:10px 0 0">When it is time you get a reminder; “Start now” opens the timer with this preset and name.</p>
+    <p class="err" id="blkErr" style="color:var(--danger-text, var(--danger));font-size:13px;min-height:18px;margin:6px 0 0"></p>
+    <div class="btn-row" style="justify-content:space-between;margin-top:6px">
+      <span class="btn-row"><button type="button" class="btn danger small hidden" id="blkDelete">Delete</button><button type="button" class="btn small hidden" id="blkCal">Add to calendar</button></span>
+      <span class="btn-row" style="margin-left:auto"><button type="button" class="btn" id="blkCancel">Cancel</button>
+      <button type="submit" class="btn primary">Save</button></span>
+    </div>
+  </form>
+</dialog>
+<dialog id="calExpDlg" aria-labelledby="calExpTitle">
+  <h2 style="margin:0 0 6px" id="calExpTitle">Export your calendar</h2>
+  <p class="muted" style="font-size:13.5px;margin:0" id="calExpWhat"></p>
+  <div class="cal-btns"><button class="btn" id="calExpIcs" type="button">Download .ics (Apple, Outlook, Google, most calendars)</button></div>
+  <p class="lbl" style="margin:0 0 4px">The file is a copy: later changes here are not sent to your calendar app. For one item with a Google Calendar link, open a reminder’s “Add to calendar”.</p>
+  <div class="btn-row" style="justify-content:flex-end"><button class="btn" id="calExpClose" type="button">Done</button></div>
+</dialog>
+
 <!-- Add a reminder to the phone's own calendar -->
 <dialog id="calDlg">
   <h2 style="margin:0 0 6px">Add to calendar</h2>
@@ -5654,6 +5876,7 @@ dialog[tabindex="-1"]:focus { outline: none; }
     <span><kbd>1</kbd>–<kbd>9</kbd></span><span>On the Timer with a checklist: tick that subtask. Otherwise 1–9 switch tabs.</span>
     <span><kbd>Shift</kbd>+<kbd>1</kbd>–<kbd>9</kbd></span><span>Always switch tabs: Timer · Reminders · Quests · Stats · Leaderboard · Shop · Friends · Profile · Clan</span>
     <kbd>0</kbd><span>Garden</span>
+    <kbd>C</kbd><span>Calendar</span>
     <kbd>O</kbd><span>Posts</span>
     <kbd>J</kbd><span>Study sessions</span>
     <span><kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd></span><span>Command palette: jump to any screen, setting or action</span>
@@ -5883,6 +6106,7 @@ const USE_EMULATOR = /[?&]emulator=1\b/.test(location.search);
    71. FOCUS TOGETHER (v1.14.2) — the default kind of clan session. Everyone runs
    72. COPY AND SHARE (v1.14.3). Every Copy button goes through copyText: the
    73. NAVIGATION (v1.14.3). One list of sections (#tabs), shown three ways:
+   74. CALENDAR (v2.0). Month / Week (Day on a phone) / Agenda over everything dated; planned focus blocks.
    ========================================================================== */
 
 /* ==========================================================================
@@ -13025,6 +13249,7 @@ function showTab(tab) {
   if (tab === 'profile') renderProfile();
   if (tab === 'shop') renderShop();
   if (tab === 'reminders') renderReminders();
+  if (tab === 'calendar') renderCalendar();
   if (tab === 'quests') { renderQuests(); loadSquadStats(); if (S.ui.questView === 'quest') loadEventBoard(); }
   if (tab === 'bag') { enterBag(); renderBag(); }
   if (tab === 'board') { SOC.lbShown = null; renderBoardTab(); }
@@ -13439,7 +13664,7 @@ function startFromReminder(r) {
 
 /* ---------- The Reminders tab ---------- */
 function remRow(r, day, { time, sub, done, missed } = {}) {
-  const meta = [remRepeatText(r), r.allDay ? '' : r.before ? `${r.before} min before` : 'At the time',
+  const meta = [r.kind === 'block' ? `Focus block · ${fmtMin(+r.dur || 0)}` : '', remRepeatText(r), r.allDay ? '' : r.before ? `${r.before} min before` : 'At the time',
     r.presetId && S.presets.find(p => p.id === r.presetId) ? S.presets.find(p => p.id === r.presetId).name : ''].filter(Boolean);
   return `<li class="rem${done ? ' done' : ''}${r.allDay ? ' allday' : ''}" data-rid="${esc(r.id)}" data-day="${day}">
     <div class="rem-bg"><span class="l">✓ Done</span><span class="r">Delete</span></div>
@@ -13518,6 +13743,7 @@ function nextReminderToday() {
 function allDayToday() { const today = startOfDay(new Date()), k = dayKey(today); return S.reminders.filter(r => r.allDay && remOnDay(r, today) && !remDone(r, k)); }
 function renderReminderBits() {
   if (S.ui.tab === 'reminders') renderReminders();
+  calRefresh();
   renderTodayExtra();
 }
 
@@ -13531,10 +13757,11 @@ UI.RENDER['preset-compact'] = (() => {
 })();
 let remEditing = null;
 function openRemForm(r) {
+  if (r && r.id && r.kind === 'block') { openBlockForm(r); return; }   // a planned focus block has its own form (v2.0)
   remEditing = r && r.id ? r.id : null;
   const now = new Date(Date.now() + 30 * 60000);
   now.setMinutes(now.getMinutes() < 30 ? 30 : 60, 0, 0);
-  const v = r && r.id ? r : { title: r ? r.title : '', date: dayKey(now), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, repeat: 'none', days: [new Date().getDay()], before: 10, presetId: '', session: '' };
+  const v = r && r.id ? r : { title: r ? r.title || '' : '', date: (r && r.date) || dayKey(now), time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, repeat: 'none', days: [new Date().getDay()], before: 10, presetId: '', session: '' };
   $('#remDlgTitle').textContent = r && r.id ? 'Edit reminder' : 'New reminder';
   $('#remDelete').classList.toggle('hidden', !(r && r.id));
   $('#remTitle').value = v.title;
@@ -13629,23 +13856,28 @@ function remSpan(r) {
 function remDetails(r) {
   return [r.session && r.session !== r.title ? 'Session: ' + r.session : '', 'Focus with Pomodorolist: ' + location.origin + location.pathname].filter(Boolean).join('\n');
 }
-function downloadIcs(r) {
+/** The lines of one calendar event for a reminder (floating local times: it happens at this clock time wherever the calendar is). */
+function icsEvent(r, stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')) {
   const { start, end } = remSpan(r), rr = remRRule(r);
-  // Floating local times: the event happens at this clock time wherever the calendar is.
-  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Pomodorolist//Reminders//EN', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
-    `UID:${r.id}@pomodorolist.app`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}`,
+  return ['BEGIN:VEVENT', `UID:${r.id}@pomodorolist.app`, `DTSTAMP:${stamp}`,
     ...(r.allDay ? [`DTSTART;VALUE=DATE:${icsDay(start)}`, `DTEND;VALUE=DATE:${icsDay(addDays(startOfDay(new Date(start)), 1))}`] : [`DTSTART:${icsDate(start)}`, `DTEND:${icsDate(end)}`]), `SUMMARY:${icsEsc(r.title)}`, `DESCRIPTION:${icsEsc(remDetails(r))}`,
     ...(rr ? ['RRULE:' + rr] : []),
     'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(r.title)}`, r.allDay ? `TRIGGER:PT${+allDayAt().slice(0, 2)}H${+allDayAt().slice(3)}M` : `TRIGGER:-PT${r.before || 0}M`, 'END:VALARM',   // all day: the alarm counts from midnight
-    'END:VEVENT', 'END:VCALENDAR'];
-  const blob = new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/calendar' });
+    'END:VEVENT'];
+}
+function icsSave(text, name) {
+  const blob = new Blob([text], { type: 'text/calendar' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = (r.title.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'reminder') + '.ics';
+  a.download = name + '.ics';
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function downloadIcs(r) {
+  icsSave(['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Pomodorolist//Reminders//EN', 'CALSCALE:GREGORIAN', ...icsEvent(r), 'END:VCALENDAR'].map(icsFold).join('\r\n') + '\r\n',
+    r.title.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '-') || 'reminder');
 }
 function googleCalUrl(r) {
   const { start, end } = remSpan(r), rr = remRRule(r);
@@ -15316,6 +15548,7 @@ function dailyAvgHours() {
   return S.sessions.filter(s => s.end >= from).reduce((a, s) => a + s.duration, 0) / 3.6e6 / days;
 }
 function renderExamCard() {
+  calRefresh();   // an exam is on the calendar too (v2.0)
   const el = $('#examCard');
   if (!el || !USER) return;
   const list = upcomingExams();
@@ -17815,6 +18048,452 @@ async function shareWrapped() {
 }
 
 /* ==========================================================================
+   CALENDAR (v2.0) — one place for everything that has a date.
+   Views: Month, Week (the Day on a phone) and Agenda. It shows reminders (timed, all-day and planned focus blocks),
+   revision plans, clan sessions you answered and study sessions you joined or asked to be reminded of, to-dos with a
+   due date, exams, the day an event or Study Pass ends, and each day's focus as a tint that deepens with the time.
+   Nothing here is stored on its own: every item IS the thing it shows (a reminder, a to-do, an exam …), so sync,
+   export / import, guests and the demo need nothing new. A planned focus block is a reminder with kind: 'block' and
+   dur (minutes) — an older version of the app shows it as an ordinary reminder.
+   ========================================================================== */
+const CAL = { anchor: null, focus: '', items: {}, drag: null, sup: 0, scroll: null, day: '' };
+let CAL_HOUR = 44, CAL_MINLEN = 30;   // px per hour in the Week and Day views, and the shortest an item is drawn (minutes); a finger gets 60 px and 44 min: a 44 px target
+const CAL_KIND = { rem: 'Reminder', block: 'Focus block', rev: 'Revision', clan: 'Clan session', sess: 'Study session', todo: 'To-do', exam: 'Exam', event: 'Event' };
+const CAL_ORDER = { exam: 0, event: 1, rem: 2, block: 2, rev: 2, clan: 2, sess: 2, todo: 3 };
+const CAL_IC = Object.fromEntries(Object.entries({
+  rem: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  block: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2.5M9.5 2.5h5"/>',
+  rev: '<path d="M20 11a8 8 0 0 0-14.3-4.5L4 8.5"/><path d="M4 4v4.5h4.5"/><path d="M4 13a8 8 0 0 0 14.3 4.5l1.7-2"/><path d="M20 20v-4.5h-4.5"/>',
+  clan: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+  sess: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/>',
+  todo: '<rect x="4" y="4" width="16" height="16" rx="4.5"/><path d="M8.5 12.3l2.4 2.4 4.6-5"/>',
+  exam: '<path d="M5.5 21V3.5"/><path d="M5.5 4.5H17l-2.3 3.7L17 12H5.5"/>',
+  event: '<path d="M12 3.2l2.6 5.5 6 .7-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6-4.4-4.2 6-.7Z"/>',
+}).map(([k, d]) => [k, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`]));
+const calAnchor = () => (CAL.anchor ||= startOfDay(new Date()));
+const calWs = () => (+S.settings.weekStart === 0 ? 0 : +S.settings.weekStart || 1) % 7;
+/** The view: Month, Agenda, or "week" — which is the week on a wide screen and the day on a phone. */
+function calView() { const v = S.ui.calView; return v === 'agenda' || v === 'week' ? (v === 'week' ? (NAV_MQ.phone.matches ? 'day' : 'week') : v) : 'month'; }
+/** A short clock time for a small chip: 9am, 4:30pm (16:30 where the clock has 24 hours). */
+const calHM = ts => fmtHM(ts).replace(':00', '').replace(/\s?([AP]M)$/i, (m, a) => a.toLowerCase());
+const calMinOf = ts => { const d = new Date(ts); return d.getHours() * 60 + d.getMinutes(); };
+const calHmOf = min => `${pad(Math.floor(min / 60))}:${pad(min % 60)}`;
+const calFocusMin = k => (game().idx[k] || {}).total || 0;
+/** "tomorrow", "Wed 18 Nov" */
+function calWhen(k) { const n = daysUntil(k); return n === 0 ? 'today' : n === 1 ? 'tomorrow' : n === -1 ? 'yesterday' : fmtDayShort(k); }
+
+/** Everything dated from one day to another (both included), by day key. An item:
+ *  { kind, id, key, title, day, at (ms) | null for all day, dur (min, 0 = a moment), done, move (can be dragged), r | t | x | l | ev } */
+function calItems(from, to) {
+  const out = {}, add = it => { it.key = `${it.kind}:${it.id}@${it.day}`; (out[it.day] ||= []).push(it); };
+  const days = []; for (let d = startOfDay(from); d <= to; d = addDays(d, 1)) days.push(d);
+  const k0 = dayKey(days[0]), k1 = dayKey(days[days.length - 1]), inRange = k => k >= k0 && k <= k1;
+  const me = USER && USER.uid, tk = todayKey();
+  const clan = me && inClan() && CLAN.sessions ? clanReminders(true).filter(r => { const s = CLAN.sessions.find(x => x.id === r.clanSess), v = s && (s.rsvp || {})[me]; return !!s && (v === 'going' || v === 'maybe' || s.creator === me || !!(S.clanRem[s.id] && S.clanRem[s.id].on)); }) : [];
+  for (const r of [...S.reminders, ...revisionReminders(), ...clan]) {
+    const p = S.presets.find(x => x.id === r.presetId), kind = r.clanSess ? 'clan' : r.rev ? 'rev' : r.kind === 'block' ? 'block' : 'rem';
+    for (const d of days) {
+      if (!remOnDay(r, d)) continue;
+      const k = dayKey(d);
+      if (k < tk && r.repeat !== 'none' && !remDone(r, k)) continue;   // the past keeps what happened: a repeat's old days only where it was done
+      add({ kind, id: r.id, title: r.rev ? r.rev.topic : r.title, day: k, at: r.allDay ? null : remAt(r, d), dur: +r.dur || (kind === 'block' && p ? +p.focus : 0), done: remDone(r, k), move: (kind === 'rem' || kind === 'block') && r.repeat === 'none', r });
+    }
+  }
+  if (me) for (const l of SESS.lobby || []) {
+    if (!l.plan || !((l.members || []).includes(me) || l.host === me || (S.ui.sessRemind || {})[l.id])) continue;
+    const k = dayKey(new Date(l.plan)), pt = l.pattern || {}, n = +pt.rounds || 1;
+    if (inRange(k)) add({ kind: 'sess', id: l.id, title: l.title || 'Study session', day: k, at: +l.plan, dur: Math.min(240, (+pt.focus || 25) * n + (+pt.short || 0) * (n - 1)), done: false, move: false, l });
+  }
+  for (const t of S.todos) if (t && t.due && inRange(t.due)) add({ kind: 'todo', id: t.id, title: t.title, day: t.due, at: null, dur: 0, done: !!t.done, move: !t.done, t });
+  for (const x of S.exams) if (x && x.date && inRange(x.date)) add({ kind: 'exam', id: x.id, title: x.name, day: x.date, at: null, dur: 0, done: false, move: false, x });
+  if (!minimal()) for (const ev of EVENTS) if (inRange(ev.end)) add({ kind: 'event', id: ev.id, title: `${passEvent(ev) ? passName(ev) : ev.name} ends`, day: ev.end, at: null, dur: 0, done: false, move: false, ev });
+  for (const k of Object.keys(out)) out[k].sort((a, b) => (a.at === null ? 0 : 1) - (b.at === null ? 0 : 1) || (a.at === null ? CAL_ORDER[a.kind] - CAL_ORDER[b.kind] : a.at - b.at) || (a.title < b.title ? -1 : 1));
+  for (const list of Object.values(out)) for (const it of list) CAL.items[it.key] = it;
+  return out;
+}
+/** What a screen reader hears for an item, and the tip under the mouse. */
+function calTip(it) {
+  const when = it.at === null ? 'All day' : fmtHM(it.at) + (it.dur ? ` – ${fmtHM(it.at + it.dur * 60000)}` : '');
+  return `${CAL_KIND[it.kind]}: ${it.title} · ${when}${it.done ? ' · done' : ''}`;
+}
+function calChip(it) {
+  return `<button type="button" class="cal-chip k-${it.kind}${it.done ? ' done' : ''}${it.move ? ' mv' : ''}" data-cal="${esc(it.key)}" tabindex="-1" title="${esc(calTip(it))}" aria-label="${esc(calTip(it))}"><i class="cc-i" aria-hidden="true">${CAL_IC[it.kind]}</i>${it.at !== null ? `<span class="cc-t">${esc(calHM(it.at))}</span>` : ''}<span class="cc-n">${esc(it.title)}</span></button>`;
+}
+/** A row of the Agenda and of the day dialog. */
+function calRow(it) {
+  const meta = it.kind === 'block' && it.dur ? `Focus block · ${fmtMin(it.dur)}` : it.kind === 'todo' && todoOverdue(it.t) ? 'To-do · overdue' : it.kind === 'rem' && it.r.repeat !== 'none' ? remRepeatText(it.r) : CAL_KIND[it.kind];
+  return `<button type="button" class="cal-row k-${it.kind}${it.done ? ' done' : ''}" data-cal="${esc(it.key)}" aria-label="${esc(calTip(it))}"><span class="cr-t">${it.at === null ? 'All day' : esc(fmtHM(it.at))}</span><i class="cc-i" aria-hidden="true">${CAL_IC[it.kind]}</i><span class="cr-n">${esc(it.title)}</span><span class="cr-k">${esc(meta)}${it.done ? ' · done' : ''}</span></button>`;
+}
+function calDayLabel(d, n, min) {
+  return `${d.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}${dayKey(d) === todayKey() ? ', today' : ''}, ${n ? `${n} item${n === 1 ? '' : 's'}` : 'nothing planned'}${min ? `, ${fmtMin(min)} of focus` : ''}`;
+}
+const calFocusTag = min => (min ? `<span class="cd-f" title="${esc(fmtMin(min))} of focus">${esc(fmtMin(min))}</span>` : '');
+
+/* ---------- Month ---------- */
+function calMonthHTML() {
+  const a = calAnchor(), first = new Date(a.getFullYear(), a.getMonth(), 1), ws = calWs(), start = weekStartOf(first, ws), tk = todayKey();
+  const weeks = addDays(start, 35).getMonth() === a.getMonth() ? 6 : 5, items = calItems(start, addDays(start, weeks * 7 - 1));
+  if (!CAL.focus || parseDay(CAL.focus) < start || parseDay(CAL.focus) > addDays(start, weeks * 7 - 1)) CAL.focus = tk >= dayKey(start) && tk <= dayKey(addDays(start, weeks * 7 - 1)) ? tk : dayKey(first);
+  let html = `<div class="cal-month" role="grid" aria-label="${esc(a.toLocaleDateString([], { month: 'long', year: 'numeric' }))}"><div class="cal-wd" role="row">${[0, 1, 2, 3, 4, 5, 6].map(i => `<span role="columnheader" aria-label="${addDays(start, i).toLocaleDateString([], { weekday: 'long' })}">${WD[(ws + i) % 7]}</span>`).join('')}</div>`;
+  for (let w = 0; w < weeks; w++) {
+    html += '<div class="cal-week" role="row">';
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(start, w * 7 + i), k = dayKey(d), its = items[k] || [], min = calFocusMin(k);
+      const show = its.slice(0, its.length > 3 ? 2 : 3), more = its.length - show.length;
+      html += `<div class="cal-day h${heatLevel(min)}${d.getMonth() !== a.getMonth() ? ' out' : ''}${k === tk ? ' today' : ''}${k < tk ? ' past' : ''}" role="gridcell" data-day="${k}" tabindex="${k === CAL.focus ? 0 : -1}" aria-label="${esc(calDayLabel(d, its.length, min))}">
+        <div class="cd-top"><span class="cd-n">${d.getDate()}</span>${calFocusTag(min)}</div>${show.map(calChip).join('')}${more > 0 ? `<button type="button" class="cd-more" tabindex="-1" data-calmore="${k}">+${more} more</button>` : ''}</div>`;
+    }
+    html += '</div>';
+  }
+  return html + '</div>';
+}
+
+/* ---------- Week, and the Day on a phone ---------- */
+/** Side-by-side columns for timed items that overlap: sets .col and .cols on each { s, e } (minutes). */
+function calPack(list) {
+  list.sort((a, b) => a.s - b.s || b.e - a.e);
+  let group = [], end = -1;
+  const flush = () => { const n = Math.max(0, ...group.map(x => x.col)) + 1; for (const x of group) x.cols = n; group = []; };
+  for (const x of list) {
+    if (group.length && x.s >= end) { flush(); end = -1; }
+    const used = new Set(group.filter(y => y.e > x.s).map(y => y.col));
+    let c = 0; while (used.has(c)) c++;
+    x.col = c; group.push(x); end = Math.max(end, x.e);
+  }
+  if (group.length) flush();
+  return list;
+}
+function calWeekHTML(n) {
+  const a = calAnchor(), start = n === 1 ? a : weekStartOf(a, calWs()), days = Array.from({ length: n }, (x, i) => addDays(start, i)), items = calItems(start, addDays(start, n - 1)), tk = todayKey(), now = new Date();
+  const hours = Array.from({ length: 23 }, (x, i) => { const d = new Date(2020, 0, 1, i + 1); return `<span style="top:${(i + 1) * CAL_HOUR}px">${esc(calHM(d.getTime()))}</span>`; }).join('');
+  const head = days.map(d => { const k = dayKey(d), min = calFocusMin(k); return `<div class="cw-dh${k === tk ? ' today' : ''}"><button type="button" class="cw-dbtn" data-calday="${k}" aria-label="${esc(calDayLabel(d, (items[k] || []).length, min))}"><span class="cw-wd">${WD[d.getDay()]}</span><b class="cw-dn">${d.getDate()}</b></button>${calFocusTag(min)}</div>`; }).join('');
+  const allDay = days.map(d => { const k = dayKey(d); return `<div class="cw-ad h${heatLevel(calFocusMin(k))}" data-day="${k}">${(items[k] || []).filter(it => it.at === null).map(calChip).join('')}</div>`; }).join('');
+  const cols = days.map(d => {
+    const k = dayKey(d), timed = calPack((items[k] || []).filter(it => it.at !== null).map(it => { const s = calMinOf(it.at); return { it, s, e: Math.min(1440, s + Math.max(it.dur || 0, CAL_MINLEN)) }; }));
+    const evs = timed.map(({ it, s, e, col, cols: nc }) => `<button type="button" class="cal-ev k-${it.kind}${it.done ? ' done' : ''}${it.move ? ' mv' : ''}${(e - s) / 60 * CAL_HOUR < 40 ? ' short' : ''}" data-cal="${esc(it.key)}" style="top:${(s / 60 * CAL_HOUR).toFixed(1)}px;height:${Math.max(CAL_MINLEN > 30 ? 44 : 20, (e - s) / 60 * CAL_HOUR - 2).toFixed(1)}px;left:calc(${(col / nc * 100).toFixed(2)}% + 2px);width:calc(${(100 / nc).toFixed(2)}% - 4px)" title="${esc(calTip(it))}" aria-label="${esc(calTip(it))}"><span class="ce-n"><i class="cc-i" aria-hidden="true">${CAL_IC[it.kind]}</i>${esc(it.title)}</span><span class="ce-t">${esc(calHM(it.at))}${it.dur ? ` – ${esc(calHM(it.at + it.dur * 60000))}` : ''}</span></button>`).join('');
+    return `<div class="cw-col${k === tk ? ' today' : ''}${k < tk ? ' past' : ''}" data-day="${k}">${evs}${k === tk ? `<i class="cw-now" style="top:${(calMinOf(now.getTime()) / 60 * CAL_HOUR).toFixed(1)}px" aria-hidden="true"></i>` : ''}</div>`;
+  }).join('');
+  return `<div class="cal-week-v n${n}" style="--cal-h:${CAL_HOUR}px"><div class="cw-head"><div class="cw-gut"></div>${head}</div>
+    <div class="cw-all"><div class="cw-gut"><span>All day</span></div>${allDay}</div>
+    <div class="cw-scroll" id="calScroll" tabindex="0" role="group" aria-label="The hours of ${n === 1 ? 'the day' : 'the week'}"><div class="cw-grid"><div class="cw-gut cw-hours" aria-hidden="true">${hours}</div>${cols}</div></div></div>`;
+}
+/** Where the hours open: a little before the first thing in view, 7 AM at the latest. */
+function calFirstTop() {
+  let first = 7 * 60;
+  for (const el of $$('#calBody .cal-ev')) first = Math.min(first, parseFloat(el.style.top) / CAL_HOUR * 60);
+  return Math.max(0, (first - 45) / 60 * CAL_HOUR);
+}
+
+/* ---------- Agenda ---------- */
+function calAgendaHTML() {
+  const a = calAnchor(), items = calItems(a, addDays(a, 29)), tk = todayKey();
+  const days = Array.from({ length: 30 }, (x, i) => addDays(a, i)).filter(d => (items[dayKey(d)] || []).length || dayKey(d) === tk);
+  if (!days.some(d => (items[dayKey(d)] || []).length)) return `<div class="cal-empty"><p class="muted">Nothing between ${esc(fmtDayShort(dayKey(a)))} and ${esc(fmtDayShort(dayKey(addDays(a, 29))))}.</p><button type="button" class="btn small" data-calday="${dayKey(a) < tk ? tk : dayKey(a)}">Add something</button></div>`;
+  return `<div class="cal-agenda">${days.map(d => { const k = dayKey(d), its = items[k] || [], min = calFocusMin(k);
+    return `<section class="ag-day${k === tk ? ' today' : ''}" aria-label="${esc(calDayLabel(d, its.length, min))}"><div class="ag-h"><button type="button" class="ag-d" data-calday="${k}" title="Open this day"><b>${d.getDate()}</b><span>${WD[d.getDay()]}${k === tk ? ' · today' : ` · ${d.toLocaleDateString([], { month: 'short' })}`}</span></button>${calFocusTag(min)}</div>
+      <ul class="cal-list">${its.length ? its.map(it => `<li>${calRow(it)}</li>`).join('') : '<li class="empty">Nothing planned today.</li>'}</ul></section>`; }).join('')}</div>`;
+}
+
+/* ---------- The section ---------- */
+function renderCalendar() {
+  if (!USER || S.ui.tab !== 'calendar' || CAL.drag) return;
+  const v = calView(), a = calAnchor(), phone = NAV_MQ.phone.matches, body = $('#calBody');
+  const sc = $('#calScroll'), keep = body.contains(document.activeElement) ? (document.activeElement.closest('[data-day]') || {}).dataset : null;
+  if (sc) CAL.scroll = sc.scrollTop;
+  { const coarse = matchMedia('(pointer: coarse)').matches; CAL_HOUR = coarse ? 60 : 44; CAL_MINLEN = coarse ? 44 : 30; }
+  const sv = v === 'day' ? 'week' : v;
+  $('#calSeg').innerHTML = [['month', 'Month'], ['week', phone ? 'Day' : 'Week'], ['agenda', 'Agenda']].map(([id, name]) => `<button type="button" data-calview="${id}" class="${sv === id ? 'active' : ''}" aria-pressed="${sv === id}">${name}</button>`).join('');
+  const ws = weekStartOf(a, calWs()), we = addDays(ws, 6), sameM = ws.getMonth() === we.getMonth();
+  $('#calTitle').textContent = v === 'month' ? a.toLocaleDateString([], { month: 'long', year: 'numeric' })
+    : v === 'week' ? `${ws.getDate()}${sameM ? '' : ' ' + ws.toLocaleDateString([], { month: 'short' })} – ${we.getDate()} ${we.toLocaleDateString([], { month: 'short', year: 'numeric' })}`
+    : v === 'day' ? a.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) + (dayKey(a) === todayKey() ? ' · today' : '')
+    : `${fmtDayShort(dayKey(a))} – ${fmtDayShort(dayKey(addDays(a, 29)))}`;
+  const unit = v === 'month' ? 'month' : v === 'week' ? 'week' : v === 'day' ? 'day' : '30 days';
+  $('#calPrev').setAttribute('aria-label', `The ${unit} before`); $('#calPrev').title = `The ${unit} before`;
+  $('#calNext').setAttribute('aria-label', `The ${unit} after`); $('#calNext').title = `The ${unit} after`;
+  CAL.items = {};
+  body.dataset.view = v;
+  body.innerHTML = v === 'month' ? calMonthHTML() : v === 'agenda' ? calAgendaHTML() : calWeekHTML(v === 'day' ? 1 : 7);
+  const ns = $('#calScroll');
+  if (ns) ns.scrollTop = CAL.scroll === null ? calFirstTop() : CAL.scroll;
+  $('#calHint').textContent = v === 'month' ? 'Click a day to see it or add to it · drag a reminder, a block or a to-do to another day · arrow keys move between days, Enter opens one'
+    : v === 'agenda' ? '' : 'Drag over empty hours to plan a focus block · drag a block or a reminder to move it · click a day’s name to see it or add to it';
+  $('#calLegend').classList.toggle('hidden', v === 'agenda');
+  if (keep && keep.day) { const el = body.querySelector(`.cal-day[data-day="${keep.day}"]`); if (el) el.focus({ preventScroll: true }); }
+}
+/** Something a calendar shows has changed. */
+function calRefresh() { if (S.ui.tab === 'calendar') renderCalendar(); }
+function calGo(step) {
+  const v = calView(), a = calAnchor();
+  CAL.anchor = step === 0 ? startOfDay(new Date()) : v === 'month' ? new Date(a.getFullYear(), a.getMonth() + step, 1) : addDays(a, step * (v === 'week' ? 7 : v === 'day' ? 1 : 30));
+  if (step === 0) CAL.focus = todayKey();
+  CAL.scroll = step === 0 ? null : CAL.scroll;
+  renderCalendar();
+}
+/** Put the keyboard on a day of the Month grid (turning the page when the day is on another one). */
+function calFocusDay(k) {
+  CAL.focus = k;
+  if (!$(`#calBody .cal-day[data-day="${k}"]`)) { const d = parseDay(k); CAL.anchor = new Date(d.getFullYear(), d.getMonth(), 1); renderCalendar(); }
+  $$('#calBody .cal-day').forEach(c => { c.tabIndex = c.dataset.day === k ? 0 : -1; });
+  const el = $(`#calBody .cal-day[data-day="${k}"]`);
+  if (el) el.focus();
+}
+/** After a dialog closes the grid has been drawn again: the keyboard goes back to the day it was on. */
+function calRestoreFocus() {
+  if (S.ui.tab !== 'calendar' || document.querySelector('dialog[open]')) return;
+  const a = document.activeElement;
+  if (a && a !== document.body && a.isConnected && a.getClientRects().length) return;
+  const el = $('#calBody .cal-day[tabindex="0"]') || $(`#calBody [data-calday="${CAL.day}"]`) || $('#calAdd');
+  if (el) el.focus({ preventScroll: true });
+}
+
+/* ---------- One day (click a day, Enter on a day, "+N more") ---------- */
+function calOpenDay(k) {
+  CAL.day = k; CAL.focus = k;
+  const d = parseDay(k), its = calItems(d, d)[k] || [], min = calFocusMin(k), past = k < todayKey();
+  $('#calDayTitle').textContent = d.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }) + (k === todayKey() ? ' · today' : '');
+  $('#calDayFocus').textContent = min ? `${fmtMin(min)} of focus` : past ? 'No focus that day' : 'No focus yet';
+  $('#calDayList').innerHTML = its.length ? its.map(it => `<li>${calRow(it)}</li>`).join('') : `<li class="empty">${past ? 'Nothing was planned.' : 'Nothing planned yet.'}</li>`;
+  $('#calDayAdd').classList.toggle('hidden', past);
+  if (!$('#calDayDlg').open) $('#calDayDlg').showModal();
+}
+/** Open the thing an item stands for. */
+function calOpen(key) {
+  const it = CAL.items[key];
+  if (!it) return;
+  if ($('#calDayDlg').open) $('#calDayDlg').close();
+  if (it.kind === 'rem' || it.kind === 'block') openRemForm(it.r);
+  else if (it.kind === 'todo') openTodoForm(it.t);
+  else if (it.kind === 'exam') openExams();
+  else if (it.kind === 'rev') { S.ui.remView = 'rem'; showTab('reminders'); }
+  else if (it.kind === 'clan') showTab('clan');
+  else if (it.kind === 'sess') showTab('sessions');
+  else if (it.kind === 'event') { S.ui.questView = passEvent(it.ev) ? 'pass' : 'quest'; showTab('quests'); }
+}
+$('#calDayDlg').addEventListener('click', e => {
+  if (e.target.id === 'calDayDlg' || e.target.id === 'calDayClose') { $('#calDayDlg').close(); return; }
+  const row = e.target.closest('[data-cal]');
+  if (row) { calOpen(row.dataset.cal); return; }
+  const add = e.target.closest('[data-caladd]');
+  if (!add) return;
+  const k = CAL.day, what = add.dataset.caladd;
+  $('#calDayDlg').close();
+  if (what === 'block') openBlockForm({ date: k });
+  else if (what === 'rem') openRemForm({ title: '', date: k });
+  else if (what === 'todo') { openTodoForm(null, ''); $('#tdDue').value = k; }
+  else { openExams(); $('#examDate').value = k; setTimeout(() => $('#examName').focus(), 60); }
+});
+for (const id of ['calDayDlg', 'blockDlg', 'remDlg', 'todoDlg', 'examDlg', 'calExpDlg']) { const dl = document.getElementById(id); if (dl) dl.addEventListener('close', () => setTimeout(calRestoreFocus, 0)); }
+
+/* ---------- Planned focus blocks: a reminder with kind 'block' and a length ---------- */
+const BLOCK_LENGTHS = [25, 30, 45, 50, 60, 90, 120];
+let blockEditing = null;
+function openBlockForm(v = {}) {
+  const r = v.id ? v : null, now = new Date(Date.now() + 30 * 60000);
+  now.setMinutes(now.getMinutes() < 30 ? 30 : 60, 0, 0);
+  blockEditing = r ? r.id : null;
+  const pid = (r && r.presetId && S.presets.some(p => p.id === r.presetId) ? r.presetId : '') || (S.presets.some(p => p.id === S.activePresetId) ? S.activePresetId : S.presets[0].id);
+  const p = S.presets.find(x => x.id === pid), dur = clamp(Math.round(+v.dur || (p ? +p.focus : 50)), 5, 600);
+  $('#blockDlgTitle').textContent = r ? 'Edit focus block' : 'Plan a focus block';
+  $('#blkDelete').classList.toggle('hidden', !r);
+  $('#blkCal').classList.toggle('hidden', !r);   // your phone's calendar can remind you with the app closed (.ics or a Google Calendar link)
+  $('#blkTitle').value = r ? r.session || r.title : v.title || '';
+  $('#blkDate').value = v.date || dayKey(now);
+  $('#blkTime').value = v.time || `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  $('#blkDur').innerHTML = [...new Set([...BLOCK_LENGTHS, dur])].sort((x, y) => x - y).map(m => `<option value="${m}">${fmtMin(m)}</option>`).join('');
+  $('#blkDur').value = String(dur);
+  $('#blkPreset').innerHTML = S.presets.map(x => `<option value="${esc(x.id)}" data-f="${+x.focus}" data-b="${+x.short}" data-r="${+x.rounds}">${esc(x.name)}</option>`).join('');
+  $('#blkPreset').value = pid;
+  $('#blkBefore').value = String(r && [0, 5, 10, 15].includes(+r.before) ? +r.before : 5);
+  $('#blkErr').textContent = '';
+  $('#blockDlg').showModal();
+  setTimeout(() => $('#blkTitle').focus(), 50);
+}
+$('#blockForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title = $('#blkTitle').value.trim().slice(0, 80), date = $('#blkDate').value, time = $('#blkTime').value;
+  const err = !title ? 'Say what the block is for, e.g. “Organic chemistry”.' : !date || !time ? 'Pick a date and a start time.' : '';
+  if (err) { $('#blkErr').textContent = err; shake($('#blockForm')); return; }
+  const data = { title, session: title, date, time, before: +$('#blkBefore').value, presetId: $('#blkPreset').value, kind: 'block', dur: clamp(+$('#blkDur').value || 50, 5, 600), updated: Date.now() };
+  let r = blockEditing && S.reminders.find(x => x.id === blockEditing);
+  if (r) { const moved = r.date !== date || r.time !== time; Object.assign(r, data); delete r.allDay; if (moved) r.snooze = {}; }
+  else { r = { id: 'r' + uid(), ...data, repeat: 'none', days: [], done: {}, snooze: {}, created: Date.now() }; S.reminders.push(r); }
+  $('#blockDlg').close();
+  saveReminders();
+  toast(blockEditing ? 'Focus block updated' : `Planned: ${title}, ${calWhen(date)} at ${fmtHM(remAt(r, parseDay(date)))}`, 2800, true);
+  checkReminders();
+});
+$('#blkCancel').addEventListener('click', () => $('#blockDlg').close());
+$('#blkCal').addEventListener('click', () => { const r = blockEditing && S.reminders.find(x => x.id === blockEditing); $('#blockDlg').close(); if (r) openCal(r); });
+$('#blkDelete').addEventListener('click', () => { const r = blockEditing && S.reminders.find(x => x.id === blockEditing); $('#blockDlg').close(); if (r) deleteReminder(r); });
+
+/* ---------- Moving things ---------- */
+/** Give an item another day (and, for a timed one, another time). Undo puts it back. */
+function calMove(it, day, min = null) {
+  if (isPreview()) { previewPrompt($('#calBody')); return false; }   // the demo changes nothing
+  if (it.kind === 'todo') {
+    const t = it.t, was = t.due;
+    if (was === day) return false;
+    t.due = day; save(); renderTodoBits();
+    toastUndo(`“${t.title}” is now due ${calWhen(day)}`, () => { t.due = was; save(); renderTodoBits(); });
+    return true;
+  }
+  const r = it.r, hm = min === null || r.allDay ? r.time : calHmOf(clamp(min, 0, 1425)), was = { date: r.date, time: r.time, snooze: r.snooze, done: r.done };
+  if (r.date === day && hm === r.time) return false;
+  r.done = { ...(r.done || {}) }; delete r.done[r.date];   // moved: it is to do again on its new day
+  r.date = day; r.time = hm; r.snooze = {}; r.updated = Date.now();
+  saveReminders(); checkReminders();
+  toastUndo(`Moved “${r.title}” to ${calWhen(day)}${r.allDay ? '' : ', ' + fmtHM(remAt(r, parseDay(day)))}`, () => { Object.assign(r, was); r.updated = Date.now(); saveReminders(); });
+  return true;
+}
+/** The minute of the day under a height of the screen, in a column of the hour grid. */
+const calMinAt = (col, y) => clamp((y - col.getBoundingClientRect().top) / CAL_HOUR * 60, 0, 1440);
+const calSnap = (m, to = 15) => Math.round(m / to) * to;
+/* Dragging: a chip to another day (Month, and the all-day row of the Week), a timed block or reminder to another time
+   or day (Week / Day), and an empty stretch of the hour grid to plan a block there. A mouse drags at once; a finger
+   first holds still for a third of a second, so scrolling the page keeps working. Whatever a drag does, the item's own
+   dialog does too (its date and time fields): that is the keyboard's way. */
+function calDragStart(d) {
+  d.on = true; clearTimeout(d.hold);
+  document.body.classList.add('cal-dragging');
+  if (d.chip) {
+    const r = d.chip.getBoundingClientRect(), g = d.chip.cloneNode(true);
+    g.classList.add('cal-ghost'); g.removeAttribute('data-cal'); g.style.cssText += `;position:fixed;left:0;top:0;width:${r.width}px;height:${r.height}px;margin:0;z-index:300;pointer-events:none;`;
+    document.body.appendChild(g); d.ghost = g; d.chip.classList.add('dragging');
+    if (d.touch) haptic(10);
+  } else { const s = document.createElement('div'); s.className = 'cal-sel'; d.col.appendChild(s); d.sel = s; }
+}
+function calDragMove(d, x, y) {
+  const sc = $('#calScroll');
+  if (sc) { const r = sc.getBoundingClientRect(); if (y < r.top + 28) sc.scrollTop -= 14; else if (y > r.bottom - 28) sc.scrollTop += 14; }
+  if (d.sel) {   // planning a block: from where the drag began to here, in quarter hours, at least one
+    const m = calMinAt(d.col, y), a = Math.min(calSnap(Math.min(d.m0, m)), 1425), b = Math.max(a + 15, Math.min(1440, calSnap(Math.max(d.m0, m))));
+    d.from = a; d.len = b - a;
+    d.sel.style.top = `${a / 60 * CAL_HOUR}px`; d.sel.style.height = `${(b - a) / 60 * CAL_HOUR}px`;
+    const t0 = new Date(parseDay(d.col.dataset.day)); t0.setMinutes(a);
+    d.sel.textContent = `${calHM(t0.getTime())} – ${calHM(t0.getTime() + (b - a) * 60000)}`;
+    return;
+  }
+  d.ghost.style.transform = `translate(${x - d.dx}px, ${y - d.dy}px)`;
+  const under = document.elementFromPoint(x, y), tgt = under && under.closest('#calBody [data-day]');
+  $$('#calBody .drop').forEach(el => el.classList.remove('drop'));
+  $$('#calBody .cal-mark').forEach(el => el.remove());
+  d.day = null; d.min = null;
+  if (!tgt) return;
+  const hourCol = tgt.classList.contains('cw-col');
+  if (d.timed !== hourCol && (d.timed || hourCol)) return;   // a timed item stays in the hours, an all-day one in the all-day row
+  d.day = tgt.dataset.day;
+  if (hourCol) {
+    d.min = clamp(calSnap(calMinAt(tgt, y - d.dy)), 0, 1425);
+    const mk = document.createElement('i'); mk.className = 'cal-mark'; mk.style.top = `${d.min / 60 * CAL_HOUR}px`; mk.style.height = `${d.chip.offsetHeight}px`;
+    const t0 = new Date(parseDay(d.day)); t0.setMinutes(d.min); mk.textContent = calHM(t0.getTime());
+    tgt.appendChild(mk);
+  } else tgt.classList.add('drop');
+}
+function calDragEnd(commit) {
+  const d = CAL.drag;
+  if (!d) return;
+  CAL.drag = null; clearTimeout(d.hold);
+  document.body.classList.remove('cal-dragging');
+  $$('#calBody .drop').forEach(el => el.classList.remove('drop'));
+  $$('#calBody .cal-mark, #calBody .cal-sel').forEach(el => el.remove());
+  if (d.ghost) d.ghost.remove();
+  if (d.chip) d.chip.classList.remove('dragging');
+  if (!d.on) return;
+  CAL.sup = Date.now();   // the click that ends a drag is not a click on what lies under it
+  if (!commit) return;
+  if (d.sel) { if (d.len) openBlockForm({ date: d.col.dataset.day, time: calHmOf(d.from), dur: d.len }); return; }
+  if (d.day && !calMove(d.it, d.day, d.min)) renderCalendar();
+}
+$('#calBody').addEventListener('pointerdown', e => {
+  if (e.button > 0 || CAL.drag) return;
+  const chip = e.target.closest('[data-cal]'), col = chip ? null : e.target.closest('.cw-col'), it = chip && CAL.items[chip.dataset.cal];
+  if (chip ? !(it && it.move) : !col || e.pointerType === 'touch' || col.dataset.day < todayKey()) return;   // planning by dragging is for a mouse or a pen: a finger taps an hour
+  const d = CAL.drag = { id: e.pointerId, x: e.clientX, y: e.clientY, chip, it, col, on: false, touch: e.pointerType === 'touch' };
+  if (chip) { const r = chip.getBoundingClientRect(); d.dx = e.clientX - r.left; d.dy = e.clientY - r.top; d.timed = chip.classList.contains('cal-ev'); }
+  else d.m0 = calMinAt(col, e.clientY);
+  if (d.touch) d.hold = setTimeout(() => { if (CAL.drag === d) calDragStart(d); }, 330);
+});
+document.addEventListener('pointermove', e => {
+  const d = CAL.drag;
+  if (!d || e.pointerId !== d.id) return;
+  const far = Math.hypot(e.clientX - d.x, e.clientY - d.y) > 6;
+  if (!d.on) { if (d.touch) { if (far) calDragEnd(false); return; } if (!far) return; calDragStart(d); }
+  e.preventDefault();
+  calDragMove(d, e.clientX, e.clientY);
+});
+document.addEventListener('pointerup', e => { if (CAL.drag && e.pointerId === CAL.drag.id) calDragEnd(true); });
+document.addEventListener('pointercancel', e => { if (CAL.drag && e.pointerId === CAL.drag.id) calDragEnd(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && CAL.drag) { e.preventDefault(); calDragEnd(false); renderCalendar(); } }, true);
+$('#calBody').addEventListener('touchmove', e => { if (CAL.drag && CAL.drag.on) e.preventDefault(); }, { passive: false });
+$('#calBody').addEventListener('contextmenu', e => { if (CAL.drag) e.preventDefault(); });
+
+/* ---------- Clicks and keys ---------- */
+$('#calBody').addEventListener('click', e => {
+  if (Date.now() - CAL.sup < 400) return;
+  const more = e.target.closest('[data-calmore]');
+  if (more) { calOpenDay(more.dataset.calmore); return; }
+  const chip = e.target.closest('[data-cal]');
+  if (chip) { calOpen(chip.dataset.cal); return; }
+  const dh = e.target.closest('[data-calday]');
+  if (dh) { calOpenDay(dh.dataset.calday); return; }
+  const col = e.target.closest('.cw-col');
+  if (col) {   // an empty hour: plan a block there (a day that has passed just opens)
+    if (col.dataset.day < todayKey()) { calOpenDay(col.dataset.day); return; }
+    openBlockForm({ date: col.dataset.day, time: calHmOf(Math.min(1410, Math.floor(calMinAt(col, e.clientY) / 30) * 30)) });
+    return;
+  }
+  const day = e.target.closest('[data-day]');
+  if (day) calOpenDay(day.dataset.day);
+});
+$('#calBody').addEventListener('keydown', e => {
+  const cell = e.target.closest('.cal-day');
+  if (!cell || e.target !== cell || e.ctrlKey || e.metaKey || e.altKey) return;
+  const d = parseDay(cell.dataset.day), ws = calWs(), step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+  const to = step ? addDays(d, step) : e.key === 'Home' ? weekStartOf(d, ws) : e.key === 'End' ? addDays(weekStartOf(d, ws), 6)
+    : e.key === 'PageUp' ? new Date(d.getFullYear(), d.getMonth() - 1, Math.min(d.getDate(), new Date(d.getFullYear(), d.getMonth(), 0).getDate()))
+    : e.key === 'PageDown' ? new Date(d.getFullYear(), d.getMonth() + 1, Math.min(d.getDate(), new Date(d.getFullYear(), d.getMonth() + 2, 0).getDate())) : null;
+  if (to) { e.preventDefault(); e.stopPropagation(); calFocusDay(dayKey(to)); }
+  else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); calOpenDay(cell.dataset.day); }
+});
+$('#calSeg').addEventListener('click', e => { const b = e.target.closest('[data-calview]'); if (!b) return; S.ui.calView = b.dataset.calview; CAL.scroll = null; saveUiSoon(); renderCalendar(); });
+$('#calPrev').addEventListener('click', () => calGo(-1));
+$('#calNext').addEventListener('click', () => calGo(1));
+$('#calToday').addEventListener('click', () => calGo(0));
+$('#calAdd').addEventListener('click', () => { const k = calView() === 'month' || calView() === 'agenda' ? '' : dayKey(calAnchor()); openBlockForm(k && k >= todayKey() ? { date: k } : {}); });
+matchMedia('(max-width: 640px)').addEventListener('change', () => calRefresh());   // the Week becomes the Day on a phone (NAV_MQ is declared further down)
+/* the line for "now" in the Week and Day moves with the clock (one style write a minute, only while it is on screen) */
+setInterval(() => { const n = document.querySelector('#calBody .cw-now'); if (n && S.ui.tab === 'calendar' && !document.hidden) n.style.top = `${(calMinOf(Date.now()) / 60 * CAL_HOUR).toFixed(1)}px`; }, 60000);
+
+/* ---------- Export: everything still ahead, as one calendar file ---------- */
+const icsFold = l => l.replace(/(.{72})(?=.)/g, '$1\r\n ');   // lines of at most 75 bytes; a calendar joins them again
+/** What the file holds: reminders and blocks that still come, open to-dos with a due date, exams not yet over. */
+function calExportList() {
+  const tk = todayKey();
+  return { rems: S.reminders.filter(r => r.repeat !== 'none' || r.date >= tk), todos: S.todos.filter(t => !t.done && t.due), exams: S.exams.filter(x => x.date >= tk) };
+}
+function calIcsText() {
+  const { rems, todos, exams } = calExportList(), stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''), next = k => icsDay(addDays(parseDay(k), 1));
+  const dated = (id, k, title, note) => ['BEGIN:VEVENT', `UID:${id}@pomodorolist.app`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${k.replace(/-/g, '')}`, `DTEND;VALUE=DATE:${next(k)}`, `SUMMARY:${icsEsc(title)}`, `DESCRIPTION:${icsEsc(note)}`, 'END:VEVENT'];
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Pomodorolist//Calendar//EN', 'CALSCALE:GREGORIAN', 'X-WR-CALNAME:Pomodorolist',
+    ...rems.flatMap(r => icsEvent(r, stamp)),
+    ...todos.flatMap(t => dated('todo-' + t.id, t.due, 'To-do: ' + t.title, t.notes || 'From your Pomodorolist to-do list')),
+    ...exams.flatMap(x => dated('exam-' + x.id, x.date, 'Exam: ' + x.name, 'From your Pomodorolist exam countdown')),
+    'END:VCALENDAR'];
+  return lines.map(icsFold).join('\r\n') + '\r\n';
+}
+$('#calExport').addEventListener('click', () => {
+  const { rems, todos, exams } = calExportList(), n = (x, w) => `${x} ${w}${x === 1 ? '' : 's'}`;
+  const parts = [rems.length && n(rems.length, 'reminder') + ' and focus blocks', todos.length && n(todos.length, 'to-do') + ' with a due date', exams.length && n(exams.length, 'exam')].filter(Boolean);
+  $('#calExpWhat').textContent = parts.length ? `One file with what is still ahead: ${parts.join(', ')}. Your calendar app can remind you even when Pomodorolist is closed.` : 'There is nothing ahead to export yet: add a reminder, a focus block, a to-do with a due date or an exam first.';
+  $('#calExpIcs').disabled = !parts.length;
+  $('#calExpDlg').showModal();
+});
+$('#calExpIcs').addEventListener('click', () => { icsSave(calIcsText(), 'pomodorolist-calendar'); toast('Calendar file downloaded — open it to add the events', 3200, true); $('#calExpDlg').close(); });
+$('#calExpClose').addEventListener('click', () => $('#calExpDlg').close());
+$('#calExpDlg').addEventListener('click', e => { if (e.target.id === 'calExpDlg') $('#calExpDlg').close(); });
+
+/* ==========================================================================
    KEYBOARD SHORTCUTS (desktop). Off while typing, and switchable in Settings.
    ========================================================================== */
 const TAB_KEYS = ['timer', 'reminders', 'quests', 'stats', 'board', 'shop', 'friends', 'profile', 'clan'];
@@ -17839,6 +18518,7 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (k === 'j') { e.preventDefault(); showTab('sessions'); return; }   // Study sessions (v1.19.1)
+  if (k === 'c') { e.preventDefault(); showTab('calendar'); return; }   // Calendar (v2.0)
   if (k === 'o') { const b = $('#postsTabBtn'); if (b && !b.classList.contains('hidden')) { e.preventDefault(); showTab('posts'); } return; }   // Posts (v1.20)
   if (k === 't') { e.preventDefault(); focusSubAdd(); return; }
   if (k === 'n') { e.preventDefault(); showTab('timer'); setTimeout(() => $('#nameInput').focus(), 30); return; }
@@ -18694,7 +19374,7 @@ function goSetting(row) {
    ========================================================================== */
 function cmdList(q) {
   const L = [], add = (ic, t, g, run, k = '') => L.push({ ic, t, g, run, k });
-  const tabs = [['timer', '⏱️', 'Timer'], ['reminders', '🔔', 'Reminders'], ['quests', '⚔️', 'Quests'], ['stats', '📊', 'Stats'], ['garden', '🌱', 'Garden'], ['board', '🏆', 'Leaderboard'], ['shop', '🛍️', 'Shop'], ['friends', '👥', 'Friends'], ['posts', '📣', 'Posts'], ['sessions', '📚', 'Study sessions'], ['profile', '👤', 'Profile'], ['settings', '⚙️', 'Settings'], ['about', 'ℹ️', 'About']];
+  const tabs = [['timer', '⏱️', 'Timer'], ['reminders', '🔔', 'Reminders'], ['calendar', '📅', 'Calendar'], ['quests', '⚔️', 'Quests'], ['stats', '📊', 'Stats'], ['garden', '🌱', 'Garden'], ['board', '🏆', 'Leaderboard'], ['shop', '🛍️', 'Shop'], ['friends', '👥', 'Friends'], ['posts', '📣', 'Posts'], ['sessions', '📚', 'Study sessions'], ['profile', '👤', 'Profile'], ['settings', '⚙️', 'Settings'], ['about', 'ℹ️', 'About']];
   for (const [id, ic, n] of tabs) if (!(['quests', 'shop', 'garden', 'posts'].includes(id) && !S.settings.gamification)) add(ic, n, 'Go to', () => showTab(id), id === 'board' ? 'ranks leaderboard' : id === 'garden' ? 'plants seeds harvest' : id === 'sessions' ? 'study together live host join table' : id === 'posts' ? 'feed wins reactions friends news' : '');
   add('📥', 'Inbox', 'Open', openInbox, 'notifications messages');
   if (DEBUG) add('🧩', 'Component gallery', 'Development', () => showTab('gallery'), 'ui controls library debug');
@@ -19891,10 +20571,16 @@ function demoDocs() {
     reminders: [
       { id: 'demo_r1', title: 'Physics revision', date: dayKey(soon), time: `${pad(soon.getHours())}:00`, repeat: 'none', days: [], before: 10, presetId: 'p-deep', session: 'Physics' },
       { id: 'demo_r2', title: 'Maths mock test', date: dayKey(tomorrow), time: '09:30', repeat: 'weekly', days: [tomorrow.getDay()], before: 15, presetId: 'p-deep', session: 'Maths' },
+      // v2.0: an all-day reminder and planned focus blocks, so the Calendar has something of every kind
+      { id: 'demo_r3', title: 'Hand in the chemistry record', date: dayKey(now), time: '08:00', allDay: true, repeat: 'none', days: [], before: 0, presetId: '', session: '' },
+      { id: 'demo_r4', title: 'Organic chemistry', session: 'Organic chemistry', date: dayKey(tomorrow), time: '17:00', repeat: 'none', days: [], before: 5, presetId: 'p-deep', kind: 'block', dur: 50 },
+      { id: 'demo_r5', title: 'Physics numericals', session: 'Physics numericals', date: dayKey(addDays(now, 2)), time: '06:30', repeat: 'none', days: [], before: 5, presetId: 'p-deep', kind: 'block', dur: 90 },
+      { id: 'demo_r6', title: 'Maths: integration', session: 'Maths: integration', date: dayKey(addDays(now, 3)), time: '18:30', repeat: 'none', days: [], before: 5, presetId: 'p-classic', kind: 'block', dur: 50 },
+      { id: 'demo_r7', title: 'Library books due', date: dayKey(addDays(now, 5)), time: '08:00', allDay: true, repeat: 'none', days: [], before: 0, presetId: '', session: '' },
     ],
     notes: Object.fromEntries(sessions.slice(-3).map((s, i) => [s.id, ['Finished all 15 HC Verma problems', 'Need to redo Q7 tomorrow', 'Great flow today'][i]])),
     revisions: [{ id: 'demo_v1', topic: 'Chemistry', presetId: 'p-classic', time: '18:00', step: 1, next: dayKey(now), created: Date.now() - 3 * 864e5, log: [], done: {}, snooze: {} }],
-    exams: [{ id: 'demo_x1', name: 'JEE Main', date: dayKey(addDays(now, 74)), added: Date.now() - 40 * 864e5 }],
+    exams: [{ id: 'demo_x1', name: 'JEE Main', date: dayKey(addDays(now, 74)), added: Date.now() - 40 * 864e5 }, { id: 'demo_x2', name: 'Physics unit test', date: dayKey(addDays(now, 9)), added: Date.now() - 6 * 864e5 }],
     parked: [{ id: 'demo_p1', text: 'Ask James for the organic chemistry notes', at: Date.now() - 5400e3, done: false }],
     squad: DEMO_FRIENDS.map(f => ({ uid: f.uid, name: f.name })),   // a full squad of 5, so the (smaller) v1.13.1 boss stays mid-battle
     subTemplates: [], energy,
@@ -20023,13 +20709,13 @@ function startPreview() {
 }
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
-const PV_BLOCK = ['#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
+const PV_BLOCK = ['#blkDelete', '#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-sremind]', '[data-hrsvp]', '[data-sjoin]', '[data-sask]', '[data-shost]', '[data-sinvite]', '[data-sallow]', '[data-sdeny]', '[data-skick]', '[data-shand]', '[data-scode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#remDelete', '#presetForm button[type="submit"]', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '[data-sell]', '[data-sellall]', '[data-fav]', '[data-compost]', '[data-gtask]', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-pclaim]', '[data-pclaimall]', '[data-preact]', '#setPosts', '[data-posttype]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
-const PV_WHY = [['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
+const PV_WHY = [['#blockForm,#calBody,#blkDelete', 'plan your study on a calendar'], ['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-sjoin],[data-sask],[data-shost],[data-sinvite],[data-sallow],[data-sdeny],[data-skick],[data-shand],[data-scode],[data-sremind]', 'study live with friends'], ['[data-hrsvp]', 'join your clan’s sessions'], ['[data-sell],[data-sellall],[data-fav],[data-compost]', 'sell your harvests for produce'], ['[data-gtask]', 'claim garden tasks'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
@@ -20972,6 +21658,7 @@ function renderAll() {
   if (S.ui.tab === 'garden') renderGarden();
   if (S.ui.tab === 'room') renderRoom();
   if (S.ui.tab === 'reminders') renderReminders();
+  calRefresh();
   if (S.ui.tab === 'profile') renderProfile();
   if (S.ui.tab === 'shop') renderShop();
   renderSky();
@@ -21411,6 +22098,7 @@ function tick() {
     reconcileRewards('quiet');  // new day: goal bonus bookkeeping and Streak Freezes
     if (S.ui.tab === 'stats') renderStats();
     if (S.ui.tab === 'garden') renderGarden();   // a new day's weather and visitors
+    calRefresh();   // "today" has moved
     if (S.ui.tab === 'quests') renderQuests();   // a new week's boss, a questline's next day
     if (S.ui.tab === 'clan' && inClan()) renderClan();   // a new week's quest, a new month's raid boss
     renderGreeting();
@@ -22405,7 +23093,7 @@ function deleteTodo(t) {
   renderTodoBits();
   toastUndo(`“${t.title}” deleted`, () => { S.todos.splice(i, 0, t); save(); renderTodoBits(); });
 }
-function renderTodoBits() { if (S.ui.tab === 'reminders') { renderRemSeg(); if (remView() === 'todo') renderTodos(); } renderTodayExtra(); }
+function renderTodoBits() { if (S.ui.tab === 'reminders') { renderRemSeg(); if (remView() === 'todo') renderTodos(); } renderTodayExtra(); calRefresh(); }
 function toggleTodo(t, btn) {
   const on = !t.done;
   uiClaim(); uiSound(on ? 'tick' : 'off');
@@ -25269,7 +25957,7 @@ Object.assign(DECOR_ART, {
 const NAV_MINI_KEY = 'pomodorolist-nav-mini';
 const NAV_MQ = { phone: matchMedia('(max-width: 640px)'), side: matchMedia('(min-width: 1180px)') };
 const navMode = () => (NAV_MQ.phone.matches ? 'phone' : NAV_MQ.side.matches ? 'side' : 'drawer');
-const NAV_LABEL = { timer: 'Timer', reminders: 'Reminders', quests: 'Quests', stats: 'Stats', garden: 'Garden', board: 'Leaderboard', shop: 'Shop', friends: 'Friends', sessions: 'Study sessions', clan: 'Clan', profile: 'Profile' };
+const NAV_LABEL = { timer: 'Timer', reminders: 'Reminders', calendar: 'Calendar', quests: 'Quests', stats: 'Stats', garden: 'Garden', board: 'Leaderboard', shop: 'Shop', friends: 'Friends', sessions: 'Study sessions', clan: 'Clan', profile: 'Profile' };
 let navOpener = null;
 /** Is this element really on screen (not in the closed menu, not hidden)? */
 function navShown(el) {

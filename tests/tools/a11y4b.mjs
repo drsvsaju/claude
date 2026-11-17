@@ -22,6 +22,8 @@ const VIEWS = [
   ['quests-boss', "S.ui.questView = 'boss'; showTab('quests')"], ['quests-quest', "S.ui.questView = 'quest'; showTab('quests')"], ['quests-pass', "S.ui.questView = 'pass'; showTab('quests')"], ['quests-board', "S.ui.questView = 'board'; showTab('quests')"],
   ['profile', "showTab('profile')"], ['friends', "S.ui.friendsView = 'friends'; showTab('friends')"], ['friends-challenges', "S.ui.friendsView = 'challenges'; showTab('friends')"], ['posts', "showTab('posts')"], ['sessions', "showTab('sessions')"],
   ['clan', "showTab('clan')"], ['board', "showTab('board')"], ['shop', "showTab('shop')"], ['bag', "showTab('bag')"], ['room', "showTab('room')"], ['settings', "showTab('settings')"], ['about', "showTab('about')"],
+  ['cal-month', "S.ui.calView = 'month'; CAL.anchor = null; showTab('calendar')"], ['cal-week', "S.ui.calView = 'week'; CAL.anchor = null; CAL.scroll = null; showTab('calendar')"], ['cal-agenda', "S.ui.calView = 'agenda'; CAL.anchor = null; showTab('calendar')"],
+  ['dlg-day', "S.ui.calView = 'month'; showTab('calendar'); calOpenDay(todayKey())"], ['dlg-block', "showTab('calendar'); openBlockForm({})"], ['dlg-reminder-allday', "showTab('reminders'); openRemForm(); document.querySelector('#remAllDay').click()"],
   ['dlg-presets', "showTab('timer'); document.querySelector('#managePresets').click()"], ['dlg-reminder', "showTab('reminders'); document.querySelector('#remAdd').click()"], ['dlg-inbox', "showTab('timer'); document.querySelector('#inboxBtn').click()"],
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],
 ];

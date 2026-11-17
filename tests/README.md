@@ -37,6 +37,13 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   "All day" is switched), a valid `time` kept for older versions, one alert at the chosen time or on the first open
   after it, snooze, a changed alert time not ringing twice, the second device staying quiet, repeats, done, missed,
   the dated calendar event (.ics and Google), the setting, and back to a timed reminder.
+- `v500b.mjs`: the Calendar on a signed-up account — wiring (sidebar, key C, palette), the Month grid, the day dialog
+  and the keyboard, dragging to another day with Undo, the Week (positions, overlap, drag over empty hours to plan a
+  block, drag to move), a block's alert starting the timer, the Agenda, the calendar file, the past, the cloud copy.
+  Its test days are the 10th–16th of next month and the week's own columns, so it does not depend on today's date.
+- `v500c.mjs`: the Calendar where nothing may be written (the demo: filled, prompts, no traffic, storage unchanged),
+  on a phone (dots, 44 px targets, the Day view), for a guest (a finger's hold-and-drag through CDP touch events,
+  kept after a reload) and in True Minimalist.
 - `perf4.mjs` (phase 4): the numbers — `node perf4.mjs index.html [--big] [--phone] [--throttle 4] [--tag name]` prints
   one JSON line (start-up, every tab switch, the slowest interactions by Event Timing, frame rate, DOM size);
   `tools/perf4sum.py before.jsonl after.jsonl` makes the table. `--big` loads `tools/bigacct.js`, which turns the demo

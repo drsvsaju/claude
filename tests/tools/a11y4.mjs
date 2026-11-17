@@ -29,11 +29,13 @@ const VIEWS = [
   ['quests-boss', "S.ui.questView = 'boss'; showTab('quests')"], ['quests-quest', "S.ui.questView = 'quest'; showTab('quests')"], ['quests-pass', "S.ui.questView = 'pass'; showTab('quests')"], ['quests-board', "S.ui.questView = 'board'; showTab('quests')"],
   ['profile', "showTab('profile')"], ['friends', "S.ui.friendsView = 'friends'; showTab('friends')"], ['friends-challenges', "S.ui.friendsView = 'challenges'; showTab('friends')"], ['posts', "showTab('posts')"], ['sessions', "showTab('sessions')"],
   ['clan', "showTab('clan')"], ['board', "showTab('board')"], ['shop', "showTab('shop')"], ['bag', "showTab('bag')"], ['room', "showTab('room')"], ['settings', "showTab('settings')"], ['about', "showTab('about')"],
+  ['cal-month', "S.ui.calView = 'month'; CAL.anchor = null; showTab('calendar')"], ['cal-week', "S.ui.calView = 'week'; CAL.anchor = null; CAL.scroll = null; showTab('calendar')"], ['cal-agenda', "S.ui.calView = 'agenda'; CAL.anchor = null; showTab('calendar')"],
+  ['dlg-day', "S.ui.calView = 'month'; showTab('calendar'); calOpenDay(todayKey())"], ['dlg-block', "showTab('calendar'); openBlockForm({})"], ['dlg-reminder-allday', "showTab('reminders'); openRemForm(); document.querySelector('#remAllDay').click()"],
   ['dlg-presets', "showTab('timer'); document.querySelector('#managePresets').click()"], ['dlg-reminder', "showTab('reminders'); document.querySelector('#remAdd').click()"], ['dlg-inbox', "showTab('timer'); document.querySelector('#inboxBtn').click()"],
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],
 ];
-const SUB = ['timer', 'stats-week', 'quests-boss', 'quests-pass', 'profile', 'friends', 'garden', 'shop', 'bag', 'settings', 'reminders', 'todo', 'clan', 'board', 'dlg-presets', 'dlg-inbox'];   // for the other themes: the screens that use every token
-if (args.includes('--few')) SUB.splice(0, SUB.length, 'timer', 'stats-week', 'quests-pass', 'profile', 'friends', 'bag', 'clan', 'todo');   // --few: eight screens for the other themes
+const SUB = ['timer', 'stats-week', 'quests-boss', 'quests-pass', 'profile', 'friends', 'garden', 'shop', 'bag', 'settings', 'reminders', 'todo', 'clan', 'board', 'cal-month', 'cal-week', 'dlg-presets', 'dlg-inbox'];   // for the other themes: the screens that use every token
+if (args.includes('--few')) SUB.splice(0, SUB.length, 'timer', 'stats-week', 'quests-pass', 'profile', 'friends', 'bag', 'clan', 'todo', 'cal-month', 'cal-week');   // --few: ten screens for the other themes
 const only = val('--only') ? val('--only').split(',') : null;
 // Only the glyphs are hidden. The colour property itself stays, because backgrounds, borders and icons are often drawn
 // in "currentColor" and must still be in the picture.
