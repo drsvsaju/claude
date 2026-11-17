@@ -1,0 +1,136 @@
+/* ==========================================================================
+   INTENTION, DEBRIEF, DISTRACTION TALLY, RESUME (v2.0) — private, optional, never in the way of a running block.
+   Before a block: one line, "what will done look like?" (S.timer.intent — on this device, like the subtask draft).
+   The logged session keeps it as `int`, and `dx` = how often "I got distracted" was tapped (no pop-up, no penalty).
+   After the block: did you do it? S.debrief { sessionId: 1 yes · 2 partly · 3 not yet } in users/{uid}, like the
+   focus check-in (S.energy), so an answer given later needs no rewrite of the session log. "Yes" clears the
+   intention; anything else leaves it in place for the next block.
+   The focus rating stays the existing 4-step check-in: a 5-step one would be dropped by older versions of the app
+   (they keep 1–4) and would split the history in two scales.
+   ========================================================================== */
+const DEBRIEF = [null, { m: '✓', t: 'Yes' }, { m: '◐', t: 'Partly' }, { m: '–', t: 'Not yet' }];
+const intentOn = () => S.settings.intent !== false;
+let debriefFor = null, debriefT = 0, intOpen = false;
+function renderIntent() {
+  const tg = $('#intToggle'), ed = $('#intEd'), inp = $('#intInput');
+  if (!tg || !USER) return;
+  const v = S.timer.intent || '', on = intentOn(), open = !!v || intOpen;
+  tg.classList.toggle('hidden', !on || open);
+  ed.classList.toggle('hidden', !on || !open);
+  tg.setAttribute('aria-expanded', String(open));
+  if (document.activeElement !== inp && inp.value !== v) inp.value = v;
+}
+$('#intToggle').addEventListener('click', () => { intOpen = true; renderIntent(); $('#intInput').focus(); });
+$('#intInput').addEventListener('input', e => { S.timer.intent = e.target.value.slice(0, 100); saveUiSoon(); });
+$('#intInput').addEventListener('blur', () => { S.timer.intent = (S.timer.intent || '').trim(); if (!S.timer.intent) intOpen = false; saveUiSoon(); renderIntent(); });
+$('#intInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+$('#intClear').addEventListener('click', () => { S.timer.intent = ''; intOpen = false; $('#intInput').value = ''; saveUiSoon(); renderIntent(); });
+
+/* ---------- "I got distracted": one tap, counted for this block, nothing else happens ---------- */
+const dxNow = () => (S.timer.dxFor === S.timer.focusStartedAt ? +S.timer.dx || 0 : 0);   // a count belongs to the block it was tapped in
+function addDistraction() {
+  if (!focusActive() || !intentOn()) return;
+  S.timer.dx = Math.min(99, dxNow() + 1); S.timer.dxFor = S.timer.focusStartedAt;
+  saveUiSoon(); renderDx(); haptic(6);
+}
+function renderDx() {
+  const b = $('#dxBtn');
+  if (!b) return;
+  const n = dxNow();
+  b.classList.toggle('hidden', !(focusActive() && intentOn()));
+  $('#dxN').textContent = n ? String(n) : '';
+  b.setAttribute('aria-label', n ? `I got distracted. Counted ${n} time${n === 1 ? '' : 's'} in this block` : 'I got distracted. Count it');
+}
+$('#dxBtn').addEventListener('click', addDistraction);
+
+/* ---------- After the block: did you do it? ---------- */
+function renderDebriefRow(sessionId) {
+  const el = $('#debriefRow'), s = sessionId && S.sessions.find(x => x.id === sessionId);
+  clearTimeout(debriefT);
+  debriefFor = s && s.int && intentOn() && !S.debrief[s.id] ? s.id : null;
+  el.classList.toggle('hidden', !debriefFor);
+  if (!debriefFor) return;
+  el.classList.remove('done');
+  el.innerHTML = `<div class="eq"><span>🎯 <b>${esc(s.int)}</b> · did you do it?</span><button class="linkbtn" data-dskip>Skip</button></div>
+    <div class="opts">${[1, 2, 3].map(n => `<button data-debrief="${n}"><span aria-hidden="true">${DEBRIEF[n].m}</span>${DEBRIEF[n].t}</button>`).join('')}</div>`;
+  debriefT = setTimeout(skipDebrief, 30000);   // ignored → quietly goes away
+}
+function answerDebrief(n, id = debriefFor) {
+  if (!id || !(n >= 1 && n <= 3)) return;
+  clearTimeout(debriefT);
+  S.debrief[id] = n;
+  if (n === 1) { S.timer.intent = ''; intOpen = false; }   // done: the next block starts clean. Otherwise it stays as the intention
+  save();
+  uiClaim(); uiSound('tick'); haptic(8);
+  if (id === debriefFor) {
+    const el = $('#debriefRow');
+    el.classList.add('done');
+    el.innerHTML = `<div class="eq"><span>${n === 1 ? '✓ Done. Nicely finished.' : n === 2 ? '◐ Partly. It stays as your intention for the next block.' : 'Not yet. It stays as your intention for the next block.'}</span></div>`;
+    debriefFor = null;
+    setTimeout(() => { el.classList.add('hidden'); maybeHideAfter(); }, 1800);
+  }
+  renderIntent(); renderResume();
+  if (S.ui.tab === 'stats') renderStats();
+}
+function skipDebrief() { clearTimeout(debriefT); debriefFor = null; $('#debriefRow').classList.add('hidden'); maybeHideAfter(); }
+$('#debriefRow').addEventListener('click', e => {
+  const b = e.target.closest('[data-debrief]');
+  if (b) answerDebrief(+b.dataset.debrief);
+  if (e.target.closest('[data-dskip]')) skipDebrief();
+});
+/** Recent answers only (keeps the profile document small), like the check-ins. */
+function recentDebrief() {
+  const keep = new Set(S.sessions.slice(-400).map(s => s.id)), out = {};
+  for (const [id, v] of Object.entries(S.debrief || {})) if (keep.has(id) && v >= 1 && v <= 3) out[id] = v;
+  return out;
+}
+
+/* ---------- "Pick up where you left off" ---------- */
+/** The last block, if it left something open: an intention answered "partly" or "not yet", or subtasks not ticked.
+ *  Only when you come back to it (20 minutes to 3 days later): straight after the block its name and intention are
+ *  still in the Session card. */
+function resumeTarget() {
+  if (!intentOn()) return null;
+  const s = S.sessions[S.sessions.length - 1], age = s ? Date.now() - s.end : 0;
+  if (!s || age < 20 * 60000 || age > 3 * DAY_MS) return null;
+  const left = (s.subtasks || []).filter(x => !x.d).map(x => x.t), open = !!s.int && (S.debrief[s.id] === 2 || S.debrief[s.id] === 3);
+  return open || left.length ? { s, left, int: open ? s.int : '' } : null;
+}
+function renderResume() {
+  const el = $('#resumeSlot');
+  if (!el || !USER) return;
+  const t = S.timer, r = t.status === 'idle' && t.phase === 'focus' ? resumeTarget() : null;
+  if (!r || S.ui.resumeNo === r.s.id) { if (el.innerHTML) el.innerHTML = ''; return; }
+  const bits = [r.int ? `🎯 ${esc(r.int)}` : '', r.left.length ? `${r.left.length} subtask${r.left.length === 1 ? '' : 's'} left` : ''].filter(Boolean).join(' · ');
+  const html = `<div class="resume" role="group" aria-label="Pick up where you left off"><div class="rs-t"><span class="lbl">Pick up where you left off</span><b>${esc(r.s.name)}</b><span class="rs-s">${bits}</span></div>
+    <div class="rs-a"><button type="button" class="btn primary small" data-resume="${esc(r.s.id)}">Start</button><button type="button" class="iconbtn" data-resume-no="${esc(r.s.id)}" aria-label="Not now" title="Not now">×</button></div></div>`;
+  if (el.innerHTML !== html) el.innerHTML = html;
+}
+$('#resumeSlot').addEventListener('click', e => {
+  const no = e.target.closest('[data-resume-no]');
+  if (no) { S.ui.resumeNo = no.dataset.resumeNo; saveUiSoon(); renderResume(); return; }
+  const b = e.target.closest('[data-resume]'), r = b && resumeTarget();
+  if (!r || r.s.id !== b.dataset.resume || S.timer.status !== 'idle') return;
+  const p = S.presets.find(x => x.name === r.s.preset);
+  if (p) S.activePresetId = p.id;
+  $('#nameInput').value = r.s.name === 'Untitled' ? '' : r.s.name;
+  onNameChange();
+  if (r.int) { S.timer.intent = r.int; intOpen = true; }
+  if (r.left.length && !subs().length) loadItems(r.left);
+  S.ui.resumeNo = r.s.id;
+  renderSessionInputs(); renderIntent(); renderResume();
+  startTimer();
+});
+
+/* ---------- What the answers add up to (Stats → Focus insights) ---------- */
+/** Intentions kept and distractions counted, over the last 60 days. */
+function intentInsights() {
+  const from = Date.now() - 60 * DAY_MS, ss = S.sessions.filter(s => s.start >= from);
+  const ans = ss.filter(s => s.int && S.debrief[s.id]), done = ans.filter(s => S.debrief[s.id] === 1).length, partly = ans.filter(s => S.debrief[s.id] === 2).length;
+  const part = h => (h >= 5 && h < 12 ? 'morning' : h >= 12 && h < 17 ? 'afternoon' : h >= 17 && h < 21 ? 'evening' : 'night'), by = {};
+  let mins = 0, dx = 0;
+  for (const s of ss) { const m = s.duration / 60000, k = part(new Date(s.start).getHours()), g = (by[k] ||= { dx: 0, min: 0 }); mins += m; dx += +s.dx || 0; g.dx += +s.dx || 0; g.min += m; }
+  const worst = Object.entries(by).filter(([, v]) => v.min >= 120 && v.dx).map(([k, v]) => ({ k, r: v.dx / v.min * 60 })).sort((a, b) => b.r - a.r)[0] || null;
+  return { n: ans.length, done, partly, dxPerHour: dx && mins >= 60 ? dx / mins * 60 : null, worst };
+}
+
