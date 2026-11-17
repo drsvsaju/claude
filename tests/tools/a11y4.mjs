@@ -77,7 +77,10 @@ for (const skin of skins) for (const mode of ['light', 'dark']) {
     if (only ? !only.includes(name) : skin !== 'th_default' && !SUB.includes(name)) continue;
     try {
       await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(d => d.close()));
-      await p.evaluate(c => { (0, eval)(c); scrollTo(0, 0); }, code); await wait(name.startsWith('dlg') ? 500 : 350);
+      // the theme is applied again after every switch: leaving the Bag ends a theme preview and goes back to the account's own look
+      await p.evaluate(([c, skin, mode]) => { (0, eval)(c); themePreviewId = skin === 'th_default' ? '' : skin; applyTheme(mode); scrollTo(0, 0); }, [code, skin, mode]); await wait(name.startsWith('dlg') ? 500 : 350);
+      const applied = await p.evaluate(() => document.documentElement.getAttribute('data-theme'));
+      if (applied && applied !== mode) { console.log('mode not applied', skin, mode, name); continue; }
       await p.evaluate(() => typeof rowsFill === 'function' && rowsFill(true));
       const data = await collect();
       await p.evaluate(css => { const s = document.createElement('style'); s.id = 'a11yHide'; s.textContent = css; document.head.append(s); }, HIDE);
