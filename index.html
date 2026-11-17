@@ -4591,6 +4591,14 @@ dialog[tabindex="-1"]:focus { outline: none; }
 /* category chips: the chosen one stands out again */
 .catrow button:not(.active) { color: color-mix(in srgb, var(--t-2, var(--muted)) 65%, var(--t-1, var(--text))); }
 .catrow button.active { box-shadow: inset 0 0 0 1px var(--accent-text, var(--accent)); }
+/* ----- v2.0 phase 5: all-day reminders ----- */
+.rm-timehead { display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 17px; margin-bottom: 6px; }   /* as tall as a field label, so Time lines up with Date */
+.rm-timehead .field { margin: 0; }
+.rm-allday { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--t-1, var(--text)); cursor: pointer; }
+.rm-allday input { flex: none; }
+.rm-ro { display: flex; align-items: center; min-height: var(--ctl-h, 40px); padding: 0 12px; border-radius: var(--r-8, 8px); background: var(--hover); color: var(--t-2, var(--muted)); font-size: 14px; }   /* what a control would say, where the control is not needed */
+.rem.allday .rtime { font-size: 12.5px; letter-spacing: .01em; color: var(--accent-text, var(--accent)); white-space: nowrap; }
+.today-allday button { border: 0; background: none; color: var(--accent-text, var(--accent)); cursor: pointer; padding: 0; font: inherit; text-align: left; }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -5261,6 +5269,10 @@ dialog[tabindex="-1"]:focus { outline: none; }
           <div><div>Notifications</div><div class="desc" id="notifStatus"></div></div>
           <input type="checkbox" id="setNotify" aria-label="Notifications">
         </div>
+        <div class="setting" data-k="all day all-day reminders alert time morning when">
+          <div><div>All-day reminders</div><div class="desc">They alert once at this time, or when you first open the app that day</div></div>
+          <ui-time id="setAllDayAt" required aria-label="All-day reminders alert at"></ui-time>
+        </div>
         <div class="setting" data-k="pomeo talks speech quiet often">
           <div><div>Pomeo talks</div><div class="desc">Taps and reminders always get an answer</div></div>
           <ui-select id="setPomeoTalk" aria-label="Pomeo talks"><option value="often">Often</option><option value="sometimes">Sometimes</option><option value="quiet">Quiet</option></ui-select>
@@ -5499,11 +5511,12 @@ dialog[tabindex="-1"]:focus { outline: none; }
     <div class="rform">
       <div class="full"><label class="field" for="remTitle">Title</label><input type="text" id="remTitle" maxlength="80" placeholder="e.g. Physics revision" autocomplete="off"></div>
       <div><label class="field" for="remDate" id="remDateLbl">Date</label><ui-date id="remDate"></ui-date></div>
-      <div><label class="field" for="remTime">Time</label><ui-time id="remTime"></ui-time></div>
+      <div><div class="rm-timehead"><label class="field" for="remTime">Time</label><label class="rm-allday" id="remAllDayLbl"><input type="checkbox" data-check id="remAllDay"><span>All day</span></label></div>
+        <ui-time id="remTime"></ui-time><div class="rm-ro hidden" id="remAllNote">No set time</div></div>
       <div><label class="field" for="remRepeat">Repeat</label>
         <ui-select id="remRepeat"><option value="none">Doesn’t repeat</option><option value="daily">Every day</option><option value="weekdays">Weekdays (Mon–Fri)</option><option value="weekly">Weekly on…</option><option value="revision">Revision plan (spaced)</option></ui-select></div>
-      <div><label class="field" for="remBefore">Remind me</label>
-        <ui-select id="remBefore"><option value="0">At the time</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option><option value="30">30 min before</option></ui-select></div>
+      <div id="remBeforeWrap"><label class="field" for="remBefore">Remind me</label>
+        <ui-select id="remBefore"><option value="0">At the time</option><option value="5">5 min before</option><option value="10">10 min before</option><option value="15">15 min before</option><option value="30">30 min before</option></ui-select><div class="rm-ro hidden" id="remAllAt"></div></div>
       <div class="full hidden" id="remDaysWrap"><span class="field">On these days</span>
         <div class="daychips" id="remDays"><label><input type="checkbox" value="1"><span>Mon</span></label><label><input type="checkbox" value="2"><span>Tue</span></label><label><input type="checkbox" value="3"><span>Wed</span></label><label><input type="checkbox" value="4"><span>Thu</span></label><label><input type="checkbox" value="5"><span>Fri</span></label><label><input type="checkbox" value="6"><span>Sat</span></label><label><input type="checkbox" value="0"><span>Sun</span></label></div></div>
       <div><label class="field" for="remPreset">Timer preset (optional)</label><ui-select id="remPreset" kind="preset-compact" placeholder="No timer link"></ui-select></div>
@@ -7713,7 +7726,8 @@ function defaultState() {
                 shareActivity: true, shareNames: true, globalBoard: false,
                 pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, shopDot: true, dailyTip: true,
                 bossMode: 'solo', shortcuts: true, revIntervals: [1, 3, 7, 21, 45],
-                minPomeo: true, energy: 'always', useCase: '', atmosphere: true, ripen: true, festive: true, todRain: false },
+                minPomeo: true, energy: 'always', useCase: '', atmosphere: true, ripen: true, festive: true, todRain: false,
+                allDayAt: '08:00' },   // when all-day reminders alert (v2.0)
     presets: [
       { id: 'p-classic', name: 'Classic 25/5',    focus: 25, short: 5,  long: 15, rounds: 4 },
       { id: 'p-deep',    name: 'Deep Work 50/10', focus: 50, short: 10, long: 20, rounds: 3 },
@@ -9389,6 +9403,7 @@ function renderSettings() {
   $('#setTheme').value = st.theme;
   $('#setSound').checked = st.sound;
   $('#setNotify').checked = st.notify;
+  $('#setAllDayAt').value = allDayAt();
   $('#setAuto').checked = st.autoStart;
   $('#setOvertime').checked = st.overtime !== false;
   $('#setMinimal').checked = minimal();
@@ -13263,7 +13278,7 @@ setInterval(pomeoNightCheck, 60000);
    live in localStorage with everything else.
    { id, title, date 'YYYY-MM-DD', time 'HH:MM', repeat none|daily|weekdays|weekly,
      days [0-6], before 0|5|10|15|30, presetId, session, done {day: ts}, snooze {day: ts},
-     created, updated }
+     created, updated, allDay true (optional, v2.0: no time; `time` then holds the alert time it was saved with) }
    Honest limit: a web page can only alert while it is open (a background tab
    is fine). "Add to calendar" lets the phone's own calendar remind you too.
    ========================================================================== */
@@ -13277,7 +13292,15 @@ const TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const TICK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 
 const parseDay = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d); };
-const remAt = (r, day) => { const [h, mi] = r.time.split(':').map(Number); const d = new Date(day); d.setHours(h, mi, 0, 0); return d.getTime(); };
+/** All-day reminders (v2.0): `allDay: true`, no time of their own. They alert once, at the time chosen in Settings (8:00
+ *  unless changed) or the first time the app is open after it that day. `time` stays a valid HH:MM, so an older version of
+ *  the app on another device shows the reminder as an ordinary one at that time instead of failing on it. */
+const allDayAt = () => (/^([01]\d|2[0-3]):[0-5]\d$/.test(S.settings.allDayAt || '') ? S.settings.allDayAt : '08:00');
+const remAt = (r, day) => { const [h, mi] = (r.allDay ? allDayAt() : r.time).split(':').map(Number); const d = new Date(day); d.setHours(h, mi, 0, 0); return d.getTime(); };
+/** When an occurrence is over ("missed" from then on): an hour after its time; the end of its day for an all-day reminder. */
+const remLate = (r, day) => (r.allDay ? addDays(startOfDay(new Date(day)), 1).getTime() : remAt(r, day) + 3600e3);
+/** The time column of a reminder: its clock time, or "All day". */
+const remClock = (r, at) => (r.allDay ? 'All day' : fmtHM(at));
 function remOnDay(r, day) {
   const k = dayKey(day);
   if (r.repeat === 'none') return k === r.date;
@@ -13323,9 +13346,9 @@ function checkReminders() {
       const k = dayKey(day), at = remAt(r, day);
       if (remDone(r, k)) continue;
       const snoozed = r.snooze && r.snooze[k];
-      const alertAt = snoozed || at - (r.before || 0) * 60000;
-      if (now < alertAt || now > at + 60 * 60000) continue;    // too early, or more than an hour late (shown as missed)
-      const key = `${r.id}@${k}@${alertAt}`;
+      const alertAt = snoozed || (r.allDay ? at : at - (r.before || 0) * 60000);
+      if (now < alertAt || now >= remLate(r, day)) continue;    // too early, or more than an hour late (shown as missed); an all-day one alerts until its day ends: the first time the app is open
+      const key = `${r.id}@${k}@${r.allDay && !snoozed ? 'allday' : alertAt}`;   // all day: one alert a day, whatever alert time is set (changing it must not ring again)
       if (remFired.has(key) || (S.remFired || {})[key]) continue;   // rang here, or on another device
       remFired.add(key);
       writeLS(REM_FIRED_KEY, [...remFired].slice(-200));
@@ -13344,9 +13367,9 @@ function playReminderChime() {
 function fireReminder(r, day, at) {
   const mins = Math.round((at - Date.now()) / 60000);
   const what = r.rev ? `Revision of ${r.rev.topic}` : r.title;
-  const text = mins >= 1 ? `${what} in ${mins} minute${mins === 1 ? '' : 's'}! Ready?` : r.rev ? `Time to revise ${r.rev.topic}! Ready?` : `Time for ${r.title}! Ready?`;
+  const text = r.allDay ? `For today: ${r.title}` : mins >= 1 ? `${what} in ${mins} minute${mins === 1 ? '' : 's'}! Ready?` : r.rev ? `Time to revise ${r.rev.topic}! Ready?` : `Time for ${r.title}! Ready?`;
   showPomeoPop(r, day, text);
-  inboxAdd({ type: 'reminder', key: `rem:${r.id}@${day}@${at}`, title: text, body: fmtDayShort(day) + ' · ' + fmtHM(at), go: { tab: 'reminders' } });
+  inboxAdd({ type: 'reminder', key: `rem:${r.id}@${day}@${r.allDay ? 'allday' : at}`, title: text, body: fmtDayShort(day) + ' · ' + remClock(r, at), go: { tab: 'reminders' } });
   playReminderChime();
   if ('Notification' in window && Notification.permission === 'granted' && S.settings.notify) {
     try {
@@ -13416,9 +13439,9 @@ function startFromReminder(r) {
 
 /* ---------- The Reminders tab ---------- */
 function remRow(r, day, { time, sub, done, missed } = {}) {
-  const meta = [remRepeatText(r), r.before ? `${r.before} min before` : 'At the time',
+  const meta = [remRepeatText(r), r.allDay ? '' : r.before ? `${r.before} min before` : 'At the time',
     r.presetId && S.presets.find(p => p.id === r.presetId) ? S.presets.find(p => p.id === r.presetId).name : ''].filter(Boolean);
-  return `<li class="rem${done ? ' done' : ''}" data-rid="${esc(r.id)}" data-day="${day}">
+  return `<li class="rem${done ? ' done' : ''}${r.allDay ? ' allday' : ''}" data-rid="${esc(r.id)}" data-day="${day}">
     <div class="rem-bg"><span class="l">✓ Done</span><span class="r">Delete</span></div>
     <div class="rem-fg">
       <button class="rem-check" data-rdone aria-label="${done ? 'Mark as not done' : 'Mark as done'}">${TICK_SVG}</button>
@@ -13439,7 +13462,7 @@ function remLists() {
     if (r.repeat === 'none') {
       const at = remAt(r, parseDay(r.date));
       if (remDone(r, r.date)) completed.push({ r, day: r.date, at, sort: r.done[r.date] });
-      else if (r.date === tk) todayL.push({ r, day: tk, at, missed: at < now - 3600e3 ? 'Missed' : '' });
+      else if (r.date === tk) todayL.push({ r, day: tk, at, missed: +now >= remLate(r, today) ? 'Missed' : '' });
       else if (r.date < tk) todayL.push({ r, day: r.date, at, missed: 'Missed · ' + fmtDayShort(r.date) });
       else upcoming.push({ r, day: r.date, at });
       continue;
@@ -13447,13 +13470,14 @@ function remLists() {
     if (remOnDay(r, today)) {
       const at = remAt(r, today);
       if (remDone(r, tk)) completed.push({ r, day: tk, at, sort: r.done[tk], sub: 'Done today' });
-      else todayL.push({ r, day: tk, at, missed: at < now - 3600e3 ? 'Missed' : '' });
+      else todayL.push({ r, day: tk, at, missed: +now >= remLate(r, today) ? 'Missed' : '' });
     }
     const nx = remNext(r, tomorrow);
     if (nx) upcoming.push({ r, day: nx.day, at: nx.at });
   }
-  todayL.sort((a, b) => a.at - b.at);
-  upcoming.sort((a, b) => a.at - b.at);
+  const ord = o => (o.r.allDay ? parseDay(o.day).getTime() : o.at);   // an all-day reminder leads its day
+  todayL.sort((a, b) => ord(a) - ord(b));
+  upcoming.sort((a, b) => ord(a) - ord(b));
   completed.sort((a, b) => b.sort - a.sort);
   return { todayL, upcoming: upcoming.slice(0, 30), completed: completed.slice(0, 30) };
 }
@@ -13478,18 +13502,20 @@ function renderReminders() {
   const { todayL, upcoming, completed } = remLists();
   const sec = (title, rows, extra = '', empty = '') => `<div class="card rem-sec"><h2>${title}${extra}</h2>${rows.length ? `<ul class="rem-list">${rowsHTML(rows, 63.25)}</ul>` : `<div class="empty">${empty}</div>`}</div>`;
   body.innerHTML = revisionSection() + clanRemSection() +
-    sec('Today', todayL.map(o => remRow(o.r, o.day, { time: fmtHM(o.at), missed: o.missed })), '', 'Nothing left for today 🎉') +
-    sec('Upcoming', upcoming.map(o => remRow(o.r, o.day, { time: fmtHM(o.at), sub: fmtDayShort(o.day) })), '', 'Nothing scheduled yet.') +
-    (completed.length ? sec('Completed', completed.map(o => remRow(o.r, o.day, { time: fmtHM(o.at), sub: o.sub || fmtDayShort(o.day), done: true })),
+    sec('Today', todayL.map(o => remRow(o.r, o.day, { time: remClock(o.r, o.at), missed: o.missed })), '', 'Nothing left for today 🎉') +
+    sec('Upcoming', upcoming.map(o => remRow(o.r, o.day, { time: remClock(o.r, o.at), sub: fmtDayShort(o.day) })), '', 'Nothing scheduled yet.') +
+    (completed.length ? sec('Completed', completed.map(o => remRow(o.r, o.day, { time: remClock(o.r, o.at), sub: o.sub || fmtDayShort(o.day), done: true })),
       completed.some(o => o.r.repeat === 'none') ? '<button class="linkbtn" id="remClear" style="text-transform:none;letter-spacing:0">Clear</button>' : '') : '') + parkedSection();
   animateIn(body);
 }
 /** The next reminder still to come today (for the Today card). */
 function nextReminderToday() {
   const now = Date.now(), today = startOfDay(new Date()), k = dayKey(today);
-  return [...S.reminders, ...extraReminders()].filter(r => remOnDay(r, today) && !remDone(r, k)).map(r => ({ r, at: remAt(r, today) }))
+  return [...S.reminders, ...extraReminders()].filter(r => !r.allDay && remOnDay(r, today) && !remDone(r, k)).map(r => ({ r, at: remAt(r, today) }))
     .filter(o => o.at >= now - 5 * 60000).sort((a, b) => a.at - b.at)[0] || null;
 }
+/** All-day reminders still open today (they have their own line in the Today card). */
+function allDayToday() { const today = startOfDay(new Date()), k = dayKey(today); return S.reminders.filter(r => r.allDay && remOnDay(r, today) && !remDone(r, k)); }
 function renderReminderBits() {
   if (S.ui.tab === 'reminders') renderReminders();
   renderTodayExtra();
@@ -13514,6 +13540,7 @@ function openRemForm(r) {
   $('#remTitle').value = v.title;
   $('#remDate').value = v.date;
   $('#remTime').value = v.time;
+  $('#remAllDay').checked = !!v.allDay;
   $('#remRepeat').value = v.repeat;
   const rb = $('#remBefore'), bv = String(v.before ?? '');
   rb.querySelectorAll('option[data-kept]').forEach(o => o.remove());   // a lead time that is not in the list (older or imported data) gets a row of its own, so saving keeps it
@@ -13536,11 +13563,22 @@ function syncRemForm() {
   const rep = $('#remRepeat').value;
   $('#remDaysWrap').classList.toggle('hidden', rep !== 'weekly');
   $('#remDateLbl').textContent = rep === 'none' ? 'Date' : rep === 'revision' ? 'First revision' : 'Starts on';
+  // all day (v2.0): no time and no lead time; a revision plan keeps its time (its later dates are worked out from it)
+  if (rep === 'revision') $('#remAllDay').checked = false;
+  const ad = $('#remAllDay').checked;
+  $('#remAllDayLbl').classList.toggle('hidden', rep === 'revision');
+  $('#remTime').classList.toggle('hidden', ad);
+  $('#remBefore').classList.toggle('hidden', ad);
+  $('#remAllNote').classList.toggle('hidden', !ad);
+  $('#remAllAt').classList.toggle('hidden', !ad);
+  if (ad) $('#remAllAt').textContent = `At ${fmtHM(remAt({ allDay: true }, new Date()))} · set in Settings`;
 }
 $('#remRepeat').addEventListener('change', syncRemForm);
+$('#remAllDay').addEventListener('change', syncRemForm);
 $('#remForm').addEventListener('submit', e => {
   e.preventDefault();
-  const title = $('#remTitle').value.trim(), date = $('#remDate').value, time = $('#remTime').value, repeat = $('#remRepeat').value;
+  const title = $('#remTitle').value.trim(), date = $('#remDate').value, repeat = $('#remRepeat').value;
+  const allDay = $('#remAllDay').checked && repeat !== 'revision', time = allDay ? allDayAt() : $('#remTime').value;   // all day: `time` keeps the alert time, for older versions of the app
   const days = $$('#remDays input').filter(i => i.checked).map(i => +i.value);
   const err = !title ? 'Give it a title, e.g. “Physics revision”.' : !date || !time ? 'Pick a date and time.' : repeat === 'weekly' && !days.length ? 'Choose at least one day.' : '';
   if (err) { $('#remErr').textContent = err; shake($('#remForm')); return; }
@@ -13549,12 +13587,12 @@ $('#remForm').addEventListener('submit', e => {
     return;
   }
   const first = !S.reminders.length;
-  const data = { title: title.slice(0, 80), date, time, repeat, days: repeat === 'weekly' ? days : [], before: +$('#remBefore').value,
+  const data = { title: title.slice(0, 80), date, time, repeat, days: repeat === 'weekly' ? days : [], before: allDay ? 0 : +$('#remBefore').value,
     presetId: $('#remPreset').value, session: $('#remSession').value.trim().slice(0, 80), updated: Date.now() };
   let r = remEditing && remById(remEditing);
-  if (r) { const changedTime = r.date !== date || r.time !== time; Object.assign(r, data); if (changedTime) r.snooze = {}; }
-  else { r = { id: 'r' + uid(), ...data, done: {}, snooze: {}, created: Date.now() }; S.reminders.push(r); }
-  if (repeat === 'none' && remAt(r, parseDay(date)) < Date.now() - 60000 && !remEditing) toast('That time has already passed — it’s listed as missed', 3600);
+  if (r) { const changedTime = r.date !== date || r.time !== time || !!r.allDay !== allDay; Object.assign(r, data); if (allDay) r.allDay = true; else delete r.allDay; if (changedTime) r.snooze = {}; }
+  else { r = { id: 'r' + uid(), ...data, ...(allDay ? { allDay: true } : {}), done: {}, snooze: {}, created: Date.now() }; S.reminders.push(r); }
+  if (repeat === 'none' && (allDay ? date < dayKey(new Date()) : remAt(r, parseDay(date)) < Date.now() - 60000) && !remEditing) toast('That time has already passed — it’s listed as missed', 3600);
   $('#remDlg').close();
   saveReminders();
   toast(remEditing ? 'Reminder updated' : 'Reminder added', 2200, true);
@@ -13573,6 +13611,7 @@ function deleteReminder(r) {
 
 /* ---------- Calendar export (.ics download + Google Calendar link) ---------- */
 const icsDate = ts => { const d = new Date(ts); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`; };
+const icsDay = ts => { const d = new Date(ts); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`; };   // an all-day event: a date, no time
 const icsEsc = s => String(s).replace(/\\/g, '\\\\').replace(/[,;]/g, m => '\\' + m).replace(/\n/g, '\\n');
 const ICS_DAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
 function remRRule(r) {
@@ -13595,9 +13634,9 @@ function downloadIcs(r) {
   // Floating local times: the event happens at this clock time wherever the calendar is.
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Pomodorolist//Reminders//EN', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
     `UID:${r.id}@pomodorolist.app`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '')}`,
-    `DTSTART:${icsDate(start)}`, `DTEND:${icsDate(end)}`, `SUMMARY:${icsEsc(r.title)}`, `DESCRIPTION:${icsEsc(remDetails(r))}`,
+    ...(r.allDay ? [`DTSTART;VALUE=DATE:${icsDay(start)}`, `DTEND;VALUE=DATE:${icsDay(addDays(startOfDay(new Date(start)), 1))}`] : [`DTSTART:${icsDate(start)}`, `DTEND:${icsDate(end)}`]), `SUMMARY:${icsEsc(r.title)}`, `DESCRIPTION:${icsEsc(remDetails(r))}`,
     ...(rr ? ['RRULE:' + rr] : []),
-    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(r.title)}`, `TRIGGER:-PT${r.before || 0}M`, 'END:VALARM',
+    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${icsEsc(r.title)}`, r.allDay ? `TRIGGER:PT${+allDayAt().slice(0, 2)}H${+allDayAt().slice(3)}M` : `TRIGGER:-PT${r.before || 0}M`, 'END:VALARM',   // all day: the alarm counts from midnight
     'END:VEVENT', 'END:VCALENDAR'];
   const blob = new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/calendar' });
   const a = document.createElement('a');
@@ -13610,7 +13649,7 @@ function downloadIcs(r) {
 }
 function googleCalUrl(r) {
   const { start, end } = remSpan(r), rr = remRRule(r);
-  const q = new URLSearchParams({ action: 'TEMPLATE', text: r.title, dates: `${icsDate(start)}/${icsDate(end)}`, details: remDetails(r) });
+  const q = new URLSearchParams({ action: 'TEMPLATE', text: r.title, dates: r.allDay ? `${icsDay(start)}/${icsDay(addDays(startOfDay(new Date(start)), 1))}` : `${icsDate(start)}/${icsDate(end)}`, details: remDetails(r) });
   try { q.set('ctz', Intl.DateTimeFormat().resolvedOptions().timeZone); } catch (e) {}
   if (rr) q.set('recur', 'RRULE:' + rr);
   return 'https://calendar.google.com/calendar/render?' + q.toString();
@@ -13811,9 +13850,10 @@ function renderTodayExtra() {
   const k = dayKey(new Date()), e = (game().idx[k] || {});
   const n = S.sessions.filter(s => dayKey(new Date(s.start)) === k || dayKey(new Date(s.end)) === k).length;
   const left = Math.max(0, S.settings.goalMin - (e.total || 0));
-  const nx = nextReminderToday();
+  const nx = nextReminderToday(), ad = allDayToday();
   el.innerHTML = `<div><b>${n}</b> session${n === 1 ? '' : 's'} today · ${left ? `<b>${fmtMin(left)}</b> to your goal` : 'goal met ✓'}</div>` +
-    (nx ? `<div>Next reminder: <button data-goremind>${esc(nx.r.title)} · ${fmtHM(nx.at)}</button></div>` : `<div><button data-goremind>+ Plan a study block</button></div>`) + todayTodoLine() + planTodayLine() + clanTodayLine();
+    (nx ? `<div>Next reminder: <button data-goremind>${esc(nx.r.title)} · ${fmtHM(nx.at)}</button></div>` : `<div><button data-goremind>+ Plan a study block</button></div>`) +
+    (ad.length ? `<div class="today-allday">All day: <button data-goremind>${ad.length === 1 ? esc(ad[0].title) : `${ad.length} reminders`}</button></div>` : '') + todayTodoLine() + planTodayLine() + clanTodayLine();
 }
 /** Tasks due today (and overdue) in the Today card. */
 function todayTodoLine() {
@@ -18566,8 +18606,9 @@ function ibRefresh() {
   for (const r of [...S.reminders, ...extraReminders()]) for (const day of [addDays(today, -1), today]) {
     if (!remOnDay(r, day)) continue;
     const k = dayKey(day), at = remAt(r, day);
-    if (remDone(r, k) || now < at + 3600e3) continue;
-    inboxAdd({ type: 'missed', key: `miss:${r.id}@${k}`, title: `Missed: ${r.title}`, body: `${fmtDayShort(k)} · ${fmtHM(at)}`, go: { tab: 'reminders' }, at: at + 3600e3 });
+    const late = remLate(r, day);
+    if (remDone(r, k) || now < late) continue;
+    inboxAdd({ type: 'missed', key: `miss:${r.id}@${k}`, title: `Missed: ${r.title}`, body: `${fmtDayShort(k)} · ${remClock(r, at)}`, go: { tab: 'reminders' }, at: late });
   }
   if (loginOn()) {
     const li = loginToday();
@@ -21230,6 +21271,13 @@ $('#tab-shop').addEventListener('click', e => {
 $('#tab-shop').addEventListener('input', e => { if (e.target.id === 'shopAmbVol') setAmbientVolume(e.target.value); });
 $('#lvClose').addEventListener('click', () => $('#levelDlg').close());
 $('#levelDlg').addEventListener('click', e => { if (e.target.id === 'levelDlg') $('#levelDlg').close(); });
+$('#setAllDayAt').addEventListener('change', e => {
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(e.target.value)) { e.target.value = allDayAt(); return; }   // cleared: keep the time there was
+  S.settings.allDayAt = e.target.value;
+  save();
+  renderReminderBits();
+  checkReminders();
+});
 $('#setNotify').addEventListener('change', e => {
   S.settings.notify = e.target.checked;
   save();

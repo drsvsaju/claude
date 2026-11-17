@@ -32,7 +32,11 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   keyboard), the year heatmap in week columns, the page still behind a dialog, focus after a dialog closes, keyboard
   reach, one heading per section, names for charts and fields, every ink × theme pair at 4.5:1, 44 px phone targets, the two tinted fills the run over every theme found, and the
   garden's state after a cloud copy that changes nothing (the stale-cache bug behind v115b's failures in full runs).
-  Suites named `v2*`, `v3*` and `v4*` run without `ot-classic.mjs`.
+  Suites named `v2*`, `v3*`, `v4*` and `v5*` run without `ot-classic.mjs`.
+- `v500a.mjs` (v2.0 phase 5): all-day reminders on two devices and a phone — the form (the grid does not move when
+  "All day" is switched), a valid `time` kept for older versions, one alert at the chosen time or on the first open
+  after it, snooze, a changed alert time not ringing twice, the second device staying quiet, repeats, done, missed,
+  the dated calendar event (.ics and Google), the setting, and back to a timed reminder.
 - `perf4.mjs` (phase 4): the numbers — `node perf4.mjs index.html [--big] [--phone] [--throttle 4] [--tag name]` prints
   one JSON line (start-up, every tab switch, the slowest interactions by Event Timing, frame rate, DOM size);
   `tools/perf4sum.py before.jsonl after.jsonl` makes the table. `--big` loads `tools/bigacct.js`, which turns the demo

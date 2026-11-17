@@ -17,7 +17,7 @@ verdict() {
 FAILED=''
 daytz() { H=$(date -u +%H); H=${H#0}; if [ "$H" -lt 8 ]; then echo "Etc/GMT-$((12 - H))"; elif [ "$H" -gt 19 ]; then echo "Etc/GMT+$((H - 12))"; else echo UTC; fi; }
 for t in "$@"; do
-  case $t in v120*|v2*|v3*|v4*) PRE='--import ./ui-compat.mjs' ;; *) PRE='--import ./ui-compat.mjs --import ./ot-classic.mjs' ;; esac   # ui-compat: selectOption / fill / dialog handlers also drive the app's own controls (v2.0)
+  case $t in v120*|v2*|v3*|v4*|v5*) PRE='--import ./ui-compat.mjs' ;; *) PRE='--import ./ui-compat.mjs --import ./ot-classic.mjs' ;; esac   # ui-compat: selectOption / fill / dialog handlers also drive the app's own controls (v2.0)
   TZ=$(daytz) timeout 1500 node $PRE $t.mjs > out-$t.txt 2>&1   # v1.20: classic suites keep Overtime off (ot-classic.mjs)
   e=$?; v=$(verdict $e out-$t.txt); [ $v = FAIL ] && FAILED="$FAILED $t"
   echo "$t $v exit=$e $(grep -c '^✗' out-$t.txt)✗ $(grep -o "errors \[.*" out-$t.txt | tail -1 | cut -c1-120)"
