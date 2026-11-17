@@ -131,6 +131,7 @@ const set = await A.ev(async () => {
   const sl = ms => new Promise(r => setTimeout(r, ms)), out = {};
   showTab('settings'); await sl(400);
   const el = $('#setAllDayAt'); out.shown = el.value; out.named = !!el.getAttribute('aria-label');
+  { const row = el.closest('.setting'), c = el.getBoundingClientRect(), l = row.firstElementChild.getBoundingClientRect(), o = $('#setPomeoTalk').getBoundingClientRect(); out.layout = { ctl: Math.round(c.width), label: Math.round(l.width), row: Math.round(row.getBoundingClientRect().height), aligned: Math.abs(c.right - o.right) < 1.5 }; }   // (the first version let the control take the row: the label wrapped a word a line)
   el.value = '07:30'; el.dispatchEvent(new Event('change', { bubbles: true })); await sl(200);
   out.stored = S.settings.allDayAt;
   el.value = ''; el.dispatchEvent(new Event('change', { bubbles: true })); await sl(100);
@@ -143,8 +144,8 @@ const set = await A.ev(async () => {
   out.after = { has: 'allDay' in r, time: r.time, before: r.before };
   return out;
 });
-check('Settings has “All-day reminders” with its time (named for screen readers); a new time is stored, an emptied field keeps the time there was, a broken value falls back to 8:00',
-  set.shown === '00:02' && set.named && set.stored === '07:30' && set.afterClear[0] === '07:30' && set.afterClear[1] === '07:30' && set.fallback === '08:00', JSON.stringify(set));
+check('Settings has “All-day reminders” with its time (named for screen readers), laid out like its neighbours (the label has the row, the control its own width at the right edge); a new time is stored, an emptied field keeps the time there was, a broken value falls back to 8:00',
+  set.shown === '00:02' && set.named && set.layout.ctl <= 200 && set.layout.label >= 200 && set.layout.row <= 90 && set.layout.aligned && set.stored === '07:30' && set.afterClear[0] === '07:30' && set.afterClear[1] === '07:30' && set.fallback === '08:00', JSON.stringify(set));
 check('Editing: the form opens with “All day” on and the new alert time in its note; turned off, the reminder is an ordinary timed one again (no allDay field left)',
   set.editChecked === true && /7:30/.test(set.note) && set.after.has === false && set.after.time === '17:15', JSON.stringify({ note: set.note, after: set.after }));
 

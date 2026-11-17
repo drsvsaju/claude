@@ -51,6 +51,10 @@ const month = await A.ev(dd => {
   const out = { title: $('#calTitle').textContent, cells: document.querySelectorAll('#calBody .cal-day').length, heads: [...document.querySelectorAll('#calBody .cal-wd span')].map(s => s.textContent), role: $('#calBody .cal-month').getAttribute('role') };
   out.d0 = chips(dd[0]); out.d1 = chips(dd[1]); out.d2 = chips(dd[2]); out.d3 = chips(dd[3]); out.d4 = chips(dd[4]); out.more = (cell(dd[4]).querySelector('.cd-more') || {}).textContent; out.d5 = chips(dd[5]);
   out.label = cell(dd[1]).getAttribute('aria-label'); out.tabstops = document.querySelectorAll('#calBody .cal-day[tabindex="0"]').length; out.chipTab = [...document.querySelectorAll('#calBody .cal-chip')].every(c => c.tabIndex === -1);
+  // an everyday thing (a daily reminder) comes after what is particular to the day, drawn quietly, and never pushes a particular thing into "+N more"
+  S.reminders.push({ id: 'rEvery', title: 'Everyday habit', date: dd[-7], time: '06:00', repeat: 'daily', days: [], before: 0, presetId: '', session: '', done: {}, snooze: {}, created: Date.now(), updated: Date.now() }); renderCalendar();
+  out.rt0 = chips(dd[0]).map(c => c[1]); out.rtCls = [...cell(dd[0]).querySelectorAll('.cal-chip')].map(c => c.classList.contains('rt')); out.rt1 = chips(dd[1]).map(c => c[1]); out.rt1more = (cell(dd[1]).querySelector('.cd-more') || {}).textContent;
+  S.reminders = S.reminders.filter(r => r.id !== 'rEvery'); renderCalendar();
   S.settings.weekStart = 0; renderCalendar(); out.sunFirst = document.querySelector('#calBody .cal-wd span').textContent; S.settings.weekStart = 1; renderCalendar();
   return out;
 }, D.d);
@@ -61,6 +65,8 @@ check('…every kind sits in its day: a timed reminder with its time, an all-day
   month.d1.length === 3 && month.d1[0][1] === 'All-day form' && month.d1[1][0] === 'k-block' && /^5pm\s*Block chem$/.test(month.d1[1][1]) &&
   month.d2.some(c => /Weekly mock/.test(c[1]) && c[3] === false) && month.d3.length === 2 && month.d3.every(c => c[0] === 'k-todo') && month.d3.some(c => c[2]) &&
   month.d4.length === 2 && month.more === '+3 more' && month.d5[0][0] === 'k-exam', JSON.stringify(month));
+check('…an everyday thing (a daily reminder) comes after what is particular to the day and is marked quiet; on a full day it is the one that goes under “+N more”',
+  month.rt0.length === 2 && /Timed physics/.test(month.rt0[0]) && /Everyday habit/.test(month.rt0[1]) && month.rtCls.join() === 'false,true' && month.rt1.length === 2 && !month.rt1.some(t => /Everyday/.test(t)) && month.rt1more === '+2 more', JSON.stringify({ d0: month.rt0, cls: month.rtCls, d1: month.rt1, more: month.rt1more }));
 check('…a day says what it holds to a screen reader, the grid is one tab stop (arrow keys move inside it) and chips are not extra stops',
   /All-day form|3 items/.test(month.label) && /3 items/.test(month.label) && month.tabstops === 1 && month.chipTab, JSON.stringify({ label: month.label, stops: month.tabstops }));
 
@@ -184,13 +190,13 @@ const hist = await A.ev(async () => {
   save();
   const it = calItems(addDays(today, -5), addDays(today, 1)), out = { past: Object.entries(it).filter(([d]) => d < k(0)).map(([d, l]) => [d === k(-2) ? -2 : d === k(-3) ? -3 : d, l.map(x => x.title + (x.done ? ' ✓' : ''))]), today: (it[k(0)] || []).map(x => x.title), tomorrow: (it[k(1)] || []).map(x => x.title) };
   S.ui.calView = 'month'; CAL.anchor = today; CAL.focus = ''; showTab('calendar'); renderCalendar(); await sl(300);
-  const cell = document.querySelector('#calBody .cal-day.today'); out.cell = cell && { heat: [...cell.classList].find(c => /^h\d$/.test(c)), focus: (cell.querySelector('.cd-f') || {}).textContent, label: cell.getAttribute('aria-label'), isToday: cell.dataset.day === k(0) };
+  const cell = document.querySelector('#calBody .cal-day.today'); out.cell = cell && { heat: [...cell.classList].find(c => /^h\d$/.test(c)), focus: (cell.querySelector('.cd-f .f-l') || {}).textContent, short: (cell.querySelector('.cd-f .f-s') || {}).textContent, label: cell.getAttribute('aria-label'), isToday: cell.dataset.day === k(0) };
   out.tintDiffers = getComputedStyle(cell).backgroundColor !== getComputedStyle(document.querySelector('#calBody .cal-day.h0') || document.body).backgroundColor;
   return out;
 });
 check('The past keeps what happened: a daily reminder’s old days show only where it was done, a one-off that was missed stays on its day; today and tomorrow have the daily one',
   hist.past.length === 2 && hist.past.some(p => p[0] === -2 && p[1].join() === 'Daily habit ✓') && hist.past.some(p => p[0] === -3 && p[1].join() === 'One-off, missed') && hist.today.includes('Daily habit') && hist.tomorrow.includes('Daily habit'), JSON.stringify(hist.past));
-check('A day’s focus tints it (deeper with the time, by the daily goal) and is written on it and said in its name', !!hist.cell && hist.cell.isToday && /^h[1-4]$/.test(hist.cell.heat) && hist.cell.focus === '30m' && /30m of focus/.test(hist.cell.label) && hist.tintDiffers, JSON.stringify(hist.cell));
+check('A day’s focus tints it (deeper with the time, by the daily goal) and is written on it and said in its name', !!hist.cell && hist.cell.isToday && /^h[1-4]$/.test(hist.cell.heat) && hist.cell.focus === '30m' && hist.cell.short === '30m' && /30m of focus/.test(hist.cell.label) && hist.tintDiffers, JSON.stringify(hist.cell));
 await until(A, () => !localEditPending, null, 8000); await wait(1500);
 const cloud = await ownerGet('users/' + uid);
 const cb = (cloud.reminders || []).find(r => r.title === 'Dragged block');

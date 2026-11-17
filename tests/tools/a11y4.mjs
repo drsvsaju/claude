@@ -31,6 +31,7 @@ const VIEWS = [
   ['clan', "showTab('clan')"], ['board', "showTab('board')"], ['shop', "showTab('shop')"], ['bag', "showTab('bag')"], ['room', "showTab('room')"], ['settings', "showTab('settings')"], ['about', "showTab('about')"],
   ['cal-month', "S.ui.calView = 'month'; CAL.anchor = null; showTab('calendar')"], ['cal-week', "S.ui.calView = 'week'; CAL.anchor = null; CAL.scroll = null; showTab('calendar')"], ['cal-agenda', "S.ui.calView = 'agenda'; CAL.anchor = null; showTab('calendar')"],
   ['dlg-day', "S.ui.calView = 'month'; showTab('calendar'); calOpenDay(todayKey())"], ['dlg-block', "showTab('calendar'); openBlockForm({})"], ['dlg-reminder-allday', "showTab('reminders'); openRemForm(); document.querySelector('#remAllDay').click()"],
+  ['pop-reminder', "showTab('timer'); showPomeoPop(S.reminders[0], todayKey(), 'For today: Hand in the chemistry record')"],
   ['dlg-presets', "showTab('timer'); document.querySelector('#managePresets').click()"], ['dlg-reminder', "showTab('reminders'); document.querySelector('#remAdd').click()"], ['dlg-inbox', "showTab('timer'); document.querySelector('#inboxBtn').click()"],
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],
 ];
@@ -80,7 +81,7 @@ for (const skin of skins) for (const mode of ['light', 'dark']) {
     try {
       await p.evaluate(() => document.querySelectorAll('dialog[open]').forEach(d => d.close()));
       // the theme is applied again after every switch: leaving the Bag ends a theme preview and goes back to the account's own look
-      await p.evaluate(([c, skin, mode]) => { (0, eval)(c); themePreviewId = skin === 'th_default' ? '' : skin; applyTheme(mode); scrollTo(0, 0); }, [code, skin, mode]); await wait(name.startsWith('dlg') ? 500 : 350);
+      await p.evaluate(([c, skin, mode]) => { if (typeof closePop === 'function') closePop(); (0, eval)(c); themePreviewId = skin === 'th_default' ? '' : skin; applyTheme(mode); scrollTo(0, 0); }, [code, skin, mode]); await wait(name.startsWith('dlg') ? 500 : 350);
       const applied = await p.evaluate(() => document.documentElement.getAttribute('data-theme'));
       if (applied && applied !== mode) { console.log('mode not applied', skin, mode, name); continue; }
       await p.evaluate(() => typeof rowsFill === 'function' && rowsFill(true));

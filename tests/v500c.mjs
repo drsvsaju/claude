@@ -71,7 +71,7 @@ const ph = await PH.ev(async () => {
   out.tab = S.ui.tab; closePop();
   S.ui.calView = 'month'; renderCalendar(); await sl(300);
   out.seg = [...document.querySelectorAll('#calSeg button')].map(x => x.textContent.trim()); out.segH = Math.min(...[...document.querySelectorAll('#calSeg button')].map(x => x.getBoundingClientRect().height));
-  const chip = document.querySelector('#calBody .cal-day .cal-chip'), cs = chip && getComputedStyle(chip); out.dot = chip && [Math.round(chip.getBoundingClientRect().width), Math.round(chip.getBoundingClientRect().height), cs.pointerEvents];
+  const chip = document.querySelector('#calBody .cal-day .cal-chip:not(.rt)'), cs = chip && getComputedStyle(chip); out.everyday = [...document.querySelectorAll('#calBody .cal-day .cal-chip.rt')].every(c => !c.getClientRects().length); out.focusShort = (document.querySelector('#calBody .cal-day .cd-f .f-s') || {}).textContent; out.dot = chip && [Math.round(chip.getBoundingClientRect().width), Math.round(chip.getBoundingClientRect().height), cs.pointerEvents];
   out.cellW = Math.round(document.querySelector('#calBody .cal-day').getBoundingClientRect().width); out.cellH = Math.round(document.querySelector('#calBody .cal-day').getBoundingClientRect().height); out.sideMonth = side();
   out.bar = ['#calPrev', '#calToday', '#calNext', '#calExport', '#calAdd'].map(s => Math.round($(s).getBoundingClientRect().height));
   return out;
@@ -84,16 +84,18 @@ const ph2 = await PH.ev(async () => {
   out.dayOpen = $('#calDayDlg').open; out.rowH = Math.min(...[...document.querySelectorAll('#calDayList .cal-row')].map(r => r.getBoundingClientRect().height)); out.addH = Math.min(...[...document.querySelectorAll('#calDayAdd button')].map(r => r.getBoundingClientRect().height));
   out.dlgSide = $('#calDayDlg').scrollWidth > $('#calDayDlg').clientWidth + 1; $('#calDayDlg').close(); await sl(400);
   S.ui.calView = 'week'; CAL.anchor = addDays(startOfDay(new Date()), 1); CAL.scroll = null; renderCalendar(); await sl(400);
+  const sd = [...document.querySelectorAll('#calBody .cw-strip .cw-sd')]; out.strip = { n: sd.length, h: Math.min(...sd.map(x => x.getBoundingClientRect().height)), w: Math.min(...sd.map(x => x.getBoundingClientRect().width)), on: sd.filter(x => x.classList.contains('on')).map(x => x.dataset.calgo).join() === dayKey(calAnchor()), head: !!document.querySelector('#calBody .cw-head') };
+  { const other = sd.find(x => !x.classList.contains('on')), k = other.dataset.calgo; other.click(); await sl(300); out.strip.went = dayKey(calAnchor()) === k && !$('#calDayDlg').open; document.querySelector('#calBody .cw-sd.on').click(); await sl(400); out.strip.opens = $('#calDayDlg').open; $('#calDayDlg').close(); await sl(400); CAL.anchor = addDays(startOfDay(new Date()), 1); renderCalendar(); await sl(300); }
   out.view = calView(); out.cols = document.querySelectorAll('#calBody .cw-col').length; out.hour = CAL_HOUR; out.evH = [...document.querySelectorAll('#calBody .cal-ev')].map(e => Math.round(e.getBoundingClientRect().height)); out.adH = [...document.querySelectorAll('#calBody .cw-ad .cal-chip')].map(e => Math.round(e.getBoundingClientRect().height)); out.sideDay = side();
   out.title = $('#calTitle').textContent;
   S.ui.calView = 'agenda'; CAL.anchor = startOfDay(new Date()); renderCalendar(); await sl(300);
   out.agH = Math.min(...[...document.querySelectorAll('#calBody .cal-row')].map(r => r.getBoundingClientRect().height)); out.sideAgenda = side(); out.cut = [...document.querySelectorAll('#calBody .cal-row .cr-n')].filter(n => n.getBoundingClientRect().width < 60).length;
   return out;
 });
-check('Phone: Calendar is in the More list; the views are Month, Day and Agenda; in the Month a day’s items are dots (the day itself is the target, wider than 44 px) and every control of the bar is 44 px',
-  ph.inMore && ph.tab === 'calendar' && ph.seg.join() === 'Month,Day,Agenda' && ph.segH >= 44 && !!ph.dot && ph.dot[0] <= 8 && ph.dot[1] <= 8 && ph.dot[2] === 'none' && ph.cellW >= 44 && ph.cellH >= 44 && ph.bar.every(h => h >= 44) && !ph.sideMonth, JSON.stringify(ph));
-check('…a tap on a day opens it with rows and add buttons of 44 px; the Day view is one column with taller hours so every timed item is 44 px; Agenda rows are 44 px; nothing scrolls sideways',
-  ph2.dayOpen && ph2.rowH >= 44 && ph2.addH >= 44 && !ph2.dlgSide && ph2.view === 'day' && ph2.cols === 1 && ph2.hour === 60 && ph2.evH.length >= 1 && ph2.evH.every(h => h >= 44) && ph2.adH.every(h => h >= 44) && !ph2.sideDay && ph2.agH >= 44 && !ph2.sideAgenda && ph2.cut === 0, JSON.stringify(ph2));
+check('Phone: Calendar is in the More list; the views are Month, Day and Agenda; in the Month a day’s items are dots (none for everyday things), its focus is written short, the day itself is the target (wider than 44 px) and every control of the bar is 44 px',
+  ph.inMore && ph.tab === 'calendar' && ph.seg.join() === 'Month,Day,Agenda' && ph.segH >= 44 && ph.everyday && /^\d+(\.5)?h$|^\d+m$/.test(ph.focusShort || '') && !!ph.dot && ph.dot[0] <= 8 && ph.dot[1] <= 8 && ph.dot[2] === 'none' && ph.cellW >= 44 && ph.cellH >= 44 && ph.bar.every(h => h >= 44) && !ph.sideMonth, JSON.stringify(ph));
+check('…a tap on a day opens it with rows and add buttons of 44 px; the Day view has the week as a strip of seven 44 px days (a tap goes to that day, a tap on the day shown opens it) over one column with taller hours so every timed item is 44 px; Agenda rows are 44 px; nothing scrolls sideways',
+  ph2.dayOpen && ph2.rowH >= 44 && ph2.addH >= 44 && !ph2.dlgSide && ph2.strip.n === 7 && ph2.strip.h >= 44 && ph2.strip.w >= 44 && ph2.strip.on && !ph2.strip.head && ph2.strip.went && ph2.strip.opens && ph2.view === 'day' && ph2.cols === 1 && ph2.hour === 60 && ph2.evH.length >= 1 && ph2.evH.every(h => h >= 44) && ph2.adH.every(h => h >= 44) && !ph2.sideDay && ph2.agH >= 44 && !ph2.sideAgenda && ph2.cut === 0, JSON.stringify(ph2));
 
 // ---------- 3. a guest on a phone: plans a block, moves it with a finger, and it is still there after a reload ----------
 const G = await page(390, 844, 'guest');

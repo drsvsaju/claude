@@ -59,7 +59,7 @@ for (const [name, code] of VIEWS) {
         const r = el.getBoundingClientRect(), a = getComputedStyle(el, '::after'), on = a.content !== 'none' && a.position === 'absolute', neg = v => (on ? Math.max(0, -(parseFloat(v) || 0)) : 0);   // a target enlarged by an invisible ::after
         const w = r.width + neg(a.left) + neg(a.right), h = r.height + neg(a.top) + neg(a.bottom), inline = getComputedStyle(el).display === 'inline' && el.tagName === 'A';
         const inStepper = el.matches('input') && el.closest('ui-num');   // the number between a stepper's − and + (those are the targets; the field is as tall as they are)
-        if (!inline && !inStepper && (w < 43.5 || h < 43.5) && !(el.matches('input[type="checkbox"], input[type="radio"]') && el.closest('label')) && !el.closest('label.sw, .sw')) out.push(['target under 44 px', sig(el), `${Math.round(w)}×${Math.round(h)}`]);
+        if (!inline && !inStepper && getComputedStyle(el).pointerEvents !== 'none' && (w < 43.5 || h < 43.5) && !(el.matches('input[type="checkbox"], input[type="radio"]') && el.closest('label')) && !el.closest('label.sw, .sw')) out.push(['target under 44 px', sig(el), `${Math.round(w)}×${Math.round(h)}`]);
       }
     }
     // things that act on a click but cannot be reached by keyboard: a pointer cursor on something that is not focusable, has no focusable ancestor and no focusable child

@@ -508,7 +508,7 @@ input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent);
 .setting { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line); }
 .setting:first-of-type { border-top: 0; padding-top: 4px; }
 .desc { font-size: 12px; color: var(--muted); }
-.setting ui-select { width: 140px; flex: none; }
+.setting ui-select, .setting ui-time { width: 140px; flex: none; }
 .btn-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .acct-name { font-weight: 600; word-break: break-all; }
 
@@ -4597,7 +4597,8 @@ dialog[tabindex="-1"]:focus { outline: none; }
 .rm-allday { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--t-1, var(--text)); cursor: pointer; }
 .rm-allday input { flex: none; }
 .rm-ro { display: flex; align-items: center; min-height: var(--ctl-h, 40px); padding: 0 12px; border-radius: var(--r-8, 8px); background: var(--hover); color: var(--t-2, var(--muted)); font-size: 14px; }   /* what a control would say, where the control is not needed */
-.rem.allday .rtime { font-size: 12.5px; letter-spacing: .01em; color: var(--accent-text, var(--accent)); white-space: nowrap; }
+.rem.allday .rtime { white-space: nowrap; }   /* "All day" stands where a time stands, and looks like one */
+.rem.allday .rt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }   /* no second line of details: the title may use it */
 .today-allday button { border: 0; background: none; color: var(--accent-text, var(--accent)); cursor: pointer; padding: 0; font: inherit; text-align: left; }
 /* ----- v2.0 phase 5: Calendar ----- */
 .cal-head { gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -4610,13 +4611,18 @@ dialog[tabindex="-1"]:focus { outline: none; }
 .cal-legend { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--t-2, var(--muted)); }
 .cal-legend span:first-child { margin-right: 3px; }
 .cal-legend span:last-child { margin-left: 3px; }
-.cal-legend i { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--line); }
+.cal-legend i { width: 14px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--ctl-bd, var(--muted)); }
 /* a day's focus: the accent, deeper with the time (the text on it stays the text colour, and the accent used as text
    is worked out to be readable on a 20 % accent surface) */
-.cal-legend .h1, .cal-day.h1, .cw-ad.h1 { background-color: color-mix(in srgb, var(--accent) 4%, transparent); }
-.cal-legend .h2, .cal-day.h2, .cw-ad.h2 { background-color: color-mix(in srgb, var(--accent) 7%, transparent); }
-.cal-legend .h3, .cal-day.h3, .cw-ad.h3 { background-color: color-mix(in srgb, var(--accent) 11%, transparent); }
-.cal-legend .h4, .cal-day.h4, .cw-ad.h4 { background-color: color-mix(in srgb, var(--accent) 16%, transparent); }
+.cal-day.h1, .cw-dh.h1 { background-color: color-mix(in srgb, var(--accent) 4%, transparent); }
+.cal-day.h2, .cw-dh.h2 { background-color: color-mix(in srgb, var(--accent) 7%, transparent); }
+.cal-day.h3, .cw-dh.h3 { background-color: color-mix(in srgb, var(--accent) 11%, transparent); }
+.cal-day.h4, .cw-dh.h4 { background-color: color-mix(in srgb, var(--accent) 16%, transparent); }
+/* the key: the same steps, a little stronger so four small squares can be told apart */
+.cal-legend .h1 { background-color: color-mix(in srgb, var(--accent) 10%, transparent); }
+.cal-legend .h2 { background-color: color-mix(in srgb, var(--accent) 24%, transparent); }
+.cal-legend .h3 { background-color: color-mix(in srgb, var(--accent) 42%, transparent); }
+.cal-legend .h4 { background-color: color-mix(in srgb, var(--accent) 64%, transparent); }
 .cal-hint { margin: 10px 4px 0; }
 @media (hover: none) { .cal-hint { display: none; } }
 
@@ -4628,10 +4634,11 @@ dialog[tabindex="-1"]:focus { outline: none; }
 .cc-i svg { width: 12px; height: 12px; }
 .cc-t { flex: none; font-variant-numeric: tabular-nums; font-weight: 600; }
 .cc-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cal-chip.k-rem, .cal-ev.k-rem, .cal-chip.k-rev, .cal-ev.k-rev { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent-text, var(--accent)); }
+.cal-chip.k-rem, .cal-ev.k-rem, .cal-chip.k-rev, .cal-ev.k-rev { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--accent-text, var(--accent)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 36%, transparent); }   /* the edge keeps it apart from a tinted day */
 .cal-chip.k-block, .cal-ev.k-block { background: var(--accent-fill, var(--accent)); color: var(--on-accent, #fff); }
-.cal-chip.k-todo, .cal-ev.k-todo { background: var(--surface); box-shadow: inset 0 0 0 1px var(--ctl-bd, var(--muted)); }
-.cal-chip.k-exam, .cal-ev.k-exam { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); color: var(--danger-text, var(--danger)); }
+.cal-chip.k-todo, .cal-ev.k-todo { background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-1, var(--text)) 20%, transparent); }   /* a quiet edge: a control's border made it look like a text field */
+.cal-chip.k-exam, .cal-ev.k-exam { background: var(--danger-fill, var(--danger)); color: var(--on-danger, #fff); font-weight: 600; }   /* the date that matters most is the strongest chip */
+.cal-chip.rt { background: none; box-shadow: none; color: var(--t-2, var(--muted)); }   /* an everyday thing: there, and quiet */
 .cal-chip.k-event, .cal-ev.k-event { background: color-mix(in srgb, var(--warn) 16%, var(--surface)); color: var(--warn-text, var(--warn)); }
 .cal-chip.done, .cal-ev.done { background: color-mix(in srgb, var(--t-1, var(--text)) 6%, var(--surface)); color: var(--t-2, var(--muted)); box-shadow: none; }
 .cal-chip.done .cc-n, .cal-ev.done .ce-n, .cal-row.done .cr-n { text-decoration: line-through; }
@@ -4646,7 +4653,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .cal-wd { border-top: 1px solid var(--line); }
 .cal-wd span { padding: 8px 10px 7px; font-size: 12px; font-weight: 600; color: var(--t-2, var(--muted)); }
 .cal-week { border-top: 1px solid var(--line); }
-.cal-day { position: relative; min-width: 0; min-height: 104px; padding: 6px 6px 8px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
+.cal-day { position: relative; min-width: 0; min-height: 76px; padding: 6px 6px 8px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
 .cal-day:first-child { border-left: 0; }
 .cal-day:hover { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 32%, transparent); }
 .cal-day:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: -2px; }
@@ -4654,9 +4661,9 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .cd-top { display: flex; align-items: center; justify-content: space-between; gap: 4px; min-height: 24px; flex: none; }
 .cd-n { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 999px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--t-1, var(--text)); }
 .cal-day.out .cd-n { color: var(--t-2, var(--muted)); font-weight: 500; }
-.cal-day.out .cal-chip { opacity: .72; }
 .cal-day.today .cd-n, .cw-dh.today .cw-dn { background: var(--accent-fill, var(--accent)); color: var(--on-accent, #fff); }
-.cd-f { font-size: 11.5px; font-weight: 600; color: var(--accent-text, var(--accent)); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cd-f { font-size: 11.5px; font-weight: 600; color: color-mix(in srgb, var(--accent-text, var(--accent)) 70%, var(--t-1, var(--text))); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cd-f .f-s { display: none; }
 .cd-more { height: 18px; flex: none; padding: 0 7px; border: 0; background: none; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--t-2, var(--muted)); text-align: left; cursor: pointer; border-radius: 6px; }
 .cd-more:hover { color: var(--t-1, var(--text)); background: var(--hover); }
 
@@ -4665,7 +4672,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .cw-head, .cw-all, .cw-grid { display: grid; grid-template-columns: var(--gut) repeat(7, minmax(0, 1fr)); }
 .cal-week-v.n1 .cw-head, .cal-week-v.n1 .cw-all, .cal-week-v.n1 .cw-grid { grid-template-columns: var(--gut) minmax(0, 1fr); }
 .cw-head { border-top: 1px solid var(--line); }
-.cw-dh { display: flex; align-items: center; justify-content: center; gap: 2px 6px; padding: 6px 4px; border-left: 1px solid var(--line); flex-wrap: wrap; min-width: 0; }
+.cw-dh { display: flex; align-items: center; justify-content: space-between; gap: 2px 6px; padding: 6px 8px 6px 4px; border-left: 1px solid var(--line); flex-wrap: wrap; min-width: 0; }
 .cw-dbtn { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 3px 6px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--t-1, var(--text)); cursor: pointer; }
 .cw-dbtn:hover { background: var(--hover); }
 .cw-wd { font-size: 12px; font-weight: 600; color: var(--t-2, var(--muted)); }
@@ -4673,7 +4680,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .cw-all { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .cw-gut { font-size: 11px; color: var(--t-2, var(--muted)); }
 .cw-all .cw-gut { display: grid; place-items: center end; padding-right: 8px; }
-.cw-ad { min-width: 0; min-height: 34px; padding: 6px 4px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; cursor: pointer; }
+.cw-ad { min-width: 0; min-height: 34px; padding: 6px 4px; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 3px; }   /* (a click on it opens the day, like the day's name above it — which is the control, and the keyboard's) */
 .cw-scroll { position: relative; max-height: min(62vh, 620px); overflow-y: auto; overscroll-behavior: contain; }
 .cw-scroll:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: -2px; }
 .cw-grid { position: relative; height: calc(24 * var(--cal-h)); }
@@ -4684,7 +4691,11 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .cw-col.today { background-color: color-mix(in srgb, var(--accent) 5%, transparent); }
 .cal-ev { position: absolute; z-index: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 3px 7px; border-radius: 7px; font-size: 12px; line-height: 1.25; overflow: hidden; outline: 1px solid var(--surface); }
 .cal-ev.short { flex-direction: row; align-items: center; gap: 6px; padding-top: 0; padding-bottom: 0; }
-.cal-ev.short .ce-t { order: -1; font-weight: 600; }   /* a short one reads like a chip: the time, then the name */
+.ce-s { display: none; margin-right: 5px; font-variant-numeric: tabular-nums; }
+.cal-ev.short .ce-t { display: none; }   /* a short one reads like a chip: icon, start, name */
+.cal-ev.short .ce-s { display: inline; }
+.cal-ev.short .ce-n { font-weight: 400; }
+.cal-ev.short .ce-s { font-weight: 600; }
 .ce-n { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .ce-n .cc-i { display: inline-grid; vertical-align: -2px; margin-right: 4px; }
 .ce-t { flex: none; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -4696,6 +4707,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 /* Agenda, and the list of one day */
 .cal-agenda { padding: 2px 16px 12px; border-top: 1px solid var(--line); }
 .ag-day { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+@supports (content-visibility: auto) { .ag-day { content-visibility: auto; contain-intrinsic-size: auto 220px; } }   /* a month of days: the ones off screen are laid out when they come near */
 .ag-day:first-child { border-top: 0; }
 .ag-h { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding-top: 4px; }
 .ag-d { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 32px; margin: -4px -6px; padding: 4px 6px; border: 0; border-radius: 8px; background: none; font: inherit; color: var(--t-1, var(--text)); text-align: left; cursor: pointer; }
@@ -4705,7 +4717,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .ag-day.today .ag-d b { color: var(--accent-text, var(--accent)); }
 .cal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .cal-list .empty { padding: 10px 0; font-size: 13.5px; color: var(--t-2, var(--muted)); }
-.cal-row { display: grid; grid-template-columns: 76px 20px minmax(0, 1fr) auto; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 6px 10px; border: 0; border-radius: 10px; background: none; font: inherit; color: var(--t-1, var(--text)); text-align: left; cursor: pointer; }
+.cal-row { display: grid; grid-template-columns: 76px 20px minmax(0, max-content) minmax(0, 1fr); align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 6px 10px; border: 0; border-radius: 10px; background: none; font: inherit; color: var(--t-1, var(--text)); text-align: left; cursor: pointer; }
 .cal-row:hover { background: var(--hover); }
 .cr-t { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--t-2, var(--muted)); white-space: nowrap; }
 .cal-row .cc-i svg { width: 16px; height: 16px; }
@@ -4713,17 +4725,17 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .cal-row.k-exam .cc-i { color: var(--danger-text, var(--danger)); }
 .cal-row.k-event .cc-i { color: var(--warn-text, var(--warn)); }
 .cr-n { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 550; }
-.cr-k { font-size: 12.5px; color: var(--t-2, var(--muted)); white-space: nowrap; }
+.cr-k { font-size: 12.5px; color: var(--t-2, var(--muted)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 4px; }   /* what it is, right after its name (not across the page) */
 .cal-row.done .cr-n { color: var(--t-2, var(--muted)); }
 .cal-empty { padding: 30px 16px; text-align: center; border-top: 1px solid var(--line); }
 .cal-empty p { margin: 0 0 12px; }
 .cal-addrow { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
 .cal-addrow .field { display: block; }
-#calDayDlg { width: min(500px, calc(100vw - 24px)); }
-#calDayDlg .cal-list { max-height: min(46vh, 380px); overflow-y: auto; margin: 0 -10px; }
-#calExpDlg { width: min(460px, calc(100vw - 24px)); }
+@media (min-width: 641px) { #calDayDlg { width: 500px; } #calExpDlg { width: 460px; } }   /* a phone keeps the sheet every dialog is */
+#calDayTitle:focus { outline: none; }
+#calDayDlg .cal-list { max-height: min(46vh, 380px); overflow-y: auto; margin: 0 -13px; padding: 3px; }
 
-@media (max-width: 900px) { .cal-day { min-height: 96px; } .cal-chip .cc-i { display: none; } }
+@media (max-width: 900px) { .cal-day .cal-chip .cc-i { display: none; } }   /* only where a day is narrow */
 @media (max-width: 640px) {
   .cal-bar { padding: 10px 12px; }
   .cal-bar #calTitle { order: -1; flex-basis: 100%; }
@@ -4732,15 +4744,21 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
   /* Month on a phone: a day is too narrow for words — its items are dots, and a tap opens the day */
   .cal-wd span { padding: 7px 0 6px; text-align: center; }
   .cal-day { min-height: 62px; padding: 4px 2px 6px; flex-direction: row; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 3px; }
-  .cal-day .cd-top { width: 100%; justify-content: center; }
-  .cal-day .cd-f, .cal-day .cd-more { display: none; }
+  .cal-day .cd-top { width: 100%; flex-direction: column; justify-content: flex-start; gap: 0; min-height: 36px; }
+  .cal-day .cd-more { display: none; }
+  .cal-day .cd-f { font-size: 10px; line-height: 1.1; }
+  .cal-day .cd-f .f-l { display: none; }
+  .cal-day .cd-f .f-s { display: inline; }
   #calBody .cal-day .cal-chip { width: 7px; height: 7px; min-height: 0; padding: 0; border-radius: 50%; box-shadow: none; pointer-events: none; background: var(--t-2, var(--muted)); }
   .cal-day .cal-chip > * { display: none; }
-  #calBody .cal-day .cal-chip.k-rem, #calBody .cal-day .cal-chip.k-rev, #calBody .cal-day .cal-chip.k-block { background: var(--accent-fill, var(--accent)); }
-  #calBody .cal-day .cal-chip.k-exam { background: var(--danger); }
+  #calBody .cal-day .cal-chip.rt { display: none; }   /* a dot on every day says nothing */
+  #calBody .cal-day .cal-chip.k-block { background: var(--accent-fill, var(--accent)); }   /* filled: a block you planned; a ring: a reminder */
+  #calBody .cal-day .cal-chip.k-rem, #calBody .cal-day .cal-chip.k-rev { background: none; box-shadow: inset 0 0 0 2px var(--accent-fill, var(--accent)); }
+  #calBody .cal-day .cal-chip.k-exam { background: var(--danger-fill, var(--danger)); }
   #calBody .cal-day .cal-chip.k-event { background: var(--warn); }
   #calBody .cal-day .cal-chip.done { background: var(--t-3, var(--muted)); }
   .cal-week-v { --gut: 50px; }
+  .cal-addrow .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .cw-scroll { max-height: 58vh; }
   .cw-col { cursor: pointer; }
   .cal-agenda { padding: 2px 12px 10px; }
@@ -4750,6 +4768,15 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
   .cal-row { grid-template-columns: 64px 20px minmax(0, 1fr); row-gap: 0; padding: 6px 8px; }
   .cr-k { grid-column: 3; font-size: 12px; }
 }
+/* the phone's Day: the week as a strip of days */
+.cw-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; padding: 6px 8px; border-top: 1px solid var(--line); }
+.cw-sd { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; min-height: 52px; padding: 2px 0; border: 0; border-radius: 12px; background: none; font: inherit; color: var(--t-1, var(--text)); cursor: pointer; }
+.cw-sd span { font-size: 11px; font-weight: 600; color: var(--t-2, var(--muted)); }
+.cw-sd b { display: grid; place-items: center; min-width: 28px; height: 28px; padding: 0 4px; border-radius: 999px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.cw-sd.today b { box-shadow: inset 0 0 0 1.5px var(--accent-fill, var(--accent)); }
+.cw-sd.on b { background: var(--accent-fill, var(--accent)); color: var(--on-accent, #fff); box-shadow: none; }
+.cw-sd.has::after { content: ''; position: absolute; bottom: 3px; width: 4px; height: 4px; border-radius: 50%; background: var(--t-2, var(--muted)); }
+.cw-sd:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: -2px; }
 /* a finger in the Month: the day is the target (it opens with everything in it, in 44 px rows); its chips are not */
 @media (pointer: coarse) {
   #calBody .cal-day .cal-chip, #calBody .cal-day .cd-more { min-height: 0; pointer-events: none; }
@@ -5715,7 +5742,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 
 <!-- Calendar (v2.0): one day, a planned focus block, export -->
 <dialog id="calDayDlg" aria-labelledby="calDayTitle">
-  <h2 style="margin:0 0 2px" id="calDayTitle"></h2>
+  <h2 style="margin:0 0 2px" id="calDayTitle" tabindex="-1"></h2>
   <p class="lbl" id="calDayFocus" style="margin:0 0 10px"></p>
   <ul class="cal-list" id="calDayList"></ul>
   <div class="cal-addrow" id="calDayAdd">
@@ -13548,7 +13575,10 @@ function remRepeatText(r) {
   if (r.repeat === 'weekly') return 'Every ' + (r.days || []).slice().sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7)).map(d => WD[d]).join(', ');
   return '';
 }
-const fmtHM = ts => new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+/* One formatter for clock times: toLocaleTimeString builds a new one on every call (600 rows of the Calendar's Agenda
+   took 80 ms on times alone). It is rebuilt when the device's time zone changes, and an invalid time reads as before. */
+let HM_FMT = null, HM_OFF = NaN;
+const fmtHM = ts => { const d = new Date(ts); if (isNaN(d)) return String(d); const o = d.getTimezoneOffset(); if (!HM_FMT || o !== HM_OFF) { HM_OFF = o; HM_FMT = new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }); } return HM_FMT.format(d); };
 const fmtDayShort = k => parseDay(k).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
 function remPrune(r) {
   for (const f of ['done', 'snooze']) {
@@ -18096,7 +18126,7 @@ function calItems(from, to) {
       if (!remOnDay(r, d)) continue;
       const k = dayKey(d);
       if (k < tk && r.repeat !== 'none' && !remDone(r, k)) continue;   // the past keeps what happened: a repeat's old days only where it was done
-      add({ kind, id: r.id, title: r.rev ? r.rev.topic : r.title, day: k, at: r.allDay ? null : remAt(r, d), dur: +r.dur || (kind === 'block' && p ? +p.focus : 0), done: remDone(r, k), move: (kind === 'rem' || kind === 'block') && r.repeat === 'none', r });
+      add({ kind, id: r.id, title: r.rev ? r.rev.topic : r.title, day: k, at: r.allDay ? null : remAt(r, d), dur: +r.dur || (kind === 'block' && p ? +p.focus : 0), done: remDone(r, k), move: (kind === 'rem' || kind === 'block') && r.repeat === 'none', rt: r.repeat === 'daily' || r.repeat === 'weekdays' || (r.repeat === 'weekly' && (r.days || []).length >= 5), r });
     }
   }
   if (me) for (const l of SESS.lobby || []) {
@@ -18117,7 +18147,7 @@ function calTip(it) {
   return `${CAL_KIND[it.kind]}: ${it.title} · ${when}${it.done ? ' · done' : ''}`;
 }
 function calChip(it) {
-  return `<button type="button" class="cal-chip k-${it.kind}${it.done ? ' done' : ''}${it.move ? ' mv' : ''}" data-cal="${esc(it.key)}" tabindex="-1" title="${esc(calTip(it))}" aria-label="${esc(calTip(it))}"><i class="cc-i" aria-hidden="true">${CAL_IC[it.kind]}</i>${it.at !== null ? `<span class="cc-t">${esc(calHM(it.at))}</span>` : ''}<span class="cc-n">${esc(it.title)}</span></button>`;
+  return `<button type="button" class="cal-chip k-${it.kind}${it.done ? ' done' : ''}${it.move ? ' mv' : ''}${it.rt ? ' rt' : ''}" data-cal="${esc(it.key)}" tabindex="-1" title="${esc(calTip(it))}" aria-label="${esc(calTip(it))}"><i class="cc-i" aria-hidden="true">${CAL_IC[it.kind]}</i>${it.at !== null ? `<span class="cc-t">${esc(calHM(it.at))}</span>` : ''}<span class="cc-n">${esc(it.title)}</span></button>`;
 }
 /** A row of the Agenda and of the day dialog. */
 function calRow(it) {
@@ -18127,7 +18157,7 @@ function calRow(it) {
 function calDayLabel(d, n, min) {
   return `${d.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' })}${dayKey(d) === todayKey() ? ', today' : ''}, ${n ? `${n} item${n === 1 ? '' : 's'}` : 'nothing planned'}${min ? `, ${fmtMin(min)} of focus` : ''}`;
 }
-const calFocusTag = min => (min ? `<span class="cd-f" title="${esc(fmtMin(min))} of focus">${esc(fmtMin(min))}</span>` : '');
+const calFocusTag = min => (min ? `<span class="cd-f" title="${esc(fmtMin(min))} of focus"><span class="f-l">${esc(fmtMin(min))}</span><span class="f-s" aria-hidden="true">${min >= 60 ? Math.round(min / 30) / 2 + 'h' : min + 'm'}</span></span>` : '');
 
 /* ---------- Month ---------- */
 function calMonthHTML() {
@@ -18139,7 +18169,8 @@ function calMonthHTML() {
     html += '<div class="cal-week" role="row">';
     for (let i = 0; i < 7; i++) {
       const d = addDays(start, w * 7 + i), k = dayKey(d), its = items[k] || [], min = calFocusMin(k);
-      const show = its.slice(0, its.length > 3 ? 2 : 3), more = its.length - show.length;
+      const order = [...its.filter(it => !it.rt), ...its.filter(it => it.rt)];   // what is particular to this day first, the everyday things after
+      const show = order.slice(0, order.length > 3 ? 2 : 3), more = order.length - show.length;
       html += `<div class="cal-day h${heatLevel(min)}${d.getMonth() !== a.getMonth() ? ' out' : ''}${k === tk ? ' today' : ''}${k < tk ? ' past' : ''}" role="gridcell" data-day="${k}" tabindex="${k === CAL.focus ? 0 : -1}" aria-label="${esc(calDayLabel(d, its.length, min))}">
         <div class="cd-top"><span class="cd-n">${d.getDate()}</span>${calFocusTag(min)}</div>${show.map(calChip).join('')}${more > 0 ? `<button type="button" class="cd-more" tabindex="-1" data-calmore="${k}">+${more} more</button>` : ''}</div>`;
     }
@@ -18166,14 +18197,17 @@ function calPack(list) {
 function calWeekHTML(n) {
   const a = calAnchor(), start = n === 1 ? a : weekStartOf(a, calWs()), days = Array.from({ length: n }, (x, i) => addDays(start, i)), items = calItems(start, addDays(start, n - 1)), tk = todayKey(), now = new Date();
   const hours = Array.from({ length: 23 }, (x, i) => { const d = new Date(2020, 0, 1, i + 1); return `<span style="top:${(i + 1) * CAL_HOUR}px">${esc(calHM(d.getTime()))}</span>`; }).join('');
-  const head = days.map(d => { const k = dayKey(d), min = calFocusMin(k); return `<div class="cw-dh${k === tk ? ' today' : ''}"><button type="button" class="cw-dbtn" data-calday="${k}" aria-label="${esc(calDayLabel(d, (items[k] || []).length, min))}"><span class="cw-wd">${WD[d.getDay()]}</span><b class="cw-dn">${d.getDate()}</b></button>${calFocusTag(min)}</div>`; }).join('');
-  const allDay = days.map(d => { const k = dayKey(d); return `<div class="cw-ad h${heatLevel(calFocusMin(k))}" data-day="${k}">${(items[k] || []).filter(it => it.at === null).map(calChip).join('')}</div>`; }).join('');
+  const head = days.map(d => { const k = dayKey(d), min = calFocusMin(k); return `<div class="cw-dh h${heatLevel(min)}${k === tk ? ' today' : ''}"><button type="button" class="cw-dbtn" data-calday="${k}" aria-label="${esc(calDayLabel(d, (items[k] || []).length, min))}"><span class="cw-wd">${WD[d.getDay()]}</span><b class="cw-dn">${d.getDate()}</b></button>${calFocusTag(min)}</div>`; }).join('');
+  const allDay = days.map(d => { const k = dayKey(d); return `<div class="cw-ad" data-day="${k}">${(items[k] || []).filter(it => it.at === null).map(calChip).join('')}</div>`; }).join('');
   const cols = days.map(d => {
     const k = dayKey(d), timed = calPack((items[k] || []).filter(it => it.at !== null).map(it => { const s = calMinOf(it.at); return { it, s, e: Math.min(1440, s + Math.max(it.dur || 0, CAL_MINLEN)) }; }));
-    const evs = timed.map(({ it, s, e, col, cols: nc }) => `<button type="button" class="cal-ev k-${it.kind}${it.done ? ' done' : ''}${it.move ? ' mv' : ''}${(e - s) / 60 * CAL_HOUR < 40 ? ' short' : ''}" data-cal="${esc(it.key)}" style="top:${(s / 60 * CAL_HOUR).toFixed(1)}px;height:${Math.max(CAL_MINLEN > 30 ? 44 : 20, (e - s) / 60 * CAL_HOUR - 2).toFixed(1)}px;left:calc(${(col / nc * 100).toFixed(2)}% + 2px);width:calc(${(100 / nc).toFixed(2)}% - 4px)" title="${esc(calTip(it))}" aria-label="${esc(calTip(it))}"><span class="ce-n"><i class="cc-i" aria-hidden="true">${CAL_IC[it.kind]}</i>${esc(it.title)}</span><span class="ce-t">${esc(calHM(it.at))}${it.dur ? ` – ${esc(calHM(it.at + it.dur * 60000))}` : ''}</span></button>`).join('');
+    const evs = timed.map(({ it, s, e, col, cols: nc }) => `<button type="button" class="cal-ev k-${it.kind}${it.done ? ' done' : ''}${it.move ? ' mv' : ''}${(e - s) / 60 * CAL_HOUR < 40 ? ' short' : ''}" data-cal="${esc(it.key)}" style="top:${(s / 60 * CAL_HOUR).toFixed(1)}px;height:${Math.max(CAL_MINLEN > 30 ? 44 : 20, (e - s) / 60 * CAL_HOUR - 2).toFixed(1)}px;left:calc(${(col / nc * 100).toFixed(2)}% + 2px);width:calc(${(100 / nc).toFixed(2)}% - 4px)" title="${esc(calTip(it))}" aria-label="${esc(calTip(it))}"><span class="ce-n"><i class="cc-i" aria-hidden="true">${CAL_IC[it.kind]}</i><span class="ce-s">${esc(calHM(it.at))}</span>${esc(it.title)}</span><span class="ce-t">${esc(calHM(it.at))}${it.dur ? ` – ${esc(calHM(it.at + it.dur * 60000))}` : ''}</span></button>`).join('');
     return `<div class="cw-col${k === tk ? ' today' : ''}${k < tk ? ' past' : ''}" data-day="${k}">${evs}${k === tk ? `<i class="cw-now" style="top:${(calMinOf(now.getTime()) / 60 * CAL_HOUR).toFixed(1)}px" aria-hidden="true"></i>` : ''}</div>`;
   }).join('');
-  return `<div class="cal-week-v n${n}" style="--cal-h:${CAL_HOUR}px"><div class="cw-head"><div class="cw-gut"></div>${head}</div>
+  const strip = n > 1 ? '' : (() => { const w0 = weekStartOf(a, calWs()), wk = calItems(w0, addDays(w0, 6)), ak = dayKey(a);
+    return `<div class="cw-strip" role="group" aria-label="The days of this week">${Array.from({ length: 7 }, (x, i) => { const d = addDays(w0, i), k = dayKey(d), its = (wk[k] || []);
+      return `<button type="button" class="cw-sd${k === ak ? ' on' : ''}${k === tk ? ' today' : ''}${its.some(it => !it.rt) ? ' has' : ''}" data-calgo="${k}" aria-pressed="${k === ak}" aria-label="${esc(calDayLabel(d, its.length, calFocusMin(k)))}${k === ak ? ' (shown; press again to open the day)' : ''}"><span>${WD[d.getDay()]}</span><b>${d.getDate()}</b></button>`; }).join('')}</div>`; })();
+  return `<div class="cal-week-v n${n}" style="--cal-h:${CAL_HOUR}px">${n > 1 ? `<div class="cw-head"><div class="cw-gut"></div>${head}</div>` : strip}
     <div class="cw-all"><div class="cw-gut"><span>All day</span></div>${allDay}</div>
     <div class="cw-scroll" id="calScroll" tabindex="0" role="group" aria-label="The hours of ${n === 1 ? 'the day' : 'the week'}"><div class="cw-grid"><div class="cw-gut cw-hours" aria-hidden="true">${hours}</div>${cols}</div></div></div>`;
 }
@@ -18181,6 +18215,7 @@ function calWeekHTML(n) {
 function calFirstTop() {
   let first = 7 * 60;
   for (const el of $$('#calBody .cal-ev')) first = Math.min(first, parseFloat(el.style.top) / CAL_HOUR * 60);
+  if ($('#calBody .cw-now')) return Math.max(0, (calMinOf(Date.now()) - 60) / 60 * CAL_HOUR);
   return Math.max(0, (first - 45) / 60 * CAL_HOUR);
 }
 
@@ -18252,10 +18287,11 @@ function calOpenDay(k) {
   CAL.day = k; CAL.focus = k;
   const d = parseDay(k), its = calItems(d, d)[k] || [], min = calFocusMin(k), past = k < todayKey();
   $('#calDayTitle').textContent = d.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' }) + (k === todayKey() ? ' · today' : '');
-  $('#calDayFocus').textContent = min ? `${fmtMin(min)} of focus` : past ? 'No focus that day' : 'No focus yet';
+  $('#calDayFocus').textContent = min ? `${fmtMin(min)} of focus` : past ? 'No focus that day' : k === todayKey() ? 'No focus yet today' : '';
+  $('#calDayFocus').classList.toggle('hidden', !$('#calDayFocus').textContent);
   $('#calDayList').innerHTML = its.length ? its.map(it => `<li>${calRow(it)}</li>`).join('') : `<li class="empty">${past ? 'Nothing was planned.' : 'Nothing planned yet.'}</li>`;
   $('#calDayAdd').classList.toggle('hidden', past);
-  if (!$('#calDayDlg').open) $('#calDayDlg').showModal();
+  if (!$('#calDayDlg').open) { $('#calDayDlg').showModal(); $('#calDayTitle').focus({ preventScroll: true }); }
 }
 /** Open the thing an item stands for. */
 function calOpen(key) {
@@ -18437,6 +18473,8 @@ $('#calBody').addEventListener('click', e => {
   if (chip) { calOpen(chip.dataset.cal); return; }
   const dh = e.target.closest('[data-calday]');
   if (dh) { calOpenDay(dh.dataset.calday); return; }
+  const go = e.target.closest('[data-calgo]');
+  if (go) { if (go.dataset.calgo === dayKey(calAnchor())) calOpenDay(go.dataset.calgo); else { CAL.anchor = parseDay(go.dataset.calgo); renderCalendar(); const on = $('#calBody .cw-sd.on'); if (on) on.focus({ preventScroll: true }); } return; }
   const col = e.target.closest('.cw-col');
   if (col) {   // an empty hour: plan a block there (a day that has passed just opens)
     if (col.dataset.day < todayKey()) { calOpenDay(col.dataset.day); return; }
