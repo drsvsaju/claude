@@ -32,10 +32,18 @@ const VIEWS = [
   ['cal-month', "S.ui.calView = 'month'; CAL.anchor = null; showTab('calendar')"], ['cal-week', "S.ui.calView = 'week'; CAL.anchor = null; CAL.scroll = null; showTab('calendar')"], ['cal-agenda', "S.ui.calView = 'agenda'; CAL.anchor = null; showTab('calendar')"],
   ['dlg-day', "S.ui.calView = 'month'; showTab('calendar'); calOpenDay(todayKey())"], ['dlg-block', "showTab('calendar'); openBlockForm({})"], ['dlg-reminder-allday', "showTab('reminders'); openRemForm(); document.querySelector('#remAllDay').click()"],
   ['pop-reminder', "showTab('timer'); showPomeoPop(S.reminders[0], todayKey(), 'For today: Hand in the chemistry record')"],
+  // v2.0 phase 6: streak care (the default row, a paused streak, the mending offer), break ideas, the fuller insights card
+  ['dlg-streak', "showTab('timer'); openStreakCare()"],
+  ['dlg-streak-paused', "showTab('timer'); S.game.pauses[todayKey()] = 3; G = null; renderToday(); openStreakCare()"],
+  ['timer-mend', "S.game.pauses = {}; const y = dayKey(addDays(startOfDay(new Date()), -1)); S.sessions = S.sessions.filter(s => dayKey(new Date(s.start)) !== y); delete S.game.claims.goalDays[y]; G = null; showTab('timer'); renderToday()"],
+  ['dlg-streak-mend', "showTab('timer'); openStreakCare()"],
+  ['timer-break', "const t = S.timer; t.phase = 'short'; t.status = 'idle'; renderTimer(); showTab('timer')"],
+  ['dlg-break-menu', "showTab('timer'); openBreak('')"], ['dlg-break-breathe', "showTab('timer'); openBreak('breathe'); BRK.t0 = Date.now() - 2600; brkTick()"], ['dlg-break-stretch', "showTab('timer'); openBreak('stretch')"], ['dlg-break-water', "showTab('timer'); openBreak('water')"],
+  ['stats-insights', "const t = S.timer; t.phase = 'focus'; t.status = 'idle'; renderTimer(); showTab('stats'); renderEnergyCard(); document.querySelector('#energySlot').scrollIntoView({ block: 'center' })"],
   ['dlg-presets', "showTab('timer'); document.querySelector('#managePresets').click()"], ['dlg-reminder', "showTab('reminders'); document.querySelector('#remAdd').click()"], ['dlg-inbox', "showTab('timer'); document.querySelector('#inboxBtn').click()"],
   ['dlg-ranks', "showTab('timer'); openRankLadder()"], ['dlg-collection', "showTab('timer'); openCollection()"], ['dlg-palette', "showTab('timer'); document.querySelector('#cmdBtn').click()"], ['dlg-demo', "showTab('timer'); previewPrompt(document.body)"],
 ];
-const SUB = ['timer', 'stats-week', 'quests-boss', 'quests-pass', 'profile', 'friends', 'garden', 'shop', 'bag', 'settings', 'reminders', 'todo', 'clan', 'board', 'cal-month', 'cal-week', 'dlg-presets', 'dlg-inbox'];   // for the other themes: the screens that use every token
+const SUB = ['timer', 'stats-week', 'quests-boss', 'quests-pass', 'profile', 'friends', 'garden', 'shop', 'bag', 'settings', 'reminders', 'todo', 'clan', 'board', 'cal-month', 'cal-week', 'dlg-presets', 'dlg-inbox', 'dlg-streak-paused', 'dlg-streak-mend', 'timer-break', 'dlg-break-menu', 'dlg-break-breathe', 'stats-insights'];   // for the other themes: the screens that use every token
 if (args.includes('--few')) SUB.splice(0, SUB.length, 'timer', 'stats-week', 'quests-pass', 'profile', 'friends', 'bag', 'clan', 'todo', 'cal-month', 'cal-week');   // --few: ten screens for the other themes
 const only = val('--only') ? val('--only').split(',') : null;
 // Only the glyphs are hidden. The colour property itself stays, because backgrounds, borders and icons are often drawn

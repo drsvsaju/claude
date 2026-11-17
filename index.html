@@ -4837,6 +4837,42 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .sc-kept ul { list-style: none; margin: 6px 0 0; padding: 0; }
 .sc-kept li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: var(--fs-13, 13px); }
 @media (max-width: 420px) { .sc-row { flex-wrap: wrap; } .sc-row .sc-l { flex-basis: 100%; } .sc-row ui-select, .sc-row ui-num { flex: 1; width: auto; } }
+/* ----- v2.0 phase 6c: break ideas (the row under the timer on breaks, the dialog) ----- */
+.brk-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; }
+.brk-row.hidden { display: none; }
+.brk-row > .lbl { flex-basis: 100%; text-align: center; }
+.brk-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--r-pill, 999px); background: var(--surface); color: var(--t-1, var(--text)); font: inherit; font-size: var(--fs-13, 13px); cursor: pointer; transition: background-color .15s, border-color .15s; }
+.brk-chip:hover { background: var(--hover); }
+.brk-chip svg { color: var(--t-2, var(--muted)); flex: none; }
+#brkDlg { width: min(420px, calc(100vw - 24px)); } #brkTitle:focus { outline: none; }
+.brk-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.brk-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 1px solid var(--line); border-radius: var(--r-12, 12px); background: var(--surface); color: var(--t-1, var(--text)); font: inherit; text-align: left; cursor: pointer; transition: background-color .15s, border-color .15s; }
+.brk-tile:hover { background: var(--hover); }
+.brk-tile .brk-ic { display: grid; place-items: center; width: 36px; height: 36px; margin-bottom: 6px; border-radius: 50%; background: var(--ok-soft); color: var(--ok-text, var(--ok)); }
+.brk-tile b { font-size: var(--fs-14, 14px); font-weight: 600; }
+.brk-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 8px 0 4px; text-align: center; }
+.brk-stage > p { margin: 0; max-width: 34ch; line-height: 1.45; }
+.brk-orb { display: grid; place-items: center; width: 132px; height: 132px; margin: 10px 0 6px; border-radius: 50%; background: var(--ok-soft); color: var(--ok-text, var(--ok)); font-size: var(--fs-30, 30px); font-weight: 600; font-variant-numeric: tabular-nums; transform: scale(.62); }
+.brk-orb.still, .brk-orb.hold, .brk-orb.in { transform: scale(1); }
+.brk-orb.in { transition: transform 4s ease-in-out; } .brk-orb.out { transition: transform 6s ease-in-out; }
+.brk-orb.in > span, .brk-orb.hold > span, .brk-orb.out > span { display: block; }
+.brk-cue { min-height: 1.4em; font-size: var(--fs-17, 17px); font-weight: 600; }
+.brk-card { padding: 16px; border: 1px solid var(--line); border-radius: var(--r-12, 12px); background: var(--surface); }
+.brk-card .brk-big { display: block; margin: 4px 0 6px; font-size: var(--fs-20, 20px); font-weight: 600; }
+.brk-card p { margin: 0 0 12px; min-height: 3.1em; line-height: 1.5; font-size: var(--fs-14, 14px); }
+.brk-card .brk-bar { margin: 0 0 6px; } .brk-card .brk-bar i { background: var(--ok) !important; }
+.brk-acts { justify-content: center; margin-top: 12px; }
+.brk-note { margin: 10px 0 0; text-align: center; }
+.brk-foot { justify-content: flex-end; margin-top: 16px; } .brk-foot #brkBack { margin-right: auto; }
+@media (prefers-reduced-motion: reduce) { .brk-orb, .brk-orb.in, .brk-orb.out { transition: none; transform: scale(1); } }
+[data-motion="reduced"] .brk-orb, [data-motion="off"] .brk-orb { transition: none !important; transform: scale(1) !important; }
+/* ----- v2.0 phase 6d: the week in review at the top of Focus insights ----- */
+.ins-week { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin: 0 0 14px; padding: 0 0 14px; border-bottom: 1px solid var(--hair, var(--line)); }
+.ins-week .k { flex-basis: 100%; font-size: var(--fs-12, 12px); color: var(--t-2, var(--muted)); }
+.ins-week .v { font-size: var(--fs-24, 24px); font-weight: 600; font-variant-numeric: tabular-nums; }
+.ins-week .s { font-size: var(--fs-13, 13px); color: var(--t-2, var(--muted)); }
+.ins-week .ins-take { flex-basis: 100%; margin: 8px 0 0; font-size: var(--fs-14, 14px); line-height: 1.45; }
+.ins-hint { margin-top: 14px; }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -5164,6 +5200,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
             <button class="btn primary" id="mainBtn"><span class="mb-lbl">Start</span></button>
             <button class="btn" id="skipBtn">Skip</button>
           </div>
+          <div class="brk-row hidden" id="brkRow" role="group" aria-label="Break ideas"></div>
           <div id="resumeSlot"></div>
           <div class="qs-row hidden" id="quickStart" aria-label="Quick start a preset"></div>
           <div class="sub-check hidden" id="subCheck" aria-label="Subtasks">
@@ -5566,6 +5603,10 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
           <div><div>Flashcards on breaks</div><div class="desc">Pomeo offers up to 5 due cards when a break starts (never during focus)</div></div>
           <input type="checkbox" id="setBreakCards" aria-label="Flashcards on breaks">
         </div>
+        <div class="setting" data-k="break ideas activities breathing breathe stretch eyes 20-20-20 water rest">
+          <div><div>Break ideas</div><div class="desc">Breathing, stretches, an eye rest and water, offered under the timer on breaks (never during focus)</div></div>
+          <input type="checkbox" id="setBreakActs" aria-label="Break ideas">
+        </div>
         <div class="setting" data-k="garden seed shop restock dot featured">
           <div><div>Dot when the seed shop restocks</div><div class="desc">A small dot on the Garden tab when new Featured seeds are in (never during focus)</div></div>
           <input type="checkbox" id="setShopDot" aria-label="Dot when the seed shop restocks">
@@ -5813,6 +5854,12 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 </dialog>
 
 <!-- Calendar (v2.0): one day, a planned focus block, export -->
+<dialog id="brkDlg" aria-labelledby="brkTitle">
+  <h2 style="margin:0 0 2px" id="brkTitle" tabindex="-1">Break ideas</h2>
+  <p class="lbl" id="brkSub" style="margin:0 0 14px"></p>
+  <div id="brkBody"></div>
+  <div class="btn-row brk-foot"><button class="btn hidden" id="brkBack" type="button">All ideas</button><button class="btn" id="brkClose" type="button">Done</button></div>
+</dialog>
 <dialog id="streakDlg" aria-labelledby="scTitle">
   <h2 style="margin:0 0 2px" id="scTitle" tabindex="-1">Streak care</h2>
   <p class="lbl" style="margin:0 0 12px">A streak is there to help you show up. These keep it kind.</p>
@@ -8068,7 +8115,7 @@ function defaultState() {
     version: 2,
     settings: { goalMin: 60, weekStart: 1, sound: true, notify: true, theme: 'auto', autoStart: false, overtime: true, gamification: true, ambientVolume: 0.5,
                 shareActivity: true, shareNames: true, globalBoard: false,
-                pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, shopDot: true, dailyTip: true,
+                pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, breakActs: true, shopDot: true, dailyTip: true,
                 bossMode: 'solo', shortcuts: true, revIntervals: [1, 3, 7, 21, 45],
                 minPomeo: true, energy: 'always', useCase: '', atmosphere: true, ripen: true, festive: true, todRain: false,
                 allDayAt: '08:00',     // when all-day reminders alert (v2.0)
@@ -9574,6 +9621,7 @@ let zenWas = false;   // Zen mode shows the timer alone: the card columns are re
 function renderTimer() {
   const t = S.timer, p = t.live && t.live.mode !== 'together' && LIVE.doc ? { ...activePreset(), rounds: LIVE.doc.pattern.rounds, name: LIVE.doc.title } : activePreset();
   renderLiveBar();
+  renderBrkRow();   // v2.0: break ideas, on breaks only
   const isBreak = t.phase !== 'focus';
   const label = t.phase === 'focus' ? 'Focus' : t.phase === 'short' ? 'Short break' : 'Long break';
   const ot = !!(t.ot && !isBreak);
@@ -10009,6 +10057,7 @@ function renderSettings() {
   $('#minPomeoRow').classList.toggle('hidden', !minimal());
   $('#setEnergy').value = st.energy || 'always';
   $('#setIntent').checked = st.intent !== false;
+  $('#setBreakActs').checked = st.breakActs !== false;
   $('#setMotion').value = motion();
   $('#setGlass').value = glass();
   $('#setGlass').disabled = !glassSupported();
@@ -19785,6 +19834,7 @@ function cmdList(q) {
   if (inClan() && !inLive()) add('🔴', 'Study now with my clan', 'Clan', () => { showTab('clan'); openClanSched(null, true); }, 'clan live group study together');
   add('☑️', 'Add subtask', 'Timer', focusSubAdd, 'new subtask checklist');
   if (focusActive()) add('🅿️', 'Park a thought', 'Timer', () => { showTab('timer'); openPark(); });
+  if (breakActsOn() && !focusActive()) for (const [id, ic, n, k] of [['breathe', '🌬️', 'A breathing minute', 'breathe calm relax'], ['stretch', '🙆', 'Stretch cards', 'stretch neck shoulders'], ['eyes', '👀', 'Rest your eyes (20-20-20)', 'eyes eye screen 20'], ['water', '💧', 'A glass of water', 'water drink']]) add(ic, n, 'Break ideas', () => openBreak(id), 'break ' + k);
   add('🌓', 'Toggle dark mode', 'Appearance', cmdToggleDark, 'theme dark light night');
   for (const lv of ['off', 'lite', 'full']) if (lv !== glass()) add('✨', `Look: ${GLASS_NAMES[lv]}`, 'Appearance', () => { setGlass(lv); toast(`Look: ${GLASS_NAMES[lv]}`, 1800, true); }, 'glossed interface glass gloss blur frosted');
   add(S.settings.sound ? '🔇' : '🔊', S.settings.sound ? 'Mute all sounds' : 'Turn sounds on', 'Sounds', () => $('#muteBtn').click(), 'sound mute audio');
@@ -20686,6 +20736,113 @@ $('#resumeSlot').addEventListener('click', e => {
   startTimer();
 });
 
+/* ==========================================================================
+   BREAK IDEAS (v2): a breathing minute, stretch cards, the 20-20-20 eye rest, a glass of water.
+   Offered on breaks only (a row under the timer while a break is on, beside the flashcard offer), and from the
+   command palette whenever no focus block is running. Nothing is stored except today's glasses of water, on this
+   device (S.ui.water).
+   ========================================================================== */
+const BRK_IC = {
+  breathe: '<path d="M4 9h9a2.5 2.5 0 1 0-2.5-2.5M4 13h13a2.5 2.5 0 1 1-2.5 2.5M4 17h6"/>',
+  stretch: '<circle cx="12" cy="5" r="1.8"/><path d="M5 8l7 2 7-2M12 10v5M12 15l-3 5M12 15l3 5"/>',
+  eyes: '<path d="M2.5 12S6 6 12 6s9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>',
+  water: '<path d="M12 3.5s6 6.2 6 10.5a6 6 0 0 1-12 0c0-4.3 6-10.5 6-10.5Z"/>',
+};
+const BRK_ACTS = [['breathe', 'Breathe', 'A calm minute'], ['stretch', 'Stretch', 'Eight short cards'], ['eyes', 'Rest your eyes', '20 seconds, far away'], ['water', 'Water', 'A glass now']];
+const BRK_BREATH = [['Breathe in', 4], ['Hold', 4], ['Breathe out', 6]];   // 14 seconds a round
+const BRK_ROUNDS = 4;                                                      // about a minute
+const BRK_EYES = 20, BRK_HOLD = 20;                                        // seconds
+const BRK_STRETCH = [
+  ['Neck', 'Let your right ear sink towards your right shoulder. Breathe, then the other side.'],
+  ['Shoulders', 'Roll both shoulders up, back and down in slow circles. Then the other way round.'],
+  ['Chest', 'Clasp your hands behind your back, straighten your arms and lift your chest.'],
+  ['Wrists', 'One arm out, palm up. With the other hand, gently draw the fingers down. Swap hands.'],
+  ['Upper back', 'Hug yourself, round your back and let your head hang forward.'],
+  ['Sides', 'Reach one arm over your head and lean to the other side. Swap.'],
+  ['Hips', 'Stand up, hands on your hips, and make slow circles. Then walk a few steps.'],
+  ['Legs', 'Stand, hold the table, and rise onto your toes ten times.'],
+];
+const BRK = { act: '', t0: 0, iv: 0, cue: '', si: 0, done: false };
+const breakActsOn = () => S.settings.breakActs !== false;
+const waterToday = () => { if (isPreview()) return 3; const w = S.ui.water; return w && w.d === todayKey() ? +w.n || 0 : 0; };   // (the demo shows a sample count)
+/** The row under the timer: there while a break is on (waiting to start, running or paused), never during focus. */
+function renderBrkRow() {
+  const el = $('#brkRow');
+  if (!el) return;
+  const on = breakActsOn() && S.timer.phase !== 'focus';
+  el.classList.toggle('hidden', !on);
+  if (on && !el.firstChild) el.innerHTML = '<span class="lbl">On your break</span>' + BRK_ACTS.map(([id, t]) => `<button type="button" class="brk-chip" data-brk="${id}">${iconSVG(BRK_IC[id], 16)}<span>${t}</span></button>`).join('');
+  if (!on && $('#brkDlg').open && focusActive()) $('#brkDlg').close();   // a focus block began: the break is over
+}
+function brkStop() { if (BRK.iv) { clearInterval(BRK.iv); BRK.iv = 0; } }
+function openBreak(act = '') {
+  if (focusActive()) { toast('Break ideas are for your break · they will be here when this block ends', 3400); return false; }
+  const dlg = $('#brkDlg');
+  if (!dlg.open) dlg.showModal();
+  brkShow(act);
+  $('#brkTitle').focus({ preventScroll: true });
+  return true;
+}
+function brkSub() {
+  const t = S.timer, left = t.phase !== 'focus' && t.status === 'running' ? Math.max(0, t.endAt - Date.now()) : 0;
+  $('#brkSub').textContent = left ? `${t.phase === 'long' ? 'Long break' : 'Break'} · ${fmtClock(left)} left` : t.phase !== 'focus' ? 'Your break is waiting. Take what you need.' : 'A short pause helps the next block.';
+}
+const brkBar = pct => `<div class="sn-bar brk-bar"><i style="transform:translateX(${(Math.min(1, pct) * 100 - 100).toFixed(1)}%)"></i></div>`;
+function brkShow(act) {
+  brkStop();
+  Object.assign(BRK, { act, t0: Date.now(), cue: '', done: false });
+  const body = $('#brkBody'), menu = !act;
+  $('#brkTitle').textContent = menu ? 'Break ideas' : (BRK_ACTS.find(a => a[0] === act) || [])[1] || 'Break ideas';
+  $('#brkBack').classList.toggle('hidden', menu);
+  body.dataset.act = act;
+  if (menu) body.innerHTML = `<div class="brk-menu">${BRK_ACTS.map(([id, t, d]) => `<button type="button" class="brk-tile" data-brk="${id}"><span class="brk-ic">${iconSVG(BRK_IC[id], 22)}</span><b>${t}</b><span class="lbl">${id === 'water' && waterToday() ? `${waterToday()} today` : d}</span></button>`).join('')}</div>`;
+  else if (act === 'breathe') body.innerHTML = `<div class="brk-stage"><div class="brk-orb" id="brkOrb"><span id="brkN" aria-hidden="true"></span></div><div class="brk-cue" id="brkCue" aria-live="polite"></div><div class="lbl" id="brkRound"></div></div>`;
+  else if (act === 'stretch') body.innerHTML = `<div class="brk-card"><div class="lbl" id="brkRound"></div><div aria-live="polite"><b class="brk-big" id="brkCue"></b><p id="brkText"></p></div>${brkBar(0)}<div class="lbl" id="brkHint" aria-hidden="true"></div></div><div class="btn-row brk-acts"><button class="btn primary" type="button" id="brkNext">Next stretch</button></div><p class="lbl brk-note">Gentle only: nothing should hurt.</p>`;
+  else if (act === 'eyes') body.innerHTML = `<div class="brk-stage"><div class="brk-orb still" id="brkOrb"><span id="brkN" aria-hidden="true"></span></div><div class="brk-cue" id="brkCue" aria-live="polite"></div><p class="lbl">The 20-20-20 rest: every 20 minutes, look about 6 metres (20 feet) away for 20 seconds.</p></div>`;
+  else if (act === 'water') body.innerHTML = `<div class="brk-stage"><div class="brk-orb still water">${iconSVG(BRK_IC.water, 40)}</div><div class="brk-cue" id="brkCue" aria-live="polite"></div><p class="lbl">A glass of water now, small sips are fine.</p><div class="btn-row brk-acts"><button class="btn primary" type="button" id="brkDrank">I had a glass</button></div></div>`;
+  brkSub();
+  brkTick();
+  if (act === 'breathe' || act === 'stretch' || act === 'eyes') BRK.iv = setInterval(brkTick, 250);
+  else if (!act || act === 'water') BRK.iv = setInterval(brkSub, 1000);
+}
+/** Draw the running activity from the clock (so a throttled tab catches up instead of drifting). */
+function brkTick() {
+  const e = (Date.now() - BRK.t0) / 1000, cue = t => { if (BRK.cue !== t) { BRK.cue = t; const c = $('#brkCue'); if (c) c.textContent = t; } };
+  if (!$('#brkDlg').open) { brkStop(); return; }
+  brkSub();
+  if (BRK.act === 'breathe') {
+    const round = BRK_BREATH.reduce((a, p) => a + p[1], 0), total = round * BRK_ROUNDS, orb = $('#brkOrb');
+    if (e >= total) { if (!BRK.done) { BRK.done = true; brkStop(); orb.className = 'brk-orb'; $('#brkN').textContent = '✓'; cue('Done. Notice how you feel.'); $('#brkRound').innerHTML = '<button class="linkbtn" type="button" data-brk="breathe">Once more</button>'; } return; }
+    let w = e % round, i = 0;
+    while (w >= BRK_BREATH[i][1]) { w -= BRK_BREATH[i][1]; i++; }
+    cue(BRK_BREATH[i][0]);
+    orb.className = 'brk-orb ' + ['in', 'hold', 'out'][i];
+    $('#brkN').textContent = Math.ceil(BRK_BREATH[i][1] - w);
+    $('#brkRound').textContent = `Round ${Math.floor(e / round) + 1} of ${BRK_ROUNDS}`;
+  } else if (BRK.act === 'stretch') {
+    const s = BRK_STRETCH[BRK.si % BRK_STRETCH.length];
+    cue(s[0]);
+    $('#brkText').textContent = s[1];
+    $('#brkRound').textContent = `Stretch ${BRK.si % BRK_STRETCH.length + 1} of ${BRK_STRETCH.length}`;
+    $('#brkBody .brk-bar i').style.transform = `translateX(${(Math.min(1, e / BRK_HOLD) * 100 - 100).toFixed(1)}%)`;
+    $('#brkHint').textContent = e >= BRK_HOLD ? 'Swap sides, or go on to the next one.' : `Hold for about ${Math.ceil(BRK_HOLD - e)} s`;
+  } else if (BRK.act === 'eyes') {
+    if (e >= BRK_EYES) { if (!BRK.done) { BRK.done = true; brkStop(); $('#brkN').textContent = '✓'; cue('Done. Blink a few times.'); uiSound('tap'); } return; }
+    cue('Look at something far away');
+    $('#brkN').textContent = Math.ceil(BRK_EYES - e);
+  } else if (BRK.act === 'water') {
+    const n = waterToday();
+    cue(n ? `${n} ${n === 1 ? 'glass' : 'glasses'} today` : 'None counted yet today');
+  }
+}
+function brkDrank(el) {
+  if (isPreview()) { previewPrompt(el || $('#brkDrank')); return false; }   // the demo changes nothing
+  S.ui.water = { d: todayKey(), n: Math.min(99, waterToday() + 1) };
+  saveLocal();
+  brkTick();
+  return true;
+}
+
 /* ---------- What the answers add up to (Stats → Focus insights) ---------- */
 /** Intentions kept and distractions counted, over the last 60 days. */
 function intentInsights() {
@@ -20696,6 +20853,47 @@ function intentInsights() {
   for (const s of ss) { const m = s.duration / 60000, k = part(new Date(s.start).getHours()), g = (by[k] ||= { dx: 0, min: 0 }); mins += m; dx += +s.dx || 0; g.dx += +s.dx || 0; g.min += m; }
   const worst = Object.entries(by).filter(([, v]) => v.min >= 120 && v.dx).map(([k, v]) => ({ k, r: v.dx / v.min * 60 })).sort((a, b) => b.r - a.r)[0] || null;
   return { n: ans.length, done, partly, dxPerHour: dx && mins >= 60 ? dx / mins * 60 : null, worst };
+}
+
+/**
+ * What the session log says without any check-in (v2.0): the last 7 days against the 7 before, overtime habits,
+ * the weekly plan's balance, and where you stand among friends. The friends part reads only what this device has
+ * already loaded of what they publish (their weekly minutes) — no extra reads, nothing new published.
+ */
+function logInsights() {
+  const now = Date.now(), d7 = now - 7 * DAY_MS, d14 = now - 14 * DAY_MS, d60 = now - 60 * DAY_MS;
+  const mins = ss => Math.round(ss.reduce((a, s) => a + (+s.duration || 0), 0) / 60000);
+  const week = mins(S.sessions.filter(s => s.start >= d7)), before = mins(S.sessions.filter(s => s.start >= d14 && s.start < d7));
+  // overtime and early finishes, over 60 days (blocks that say what was planned)
+  const planned = S.sessions.filter(s => s.start >= d60 && +s.planned > 0), over = planned.filter(s => +s.ot > 0), early = planned.filter(s => s.early).length;
+  const ot = planned.length >= 5 && (over.length || early) ? { n: over.length, of: planned.length, avg: over.length ? over.reduce((a, s) => a + +s.ot, 0) / over.length : 0, early } : null;
+  // the weekly plan
+  const w = planWeek(), behind = w.list.filter(r => r.status === 'behind').sort((a, b) => b.behindBy - a.behindBy)[0] || null;
+  const plan = w.list.length ? { n: w.list.length, ok: w.list.filter(r => r.status !== 'behind').length, behind } : null;
+  // among friends: this week's minutes as published (Monday weeks), from the cache only
+  let friends = null;
+  if (USER && !USER.guest && SOC.started) {
+    const wk = monWeekKey(), mine = Math.round(S.sessions.filter(s => s.start >= weekStartOf(new Date(), 1).getTime()).reduce((a, s) => a + (+s.duration || 0), 0) / 60000);
+    const theirs = friendsList().map(f => (SOC.cache['publicStats/' + otherUid(f)] || {}).v).filter(v => v && typeof v.weekMin === 'number').map(v => (v.weekKey === wk ? v.weekMin : 0));
+    if (theirs.length >= 2 && mine > 0) friends = { n: theirs.length, ahead: theirs.filter(m => mine > m).length };
+  }
+  return { week, before, ot, plan, friends };
+}
+let friendStatsAt = 0;
+/** Friends' weekly minutes for "Among friends": through the shared cache, at most 12 friends, once every 30 minutes, and only when Stats is open. */
+function primeFriendStats() {
+  if (!USER || USER.guest || !SOC.started || S.ui.tab !== 'stats' || Date.now() - friendStatsAt < 30 * 60000) return;
+  friendStatsAt = Date.now();
+  const need = friendsList().map(otherUid).filter(u => !SOC.cache['publicStats/' + u]).slice(0, 12);
+  if (need.length) Promise.all(need.map(u => getPublic('publicStats', u))).then(() => { if (S.ui.tab === 'stats') renderEnergyCard(); }).catch(() => {});
+}
+/** One sentence to act on, from what the week showed. Never a judgement. */
+function weekTakeaway(L, J) {
+  if (L.plan && L.plan.behind) return `${L.plan.behind.name} is ${fmtMin(L.plan.behind.behindBy)} behind this week’s plan: a block of it next?`;
+  if (J.worst) return `Most distractions come in the ${J.worst.k}. That may be the time for lighter work.`;
+  if (L.ot && L.ot.n >= 3 && L.ot.n / L.ot.of >= 0.4) return `You often keep going past the timer (${L.ot.n} of ${L.ot.of} blocks). A longer preset may suit you.`;
+  if (J.n >= 5 && J.done / J.n >= 0.7) return `You finish what you set out to do: ${J.done} of ${J.n} intentions.`;
+  return '';
 }
 
 /* ---------- The session-complete summary card ---------- */
@@ -20733,25 +20931,36 @@ function energyInsights() {
 function renderEnergyCard() {
   const el = $('#energySlot');
   if (!el || !USER) return;
-  if ((S.settings.energy || 'always') === 'off' && !Object.keys(S.energy).length) { el.innerHTML = ''; return; }
-  const I = energyInsights();
-  if (I.n < 10) {
-    el.innerHTML = `<div class="card"><h2>⚡ Focus insights</h2><p class="muted" style="margin:0;font-size:14px">Keep checking in after sessions to unlock insights — ${I.n}/10 so far.</p><div class="ins-progress"><i style="width:${I.n * 10}%"></i></div></div>`;
+  const off = (S.settings.energy || 'always') === 'off' && !Object.keys(S.energy).length;   // check-ins switched off and none ever given
+  primeFriendStats();
+  const I = energyInsights(), L = logInsights(), J = intentInsights(), rated10 = I.n >= 10;
+  const D = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+  const box = (k, v, s = '') => `<div class="ins"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+  // v2.0: what the log alone says needs no check-in (intentions, distractions, overtime, the plan, friends)
+  const boxes = [
+    rated10 && I.time ? box('Best time of day', I.time.k, `${energyWord(I.time.a)}${I.hour ? ` · peak around ${fmtHr(+I.hour.k)}` : ''}`) : '',
+    rated10 && I.lenNote ? box('Session length', I.lenNote) : '',
+    rated10 && I.days.length ? box('Best days', I.days.map(d => D[d.k]).join(' & '), energyWord(I.days[0].a)) : '',
+    rated10 && I.subjTop ? box('By subject', esc(I.subjTop.k) + ' feels best', I.subjLow && I.subjLow.k !== I.subjTop.k ? `${esc(I.subjLow.k)} is the toughest` : '') : '',
+    J.n >= 3 ? box('Intentions', `${J.done} of ${J.n} done`, J.partly ? `${J.partly} partly` : 'last 60 days') : '',
+    J.dxPerHour !== null ? box('Distractions', `${J.dxPerHour.toFixed(1)} an hour`, J.worst ? `most in the ${J.worst.k}` : 'counted by you') : '',
+    L.ot ? box('Overtime', `${L.ot.n} of ${L.ot.of} blocks`, [L.ot.n ? `about ${Math.max(1, Math.round(L.ot.avg))} min past the timer` : '', L.ot.early ? `${L.ot.early} finished early` : ''].filter(Boolean).join(' · ')) : '',
+    L.plan ? box('Weekly plan', `${L.plan.ok} of ${L.plan.n} on track`, L.plan.behind ? `${esc(L.plan.behind.name)} is ${fmtMin(L.plan.behind.behindBy)} behind` : 'nothing behind') : '',
+    L.friends && L.friends.ahead ? box('Among friends', L.friends.ahead === L.friends.n ? `Ahead of all ${L.friends.n}` : `Ahead of ${L.friends.ahead} of ${L.friends.n}`, 'this week, by focus time') : '',
+  ].filter(Boolean);
+  const hint = rated10 || off ? '' : `<p class="muted" style="margin:0;font-size:14px">Keep checking in after sessions to unlock insights — ${I.n}/10 so far.</p><div class="ins-progress"><i style="width:${I.n * 10}%"></i></div>`;
+  if (!boxes.length && !L.week) {   // nothing to say yet: the invitation to check in, or nothing at all (as before 2.0)
+    el.innerHTML = hint ? `<div class="card"><h2>⚡ Focus insights</h2>${hint}</div>` : '';
     return;
   }
-  const D = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'], J = intentInsights();
-  const box = (k, v, s = '') => `<div class="ins"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
-  el.innerHTML = `<div class="card"><div class="row between" style="margin-bottom:8px"><h2 style="margin:0">⚡ Focus insights</h2><span class="lbl">${I.n} check-ins</span></div>
-    <div class="ins-grid">
-      ${I.time ? box('Best time of day', I.time.k, `${energyWord(I.time.a)}${I.hour ? ` · peak around ${fmtHr(+I.hour.k)}` : ''}`) : ''}
-      ${I.lenNote ? box('Session length', I.lenNote) : ''}
-      ${I.days.length ? box('Best days', I.days.map(d => D[d.k]).join(' & '), energyWord(I.days[0].a)) : ''}
-      ${I.subjTop ? box('By subject', esc(I.subjTop.k) + ' feels best', I.subjLow && I.subjLow.k !== I.subjTop.k ? `${esc(I.subjLow.k)} is the toughest` : '') : ''}
-      ${J.n >= 3 ? box('Intentions', `${J.done} of ${J.n} done`, J.partly ? `${J.partly} partly` : 'last 60 days') : ''}
-      ${J.dxPerHour !== null ? box('Distractions', `${J.dxPerHour.toFixed(1)} an hour`, J.worst ? `most in the ${J.worst.k}` : 'counted by you') : ''}
-    </div>
-    <div class="lbl" style="margin-top:14px">Average focus · last 4 weeks</div>
-    <div class="ins-chart" role="img" aria-label="Average focus rating for the last 4 weeks">${I.weeks.map(w => `<div><i style="height:${w.n ? Math.max(6, (w.a / 4) * 64) : 2}px;${w.n ? '' : 'opacity:.25'}" title="${w.n ? energyWord(w.a) + ' · ' + w.n + ' check-ins' : 'No check-ins'}"></i>${w.label}</div>`).join('')}</div></div>`;
+  const diff = L.week - L.before, take = weekTakeaway(L, J);
+  const week = L.week || L.before ? `<div class="ins-week"><div class="k">Last 7 days</div><div class="v">${fmtMin(L.week)}</div><div class="s">${!L.before ? 'of focus' : diff > 0 ? `${fmtMin(diff)} more than the 7 days before` : diff < 0 ? `the 7 days before: ${fmtMin(L.before)}` : 'the same as the 7 days before'}</div>${take ? `<p class="ins-take">${esc(take)}</p>` : ''}</div>` : '';
+  el.innerHTML = `<div class="card"><div class="row between" style="margin-bottom:8px"><h2 style="margin:0">⚡ Focus insights</h2>${rated10 ? `<span class="lbl">${I.n} check-ins</span>` : ''}</div>
+    ${week}
+    ${boxes.length ? `<div class="ins-grid">${boxes.join('')}</div>` : ''}
+    ${hint ? `<div class="ins-hint">${hint}</div>` : ''}
+    ${rated10 ? `<div class="lbl" style="margin-top:14px">Average focus · last 4 weeks</div>
+    <div class="ins-chart" role="img" aria-label="Average focus rating for the last 4 weeks">${I.weeks.map(w => `<div><i style="height:${w.n ? Math.max(6, (w.a / 4) * 64) : 2}px;${w.n ? '' : 'opacity:.25'}" title="${w.n ? energyWord(w.a) + ' · ' + w.n + ' check-ins' : 'No check-ins'}"></i>${w.label}</div>`).join('')}</div>` : ''}</div>`;
 }
 /** Pomeo shares one insight, at most once a day. */
 const INSIGHT_DAY_KEY = 'pomodorolist-insight-day';
@@ -21088,7 +21297,7 @@ function demoDocs() {
   rec.forEach((s, i) => { energy[s.id] = new Date(s.start).getHours() < 12 ? (i % 5 ? 4 : 3) : (i % 3 ? 3 : 2); });
   // v2.0: intentions, their answers and a few counted distractions on the latest blocks (the last one "partly": something to pick up)
   const debrief = {}, wants = ['Finish Q1–15 and check the answers', 'Summarise the chapter on one page', 'Redo yesterday’s wrong questions', 'One full mock section, timed'];
-  rec.slice(-14).forEach((s, i, a) => { s.int = wants[i % wants.length]; debrief[s.id] = i === a.length - 1 ? 2 : i % 5 === 3 ? 2 : i % 7 === 5 ? 3 : 1; if (i % 3 === 1) s.dx = 1 + (i % 4); });
+  rec.slice(-14).forEach((s, i, a) => { s.int = wants[i % wants.length]; debrief[s.id] = i === a.length - 1 ? 2 : i % 5 === 3 ? 2 : i % 7 === 5 ? 3 : 1; if (i % 3 === 1) s.dx = 1 + (i % 4); if (i % 4 === 2) { s.ot = 4 + (i % 5); s.planned = s.duration - s.ot * 60000; } if (i === 5) { s.early = 1; s.planned = s.duration + 10 * 60000; } });
   const tomorrow = addDays(startOfDay(now), 1), soon = new Date(Date.now() + 3 * 3600e3);
   const profile = {
     username: 'demo_scholar', onboarded: true,
@@ -21245,13 +21454,13 @@ function startPreview() {
 }
 /** Leaving reloads the page, so nothing from the demo stays in memory. "#signup" opens the sign-up tab. */
 function exitPreview(signup) { history.replaceState(null, '', location.pathname + location.search + (signup ? '#signup' : '')); location.reload(); }
-const PV_BLOCK = ['#scPauseGo', '#scPauseEnd', '#blkDelete', '#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
+const PV_BLOCK = ['#brkDrank', '#scPauseGo', '#scPauseEnd', '#blkDelete', '#plSave', '[data-dnew]', '[data-ddel]', '[data-cdel]', '[data-dkbulk]', '#dkAdd button', '[data-drename]', '[data-cedit]', '[data-rmset-save]', '[data-rmset-apply]', '[data-rmset-del]', '[data-rremove]', '.gd-plot.ready', '[data-gbuy]', '[data-gequip]', '[data-gplant]', '[data-gharvest]', '[data-gplace]', '[data-gplaceat]', '[data-gremove]', '[data-gfocus]', '#mainBtn', '#skipBtn', '[data-qs]', '[data-buy]', '[data-equip]', '[data-toggle-extra]', '[data-kudos]', '[data-accept]', '[data-decline]', '[data-block]', '[data-unblock]',
   '[data-join]', '[data-start]', '[data-claimlogin]', '#loginClaim', '[data-sremind]', '[data-hrsvp]', '[data-sjoin]', '[data-sask]', '[data-shost]', '[data-sinvite]', '[data-sallow]', '[data-sdeny]', '[data-skick]', '[data-shand]', '[data-scode]', '[data-remadd]', '#remAdd', '[data-rdone]', '[data-rdel]', '[data-redit]', '[data-rev]', '[data-del]', '[data-delp]',
   '[data-exdel]', '[data-tdel]', '[data-tload]', '[data-remove]', '[data-tick]', '[data-energy]', '#parkBtn', '#subToggle', '#subCheckAdd', '#remDelete', '#presetForm button[type="submit"]', '#noteSave', '#revSchedule', '#examsBtn',
   '#importBtn', '#exportBtn', '#wipeBtn', '#pomeoOutfit', '[data-sell]', '[data-sellall]', '[data-fav]', '[data-compost]', '[data-gtask]', '#replayTour', '#resetTips', '[data-news-tut]', '[data-news-min]', '#addFriendForm button', '#chips .chip', '[data-pin]', '.chip .pin',
   '#squadBtn', '[data-squad]', '#examCard', '[data-gl]', '#tutMinimal', '#squadEdit', '[data-bclaim]', '[data-qclaim]', '[data-pclaim]', '[data-pclaimall]', '[data-preact]', '#setPosts', '[data-posttype]', '[data-bequip]', '[data-bunequip]', '[data-btoggle]', '[data-petequip]', '[data-petunequip]', '#egOut',
   '#loNew', '[data-lo-apply]', '[data-lo-del]', '#setFestive', '#todoAdd button', '#todoMore', '[data-tdone]', '[data-tdel]', '[data-tfocus]', '[data-tgrip]', '#tdSave', '#tdDelete', '[data-cdstyle]', '[data-cdbn]', '[data-cdfeat]', '[data-cdpriv]', '#shSave', '#shNative', '#shCopy', '#shLink', '#setTod', '#setTodRain', '#clanCreateBtn', '#clanJoinBtn', '#ccSave', '#cjFind', '#clanCardGo', '#ciRegen', '#ciCopy', '[data-cbuy]', '[data-cuse]', '#csdSave', '[data-cmode]', '#cstShop', '#cstSched', '#cstTransfer', '#cstDisband', '[data-rsvp]', '[data-cremind]', '[data-cedit]', '[data-ccancel]', '[data-cstart]', '[data-cjoinlive]', '#clanStudyNow', '#clanSchedBtn', '[data-react]', '[data-lvctl]', '#clanLeave', '[data-crole]', '[data-ctransfer]', '[data-cremove]', '[data-creqok]', '[data-creqno]', '#clanQuestClaim', '#clanRaidClaim', '[data-crbefore]', '#clanCancelReq', '#clanInvite'].join(',');
-const PV_WHY = [['#streakDlg', 'set a rest day, pause your streak or mend a missed day'], ['#blockForm,#calBody,#blkDelete', 'plan your study on a calendar'], ['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
+const PV_WHY = [['#brkDrank', 'keep your own water count'], ['#streakDlg', 'set a rest day, pause your streak or mend a missed day'], ['#blockForm,#calBody,#blkDelete', 'plan your study on a calendar'], ['#plSave', 'plan your week'], ['[data-dnew],[data-ddel],[data-cdel],[data-dkbulk],#dkAdd button,[data-drename],[data-cedit]', 'make your own flashcards'], ['[data-rmset-save],[data-rmset-apply],[data-rmset-del],[data-rremove]', 'decorate Pomeo’s room'], ['.gd-plot.ready,[data-gbuy],[data-gequip],[data-gplant],[data-gharvest],[data-gplace],[data-gplaceat],[data-gremove],[data-gfocus]', 'grow your own garden'], ['[data-buy],[data-equip],[data-toggle-extra]', 'buy and equip shop items'], ['#mainBtn,[data-qs],#skipBtn', 'start your own focus sessions'], ['[data-kudos],[data-accept],[data-decline],#addFriendForm button,[data-block]', 'add friends and send kudos'],
   ['[data-claimlogin],#loginClaim', 'collect daily rewards'], ['[data-sjoin],[data-sask],[data-shost],[data-sinvite],[data-sallow],[data-sdeny],[data-skick],[data-shand],[data-scode],[data-sremind]', 'study live with friends'], ['[data-hrsvp]', 'join your clan’s sessions'], ['[data-sell],[data-sellall],[data-fav],[data-compost]', 'sell your harvests for produce'], ['[data-gtask]', 'claim garden tasks'], ['[data-bclaim],[data-qclaim]', 'claim boss and questline rewards'], ['[data-bequip],[data-bunequip],[data-btoggle],#loNew,[data-lo-apply],[data-lo-del]', 'equip items and save looks'], ['[data-petequip],[data-petunequip],#egOut', 'keep garden pets'], ['#remAdd,[data-remadd],[data-rdone],[data-redit],[data-rdel]', 'plan your own reminders'], ['#todoAdd button,#todoMore,[data-tdone],[data-tdel],[data-tfocus],[data-tgrip],#tdSave,#tdDelete', 'keep your own to-do list'], ['[data-cdstyle],[data-cdbn],[data-cdfeat],[data-cdpriv],#shSave,#shNative,#shCopy,#shLink', 'make and share your own player card'], ['#clanCreateBtn,#clanJoinBtn,#ccSave,#cjFind,#clanCardGo,[data-cjoinlive],#clanStudyNow,[data-react],[data-lvctl],[data-rsvp],[data-cremind],#clanSchedBtn,[data-cbuy],[data-cuse],#clanLeave,#clanQuestClaim,#clanRaidClaim,#clanInvite', 'create or join a clan and study live together']];
 function previewPrompt(el) {
   const why = (PV_WHY.find(([sel]) => el && el.closest(sel)) || [, 'save your own sessions and settings'])[1];
@@ -22405,6 +22614,17 @@ $('#setFestive').addEventListener('change', e => { S.settings.festive = e.target
 $('#setRipen').addEventListener('change', e => { S.settings.ripen = e.target.checked; save(); paintRing(); });
 $('#setMinPomeo').addEventListener('change', e => { S.settings.minPomeo = e.target.checked; save(); renderAll(); });
 $('#setEnergy').addEventListener('change', e => { S.settings.energy = e.target.value; save(); if (S.ui.tab === 'stats') renderStats(); });
+$('#setBreakActs').addEventListener('change', e => { S.settings.breakActs = e.target.checked; save(); renderBrkRow(); });
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-brk]');
+  if (b) { openBreak(b.dataset.brk); return; }
+  if (!e.target.closest('#brkDlg')) return;
+  if (e.target.id === 'brkDlg' || e.target.id === 'brkClose') $('#brkDlg').close();
+  else if (e.target.id === 'brkBack') { brkShow(''); $('#brkTitle').focus({ preventScroll: true }); }
+  else if (e.target.id === 'brkNext') { BRK.si++; BRK.t0 = Date.now(); BRK.cue = ''; brkTick(); }
+  else if (e.target.id === 'brkDrank') brkDrank(e.target);
+});
+$('#brkDlg').addEventListener('close', brkStop);
 $('#streakCare').addEventListener('click', openStreakCare);
 $('#setStreakCare').addEventListener('click', openStreakCare);
 $('#streakDlg').addEventListener('click', e => { if (e.target.id === 'streakDlg' || e.target.id === 'scClose') $('#streakDlg').close(); });

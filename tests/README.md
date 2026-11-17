@@ -51,6 +51,12 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   maps on a second device, a 1.20 client on the same account (its save leaves the new maps alone), the demo (shown,
   nothing written) and a phone. The logic runs for a guest with the clock pinned (`page.clock`), so it does not depend
   on the date; it needs the fixture `site/v120.html` (the 1.20 build, made by `restore.sh`).
+- `v600c.mjs` (v2.0 phase 6): break ideas — the row under the timer on breaks only, the breathing minute (4-4-6,
+  four rounds, announced, still with reduced motion), stretch cards, the 20-second eye rest, the water count (this
+  device, today), the setting, the palette — and Focus insights from the log alone: "Last 7 days" against the 7
+  before, Overtime, Weekly plan, Among friends, the one-line suggestion, names shown as text; the demo (nothing
+  written) and a phone. The activities are drawn from the clock, so the checks move their start time instead of
+  waiting; the clock is pinned to a Thursday so the plan check does not depend on the weekday.
   The runners treat three-digit suites (`v200a` …) as v2.0 ones; `v6`, `v6c`, `v7c` … are old and keep Overtime off.
 - `v500b.mjs`: the Calendar on a signed-up account — wiring (sidebar, key C, palette), the Month grid, the day dialog
   and the keyboard, dragging to another day with Undo, the Week (positions, overlap, drag over empty hours to plan a
