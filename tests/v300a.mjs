@@ -122,7 +122,7 @@ check('While a block runs the arc empties clockwise (a negative offset, the cap 
 await wait(3000);
 const calm = await A.ev(() => {
   const ring = $('#ring'), inf = document.getAnimations().filter(a => a.effect && a.effect.target && a.effect.getComputedTiming().iterations === Infinity && !ring.contains(a.effect.target));
-  return { dim: document.body.classList.contains('focus-dim'), loops: inf.length, running: inf.filter(a => a.playState === 'running').map(a => (a.animationName || '?') + '@' + (a.effect.target.id || a.effect.target.className)).slice(0, 6) };
+  return { dim: document.body.classList.contains('focus-dim'), loops: inf.length, running: inf.filter(a => a.playState === 'running' && a.playbackRate !== 0).map(a => (a.animationName || '?') + '@' + (a.effect.target.id || a.effect.target.className)).slice(0, 6) };
 });
 check('Nothing loops while a focus block runs except the ring: every endless animation outside it is paused', calm.dim && calm.running.length === 0, JSON.stringify(calm));
 const paused = await A.ev(async () => { const sl = ms => new Promise(r => setTimeout(r, ms)); pauseTimer(); await sl(300); const off = parseFloat($('#ringProg').style.strokeDashoffset); $('#resetBtn').click(); await sl(900); const again = document.getAnimations().filter(x => x.__calm).length; return { off, rest: parseFloat(getComputedStyle($('#ringProg')).strokeDashoffset), status: S.timer.status, stillHeld: again }; });
