@@ -4783,6 +4783,28 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
   #calBody .cal-ev { min-height: 0; }   /* drawn 44 px or taller by its length (see CAL_MINLEN) */
   #calBody .cw-ad .cal-chip { height: 44px; }
 }
+/* ----- v2.0 phase 6: intention, debrief, distraction tally, resume ----- */
+.int-toggle { margin-left: 14px; }
+.int-ed { margin-top: 10px; }
+.int-row { display: flex; align-items: center; gap: 8px; }
+.int-row input { flex: 1; min-width: 0; }
+.debrief .opts { grid-template-columns: repeat(3, 1fr); }
+.debrief .eq span { min-width: 0; overflow-wrap: anywhere; }
+.debrief .eq b { font-weight: 600; }
+.timer-card .dx-btn { position: absolute; top: 12px; right: 104px; z-index: 3; }
+.dx-btn svg { width: 18px; height: 18px; }
+.dx-n { position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; display: grid; place-items: center; font-size: 11px; font-weight: 700; line-height: 1; background: var(--t-1, var(--text)); color: var(--bg); }
+.dx-n:empty { display: none; }
+.resume { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0 2px; padding: 10px 12px 10px 14px; border-radius: var(--r-12, 12px); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent); text-align: left; }
+.rs-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.rs-t b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rs-s { font-size: 13px; color: var(--t-2, var(--muted)); overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }   /* what was left may need two lines */
+.rs-s:empty { display: none; }
+.rs-a { display: flex; align-items: center; gap: 4px; flex: none; }
+.intent { display: inline-block; margin-left: 8px; font-size: 12.5px; color: var(--t-2, var(--muted)); }
+.intent b { color: var(--t-1, var(--text)); font-weight: 700; }
+.dx-tag { margin-left: 8px; font-size: 12px; color: var(--t-2, var(--muted)); font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .int-toggle { margin-left: 0; display: flex; } }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -5082,6 +5104,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
             <div class="pomeo-bubble hidden" id="pomeoBubble" role="status" aria-live="polite"></div>
           </div>
  <button class="iconbtn park-btn hidden" id="parkBtn" title="Park a distracting thought (P)" aria-label="Park a distracting thought"><span class="park-ic" aria-hidden="true">P</span></button>
+ <button class="iconbtn dx-btn hidden" id="dxBtn" title="I got distracted: count it (D). Nothing else happens." aria-label="I got distracted. Count it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12c2.2-4 4.3-4 6.5 0s4.3 4 6.5 0 3.3-3 5-1.5"/></svg><b class="dx-n" id="dxN" aria-hidden="true"></b></button>
           <div class="park-pop hidden" id="parkPop"><input type="text" id="parkInput" maxlength="140" placeholder="Park a thought… (Enter)" aria-label="Distracting thought" autocomplete="off"><button class="btn small" id="parkSave">Park</button></div>
           <button class="iconbtn corner" id="muteBtn" title="Toggle sound" aria-label="Toggle sound"></button>
           <div class="ring" id="ring">
@@ -5109,6 +5132,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
             <button class="btn primary" id="mainBtn"><span class="mb-lbl">Start</span></button>
             <button class="btn" id="skipBtn">Skip</button>
           </div>
+          <div id="resumeSlot"></div>
           <div class="qs-row hidden" id="quickStart" aria-label="Quick start a preset"></div>
           <div class="sub-check hidden" id="subCheck" aria-label="Subtasks">
             <div class="sc-head"><span class="sc-n" id="subN"></span><span class="sc-bar"><i id="subBar"></i></span><button class="sc-add" id="subCheckAdd" title="Add a subtask (T)" aria-label="Add a subtask">+</button></div>
@@ -5117,6 +5141,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
           </div>
           <div class="after-row hidden" id="noteRow" aria-label="Session complete">
             <div class="sum-head" id="sumHead"></div>
+            <div class="energy debrief hidden" id="debriefRow" aria-live="polite"></div>
             <div class="energy hidden" id="energyRow" aria-live="polite"></div>
             <div class="sub-sum hidden" id="subSum"></div>
             <div class="note-row">
@@ -5137,6 +5162,12 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
             <ui-color id="nameColor" title="Colour for this name" aria-label="Colour for this name"></ui-color>
           </div>
           <button class="sub-toggle" id="subToggle" aria-expanded="false" aria-controls="subEd">+ Add subtasks</button>
+          <button class="sub-toggle int-toggle" id="intToggle" aria-expanded="false" aria-controls="intEd">+ Add an intention</button>
+          <div class="int-ed hidden" id="intEd">
+            <label class="field" for="intInput">What will “done” look like for this block?</label>
+            <div class="int-row"><input type="text" id="intInput" maxlength="100" placeholder="e.g. finish Q1–15 and check the answers" autocomplete="off"><button type="button" class="iconbtn" id="intClear" aria-label="Remove the intention" title="Remove">×</button></div>
+            <div class="sub-hint">Only you see it. After the block you can tick whether you did it.</div>
+          </div>
           <div class="sub-last hidden" id="subLast"></div>
           <div class="sub-ed hidden" id="subEd">
             <ul class="sub-ed-list" id="subEdList"></ul>
@@ -5372,6 +5403,10 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
         <div class="setting" data-k="energy check-in focus rating feel mood insights">
           <div><div>Energy check-in</div><div class="desc">After a focus session, tap how focused you felt. Unlocks insights in Stats.</div></div>
           <ui-select id="setEnergy" aria-label="Energy check-in"><option value="always">Always</option><option value="sometimes">Sometimes (every 3rd)</option><option value="off">Off</option></ui-select>
+        </div>
+        <div class="setting" data-k="intention debrief goal done distraction tally resume pick up left off">
+          <div><div>Intention &amp; debrief</div><div class="desc">A one-line “what will done look like?” before a block, a tick after it, a quiet “I got distracted” counter, and “pick up where you left off”. Private.</div></div>
+          <input type="checkbox" id="setIntent" aria-label="Intention and debrief">
         </div>
       </div>
 
@@ -5898,6 +5933,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
     <kbd>R</kbd><span>Reset</span>
     <kbd>S</kbd><span>Skip to the next phase</span>
     <kbd>P</kbd><span>Park a distracting thought (during focus)</span>
+    <kbd>D</kbd><span>Count a distraction (during focus; nothing else happens)</span>
     <kbd>N</kbd><span>Type the session name</span>
     <kbd>T</kbd><span>Add a subtask</span>
     <span><kbd>1</kbd>–<kbd>9</kbd></span><span>On the Timer with a checklist: tick that subtask. Otherwise 1–9 switch tabs.</span>
@@ -7978,7 +8014,8 @@ function defaultState() {
                 pomeo: true, pomeoTalk: 'sometimes', waterNudge: true, breakCards: true, shopDot: true, dailyTip: true,
                 bossMode: 'solo', shortcuts: true, revIntervals: [1, 3, 7, 21, 45],
                 minPomeo: true, energy: 'always', useCase: '', atmosphere: true, ripen: true, festive: true, todRain: false,
-                allDayAt: '08:00' },   // when all-day reminders alert (v2.0)
+                allDayAt: '08:00',     // when all-day reminders alert (v2.0)
+                intent: true },        // intention before a block, debrief after it, distraction tally, resume card (v2.0)
     presets: [
       { id: 'p-classic', name: 'Classic 25/5',    focus: 25, short: 5,  long: 15, rounds: 4 },
       { id: 'p-deep',    name: 'Deep Work 50/10', focus: 50, short: 10, long: 20, rounds: 3 },
@@ -7992,6 +8029,7 @@ function defaultState() {
     reminders: [],  // see REMINDERS
     notes: {},      // sessionId -> one-line note
     energy: {},     // sessionId -> focus check-in 1 (low) … 4 (locked in)
+    debrief: {},    // sessionId -> did you do what you intended: 1 yes · 2 partly · 3 not yet (v2.0)
     tomb: {},       // 'reminders:<id>' -> when it was deleted (see SYNC MERGE)
     remFired: {},   // '<reminderId>@<day>@<time>' -> when it rang (on any device)
     onboarded: false,  // finished or skipped the tutorial (synced, so it shows once per account)
@@ -8017,7 +8055,7 @@ function defaultState() {
     plan: [],       // weekly subject plan: { id, v, name, hrs } (see WEEKLY SUBJECT PLAN)
     game: normalizeGame(null),  // purchases, equipped items, claimed rewards, used streak freezes
     // Device-only fields (never uploaded):
-    timer: { phase: 'focus', round: 1, status: 'idle', endAt: 0, remaining: 0, planned: 0, focusStartedAt: 0, name: '', subtasks: [] },
+    timer: { phase: 'focus', round: 1, status: 'idle', endAt: 0, remaining: 0, planned: 0, focusStartedAt: 0, name: '', subtasks: [], intent: '', dx: 0 },   // intent, dx: this block's intention and distraction tally (v2.0)
     subTemplates: [],  // saved subtask lists { id, name, items, used }
     ui: { tab: 'timer', statsView: 'week', gardenView: 'garden', shopCat: 'sound', friendsView: 'friends', lbScope: 'friends', lbPeriod: 'week', questView: 'boss', bagFilter: 'all', bagCat: 'all' },
     pendingSessions: [],  // logged while the sync service could not load at all; uploaded next time
@@ -8040,11 +8078,13 @@ function hydrate(obj) {
   if (!Array.isArray(out.presets) || !out.presets.length) out.presets = def.presets;
   for (const k of ['sessions', 'recent', 'pinned', 'chips', 'pendingSessions', 'reminders', 'revisions', 'exams', 'parked', 'abandoned', 'squad', 'subTemplates', 'loadouts', 'todos', 'goalLog', 'plants', 'gbuys', 'roomSets', 'decks', 'cards', 'plan', 'eggs']) if (!Array.isArray(out[k])) out[k] = [];
   if (!Array.isArray(out.timer.subtasks)) out.timer.subtasks = [];
+  if (typeof out.timer.intent !== 'string') out.timer.intent = '';
   if (!out.chips.length && (out.recent.length || out.pinned.length)) out.chips = chipsFromLegacy(out.recent, out.pinned);   // v1.18: the old two lists become chips once
   out.revisions = cleanRevisions(out.revisions);
   out.reminders = out.reminders.filter(r => r && r.id && typeof r.date === 'string' && typeof r.time === 'string');
   if (!out.notes || typeof out.notes !== 'object' || Array.isArray(out.notes)) out.notes = {};
   if (!out.energy || typeof out.energy !== 'object' || Array.isArray(out.energy)) out.energy = {};
+  if (!out.debrief || typeof out.debrief !== 'object' || Array.isArray(out.debrief)) out.debrief = {};
   for (const k of ['tomb', 'remFired']) if (!out[k] || typeof out[k] !== 'object' || Array.isArray(out[k])) out[k] = {};
   if (!out.names || typeof out.names !== 'object' || Array.isArray(out.names)) out.names = {};
   out.game = normalizeGame(obj.game);
@@ -8163,6 +8203,7 @@ function profileFromState() {
     reminders: S.reminders,
     notes: recentNotes(),
     energy: recentEnergy(),
+    debrief: recentDebrief(),
     onboarded: !!S.onboarded,
     wipedAt: +S.wipedAt || 0,
     tomb: pruneMap(S.tomb, 120 * DAY_MS),
@@ -8673,6 +8714,7 @@ function mergeData(obj) {
   for (const r of src.reminders) if (r && r.id && r.time && r.date && !S.reminders.some(x => x.id === r.id)) S.reminders.push(r);
   for (const [k, v] of Object.entries(src.notes)) if (!S.notes[k]) S.notes[k] = v;
   for (const [k, v] of Object.entries(src.energy)) if (!S.energy[k] && v >= 1 && v <= 4) S.energy[k] = Math.round(v);
+  for (const [k, v] of Object.entries(src.debrief || {})) if (!S.debrief[k] && v >= 1 && v <= 3) S.debrief[k] = Math.round(v);
   for (const k of ['revisions', 'exams', 'parked', 'abandoned', 'subTemplates']) for (const x of src[k]) if (x && x.id && !S[k].some(y => y.id === x.id)) S[k].push(x);
   for (const [k, v] of Object.entries(sg.trophies)) if (!g.trophies[k]) g.trophies[k] = v;
   for (const f of ['decks', 'cards', 'plan', 'goalLog', 'chips']) for (const x of src[f]) { if (!x || !x.id) continue; const i = S[f].findIndex(y => y && y.id === x.id); if (i < 0) S[f].push({ ...x, u: +x.u || Date.now() }); else if ((+x.u || 0) > (+S[f][i].u || 0)) S[f][i] = x; }   // flashcards: by id, newer wins
@@ -9022,6 +9064,8 @@ function logSession(focusedMs, end, early = false, otMin = 0) {
     planned: t.planned,
     ...(early ? { early: 1 } : {}),   // finished early: the minutes focused count, the history shows the mark (v1.17)
     ...(otMin > 0 ? { ot: otMin } : {}),   // minutes of overtime in this block (v1.20; the duration includes them)
+    ...(intentOn() && (t.intent || '').trim() ? { int: t.intent.trim().slice(0, 100) } : {}),   // what "done" was meant to look like (private; v2.0)
+    ...(intentOn() && dxNow() > 0 ? { dx: dxNow() } : {}),   // "I got distracted" taps in this block (v2.0)
     preset: activePreset().name,
     stamp: equippedId('stamp'),
     ...(t.live && (t.live.mode !== 'together' || (LIVE.blockMates && LIVE.blockMates.size)) ? { live: t.live.lid, clan: t.live.cid, stamp: 'stamp_together' } : t.live ? { live: t.live.lid, clan: t.live.cid } : {}),
@@ -9032,6 +9076,7 @@ function logSession(focusedMs, end, early = false, otMin = 0) {
   };
   const subRec = takeSubtasks();
   if (subRec) s.subtasks = subRec;
+  t.dx = 0;
   if (t.demo) { t.demo = false; t.demoDone = true; }
   const subDay = dayKey(new Date(end)), subBefore = Math.min(SUB_COIN_DAY, subtaskCoinsByDay()[subDay] || 0);
   const levelBefore = rewardsReady() ? game().lv.level : 0;
@@ -9593,7 +9638,7 @@ function renderStats() {
       ? `<ul class="sesslist">${daySessions.slice().reverse().map(s => `
           <li><span class="t">${fmtTime(s.start)}–${fmtTime(s.end)}</span>
             <span class="dot" style="background:${esc(colorFor(s.name))}"></span>
-            <span class="nm" title="${esc(s.preset || '')}">${esc(s.name)}${s.early ? `<span class="early" title="Finished early · ${fmtMin(s.duration / 60000)} of ${fmtMin((s.planned || s.duration) / 60000)}">early</span>` : ''}${s.ot ? `<span class="ot-tag" title="${fmtMin(s.ot)} of overtime after the block ended">+${fmtMin(s.ot)}</span>` : ''}${S.energy[s.id] ? `<span class="en" title="Focus: ${ENERGY[S.energy[s.id]].t}">${ENERGY[S.energy[s.id]].e}</span>` : ''}${S.notes[s.id] ? `<span class="note">“${esc(S.notes[s.id])}”</span>` : ''}${s.subtasks && s.subtasks.length ? `<details class="subdet"><summary>${s.subtasks.filter(x => x.d).length}/${s.subtasks.length} subtasks</summary><ul>${s.subtasks.map(x => `<li class="${x.d ? 'ok' : 'no'}">${esc(x.t)}</li>`).join('')}</ul></details>` : ''}</span>
+            <span class="nm" title="${esc(s.preset || '')}">${esc(s.name)}${s.early ? `<span class="early" title="Finished early · ${fmtMin(s.duration / 60000)} of ${fmtMin((s.planned || s.duration) / 60000)}">early</span>` : ''}${s.ot ? `<span class="ot-tag" title="${fmtMin(s.ot)} of overtime after the block ended">+${fmtMin(s.ot)}</span>` : ''}${S.energy[s.id] ? `<span class="en" title="Focus: ${ENERGY[S.energy[s.id]].t}">${ENERGY[S.energy[s.id]].e}</span>` : ''}${s.int ? `<span class="intent" title="Your intention for this block${S.debrief[s.id] ? ': ' + DEBRIEF[S.debrief[s.id]].t.toLowerCase() : ''}">🎯 ${esc(s.int)}${S.debrief[s.id] ? ` <b>${DEBRIEF[S.debrief[s.id]].m}</b>` : ''}</span>` : ''}${s.dx ? `<span class="dx-tag" title="You counted ${s.dx} distraction${s.dx === 1 ? '' : 's'} in this block">${s.dx}×</span>` : ''}${S.notes[s.id] ? `<span class="note">“${esc(S.notes[s.id])}”</span>` : ''}${s.subtasks && s.subtasks.length ? `<details class="subdet"><summary>${s.subtasks.filter(x => x.d).length}/${s.subtasks.length} subtasks</summary><ul>${s.subtasks.map(x => `<li class="${x.d ? 'ok' : 'no'}">${esc(x.t)}</li>`).join('')}</ul></details>` : ''}</span>
             ${stampOn() ? `<span class="st-mini" title="Stamp: ${esc(ITEM_BY_ID[sessionStamp(s)].name)}">${stampSVG(sessionStamp(s), 22)}</span>` : ''}<span class="d">${fmtMin(s.duration / 60000)}</span>
             <button class="linkbtn" data-del="${esc(s.id)}" title="Delete this session" aria-label="Delete">✕</button></li>`).join('')}</ul>`
       : sceneEmpty('read', '', 'No focus blocks on this day.', 'margin-top:12px');
@@ -9668,6 +9713,7 @@ function renderSettings() {
   $('#setMinPomeo').checked = st.minPomeo !== false;
   $('#minPomeoRow').classList.toggle('hidden', !minimal());
   $('#setEnergy').value = st.energy || 'always';
+  $('#setIntent').checked = st.intent !== false;
   $('#setMotion').value = motion();
   $('#setGlass').value = glass();
   $('#setGlass').disabled = !glassSupported();
@@ -14141,14 +14187,15 @@ function offerNote(sessionId) {
   renderSubSum();
   sumFor = sessionId;
   renderSumHead();
+  renderDebriefRow(sessionId);
   renderEnergyRow(sessionId);
   $('#noteRow').classList.remove('hidden');
   landStamp(s);
 }
-function hideNote() { noteFor = null; subSum = null; sumFor = null; energyFor = null; clearTimeout(energyT); $('#noteRow').classList.add('hidden'); }
+function hideNote() { noteFor = null; subSum = null; sumFor = null; energyFor = null; clearTimeout(energyT); debriefFor = null; clearTimeout(debriefT); $('#noteRow').classList.add('hidden'); }
 /** Close the after-session row once nothing in it is waiting for an answer. */
 function maybeHideAfter() {
-  if ($('#noteRow .note-row').classList.contains('hidden') && (!revFor || $('#revSchedule').disabled) && !(subSum && subSum.left.length) && !energyFor) hideNote();
+  if ($('#noteRow .note-row').classList.contains('hidden') && (!revFor || $('#revSchedule').disabled) && !(subSum && subSum.left.length) && !energyFor && !debriefFor) hideNote();
 }
 function saveNote() {
   const v = $('#noteInput').value.trim().slice(0, 120);
@@ -15669,6 +15716,7 @@ $('#parkInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.pr
 function renderPark() {
   const t = S.timer;
   $('#parkBtn').classList.toggle('hidden', !focusActive());
+  renderDx();
   if (!focusActive()) closePark();
   const panel = $('#parkPanel');
   const recent = t.phase !== 'focus' && t.focusStartedAt ? S.parked.filter(p => p.at >= t.focusStartedAt) : [];
@@ -18564,6 +18612,7 @@ document.addEventListener('keydown', e => {
   if (k === 'r') { e.preventDefault(); $('#resetBtn').click(); }
   else if (k === 's') { e.preventDefault(); $('#skipBtn').click(); }
   else if (k === 'p') { e.preventDefault(); openPark(); }
+  else if (k === 'd') { e.preventDefault(); addDistraction(); }
 });
 $('#keysClose').addEventListener('click', () => $('#keysDlg').close());
 /* ==========================================================================
@@ -20207,6 +20256,143 @@ function recentEnergy() {
   return out;
 }
 
+/* ==========================================================================
+   INTENTION, DEBRIEF, DISTRACTION TALLY, RESUME (v2.0) — private, optional, never in the way of a running block.
+   Before a block: one line, "what will done look like?" (S.timer.intent — on this device, like the subtask draft).
+   The logged session keeps it as `int`, and `dx` = how often "I got distracted" was tapped (no pop-up, no penalty).
+   After the block: did you do it? S.debrief { sessionId: 1 yes · 2 partly · 3 not yet } in users/{uid}, like the
+   focus check-in (S.energy), so an answer given later needs no rewrite of the session log. "Yes" clears the
+   intention; anything else leaves it in place for the next block.
+   The focus rating stays the existing 4-step check-in: a 5-step one would be dropped by older versions of the app
+   (they keep 1–4) and would split the history in two scales.
+   ========================================================================== */
+const DEBRIEF = [null, { m: '✓', e: '👍', t: 'Yes' }, { m: '◐', e: '🤏', t: 'Partly' }, { m: '–', e: '⏳', t: 'Not yet' }];   // m: the mark in a list, e: on the button (like the check-in's faces)
+const intentOn = () => S.settings.intent !== false;
+let debriefFor = null, debriefT = 0, intOpen = false;
+function renderIntent() {
+  const tg = $('#intToggle'), ed = $('#intEd'), inp = $('#intInput');
+  if (!tg || !USER) return;
+  const v = S.timer.intent || '', on = intentOn(), open = !!v || intOpen;
+  tg.classList.toggle('hidden', !on || open);
+  ed.classList.toggle('hidden', !on || !open);
+  tg.setAttribute('aria-expanded', String(open));
+  if (document.activeElement !== inp && inp.value !== v) inp.value = v;
+}
+$('#intToggle').addEventListener('click', () => { intOpen = true; renderIntent(); $('#intInput').focus(); });
+$('#intInput').addEventListener('input', e => { S.timer.intent = e.target.value.slice(0, 100); saveUiSoon(); });
+$('#intInput').addEventListener('blur', () => { S.timer.intent = (S.timer.intent || '').trim(); if (!S.timer.intent) intOpen = false; saveUiSoon(); renderIntent(); });
+$('#intInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+$('#intClear').addEventListener('click', () => { S.timer.intent = ''; intOpen = false; $('#intInput').value = ''; saveUiSoon(); renderIntent(); });
+
+/* ---------- "I got distracted": one tap, counted for this block, nothing else happens ---------- */
+const dxNow = () => (S.timer.dxFor === S.timer.focusStartedAt ? +S.timer.dx || 0 : 0);   // a count belongs to the block it was tapped in
+function addDistraction() {
+  if (!focusActive() || !intentOn()) return;
+  S.timer.dx = Math.min(99, dxNow() + 1); S.timer.dxFor = S.timer.focusStartedAt;
+  saveUiSoon(); renderDx(); haptic(6);
+}
+function renderDx() {
+  const b = $('#dxBtn');
+  if (!b) return;
+  const n = dxNow();
+  b.classList.toggle('hidden', !(focusActive() && intentOn()));
+  $('#dxN').textContent = n ? String(n) : '';
+  b.setAttribute('aria-label', n ? `I got distracted. Counted ${n} time${n === 1 ? '' : 's'} in this block` : 'I got distracted. Count it');
+}
+$('#dxBtn').addEventListener('click', addDistraction);
+
+/* ---------- After the block: did you do it? ---------- */
+function renderDebriefRow(sessionId) {
+  const el = $('#debriefRow'), s = sessionId && S.sessions.find(x => x.id === sessionId);
+  clearTimeout(debriefT);
+  debriefFor = s && s.int && intentOn() && !S.debrief[s.id] ? s.id : null;
+  el.classList.toggle('hidden', !debriefFor);
+  if (!debriefFor) return;
+  el.classList.remove('done');
+  el.innerHTML = `<div class="eq"><span>🎯 <b>${esc(s.int)}</b> · did you do it?</span><button class="linkbtn" data-dskip>Skip</button></div>
+    <div class="opts">${[1, 2, 3].map(n => `<button data-debrief="${n}"><span aria-hidden="true">${DEBRIEF[n].e}</span>${DEBRIEF[n].t}</button>`).join('')}</div>`;
+  debriefT = setTimeout(skipDebrief, 30000);   // ignored → quietly goes away
+}
+function answerDebrief(n, id = debriefFor) {
+  if (!id || !(n >= 1 && n <= 3)) return;
+  clearTimeout(debriefT);
+  S.debrief[id] = n;
+  if (n === 1) { S.timer.intent = ''; intOpen = false; }   // done: the next block starts clean. Otherwise it stays as the intention
+  save();
+  uiClaim(); uiSound('tick'); haptic(8);
+  if (id === debriefFor) {
+    const el = $('#debriefRow');
+    el.classList.add('done');
+    el.innerHTML = `<div class="eq"><span>${n === 1 ? '👍 Done. Nicely finished.' : n === 2 ? '🤏 Partly. It stays as your intention for the next block.' : '⏳ Not yet. It stays as your intention for the next block.'}</span></div>`;
+    debriefFor = null;
+    setTimeout(() => { el.classList.add('hidden'); maybeHideAfter(); }, 1800);
+  }
+  renderIntent(); renderResume();
+  if (S.ui.tab === 'stats') renderStats();
+}
+function skipDebrief() { clearTimeout(debriefT); debriefFor = null; $('#debriefRow').classList.add('hidden'); maybeHideAfter(); }
+$('#debriefRow').addEventListener('click', e => {
+  const b = e.target.closest('[data-debrief]');
+  if (b) answerDebrief(+b.dataset.debrief);
+  if (e.target.closest('[data-dskip]')) skipDebrief();
+});
+/** Recent answers only (keeps the profile document small), like the check-ins. */
+function recentDebrief() {
+  const keep = new Set(S.sessions.slice(-400).map(s => s.id)), out = {};
+  for (const [id, v] of Object.entries(S.debrief || {})) if (keep.has(id) && v >= 1 && v <= 3) out[id] = v;
+  return out;
+}
+
+/* ---------- "Pick up where you left off" ---------- */
+/** The last block, if it left something open: an intention answered "partly" or "not yet", or subtasks not ticked.
+ *  Only when you come back to it (20 minutes to 3 days later): straight after the block its name and intention are
+ *  still in the Session card. */
+function resumeTarget() {
+  if (!intentOn()) return null;
+  const s = S.sessions[S.sessions.length - 1], age = s ? Date.now() - s.end : 0;
+  if (!s || age < 20 * 60000 || age > 3 * DAY_MS) return null;
+  const left = (s.subtasks || []).filter(x => !x.d).map(x => x.t), open = !!s.int && (S.debrief[s.id] === 2 || S.debrief[s.id] === 3);
+  return open || left.length ? { s, left, int: open ? s.int : '' } : null;
+}
+function renderResume() {
+  const el = $('#resumeSlot');
+  if (!el || !USER) return;
+  const t = S.timer, r = t.status === 'idle' ? resumeTarget() : null;   // also when the last block's break was never started: coming back hours later, that is where the timer still stands
+  if (!r || S.ui.resumeNo === r.s.id) { if (el.innerHTML) el.innerHTML = ''; return; }
+  const bits = [r.int ? `🎯 ${esc(r.int)}` : '', r.left.length ? `${r.left.length} subtask${r.left.length === 1 ? '' : 's'} left` : ''].filter(Boolean).join(' · ');
+  const html = `<div class="resume" role="group" aria-label="Pick up where you left off"><div class="rs-t"><span class="lbl">Pick up where you left off</span><b>${esc(r.s.name)}</b><span class="rs-s">${bits}</span></div>
+    <div class="rs-a"><button type="button" class="btn primary small" data-resume="${esc(r.s.id)}" aria-label="Resume ${esc(r.s.name)}">Resume</button><button type="button" class="iconbtn" data-resume-no="${esc(r.s.id)}" aria-label="Not now" title="Not now">×</button></div></div>`;
+  if (el.innerHTML !== html) el.innerHTML = html;
+}
+$('#resumeSlot').addEventListener('click', e => {
+  const no = e.target.closest('[data-resume-no]');
+  if (no) { S.ui.resumeNo = no.dataset.resumeNo; saveUiSoon(); renderResume(); return; }
+  const b = e.target.closest('[data-resume]'), r = b && resumeTarget();
+  if (!r || r.s.id !== b.dataset.resume || S.timer.status !== 'idle') return;
+  const p = S.presets.find(x => x.name === r.s.preset);
+  if (p) S.activePresetId = p.id;
+  $('#nameInput').value = r.s.name === 'Untitled' ? '' : r.s.name;
+  onNameChange();
+  if (r.int) { S.timer.intent = r.int; intOpen = true; }
+  if (r.left.length && !subs().length) loadItems(r.left);
+  S.ui.resumeNo = r.s.id;
+  S.timer.phase = 'focus';
+  renderSessionInputs(); renderIntent(); renderResume();
+  startTimer();
+});
+
+/* ---------- What the answers add up to (Stats → Focus insights) ---------- */
+/** Intentions kept and distractions counted, over the last 60 days. */
+function intentInsights() {
+  const from = Date.now() - 60 * DAY_MS, ss = S.sessions.filter(s => s.start >= from);
+  const ans = ss.filter(s => s.int && S.debrief[s.id]), done = ans.filter(s => S.debrief[s.id] === 1).length, partly = ans.filter(s => S.debrief[s.id] === 2).length;
+  const part = h => (h >= 5 && h < 12 ? 'morning' : h >= 12 && h < 17 ? 'afternoon' : h >= 17 && h < 21 ? 'evening' : 'night'), by = {};
+  let mins = 0, dx = 0;
+  for (const s of ss) { const m = s.duration / 60000, k = part(new Date(s.start).getHours()), g = (by[k] ||= { dx: 0, min: 0 }); mins += m; dx += +s.dx || 0; g.dx += +s.dx || 0; g.min += m; }
+  const worst = Object.entries(by).filter(([, v]) => v.min >= 120 && v.dx).map(([k, v]) => ({ k, r: v.dx / v.min * 60 })).sort((a, b) => b.r - a.r)[0] || null;
+  return { n: ans.length, done, partly, dxPerHour: dx && mins >= 60 ? dx / mins * 60 : null, worst };
+}
+
 /* ---------- The session-complete summary card ---------- */
 let sumFor = null;
 function renderSumHead() {
@@ -20215,7 +20401,7 @@ function renderSumHead() {
   const parked = S.parked.filter(p => p.at >= s.start && p.at <= s.end + 1000).length;
   const sub = s.subtasks ? `${s.subtasks.filter(x => x.d).length}/${s.subtasks.length} subtasks` : '';
   const en = S.energy[s.id] ? `${ENERGY[S.energy[s.id]].e} ${ENERGY[S.energy[s.id]].t}` : '';
-  el.innerHTML = `<b>✓ Session complete · ${fmtMin(s.duration / 60000)}</b><span>${[esc(s.name), sub, en, parked ? `${parked} parked thought${parked === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ')}</span>`;
+  el.innerHTML = `<b>✓ Session complete · ${fmtMin(s.duration / 60000)}</b><span>${[esc(s.name), sub, en, parked ? `${parked} parked thought${parked === 1 ? '' : 's'}` : '', s.dx ? `${s.dx} distraction${s.dx === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ')}</span>`;
 }
 
 /* ---------- Insights from check-ins (Stats) ---------- */
@@ -20248,7 +20434,7 @@ function renderEnergyCard() {
     el.innerHTML = `<div class="card"><h2>⚡ Focus insights</h2><p class="muted" style="margin:0;font-size:14px">Keep checking in after sessions to unlock insights — ${I.n}/10 so far.</p><div class="ins-progress"><i style="width:${I.n * 10}%"></i></div></div>`;
     return;
   }
-  const D = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+  const D = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'], J = intentInsights();
   const box = (k, v, s = '') => `<div class="ins"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
   el.innerHTML = `<div class="card"><div class="row between" style="margin-bottom:8px"><h2 style="margin:0">⚡ Focus insights</h2><span class="lbl">${I.n} check-ins</span></div>
     <div class="ins-grid">
@@ -20256,6 +20442,8 @@ function renderEnergyCard() {
       ${I.lenNote ? box('Session length', I.lenNote) : ''}
       ${I.days.length ? box('Best days', I.days.map(d => D[d.k]).join(' & '), energyWord(I.days[0].a)) : ''}
       ${I.subjTop ? box('By subject', esc(I.subjTop.k) + ' feels best', I.subjLow && I.subjLow.k !== I.subjTop.k ? `${esc(I.subjLow.k)} is the toughest` : '') : ''}
+      ${J.n >= 3 ? box('Intentions', `${J.done} of ${J.n} done`, J.partly ? `${J.partly} partly` : 'last 60 days') : ''}
+      ${J.dxPerHour !== null ? box('Distractions', `${J.dxPerHour.toFixed(1)} an hour`, J.worst ? `most in the ${J.worst.k}` : 'counted by you') : ''}
     </div>
     <div class="lbl" style="margin-top:14px">Average focus · last 4 weeks</div>
     <div class="ins-chart" role="img" aria-label="Average focus rating for the last 4 weeks">${I.weeks.map(w => `<div><i style="height:${w.n ? Math.max(6, (w.a / 4) * 64) : 2}px;${w.n ? '' : 'opacity:.25'}" title="${w.n ? energyWord(w.a) + ' · ' + w.n + ' check-ins' : 'No check-ins'}"></i>${w.label}</div>`).join('')}</div></div>`;
@@ -20275,6 +20463,7 @@ function pomeoInsight() {
 function renderQuickStart() {
   const el = $('#quickStart');
   if (!el || !USER) return;
+  renderResume(); renderIntent();   // the same moments: the timer's state has changed
   const t = S.timer, show = t.status === 'idle' && t.phase === 'focus' && S.presets.length > 1;
   el.classList.toggle('hidden', !show);
   if (!show) return;
@@ -20592,6 +20781,9 @@ function demoDocs() {
   const mastered = trophies[wkPast(2) + '|solo'].boss, cardAt = Date.now() - 864e5;
   const rec = sessions.slice(-30), energy = {};
   rec.forEach((s, i) => { energy[s.id] = new Date(s.start).getHours() < 12 ? (i % 5 ? 4 : 3) : (i % 3 ? 3 : 2); });
+  // v2.0: intentions, their answers and a few counted distractions on the latest blocks (the last one "partly": something to pick up)
+  const debrief = {}, wants = ['Finish Q1–15 and check the answers', 'Summarise the chapter on one page', 'Redo yesterday’s wrong questions', 'One full mock section, timed'];
+  rec.slice(-14).forEach((s, i, a) => { s.int = wants[i % wants.length]; debrief[s.id] = i === a.length - 1 ? 2 : i % 5 === 3 ? 2 : i % 7 === 5 ? 3 : 1; if (i % 3 === 1) s.dx = 1 + (i % 4); });
   const tomorrow = addDays(startOfDay(now), 1), soon = new Date(Date.now() + 3 * 3600e3);
   const profile = {
     username: 'demo_scholar', onboarded: true,
@@ -20621,7 +20813,7 @@ function demoDocs() {
     exams: [{ id: 'demo_x1', name: 'JEE Main', date: dayKey(addDays(now, 74)), added: Date.now() - 40 * 864e5 }, { id: 'demo_x2', name: 'Physics unit test', date: dayKey(addDays(now, 9)), added: Date.now() - 6 * 864e5 }],
     parked: [{ id: 'demo_p1', text: 'Ask James for the organic chemistry notes', at: Date.now() - 5400e3, done: false }],
     squad: DEMO_FRIENDS.map(f => ({ uid: f.uid, name: f.name })),   // a full squad of 5, so the (smaller) v1.13.1 boss stays mid-battle
-    subTemplates: [], energy,
+    subTemplates: [], energy, debrief,
     ...demoGarden(sessions),
     roomPrefs: Object.fromEntries(['wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat'].map(id => [roomSlotOf(id), { v: id, u: Date.now() - 3 * 864e5 }])),
     plan: [['Physics', 8], ['Chemistry', 6], ['Maths', 7], ['Biology', 3]].map(([name, hrs], i) => ({ id: 'demo_pn' + i, v: 1, name, hrs, at: Date.now() - 30 * 864e5, u: Date.now() - 30 * 864e5 })),
@@ -21520,6 +21712,7 @@ function mergeSyncFrom(d) {
   // notes and focus check-ins are keyed by session: keep both sides
   if (d.notes && typeof d.notes === 'object') S.notes = { ...S.notes, ...d.notes };
   if (d.energy && typeof d.energy === 'object' && !Array.isArray(d.energy)) S.energy = { ...S.energy, ...d.energy };
+  if (d.debrief && typeof d.debrief === 'object' && !Array.isArray(d.debrief)) S.debrief = { ...S.debrief, ...d.debrief };
   snapLists();
   SYNC.changed = SYNC_LISTS.some((f, i) => JSON.stringify(S[f]) !== before[i]);
   G = null; GD = null;   // the lists are new objects even when nothing changed: derived state must not keep pointing at the old ones (v2.0)
@@ -21905,6 +22098,7 @@ $('#setFestive').addEventListener('change', e => { S.settings.festive = e.target
 $('#setRipen').addEventListener('change', e => { S.settings.ripen = e.target.checked; save(); paintRing(); });
 $('#setMinPomeo').addEventListener('change', e => { S.settings.minPomeo = e.target.checked; save(); renderAll(); });
 $('#setEnergy').addEventListener('change', e => { S.settings.energy = e.target.value; save(); if (S.ui.tab === 'stats') renderStats(); });
+$('#setIntent').addEventListener('change', e => { S.settings.intent = e.target.checked; save(); renderIntent(); renderResume(); renderDx(); });
 
 // Friends tab
 $('#tab-friends').addEventListener('click', e => {

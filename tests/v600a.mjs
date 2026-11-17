@@ -1,7 +1,6 @@
 // v2.0 phase 6a — intention, debrief, distraction tally, "pick up where you left off" (emulator, two devices, the demo, a phone).
 // All of it is private and optional: the intention and the tally ride on the session record (`int`, `dx`), the answer
 // lives in users/{uid}.debrief like the focus check-in, nothing new is published, and the setting turns all of it off.
-// (A draft until phase 6a is applied: it moves to tests/v600a.mjs with the patch in this folder.)
 import { b, device, signup, wait, log, check, errs, failCount, until, closeDlg, ownerGet } from './cl-common.mjs';
 import fs from 'fs';
 const FBDIR = new URL('./node_modules/firebase/', import.meta.url).pathname;
@@ -131,6 +130,7 @@ async function demo(w, h) {
 const D = await demo(1280, 900);
 const dm = await D.ev(async () => {
   const sl = ms => new Promise(r => setTimeout(r, ms)), out = {};
+  { const last = S.sessions[S.sessions.length - 1]; if (Date.now() - last.end < 21 * 60000) last.end = Date.now() - 30 * 60000; }   // the demo's blocks follow the clock: at some minutes of the day its last one has only just ended (in memory only)
   showTab('timer'); renderResume(); await sl(200); out.resume = ($('#resumeSlot .resume') || {}).textContent || '';
   S.ui.statsView = 'day'; showTab('stats'); await sl(700); out.intents = document.querySelectorAll('#tab-stats .intent').length;
   S.ui.statsView = 'week'; showTab('stats'); await sl(700); out.boxes = [...document.querySelectorAll('#energySlot .ins .k')].map(x => x.textContent); out.vals = [...document.querySelectorAll('#energySlot .ins')].filter(x => /Intentions|Distractions/.test(x.textContent)).map(x => x.textContent.replace(/\s+/g, ' ').trim());
@@ -143,9 +143,10 @@ check('The demo has intentions with answers and a few counted distractions: “P
 const M = await demo(390, 844);
 const ph = await M.ev(async () => {
   const sl = ms => new Promise(r => setTimeout(r, ms)), out = {};
+  { const last = S.sessions[S.sessions.length - 1]; if (Date.now() - last.end < 21 * 60000) last.end = Date.now() - 30 * 60000; }
   showTab('timer'); renderResume(); await sl(300);
   const c = $('#resumeSlot .resume'); out.card = c && { w: Math.round(c.getBoundingClientRect().width), fits: c.scrollWidth <= c.clientWidth + 1, startH: Math.round(c.querySelector('[data-resume]').getBoundingClientRect().height), noH: Math.round(c.querySelector('[data-resume-no]').getBoundingClientRect().height) };
-  out.tog = Math.round($('#intToggle').getBoundingClientRect().height); $('#intToggle').click(); await sl(200); out.inpH = Math.round($('#intInput').getBoundingClientRect().height); out.clearH = Math.round($('#intClear').getBoundingClientRect().height);
+  out.tog = Math.round($('#intToggle').getBoundingClientRect().height); S.timer.intent = 'Finish the worksheet'; renderIntent(); await sl(100); out.inpH = Math.round($('#intInput').getBoundingClientRect().height); out.clearH = Math.round($('#intClear').getBoundingClientRect().height);
   S.timer.phase = 'focus'; S.timer.status = 'idle'; startTimer(); await sl(400); const bt = $('#dxBtn').getBoundingClientRect(), pk = $('#parkBtn').getBoundingClientRect(); out.dx = { w: Math.round(bt.width), h: Math.round(bt.height), apart: bt.right <= pk.left + 1 || pk.right <= bt.left + 1 };
   out.side = document.documentElement.scrollWidth > innerWidth + 1;
   return out;

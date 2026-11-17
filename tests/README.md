@@ -41,6 +41,11 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   "All day" is switched), a valid `time` kept for older versions, one alert at the chosen time or on the first open
   after it, snooze, a changed alert time not ringing twice, the second device staying quiet, repeats, done, missed,
   the dated calendar event (.ics and Google), the setting, and back to a timed reminder.
+- `v600a.mjs` (v2.0 phase 6): intention, debrief, the distraction tally and "pick up where you left off" — the field
+  (kept on the device), the tally (button and key D, no pop-up), the block's record (`int`, `dx`) and the answer in
+  the profile (`debrief`), nothing published, the day's list, Yes clearing the intention, the resume card (when it
+  shows, Not now, Resume), the second device, the setting, the demo (shown, nothing written) and a phone.
+  The runners treat three-digit suites (`v200a` …) as v2.0 ones; `v6`, `v6c`, `v7c` … are old and keep Overtime off.
 - `v500b.mjs`: the Calendar on a signed-up account — wiring (sidebar, key C, palette), the Month grid, the day dialog
   and the keyboard, dragging to another day with Undo, the Week (positions, overlap, drag over empty hours to plan a
   block, drag to move), a block's alert starting the timer, the Agenda, the calendar file, the past, the cloud copy.
