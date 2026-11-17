@@ -57,6 +57,14 @@ suites survive a reset of that folder. Nothing in this folder is uploaded to the
   before, Overtime, Weekly plan, Among friends, the one-line suggestion, names shown as text; the demo (nothing
   written) and a phone. The activities are drawn from the clock, so the checks move their start time instead of
   waiting; the clock is pinned to a Thursday so the plan check does not depend on the weekday.
+- `v700a.mjs` (v2.0 phase 7): invites and link previews — the landing greets by the name in `?ref=` without a read
+  (the older `?invite=` too), the page's tags, picture and icons (no manifest, no service worker), a sign-up through
+  a link (the referral, an ordinary friend request, the unticked box), an existing account (the old question), three
+  check-ins and both gifts, the invite page, the profile, a second device, a friend's profile, clan and session
+  links, the demo (nothing written) and a phone. Time is moved with the emulator's owner token only.
+- `v700b.mjs` (v2.0 phase 7): the invite rules under attack — who may become an invitee, a clean start, spacing,
+  growth and order of check-ins, becoming active only together with exactly one more on the inviter's count, the
+  count written in no other way, the two weeks, and who can read or list.
   The runners treat three-digit suites (`v200a` …) as v2.0 ones; `v6`, `v6c`, `v7c` … are old and keep Overtime off.
 - `v500b.mjs`: the Calendar on a signed-up account — wiring (sidebar, key C, palette), the Month grid, the day dialog
   and the keyboard, dragging to another day with Undo, the Week (positions, overlap, drag over empty hours to plan a

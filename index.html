@@ -3,9 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pomodorolist</title>
+<title>Pomodorolist — a calm study timer with streaks, a garden and friends</title>
+<link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png" data-static-icon>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" data-static-icon>
 <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2218.6%22%20rx%3D%2212.6%22%20ry%3D%2211.8%22%20fill%3D%22%23f0735f%22%2F%3E%3Cpath%20d%3D%22M16%207.6V5%22%20stroke%3D%22%235a9a5c%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M16.4%206C17.6%202.8%2021.2%201.9%2024%203.2%2022.7%206.1%2019.2%207.4%2016.4%206Z%22%20fill%3D%22%237cc07a%22%2F%3E%3Ccircle%20cx%3D%2212.4%22%20cy%3D%2218.6%22%20r%3D%221.6%22%20fill%3D%22%233b2420%22%2F%3E%3Ccircle%20cx%3D%2219.6%22%20cy%3D%2218.6%22%20r%3D%221.6%22%20fill%3D%22%233b2420%22%2F%3E%3C%2Fsvg%3E">
-<meta name="description" content="A minimal, distraction-free Pomodoro focus timer with named sessions, streaks, statistics and cloud sync across devices.">
+<meta name="description" content="A free, calm Pomodoro study timer for students: named sessions, kind streaks, a garden that grows as you focus, flashcards, a study calendar and friends to study beside. No ads, no tracking; syncs across your devices.">
+<link rel="canonical" href="https://siverieg.github.io/Pomodorolist-V1.0/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pomodorolist">
+<meta property="og:title" content="Pomodorolist — focus that feels like progress">
+<meta property="og:description" content="A calm study timer with kind streaks, a garden that grows as you focus, and friends to study beside. Free, no ads, in your browser.">
+<meta property="og:url" content="https://siverieg.github.io/Pomodorolist-V1.0/">
+<meta property="og:image" content="https://siverieg.github.io/Pomodorolist-V1.0/assets/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pomodorolist: “Focus that feels like progress.” beside a focus timer at 16:15 of a Physics session.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pomodorolist — focus that feels like progress">
+<meta name="twitter:description" content="A calm study timer with kind streaks, a garden that grows as you focus, and friends to study beside.">
+<meta name="twitter:image" content="https://siverieg.github.io/Pomodorolist-V1.0/assets/og-image.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 <style>
 /* ==========================================================================
    THEME TOKENS
@@ -4884,6 +4902,28 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
 .ins-take > span { flex: 1; min-width: 200px; } .ins-take .linkbtn { margin: -4px -8px -4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .ins-hint { margin-top: 14px; }
 @media (min-width: 1000px) { .ins-grid.g3 { grid-template-columns: repeat(3, 1fr); } }   /* five or nine boxes: rows of three instead of one left over */
+/* ----- v2.0 phase 7: invites (the sign-in greeting, Friends › Invite, the profile card) ----- */
+.ref-hello { margin: 12px 0 10px; padding: 9px 12px; border-radius: var(--r-12, 12px); background: var(--accent-soft, var(--hover)); color: var(--t-1, var(--text)); font-size: var(--fs-14, 14px); font-weight: 600; text-align: center; overflow-wrap: anywhere; }
+.ref-add { margin-top: 10px; }
+.inv-card .desc { margin: 0 0 12px; }
+.inv-link { display: flex; gap: 8px; }
+.inv-link input { flex: 1; min-width: 0; font-size: var(--fs-14, 14px); }
+.inv-share { margin-top: 10px; flex-wrap: wrap; }
+.inv-share a.btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.inv-own .desc { margin: 0; }
+.inv-next { margin: 4px 0 12px; } .inv-bar i { background: var(--accent) !important; }
+.inv-nt { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: var(--fs-14, 14px); }
+#friendsBody > .inv-card ~ .card { margin-top: 16px; }
+.inv-people, .inv-miles { list-style: none; margin: 0; padding: 0; }
+.inv-people li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--hair, var(--line)); font-size: var(--fs-14, 14px); overflow-wrap: anywhere; }
+.inv-miles li { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-top: 1px solid var(--hair, var(--line)); }
+.inv-miles li:first-child, .inv-people li:first-child { border-top: 0; }
+.inv-n { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 50%; background: var(--hover); color: var(--t-2, var(--muted)); font-weight: 600; font-variant-numeric: tabular-nums; }
+.inv-m.got .inv-n { background: var(--ok-soft); color: var(--ok-text, var(--ok)); }
+.inv-w { display: flex; flex-direction: column; flex: 1; min-width: 0; } .inv-w b { font-size: var(--fs-14, 14px); font-weight: 600; }
+.inv-s { flex: none; }
+.inv-pcard { display: flex; align-items: center; gap: 12px; } .inv-pw { flex: 1; min-width: 0; }
+@media (max-width: 480px) { .inv-link { flex-direction: column; } }
 /* ----- component gallery (development only) ----- */
 .gx-head h1 { margin: 0 0 4px; } .gx-head { margin-bottom: 16px; }
 .gx-grid { columns: 3 280px; column-gap: 16px; }   /* balanced columns: no holes under short cards */
@@ -5003,6 +5043,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
             <button type="button" role="tab" data-mode="signup">Sign up</button>
             <button type="button" role="tab" data-mode="login">Log in</button>
           </div>
+          <p class="ref-hello hidden" id="refHello" role="status"></p>
           <p class="lead" id="authLead">Keep your sessions, streaks and stats in sync on every device.</p>
           <form class="auth-form" id="authForm" novalidate>
             <label class="field" for="authUser">Username</label>
@@ -5025,6 +5066,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
               </div>
               <div class="hint" id="pw2Hint" aria-live="polite"></div>
               <p class="pw-warn" id="pwWarn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 20h20Z"/><path d="M12 10v4M12 17h.01"/></svg>There’s no password reset yet, so pick one you’ll remember.</p>
+              <label class="stay ref-add hidden" id="refAddWrap"><input type="checkbox" id="refAdd" checked> <span id="refAddText"></span></label>
             </div>
 
             <label class="stay"><input type="checkbox" id="authStay" checked> Stay logged in on this device</label>
@@ -5394,6 +5436,7 @@ body.cal-dragging, body.cal-dragging * { cursor: grabbing !important; user-selec
       <div class="seg" id="friendsSeg">
         <button data-view="friends">Friends<span class="cnt" id="reqCount"></span></button>
         <button data-view="challenges">Challenges</button>
+        <button data-view="invite">Invite</button>
       </div>
     </div>
     <div id="friendsBody"></div>
@@ -8145,6 +8188,7 @@ function defaultState() {
     notes: {},      // sessionId -> one-line note
     energy: {},     // sessionId -> focus check-in 1 (low) … 4 (locked in)
     debrief: {},    // sessionId -> did you do what you intended: 1 yes · 2 partly · 3 not yet (v2.0)
+    invite: { ref: null, n: 0, readAt: 0, shared: false },   // v2.0 invites: my referral (if I came through a link), how many of mine stayed, when that was read, whether I have shared my link
     tomb: {},       // 'reminders:<id>' -> when it was deleted (see SYNC MERGE)
     remFired: {},   // '<reminderId>@<day>@<time>' -> when it rang (on any device)
     onboarded: false,  // finished or skipped the tutorial (synced, so it shows once per account)
@@ -8200,6 +8244,7 @@ function hydrate(obj) {
   if (!out.notes || typeof out.notes !== 'object' || Array.isArray(out.notes)) out.notes = {};
   if (!out.energy || typeof out.energy !== 'object' || Array.isArray(out.energy)) out.energy = {};
   if (!out.debrief || typeof out.debrief !== 'object' || Array.isArray(out.debrief)) out.debrief = {};
+  out.invite = normInvite(out.invite);
   for (const k of ['tomb', 'remFired']) if (!out[k] || typeof out[k] !== 'object' || Array.isArray(out[k])) out[k] = {};
   if (!out.names || typeof out.names !== 'object' || Array.isArray(out.names)) out.names = {};
   out.game = normalizeGame(obj.game);
@@ -8319,6 +8364,7 @@ function profileFromState() {
     notes: recentNotes(),
     energy: recentEnergy(),
     debrief: recentDebrief(),
+    ...invitePayload(),
     onboarded: !!S.onboarded,
     wipedAt: +S.wipedAt || 0,
     tomb: pruneMap(S.tomb, 120 * DAY_MS),
@@ -8448,6 +8494,27 @@ function mergeGame(local, remote) {
   return { game: out, ahead };
 }
 
+/** v2.0 invites in the profile: cleaned, and merged so that neither device loses what the other knows. */
+function normInvite(v) {
+  v = v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+  const r = v.ref && typeof v.ref === 'object' && typeof v.ref.by === 'string' && typeof v.ref.name === 'string' && /^[a-z0-9_]{3,20}$/.test(v.ref.name)
+    ? { by: v.ref.by, name: v.ref.name, at: +v.ref.at || 0, checks: Math.min(3, Math.max(0, Math.round(+v.ref.checks) || 0)), checkAt: +v.ref.checkAt || 0, min: Math.max(0, Math.round(+v.ref.min) || 0), state: v.ref.state === 'active' ? 'active' : 'joined', ...(+v.ref.activeAt ? { activeAt: +v.ref.activeAt } : {}) } : null;
+  return { ref: r, n: Math.min(1000, Math.max(0, Math.round(+v.n) || 0)), readAt: +v.readAt || 0, shared: !!v.shared };
+}
+function mergeInvite(a, b) {
+  a = normInvite(a); b = normInvite(b);
+  const ref = !a.ref ? b.ref : !b.ref ? a.ref : (b.ref.state === 'active' && a.ref.state !== 'active') || b.ref.checks > a.ref.checks ? b.ref : a.ref;
+  return { ref, n: Math.max(a.n, b.n), readAt: Math.max(a.readAt, b.readAt), shared: a.shared || b.shared };
+}
+/** Only what there is to say goes to the cloud: an empty field from one device must not wipe the other's (the push merges maps). */
+function invitePayload() {
+  const v = S.invite || {}, o = {};
+  if (v.ref) o.ref = v.ref;
+  if (v.n) o.n = v.n;
+  if (v.readAt) o.readAt = v.readAt;
+  if (v.shared) o.shared = true;
+  return Object.keys(o).length ? { invite: o } : {};
+}
 /** Apply the cloud profile to local state. */
 function applyProfile(d) {
   const def = defaultState();
@@ -8619,6 +8686,7 @@ function startCloud() {
   maybeStartTour(true);
 }
 
+const LANDING_TITLE = document.title;   // the descriptive title of the page as served (search results, link previews); the app itself is just “Pomodorolist”
 let authMode = 'login';
 function showAuth() {
   showView('authView');
@@ -8645,6 +8713,7 @@ function setAuthMode(mode) {
   $('#authPass').autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
   authErr('');
   checkUser(); checkPass(); checkPass2();
+  renderRefHello();
 }
 function authErr(msg) { $('#authError').textContent = msg; if (msg) shake($('#authForm')); }
 
@@ -8692,7 +8761,7 @@ async function onAuthSubmit(e) {
   try {
     // "Stay logged in" off: the session ends when this browser closes.
     await FB.setPersistence(FB.auth, $('#authStay').checked ? FB.browserLocalPersistence : FB.browserSessionPersistence).catch(() => {});
-    if (authMode === 'signup') await FB.createUserWithEmailAndPassword(FB.auth, email, pass);
+    if (authMode === 'signup') { inviteMarkNew(); await FB.createUserWithEmailAndPassword(FB.auth, email, pass); }   // (a failed sign-up leaves the mark; it only matters with a new account and is cleared at the next start)
     else await FB.signInWithEmailAndPassword(FB.auth, email, pass);
     $('#authPass').value = $('#authPass2').value = '';
     // onAuthStateChanged takes it from here.
@@ -9625,7 +9694,7 @@ function renderClock() {
   updateFavicon(clamp(progress, 0, 1));
   const t = S.timer;
   const label = t.phase === 'focus' ? 'Focus' : t.phase === 'short' ? 'Break' : 'Long break';
-  const title = t.status === 'idle' ? 'Pomodorolist' : ot ? `+${fmtClock(otMs())} · Overtime${t.status === 'paused' ? ' (paused)' : ''}` : `${fmtClock(rem)} · ${label}${t.status === 'paused' ? ' (paused)' : ''}`;
+  const title = t.status === 'idle' ? (USER ? 'Pomodorolist' : LANDING_TITLE) : ot ? `+${fmtClock(otMs())} · Overtime${t.status === 'paused' ? ' (paused)' : ''}` : `${fmtClock(rem)} · ${label}${t.status === 'paused' ? ' (paused)' : ''}`;
   if (document.title !== title) document.title = title;
 }
 
@@ -10165,6 +10234,7 @@ function normalizeGame(g) {
       evo: map(c.evo),                 // v1.18 Pomeo's stages reached: '1'…'5' -> ts
       season: map(c.season),           // v1.19 season rewards: 'YYYY-MM:<peak rank>' -> ts (the earliest per season pays)
       rkup: map(c.rkup),               // v1.19 rank-ups celebrated: 'YYYY-MM:<rank>' -> ts
+      invite: map(c.invite),           // v2.0 invites: 'in' (my welcome gift) | 'm1' | 'm3' | 'm5' | 'm10' | 'm25' -> ts
     },
     trophies: map(g.trophies),       // same keys as claims.bosses -> { boss, mode, hp, coins, size, at }
     grants: map(g.grants),           // itemId -> { src: 'boss:<id>:<mode>' | 'ev:<event>', at } (rewards in the bag)
@@ -10217,6 +10287,8 @@ const FRAMES = {
   frame_g_link: '<circle cx="9.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/><circle cx="14.5" cy="12" r="10.6" stroke-width=".9" opacity=".55"/>',   // v1.18
   frame_r_silver: '<circle cx="12" cy="12" r="11.1" stroke-width="1" opacity=".6" stroke="#9aa6b2"/>' + [0, 90, 180, 270].map(a => `<path d="M12 -.2 13.3 1.2 12 2.6 10.7 1.2Z" fill="#c8d1d9" stroke="#7f8c98" stroke-width=".35" transform="rotate(${a} 12 12)"/>`).join(''),   // v1.19 ranks
   frame_r_gold: '<circle cx="12" cy="12" r="11.1" stroke-width="1.2" opacity=".85" stroke="#c9a227"/><circle cx="12" cy="12" r="9.9" stroke-width=".5" opacity=".5" stroke="#f6d878"/>' + [0, 60, 120, 180, 240, 300].map(a => `<path d="M12 -.3 13.2 1 12 2.3 10.8 1Z" fill="#f6d878" stroke="#a8841c" stroke-width=".3" transform="rotate(${a} 12 12)"/>`).join(''),
+  frame_i_link: '<circle cx="12" cy="12" r="11.1" stroke-width="1" opacity=".6"/><circle cx="10.5" cy="22.3" r="1.75" stroke-width=".8" fill="none"/><circle cx="13.5" cy="22.3" r="1.75" stroke-width=".8" fill="none"/>',   // v2.0 invites
+  frame_i_laurel: '<g stroke="none" fill="#5a9a5c">' + [20, 45, 70, 95, 120, 145].map(a => `<ellipse cx="12" cy=".9" rx=".95" ry="2" transform="rotate(${180 + a} 12 12) rotate(28 12 .9)"/><ellipse cx="12" cy=".9" rx=".95" ry="2" transform="rotate(${180 - a} 12 12) rotate(-28 12 .9)"/>`).join('') + '</g>',
   frame_r_gm: '<circle cx="12" cy="12" r="11.1" stroke-width="1.1" opacity=".7" stroke="#d6455f"/><g class="fr-gm" stroke="none">' + [0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => `<path d="M12 -.5 13.3 1.1 12 2.7 10.7 1.1Z" fill="${i % 2 ? '#ffbf73' : '#d6455f'}" transform="rotate(${a} 12 12)"/>`).join('') + '</g><path d="M8.8 .9 10.3 2.2 12 .3 13.7 2.2 15.2 .9 14.8 3H9.2Z" fill="#ffd166" stroke="none"/>',
   frame_s_blaze: '<circle cx="12" cy="12" r="11.1" stroke-width="1" opacity=".5"/><g class="fr-blaze" stroke="none">' + [0, 45, 90, 135, 180, 225, 270, 315].map((a, i) => `<path d="M12 -.5c1.1 1.2 1.7 2.2 1.2 3.2-.3.6-.8.9-1.2.9s-.9-.3-1.2-.9c-.5-1 .1-2 1.2-3.2Z" fill="${i % 2 ? '#e5654f' : '#f28c28'}" transform="rotate(${a} 12 12)"/>`).join('') + '</g>',   // v1.18 streak
   frame_g_banner: '<circle cx="12" cy="12" r="11.2" stroke-width="1.1" opacity=".7"/><path d="M3.2 5.4l2.6 1.2-1.9 2Z M20.8 5.4l-2.6 1.2 1.9 2Z M12 .4l1.4 2.2h-2.8Z" fill="currentColor" stroke="none" opacity=".8"/>',
@@ -11065,6 +11137,14 @@ ITEMS.push(
   { id: 'frame_s_blaze', cat: 'frame', name: 'Blaze frame', desc: 'Flames dance around your badge · animated', price: -1, rarity: 'legendary', how: 'Reach a 200-day streak' },
   { id: 'au_s_eternal', cat: 'aura', name: 'Eternal flame aura', desc: 'A year of days, burning bright · animated', price: -1, rarity: 'legendary', how: 'Reach a 365-day streak' },
   { id: 'plant_s_golden', cat: 'room', name: 'Golden Pomeo statue', desc: 'A gilded Pomeo for the corner', price: -1, rarity: 'legendary', how: 'Reach a 365-day streak' },
+  // v2.0 invites: only for friends who joined through your link and stayed (see INVITES)
+  { id: 'ti_i_newleaf', cat: 'title', name: 'New Leaf', desc: 'Came through a friend’s link and stayed', price: -1, rarity: 'rare', how: 'Join through a friend’s link and study on three days' },
+  { id: 'ti_i_buddy', cat: 'title', name: 'Study Buddy', desc: 'Brought a friend who stayed', price: -1, rarity: 'rare', how: 'Invite 1 friend who stays' },
+  { id: 'frame_i_link', cat: 'frame', name: 'Linked frame', desc: 'A ring with two links joined', price: -1, rarity: 'epic', how: 'Invite 3 friends who stay' },
+  { id: 'au_i_together', cat: 'aura', name: 'Together aura', desc: 'A warm glow in two colours', price: -1, rarity: 'epic', how: 'Invite 5 friends who stay' },
+  { id: 'ti_i_guide', cat: 'title', name: 'Study Guide', desc: 'Ten friends found their focus', price: -1, rarity: 'epic', how: 'Invite 10 friends who stay' },
+  { id: 'ti_i_ambassador', cat: 'title', name: 'Ambassador', desc: 'Twenty-five friends brought along', price: -1, rarity: 'legendary', how: 'Invite 25 friends who stay' },
+  { id: 'frame_i_laurel', cat: 'frame', name: 'Laurel frame', desc: 'A wreath around your badge', price: -1, rarity: 'legendary', how: 'Invite 25 friends who stay' },
   // v1.19 ranks: the first time ever at each rank (see RANK_ITEMS)
   { id: 'frame_r_silver', cat: 'frame', name: 'Silver rank frame', desc: 'Four silver gems', price: -1, rarity: 'rare', how: 'Reach Silver rank for the first time' },
   { id: 'frame_r_gold', cat: 'frame', name: 'Gold rank frame', desc: 'A gilded ring with gems', price: -1, rarity: 'epic', how: 'Reach Gold rank for the first time' },
@@ -11106,6 +11186,7 @@ function earnedAt(t) {
     perWeek[wk] = (perWeek[wk] || 0) + 1;
     if (perWeek[wk] <= SOCIAL_COIN_WEEKLY_MAX) c += SOCIAL_COIN;
   }
+  for (const [k, ts] of Object.entries(cl.invite || {})) if (ts <= t) c += INVITE_COINS[k] || 0;   // v2.0 invites
   for (const [key, ts] of Object.entries(challengeRewards(cl))) if (ts <= t) c += (CHALLENGES[key.split('_')[1]] || {}).coins || 0;
   for (const v of Object.values(subtaskCoinsByDay(t))) c += Math.min(SUB_COIN_DAY, v);   // +1 per finished subtask, max 10 a day
   const lc = loginCycle();
@@ -12095,7 +12176,7 @@ function renderProfile() {
   const badge = on ? withAura(badgeSVG(g.tier, { size: 44, frame: equippedId('frame'), avatar: myAvatar() }), g.streak.cur, myAura())
     : hasAvatar(myAvatar()) ? avatarSVG(myAvatar(), 44) : `<span class="avatar big" style="width:44px;height:44px;font-size:18px">${USER.guest ? '?' : esc(USER.username[0].toUpperCase())}</span>`;
   void badge;
-  $('#profileHead').innerHTML = playerCardHTML() + clanProfileCard() + pomeoCard();
+  $('#profileHead').innerHTML = playerCardHTML() + clanProfileCard() + pomeoCard() + inviteProfileCard();
   if (on) renderProgress();
   else $('#progressView').innerHTML = `<div class="card empty-card"><p class="muted">Levels, badges and achievements are hidden.</p><button class="btn" id="openSettings2">Turn them on in Settings</button></div>`;
 }
@@ -12422,10 +12503,12 @@ async function initSocial() {
     SOC.myStats = st.exists() ? { ...st.data(), at: st.data().updatedAt ? st.data().updatedAt.toMillis() : 0 } : null;
     if (rk) { SOC.myRank = rk.exists() ? { ...rk.data(), at: rk.data().updatedAt ? rk.data().updatedAt.toMillis() : 0 } : null; SOC.myRankRead = true; }   // v1.19
   } catch (e) { console.warn('social init', e); }
+  await inviteAtSignup();   // v2.0: before the first publish (the rules ask for an account with nothing published)
   publishPublic(true);
   publishPresence();
   loadChallenges();
   handleInvite();
+  inviteSync();
   if (S.ui.tab === 'board') renderBoardTab();
   loadSquadStats(true);
 }
@@ -12588,6 +12671,7 @@ function publishPublic(first) {
   const p = writePublic('publicStats', stats), probing = !!SOC.gardenProbe && !('produce' in stats);   // this very write is the probe (without the fields)
   if (p) p.then(() => {
     SOC.myStats = { ...stats, at: Date.now() }; SOC.statRetries = 0;
+    inviteCheckIn();   // v2.0: an invited account's check-in, when one is due
     if (probing) { SOC.gardenProbe = false; SOC.gardenConfirm = true; SOC.gardenStatsRejected = false; delete lastPub.publicStats; setTimeout(() => publishPublic(), 300); }   // the probe went through: confirm with the fields once more before giving them up
     else if (SOC.gardenConfirm && 'produce' in stats) SOC.gardenConfirm = false;   // the fields are accepted after all (the earlier refusal was something else)
   }, e => {
@@ -12944,17 +13028,234 @@ async function blockUser(uid, name) {
 async function unblockUser(uid) {
   try { await FB.deleteDoc(FB.doc(FB.db, 'users', USER.uid, 'blocked', uid)); } catch (e) { toast('Couldn’t unblock — try again'); }
 }
-const inviteLink = () => `${location.origin}${location.pathname}?invite=${USER.username}`;
+document.querySelectorAll('link[data-static-icon]').forEach(l => l.remove());   // v2.0: the static icons are for crawlers; the live tab icon is #favicon
+/* ==========================================================================
+   INVITES (v2.0) — a personal link, and a gift for both sides once the friend has really stayed.
+   - The link is ?ref=<username> (older ?invite= links keep working). The landing greets by the name in the link
+     without reading anything: a logged-out visitor cannot read profiles.
+   - A NEW account that signed up through a link writes referrals/{its uid} once (see the rules: never yourself,
+     the inviter must exist, nothing published yet, never deleted). A copy is kept in the profile (S.invite.ref)
+     so an account that was never invited costs no read.
+   - It becomes "active" after three check-ins at least 18 hours apart within 14 days, each with 20 more published
+     focus minutes and 180 in total. The third check-in adds one to inviteStats/{inviter} in the same transaction;
+     nothing else can change that count.
+   - Rewards are claimed once each (S.game.claims.invite): the invited friend's welcome gift on activation, and the
+     inviter's milestones at 1 / 3 / 5 / 10 / 25 active friends, with looks that cannot be had any other way.
+   - Auto-connect is an ordinary friend request (a public link must not be able to create an accepted friendship).
+   Honest limit: the rules prove spacing and counts, not that the minutes were real — so the rewards are cosmetic
+   and capped, and nothing here is worth farming.
+   ========================================================================== */
+const INVITE_MILES = [1, 3, 5, 10, 25];
+const INVITE_COINS = { in: 150, m1: 100, m3: 150, m5: 250, m10: 400, m25: 800 };
+const INVITE_ITEMS = { in: ['ti_i_newleaf'], m1: ['ti_i_buddy'], m3: ['frame_i_link'], m5: ['au_i_together'], m10: ['ti_i_guide'], m25: ['ti_i_ambassador', 'frame_i_laurel'] };
+const REF_GAP_MS = 18 * 3600e3, REF_WINDOW_MS = 14 * 864e5, REF_STEP_MIN = 20, REF_TOTAL_MIN = 180, REF_CHECKS = 3;
+const REF_KEY = 'pomodorolist-invite', REF_NEW_KEY = 'pomodorolist-new-account', REF_ADD_KEY = 'pomodorolist-invite-add';
+const INV = { list: null, at: 0, loading: false, busy: false, retryAt: 0 };
+const inviteLink = () => `${location.origin}${location.pathname}?ref=${USER.username}`;
+/** A share link that also says who shared it (session, clan and post links). */
+const withRef = url => (USER && !USER.guest && USER.username && !/[?&]ref=/.test(url) ? url + (url.includes('?') ? '&' : '?') + 'ref=' + USER.username : url);
+const pendingRef = () => { try { return sessionStorage.getItem(REF_KEY) || ''; } catch (e) { return ''; } };
 function shareInvite(btn) {
-  return shareLink({ title: 'Pomodorolist', text: `Focus with me on Pomodorolist — I’m @${USER.username}`, url: inviteLink(), btn, what: 'Invite link' });
+  if (S.invite && !S.invite.shared && !isPreview()) { S.invite.shared = true; save(); }
+  return shareLink({ title: 'Pomodorolist', text: `Study with me on Pomodorolist — I’m @${USER.username}`, url: inviteLink(), btn, what: 'Invite link' });
 }
-/** ?invite=username opens a "Send request?" prompt once the user is signed in. */
+/** ?ref=username (or the older ?invite=) is remembered for this tab and taken out of the address bar. */
 function captureInvite() {
-  const m = /[?&]invite=([A-Za-z0-9_]{3,20})/.exec(location.search);
+  const m = /[?&](?:ref|invite)=([A-Za-z0-9_]{3,20})(?=&|$)/.exec(location.search);
   if (!m) return;
-  sessionStorage.setItem('pomodorolist-invite', m[1].toLowerCase());
-  history.replaceState(null, '', location.pathname + location.search.replace(/[?&]invite=[^&]*/, '').replace(/^&/, '?') + location.hash);
+  try { sessionStorage.setItem(REF_KEY, m[1].toLowerCase()); } catch (e) { /* private mode: the greeting still shows this once */ }
+  history.replaceState(null, '', location.pathname + location.search.replace(/([?&])(?:ref|invite)=[^&]*&?/, '$1').replace(/[?&]$/, '') + location.hash);
+  renderRefHello(m[1].toLowerCase());
 }
+/** The sign-in page greets by the name in the link; signing up offers to add them as a friend. */
+function renderRefHello(name = pendingRef()) {
+  const el = $('#refHello'), wrap = $('#refAddWrap');
+  if (!el || !wrap) return;
+  el.classList.toggle('hidden', !name);
+  wrap.classList.toggle('hidden', !name || authMode !== 'signup');
+  if (!name) return;
+  el.textContent = `@${name} invited you to study together`;
+  $('#refAddText').textContent = `Add @${name} as a friend`;
+}
+/** Called when a sign-up succeeds, before the account loads: remember that it is new, and the checkbox. */
+function inviteMarkNew() {
+  try { sessionStorage.setItem(REF_NEW_KEY, '1'); sessionStorage.setItem(REF_ADD_KEY, $('#refAdd') && !$('#refAdd').checked ? '0' : '1'); } catch (e) { /* no storage: no referral */ }
+}
+/** A new account that came through a link: the referral record (before anything is published), then a friend request. */
+async function inviteAtSignup() {
+  let fresh = false, add = true;
+  const name = pendingRef();
+  try { fresh = sessionStorage.getItem(REF_NEW_KEY) === '1'; sessionStorage.removeItem(REF_NEW_KEY); add = sessionStorage.getItem(REF_ADD_KEY) !== '0'; sessionStorage.removeItem(REF_ADD_KEY); } catch (e) { /* ignore */ }
+  if (!fresh || !name || isPreview() || !USER || USER.guest || name === USER.username || S.invite.ref) return;
+  try { sessionStorage.removeItem(REF_KEY); } catch (e) { /* ignore */ }   // handled here: no "send a request?" prompt afterwards
+  try {
+    const reg = await FB.getDoc(FB.doc(FB.db, 'usernames', name));
+    if (!reg.exists() || reg.data().uid === USER.uid) return;
+    const by = reg.data().uid;
+    try {
+      await FB.setDoc(FB.doc(FB.db, 'referrals', USER.uid), { inviter: by, inviterName: name, name: USER.username, at: FB.serverTimestamp(), checkAt: FB.serverTimestamp(), checks: 0, min: 0, state: 'joined' });
+      S.invite.ref = { by, name, at: Date.now(), checks: 0, checkAt: Date.now(), min: 0, state: 'joined' };
+      save();
+    } catch (e) { console.warn('referral', e.code || e); }
+    if (add) sendRequest(name);
+  } catch (e) { console.warn('invite', e.code || e); }
+}
+const refMs = v => (v && v.toMillis ? v.toMillis() : +v || 0);
+/** Take the referral as the server has it (another device checked in first). */
+async function inviteReload() {
+  try {
+    const d = await FB.getDoc(FB.doc(FB.db, 'referrals', USER.uid));
+    if (!d.exists()) return;
+    const x = d.data();
+    S.invite.ref = { by: x.inviter, name: x.inviterName, at: refMs(x.at), checks: +x.checks || 0, checkAt: refMs(x.checkAt), min: +x.min || 0, state: x.state === 'active' ? 'active' : 'joined', ...(x.activeAt ? { activeAt: refMs(x.activeAt) } : {}) };
+    if (S.invite.ref.state === 'active') inviteWelcome();
+    save();
+  } catch (e) { console.warn('referral reload', e.code || e); }
+}
+/** What the next check-in is waiting for (for the invite page and the tests). */
+function inviteNext(now = Date.now()) {
+  const r = S.invite && S.invite.ref;
+  if (!r) return null;
+  if (r.state === 'active') return { state: 'active', day: REF_CHECKS };
+  const life = SOC.myStats ? Math.floor(+SOC.myStats.lifeMin || 0) : 0, last = r.checks === REF_CHECKS - 1;
+  const needMin = Math.max(r.min + REF_STEP_MIN, last ? REF_TOTAL_MIN : 0);
+  return { state: now > r.at + REF_WINDOW_MS ? 'ended' : 'joined', day: r.checks, waitMs: r.checkAt + REF_GAP_MS - now, needMin: Math.max(0, needMin - life), last };   // (waitMs is negative once the 18 hours have passed)
+}
+/** One check-in, when it is due. The third one makes the referral active and counts for the inviter. */
+async function inviteCheckIn() {
+  const r = S.invite && S.invite.ref, nx = inviteNext();
+  if (!r || !nx || nx.state !== 'joined' || INV.busy || isPreview() || !socialReady() || !SOC.myStats || !FB.runTransaction) return false;
+  if (nx.waitMs > -60000 || nx.needMin > 0 || Date.now() < INV.retryAt) return false;   // (a minute's margin for the clocks)
+  INV.busy = true;
+  try {
+    const ref = FB.doc(FB.db, 'referrals', USER.uid);
+    let min = r.min;
+    await FB.runTransaction(FB.db, async tx => {
+      const cur = await tx.get(ref);
+      if (!cur.exists() || cur.data().state !== 'joined' || +cur.data().checks !== r.checks) throw Object.assign(new Error('stale'), { code: 'stale' });
+      const pub = await tx.get(FB.doc(FB.db, 'publicStats', USER.uid));
+      min = pub.exists() ? Math.floor(+pub.data().lifeMin || 0) : 0;
+      const up = { checks: r.checks + 1, checkAt: FB.serverTimestamp(), min };
+      if (nx.last) {
+        const st = FB.doc(FB.db, 'inviteStats', r.by), s0 = await tx.get(st);
+        tx.set(st, { n: (s0.exists() ? Math.floor(+s0.data().n || 0) : 0) + 1, updatedAt: FB.serverTimestamp() });
+        Object.assign(up, { state: 'active', activeAt: FB.serverTimestamp() });
+      }
+      tx.update(ref, up);
+    });
+    Object.assign(r, { checks: r.checks + 1, checkAt: Date.now(), min });
+    if (nx.last) { r.state = 'active'; r.activeAt = Date.now(); inviteWelcome(); }
+    save();
+    if (S.ui.tab === 'friends' && S.ui.friendsView === 'invite') renderFriends(true);
+    return true;
+  } catch (e) {
+    if (e.code === 'stale') await inviteReload();
+    else { INV.retryAt = Date.now() + 30 * 60000; console.warn('invite check-in', e.code || e); }   // refused (the clocks, a publish still on its way): not again for half an hour
+    return false;
+  } finally { INV.busy = false; }
+}
+/** A reward of the invite ledger, once: coins come from the ledger (see earnedAt), the looks go to the bag. */
+function inviteClaim(key) {
+  const cl = S.game.claims.invite;
+  if (cl[key] || !(key in INVITE_COINS)) return false;
+  const at = Date.now();
+  cl[key] = at;
+  for (const id of INVITE_ITEMS[key] || []) if (ITEM_BY_ID[id] && !S.game.grants[id]) S.game.grants[id] = { src: 'inv:' + key, at };
+  G = null;
+  return true;
+}
+const inviteItemNames = keys => keys.flatMap(k => INVITE_ITEMS[k] || []).filter(id => ITEM_BY_ID[id]).map(id => ITEM_BY_ID[id].name);
+/** The invited friend's welcome gift, when their referral becomes active. */
+function inviteWelcome() {
+  if (isPreview() || !inviteClaim('in')) return;
+  save();
+  const name = S.invite.ref ? S.invite.ref.name : '', body = `+${INVITE_COINS.in} coins · ${inviteItemNames(['in']).join(', ')}`;
+  inboxAdd({ type: 'info', key: 'inv:in', title: `🎁 Welcome gift${name ? ` · you came with @${name}` : ''}`, body, go: { tab: 'friends', view: 'invite' } });
+  if (S.settings.gamification) showRewardReveal({ kicker: 'Welcome gift', title: 'Three days in. Nice start.', items: INVITE_ITEMS.in.filter(id => ITEM_BY_ID[id]), coins: INVITE_COINS.in, pal: ['#2f8f83', '#7cc07a'], note: name ? `@${name} gets a thank-you too.` : '', key: 'inv:in' });
+  else toast(`Welcome gift: ${body}`, 4200, true);
+}
+/** The inviter's side: read the count (rarely) and claim what it has reached. */
+async function inviteSync(force = false) {
+  const iv = S.invite;
+  if (isPreview() || !socialReady() || !iv) return false;
+  if (!force && (!iv.shared || Date.now() - (iv.readAt || 0) < 20 * 3600e3)) return false;   // once a day, and only for someone who has shared their link
+  try {
+    const d = await FB.getDoc(FB.doc(FB.db, 'inviteStats', USER.uid));
+    iv.readAt = Date.now();
+    iv.n = Math.max(iv.n || 0, d.exists() ? Math.max(0, Math.floor(+d.data().n || 0)) : 0);
+    const got = INVITE_MILES.filter(m => iv.n >= m && inviteClaim('m' + m));
+    save();
+    if (got.length) inviteMilestones(got);
+    if (S.ui.tab === 'friends' && S.ui.friendsView === 'invite') renderFriends(true);
+    return true;
+  } catch (e) { console.warn('invite stats', e.code || e); return false; }
+}
+function inviteMilestones(got) {
+  const keys = got.map(m => 'm' + m), top = got[got.length - 1], coins = keys.reduce((a, k) => a + INVITE_COINS[k], 0), items = keys.flatMap(k => INVITE_ITEMS[k] || []).filter(id => ITEM_BY_ID[id]);
+  const next = INVITE_MILES.find(m => m > top), title = `${top} ${top === 1 ? 'friend' : 'friends'} joined and stayed`;
+  inboxAdd({ type: 'info', key: 'inv:' + keys.join(','), title: `🤝 ${title}`, body: `+${fmtNum(coins)} coins${items.length ? ' · ' + items.map(id => ITEM_BY_ID[id].name).join(', ') : ''}`, go: { tab: 'friends', view: 'invite' } });
+  if (S.settings.gamification) showRewardReveal({ kicker: 'Invite milestone', title, items, coins, pal: ['#2f8f83', '#f0a35f'], note: next ? `Next: ${next} friends` : 'Every invite milestone reached.', key: 'inv:' + keys.join(',') });
+  else toast(`🤝 ${title}`, 4200, true);
+}
+/** Who joined through my link (for the invite page only; at most once in ten minutes). */
+async function inviteLoadList() {
+  if (isPreview()) { INV.list = [{ name: 'riya_k', state: 'active', checks: 3 }, { name: 'arjun07', state: 'active', checks: 3 }, { name: 'meera', state: 'joined', checks: 1 }]; return; }
+  if (INV.loading || !socialReady() || (INV.list && Date.now() - INV.at < 10 * 60000)) return;
+  INV.loading = true;
+  try {
+    const qs = await FB.getDocs(FB.query(FB.collection(FB.db, 'referrals'), FB.where('inviter', '==', USER.uid), FB.limit(30)));
+    INV.list = qs.docs.map(d => ({ name: String(d.data().name || ''), state: d.data().state === 'active' ? 'active' : 'joined', checks: +d.data().checks || 0, at: refMs(d.data().at) })).sort((a, b) => (b.at || 0) - (a.at || 0));
+    INV.at = Date.now();
+  } catch (e) { console.warn('invite list', e.code || e); INV.list = INV.list || []; }
+  INV.loading = false;
+  if (S.ui.tab === 'friends' && S.ui.friendsView === 'invite') renderFriends(true);
+}
+/** The invite page (Friends › Invite). */
+function renderInvite(fromLoad) {
+  const iv = S.invite || {}, n = iv.n || 0, cl = S.game.claims.invite, nx = INVITE_MILES.find(m => m > n), prev = [0, ...INVITE_MILES].filter(m => m <= n).pop();
+  if (!fromLoad) { inviteLoadList(); inviteSync(Date.now() - (iv.readAt || 0) > 5 * 60000); }
+  const list = INV.list, joined = list ? list.length : null, mine = inviteNext();
+  const text = `Study with me on Pomodorolist — I’m @${USER.username}`;
+  const rows = INVITE_MILES.map(m => {
+    const k = 'm' + m, names = inviteItemNames([k]);
+    return `<li class="inv-m${cl[k] ? ' got' : n >= m ? ' due' : ''}"><span class="inv-n">${m}</span><span class="inv-w"><b>${m === 1 ? 'A friend' : m + ' friends'} joined and stayed</b><span class="lbl">${fmtNum(INVITE_COINS[k])} coins${names.length ? ' · ' + esc(names.join(' · ')) : ''}</span></span><span class="inv-s lbl">${cl[k] ? 'Yours ✓' : ''}</span></li>`;
+  }).join('');
+  const people = !list ? '<div class="lbl">Loading…</div>' : !list.length ? '<div class="empty">No one yet. Send your link to someone you would like to study beside.</div>'
+    : `<ul class="inv-people">${list.map(x => `<li><span>@${esc(x.name)}</span><span class="lbl">${x.state === 'active' ? 'Stayed ✓' : `Joined · day ${Math.min(REF_CHECKS, x.checks + 1)} of ${REF_CHECKS}`}</span></li>`).join('')}</ul>`;
+  const own = !mine ? '' : `<div class="card inv-own"><h2>You came with @${esc(iv.ref.name)}</h2><p class="desc">${mine.state === 'active' ? `You stayed: your welcome gift is in your bag, and @${esc(iv.ref.name)} got a thank-you.`
+    : mine.state === 'ended' ? 'The two weeks for the welcome gift are over. Everything else works as always.'
+    : `Day ${mine.day + 1} of ${REF_CHECKS}. Keep studying as you like: after three days of focus (3 hours in all) you both get a gift.`}</p></div>`;
+  $('#friendsBody').innerHTML = `<div class="card inv-card">
+      <h2>Invite a friend</h2>
+      <p class="desc">When a friend joins through your link and keeps studying for three days, you both get a gift. No spam: the link only goes where you send it.</p>
+      <div class="inv-link"><input type="text" id="invLink" readonly value="${esc(inviteLink())}" aria-label="Your invite link"><button class="btn primary" type="button" data-inv="copy">Copy link</button></div>
+      <div class="btn-row inv-share">${navigator.share ? '<button class="btn" type="button" data-inv="share">Share…</button>' : ''}<a class="btn" data-inv="wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(text + ' ' + inviteLink())}">WhatsApp</a><button class="btn" type="button" data-inv="discord">Copy for Discord</button></div>
+    </div>
+    ${own}
+    <div class="card">
+      <div class="row between" style="margin-bottom:6px"><h2 style="margin:0">Friends you brought</h2><span class="lbl">${n} stayed${joined !== null ? ` · ${joined} joined` : ''}</span></div>
+      ${nx ? `<div class="inv-next"><div class="inv-nt"><span>Next gift at <b>${nx} ${nx === 1 ? 'friend' : 'friends'}</b></span><span class="lbl">${nx - n} to go</span></div><div class="sn-bar inv-bar"><i style="transform:translateX(${((n - prev) / (nx - prev) * 100 - 100).toFixed(1)}%)"></i></div></div>` : '<p class="lbl" style="margin:0 0 8px">Every invite milestone reached.</p>'}
+      ${people}
+    </div>
+    <div class="card"><h2>Gifts</h2><ul class="inv-miles">${rows}</ul>
+      <p class="lbl" style="margin:10px 0 0">A friend counts once they have studied on three days (3 hours in all) within two weeks of joining. They get a welcome gift too: ${fmtNum(INVITE_COINS.in)} coins and the title “${esc((ITEM_BY_ID[INVITE_ITEMS.in[0]] || {}).name || '')}”. These looks cannot be had any other way.</p></div>`;
+}
+/** On the profile: how many friends I brought, and the way to the invite page. */
+function inviteProfileCard() {
+  if (!USER || USER.guest) return '';
+  const n = (S.invite && S.invite.n) || 0;
+  return `<div class="card inv-pcard"><div class="inv-pw"><b>${n ? `Brought ${n} ${n === 1 ? 'friend' : 'friends'}` : 'Invite a friend'}</b><div class="lbl">${n ? 'who joined through your link and stayed' : 'You both get a gift when they stay'}</div></div><button class="btn small" type="button" data-goinvite>${n ? 'Invite more' : 'Invite'}</button></div>`;
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-goinvite]')) { S.ui.friendsView = 'invite'; SOC.friend = null; showTab('friends'); } });
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-inv]');
+  if (!b) return;
+  if (S.invite && !S.invite.shared && !isPreview()) { S.invite.shared = true; save(); }
+  const text = `Study with me on Pomodorolist — I’m @${USER.username}`;
+  if (b.dataset.inv === 'copy') copyText(inviteLink(), { btn: b, what: 'Invite link' });
+  else if (b.dataset.inv === 'discord') copyText(`${text}\n${inviteLink()}`, { btn: b, what: 'Message for Discord' });
+  else if (b.dataset.inv === 'share') shareInvite(b);
+});
 function handleInvite() {
   if (isPreview()) return;
   const name = sessionStorage.getItem('pomodorolist-invite');
@@ -13281,11 +13582,12 @@ function renderFriends(fromLoad) {
     return;
   }
   if (SOC.friend) { renderFriendProfile(fromLoad); return; }
-  let view = S.ui.friendsView === 'challenges' ? 'challenges' : 'friends';   // (Study sessions and Posts have their own sections: v1.19.1, v1.20)
+  let view = ['challenges', 'invite'].includes(S.ui.friendsView) ? S.ui.friendsView : 'friends';   // (Study sessions and Posts have their own sections: v1.19.1, v1.20)
   if (!gameOn && view === 'challenges') view = 'friends';
   if (S.ui.friendsView !== view) S.ui.friendsView = view;
   $$('#friendsSeg button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   if (view === 'challenges') renderChallenges(fromLoad);
+  else if (view === 'invite') renderInvite(fromLoad);
   else renderFriendsList(fromLoad);
 }
 
@@ -13541,7 +13843,7 @@ function renderChallenges(fromLoad) {
 async function openFriend(uid) {
   SOC.friend = { uid, tab: 'activity' };
   renderFriends();
-  await Promise.all([getPublic('publicProfiles', uid, 60000), getPublic('activity', uid, 60000), getPublic('presence', uid, 30000), getPublic('publicStats', uid, 60000)]);
+  await Promise.all([getPublic('publicProfiles', uid, 60000), getPublic('activity', uid, 60000), getPublic('presence', uid, 30000), getPublic('publicStats', uid, 60000), getPublic('inviteStats', uid, 600000)]);
   if (SOC.friend && SOC.friend.uid === uid) { renderFriends(true); viewIn($('#friendsBody')); animateIn($('#friendsBody')); }
 }
 function friendStreak(act) {
@@ -13580,7 +13882,7 @@ function renderFriendProfile() {
       ${lookPic(personLook(uid, name), 64)}
       <div style="flex:1;min-width:0">
         <div class="fp-name-row">${lookName(personLook(uid, name), { cls: 'fp-name' })}</div>
-        <div class="lbl">${gameOn ? `${t.name} · Level ${prof.level} · ` : ''}joined ${new Date(prof.joined).toLocaleDateString([], { month: 'short', year: 'numeric' })}</div>
+        <div class="lbl">${gameOn ? `${t.name} · Level ${prof.level} · ` : ''}joined ${new Date(prof.joined).toLocaleDateString([], { month: 'short', year: 'numeric' })}${(n => (n > 0 ? ` · brought ${n} ${n === 1 ? 'friend' : 'friends'}` : ''))(Math.floor(+(cached('inviteStats', uid) || {}).n || 0))}</div>
         ${now ? `<div class="sub now" style="margin-top:4px"><i class="live"></i>${esc(now)}</div>` : ''}
       </div>
       ${isFriend ? `<button class="btn small" id="nudgeBtn"${nudged ? ' disabled' : ''}>${nudged ? 'Nudged today' : 'Nudge 👀'}</button>` : ''}
@@ -20318,6 +20620,7 @@ const SPECIAL_AURAS = {
   au_g_bloom: { cols: ['#f28ab0', '#6fb162', '#ffd166'], name: 'Bloom aura', lv: 5, spin: true, shim: true },
   au_r_platinum: { cols: ['#2f9c97', '#a6e6df'], name: 'Platinum aura', lv: 3, pulse: true },   // v1.19 ranks
   au_r_diamond: { cols: ['#3f78d6', '#b3d0ff', '#ffffff'], name: 'Diamond aura', lv: 5, spin: true, shim: true },
+  au_i_together: { cols: ['#2f8f83', '#f0a35f'], name: 'Together aura', lv: 4, pulse: true },   // v2.0 invites: 5 friends who stayed
   au_s_eternal: { cols: ['#ffb347', '#f2552c', '#ffd166'], name: 'Eternal flame aura', lv: 6, spin: true, shim: true, flare: true },   // v1.18 365-day streak
 };
 for (const b of BOSSES) {
@@ -21310,6 +21613,7 @@ function demoDocs() {
   grants.card_champion = { src: 'boss:mastered', at: Date.now() - 12 * 864e5 };   // the mastered week
   const miles = { 3: Date.now() - 20 * 864e5, 7: Date.now() - 16 * 864e5, 14: Date.now() - 9 * 864e5 };   // v1.18: a 23-day streak → 3, 7, 14; next 30
   for (const [m, at] of Object.entries(miles)) for (const id of STREAK_REWARDS[m] || []) if (ITEM_BY_ID[id]) grants[id] = { src: 'streak:' + m, at };
+  grants.ti_i_buddy = { src: 'inv:m1', at: Date.now() - 20 * 864e5 };   // v2.0 sample: the first invite milestone
   for (const [aid, at] of Object.entries(claimed.achievements)) { const a = ACH_BY_ID[aid]; for (const id of (a && a.reward && a.reward.items) || []) if (ITEM_BY_ID[id] && !grants[id]) grants[id] = { src: 'ach:' + aid, at }; }   // achievement rewards (titles, auras, frames …)
   const mastered = trophies[wkPast(2) + '|solo'].boss, cardAt = Date.now() - 864e5;
   const rec = sessions.slice(-30), energy = {};
@@ -21327,7 +21631,7 @@ function demoDocs() {
     pinned: [{ name: 'Physics', presetId: 'p-deep' }],
     game: { purchases, equipped: { ...equipped, stamp: 'stamp_pixel', card: 'card_champion', aura: Object.keys(grants).find(id => /^au_b_.*_sq$/.test(id)) || 'au_streak', color: Object.keys(grants).find(id => id.startsWith('col_b_')) || equipped.color, frame: 'frame_cobweb', title: 'ti_s_unbreak' },
       tierFrom: '2000-01-03', rest: { [dayKey(addDays(startOfDay(now), -70))]: addDays(startOfDay(now), -25).getDay() }, pauses: { [dayKey(addDays(startOfDay(now), -36))]: 2 },   // v2.0 sample: a weekly rest day (never the empty day that starts the sample's streak, so its length stays the same) and a two-day pause
-      claims: { bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])),
+      claims: { invite: { m1: Date.now() - 20 * 864e5 }, bosses, brew, quests, goalDays: claimed.goalDays, achievements: claimed.achievements, milestones: miles, login: Object.fromEntries(Array.from({ length: 9 }, (_, i) => [dayKey(addDays(startOfDay(new Date()), -(9 - i))), Date.now() - (9 - i) * 864e5])),
         pass: (() => { const ev = eventAt(Date.now()), o = {}; if (ev && ev.start >= PASS_FROM) { for (let i = 1; i <= 3; i++) o[`${ev.id}:p:${i}`] = Date.now() - (5 - i) * 864e5; for (let i = 1; i <= 2; i++) o[`${ev.id}:f:${i}`] = Date.now() - (5 - i) * 864e5; } return o; })() }, trophies, grants, freezesUsed: {}, seenAt: Date.now() - 2 * 864e5 },
     cardPrefs: { banner: { v: 'bs:' + mastered, u: cardAt }, featured: { v: ['fm:' + mastered, 'fs:14', 'fe:frame_cobweb'], u: cardAt }, p_subjects: { v: true, u: cardAt } },
     loadouts: [{ id: 'demo_lo1', name: 'Exam mode', look: { theme: 'th_ocean', avatar: 'av_owl', frame: 'frame_double', color: 'col_teal', aura: 'au_streak', pomhat: 'hat_grad', pomacc: 'acc_glasses', pomskin: 'skin_none', title: 'ti_none' } },
@@ -21347,7 +21651,7 @@ function demoDocs() {
     exams: [{ id: 'demo_x1', name: 'JEE Main', date: dayKey(addDays(now, 74)), added: Date.now() - 40 * 864e5 }, { id: 'demo_x2', name: 'Physics unit test', date: dayKey(addDays(now, 9)), added: Date.now() - 6 * 864e5 }],
     parked: [{ id: 'demo_p1', text: 'Ask James for the organic chemistry notes', at: Date.now() - 5400e3, done: false }],
     squad: DEMO_FRIENDS.map(f => ({ uid: f.uid, name: f.name })),   // a full squad of 5, so the (smaller) v1.13.1 boss stays mid-battle
-    subTemplates: [], energy, debrief,
+    subTemplates: [], energy, debrief, invite: { n: 2, shared: true, readAt: Date.now() },   // v2.0 sample: two invited friends stayed
     ...demoGarden(sessions),
     roomPrefs: Object.fromEntries(['wall_sage', 'rug_round', 'desk_oak', 'lamp_desk', 'shelf_books', 'plant_monstera', 'poster_space', 'window_city', 'pet_cat'].map(id => [roomSlotOf(id), { v: id, u: Date.now() - 3 * 864e5 }])),
     plan: [['Physics', 8], ['Chemistry', 6], ['Maths', 7], ['Biology', 3]].map(([name, hrs], i) => ({ id: 'demo_pn' + i, v: 1, name, hrs, at: Date.now() - 30 * 864e5, u: Date.now() - 30 * 864e5 })),
@@ -21382,6 +21686,7 @@ function demoDocs() {
     const joined = Date.now() - (120 + i * 30) * 864e5, sday = i === 2 ? dayKey(addDays(startOfDay(now), -5)) : dayKey(addDays(startOfDay(now), i % 2 ? -1 : 0));
     const streaks = { streak: f.streak, bestStreak: f.streak + 6 + i * 3, streakDay: sday, joined };
     docs['publicProfiles/' + f.uid] = { ...pub, streak: f.streak, longest: f.streak + 6, hours: Math.round(f.life / 6) / 10, joined, updatedAt: ts(Date.now()) };
+    if (f.uid === 'demo_f4') docs['inviteStats/' + f.uid] = { n: 3 };   // v2.0 sample: “brought 3 friends” on one friend's profile
     docs['publicStats/' + f.uid] = { ...pub, global: true, dayKey: dayKey(now), dayMin, weekKey: wk, weekMin, weekKeySun: wkSun, weekMinSun: weekMin, monthKey: monthKeyOf(now), monthMin: weekMin * 3, lifeMin: f.life, lastWeekKey: dayKey(addDays(mon, -7)), lastWeekMin: weekMin + 40, ...(f.produce ? { produce: f.produce, harvests: f.harvests } : {}), updatedAt: ts(Date.now()) };   // Justin has no garden totals yet (an older app), so he is off the garden boards
     docs['rankStats/' + f.uid] = { ...pub, global: true, ...season, ...streaks, updatedAt: ts(Date.now()) };   // v1.19 boards
     const days = {}, goalDays = [];
@@ -22248,6 +22553,7 @@ function mergeSyncFrom(d) {
   if (d.notes && typeof d.notes === 'object') S.notes = { ...S.notes, ...d.notes };
   if (d.energy && typeof d.energy === 'object' && !Array.isArray(d.energy)) S.energy = { ...S.energy, ...d.energy };
   if (d.debrief && typeof d.debrief === 'object' && !Array.isArray(d.debrief)) S.debrief = { ...S.debrief, ...d.debrief };
+  if (d.invite) S.invite = mergeInvite(S.invite, d.invite);
   snapLists();
   SYNC.changed = SYNC_LISTS.some((f, i) => JSON.stringify(S[f]) !== before[i]);
   G = null; GD = null;   // the lists are new objects even when nothing changed: derived state must not keep pointing at the old ones (v2.0)
@@ -24266,7 +24572,7 @@ function clanTagProblem(tag) {
 const clanTitleProblem = t => (String(t || '').trim().length < 2 ? 'Give the session a name' : isOffensiveName(String(t).replace(/[^A-Za-z0-9]/g, '')) ? 'That name isn’t allowed' : '');
 const CODE_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const newClanCode = () => Array.from(crypto.getRandomValues(new Uint8Array(8)), b => CODE_ABC[b % CODE_ABC.length]).join('');
-const clanLink = code => `${location.origin}${location.pathname}?clan=${code}`;
+const clanLink = code => withRef(`${location.origin}${location.pathname}?clan=${code}`);
 function memberLook() {
   const g = game();
   return { avatar: myAvatar(), color: equippedId('color'), aura: SPECIAL_AURAS[myAura()] ? myAura() : '', level: g.lv.level, tier: g.tier.id, shareNames: !!S.settings.shareNames };
@@ -25163,7 +25469,7 @@ const SESS_MAX_AGE = 6 * 3600e3, SESS_REQ_TTL = 2 * 60000, SESS_REQ_GAP = 60000,
 const SESS_VIS = { friends: { name: 'Friends only', desc: 'Friends see it and ask to join; you allow them in' }, link: { name: 'Invite link', desc: 'Anyone with the link can join' }, public: { name: 'Public', desc: 'Listed for everyone' } };
 const sessRef = (sid, ...sub) => FB.doc(FB.db, 'studySessions', sid, ...sub);
 const sessOpen = l => !!l && l.open && Date.now() - (l.createdAt || 0) < SESS_MAX_AGE;
-const sessLink = code => `${location.origin}${location.pathname}?session=${code}`;
+const sessLink = code => withRef(`${location.origin}${location.pathname}?session=${code}`);
 const sessReady = () => socialReady() && !isPreview();
 const inSess = () => inLive() && !liveIsClan();
 const sessMyLive = () => (inSess() ? LIVE.doc : null);

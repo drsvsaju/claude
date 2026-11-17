@@ -8,4 +8,5 @@ s=open('/home/user/claude/index.html').read()
 big=max(re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', s, re.S),key=len)
 open('/tmp/claude-0/-home-user-claude/24ffcc98-6b94-5cf9-9f38-83a211e86577/scratchpad/main.js','w').write(big)
 PY
+[ -d /home/user/claude/assets ] && mkdir -p $S/fb/site/assets && cp /home/user/claude/assets/* $S/fb/site/assets/   # v2.0: the link-preview image and the icons, next to the page as on the live site
 node --check $S/main.js && echo site-ok
