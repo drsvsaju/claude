@@ -27,8 +27,11 @@ const st = await G.ev(() => {
   S.sessions.push(blk(1, 3, 10, 25, []), blk(2, 3, 11, 25, [], { hs: 1 }));   // a solo "group" session (and hosted): nothing for minutes
   GS = null; G = null;
   const solo = { ...groupStats(), coins: groupCoinsAt(Infinity) };   // (the normal 5 coins per session are not group coins)
-  // 5 new partners on the same day: only 3 pay; a clan block with someone pays 2 coins
-  S.sessions.push(blk(3, 2, 9, 25, ['u1', 'u2'], { hs: 1 }), blk(4, 2, 10, 25, ['u3', 'u4', 'u5']), blk(5, 1, 23, 50, ['u1'], { clan: 'c1', lv: 'C1' }));
+  // 5 new partners on the same day: only 3 pay; a clan block with someone pays 2 coins.
+  // The coin caps count per UTC day (every device agrees), and the runner moves the time zone so that it is midday, up to
+  // 12 h either side of UTC. Blocks that share a cap are therefore at local noon, the one hour that is on the same date
+  // in UTC in every zone the runner uses; the night block is at 1 AM, which is never on today's UTC date.
+  S.sessions.push(blk(3, 2, 12, 25, ['u1', 'u2'], { hs: 1 }), blk(4, 2, 12, 25, ['u3', 'u4', 'u5']), blk(5, 1, 1, 50, ['u1'], { clan: 'c1', lv: 'C1' }));
   GS = null; G = null;
   const g = groupStats();
   return { solo: [solo.blocks, solo.min, solo.hosted.size, solo.coins], blocks: g.blocks, hours: g.hours, people: g.people.size, hosted: g.hosted.size, clanH: g.clanHours, night: g.night, table: g.table, coins: groupCoinsAt(Infinity), run: g.run };
@@ -36,7 +39,7 @@ const st = await G.ev(() => {
 check('A table where nobody else focused earns nothing (0 blocks, 0 minutes, 0 coins) — hosting it alone does not count either', st.solo.join() === '0,0,0,0', JSON.stringify(st.solo));
 check('Group stats: 3 blocks together, 100 min, 5 study partners, a table of 4, a night block, 50 min in a clan session, 2 days in a row', st.blocks === 3 && Math.abs(st.hours - 100 / 60) < 1e-9 && st.people === 5 && st.table === 4 && st.night === 1 && Math.abs(st.clanH - 50 / 60) < 1e-9 && st.run === 2, JSON.stringify(st));
 check('Coins: 5 new partners on one day pay 3 × 10 (the daily cap), the clan block with someone pays 2 — 32 coins', st.coins === 32, String(st.coins));
-const capClan = await G.ev(() => { const before = groupCoinsAt(Infinity); for (let i = 0; i < 8; i++) S.sessions.push(blk(100 + i, 0, 9, 25, ['u1'], { clan: 'c1', lv: 'C1' })); GS = null; G = null; return groupCoinsAt(Infinity) - before; });
+const capClan = await G.ev(() => { const before = groupCoinsAt(Infinity); for (let i = 0; i < 8; i++) S.sessions.push(blk(100 + i, 0, 12, 25, ['u1'], { clan: 'c1', lv: 'C1' })); GS = null; G = null; return groupCoinsAt(Infinity) - before; });
 check('Clan-session blocks with someone pay 2 coins each, at most 10 a day (8 blocks today → 10)', capClan === 10, String(capClan));
 // ---------- 2. achievements: claimed with their rewards, once ----------
 const ach = await G.ev(() => {

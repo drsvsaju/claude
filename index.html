@@ -4485,12 +4485,14 @@ dialog[tabindex="-1"]:focus { outline: none; }
 .item.equipped .pv .tag .ok-check { color: var(--accent-text, var(--accent)); }
 #bagSearch { border-radius: var(--r-8, 8px); }   /* a field you type in is a square well */
 @media (max-width: 640px) {
-  /* the phone's top bar: the rank badge lives on the Profile, so the chip is the avatar alone; 44 px targets without bigger circles */
-  .lvchip .lv-rk, .lvchip .lvn, .lvchip .uname { display: none; }
+  /* the phone's top bar: the chip is the avatar (under 480 px with the rank gem beside it, which opens the Ranks board, as since v1.19.1);
+     the level and the name are on the Profile; 44 px targets without bigger circles */
+  .lvchip .lvn, .lvchip .uname { display: none; }
   .lvchip { padding: 2px; margin-left: 4px; }
-  .lvchip .tbadge:not(:empty) { left: auto; right: -5px; }
+  .lvchip .tbadge:not(:empty) { left: 20px; right: auto; }   /* on the avatar's corner, clear of the gem */
   .top .iconbtn, .top .coinpill, .top .lvchip { position: relative; }
   .top .iconbtn::after, .top .lvchip::after { content: ''; position: absolute; inset: -4px; }
+  .lvchip .lv-rk { position: relative; z-index: 1; }   /* above the chip's enlarged hit area, so a tap on the gem still opens the Ranks board */
   #navMore .tbadge:not(:empty) { right: 6px; }
   /* tab strips fit instead of being cut mid-label */
   .q-em, #questSeg .q-l { display: none; }

@@ -21,6 +21,10 @@ async function runAttacks(tag) {
   await A.ev(n => sendRequest(n), names.F); await wait(1200); await F.ev(() => acceptRequest(incoming()[0].id)); await wait(1200);
   await ownerCreate(`users/${uid.V}/blocked/${uid.A}`, { at: 1 });
   await Promise.all([V, F, A, L, M, O].map(d => d.ev(() => { S.settings.globalBoard = true; S.settings.shareActivity = true; save(); publishPublic(); })));
+  // Let those writes be answered before the clan is created. The pre-audit rules refuse today's publicStats; the emulator
+  // then drops the write stream, and a clan batch already sent on it is applied and sent again — the second copy is
+  // judged as an update of the clan it has just made and reported as refused (about one run in four without this pause).
+  await wait(1500);
   // L leads clan T (approval mode); M is a member and O an officer (set up directly, so the run is quick)
   await L.ev(n => clanCreate({ name: n, tag: 'TGT', desc: 'jee' }), 'Target ' + R);
   const T = await L.ev(() => CLAN.id);

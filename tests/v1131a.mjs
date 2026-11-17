@@ -86,7 +86,7 @@ await H.ev(() => { const add = []; for (let i = 0; i < 4; i++) { const st = Date
 await wait(800);
 await H.ev(() => { checkUnlocks(); reconcileRewards('loud'); showLevelUp(2, 3); });   // e.g. achievements and a level found mid-session
 await wait(1500);
-const mid = await H.ev(() => ({ pops: window.__pops.map(x => x[1]), held: FG.q.map(x => x.kind) }));
+const mid = await H.ev(() => ({ pops: window.__pops.map(x => x[1]), held: FG.q.map(x => x.kind), claimed: Object.keys(S.game.claims.achievements || {}).length, t: window.__pops.t0 }));
 // v1.19 (by design, notes/v1.19-plan.md): a rank-up reached during a block shows one small toast at once and holds its
 // celebration until the block ends, like a streak milestone. Whether the history above crosses a rank division
 // depends on the date, so the toast may or may not appear; nothing else may.
@@ -94,9 +94,9 @@ const rankToast = x => /^toast:⬆️ Rank up: /.test(x);
 check('A level-up and achievements reached mid-session are held (nothing shows during the block but the small rank-up toast, whose celebration is held)', mid.pops.every(rankToast) && mid.pops.length <= 1 && (!mid.pops.length || mid.held.includes('reveal')) && mid.held.includes('ach') && mid.held.includes('level'), JSON.stringify(mid));
 await H.ev(() => { S.timer.planned = 25 * 60000; S.timer.focusStartedAt = Date.now() - 25 * 60000; S.timer.endAt = Date.now() - 1; });
 await wait(12000);
-const end = await H.ev(() => ({ pops: window.__pops.map(x => x[1]).filter(x => !/^toast:⬆️ Rank up: /.test(x)), stamp: !!$('#noteRow .stamp-land') }));   // (the rank-up toast was shown during the block)
+const end = await H.ev(() => ({ pops: window.__pops.map(x => x[1]).filter(x => !/^toast:⬆️ Rank up: /.test(x)), stamp: !!$('#noteRow .stamp-land'), raw: window.__pops.map(x => x.join(' ')), held: FG.q.map(x => x.kind), ach: Object.keys(S.game.claims.achievements || {}).length }));   // (the rank-up toast was shown during the block)
 const lv = end.pops.indexOf('dialog#levelDlg'), achI = end.pops.indexOf('ach');
-check('After the block: session summary toast + stamp first, then the level-up; achievements wait while it is open', lv >= 1 && end.stamp && end.pops[0].startsWith('toast:+') && achI < 0, JSON.stringify(end.pops));
+check('After the block: session summary toast + stamp first, then the level-up; achievements wait while it is open', lv >= 1 && end.stamp && end.pops[0].startsWith('toast:+') && achI < 0, JSON.stringify({ pops: end.raw, held: end.held, claimed: end.ach }));
 await H.ev(() => $('#levelDlg').close()); await wait(4000);
 check('…and come once it is closed', (await H.ev(() => window.__pops.map(x => x[1]))).includes('ach'));
 await H.ctx.close();

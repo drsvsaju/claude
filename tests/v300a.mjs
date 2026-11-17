@@ -263,11 +263,14 @@ const rv = await M.ev(async () => {
   S.ui.gardenView = 'harvests'; renderGarden(); await sl(600); scrollTo(0, 0); out.hTop = Math.round($('#gardenSeg').getBoundingClientRect().top);
   S.ui.gardenView = 'garden'; showTab('timer'); await sl(300);
   out.top = $$('.top .iconbtn').filter(e => e.offsetWidth).map(e => { const a = getComputedStyle(e, '::after'); return Math.round(e.getBoundingClientRect().width + 2 * Math.abs(parseFloat(a.top) || 0)); });
-  out.rank = getComputedStyle($('#lvChip .lv-rk') || document.body).display;
+  const gem = $('#lvChip .lv-rk'), gr = gem.getBoundingClientRect(), bd = $('#lvChip .tbadge');
+  setBadge(bd, true, 2); const br = bd.getBoundingClientRect(), av = $('#lvChip .gring').getBoundingClientRect();
+  out.chip = { gem: gr.width > 0 && gr.right <= innerWidth, gemHit: gem.contains(document.elementFromPoint(gr.left + gr.width / 2, gr.top + gr.height / 2)), text: ['.lvn', '.uname'].map(q => getComputedStyle($('#lvChip ' + q)).display).join(), badgeOnAvatar: br.left < av.right && br.right > av.left && br.right <= gr.left + gr.width / 2, hs: document.documentElement.scrollWidth > innerWidth };
+  updateLoginDot();
   return out;
 });
-check('Phone (from the design review): the four Quests tabs and the five Garden tabs fit their strip; the Garden tabs are at the same height on every view, with the egg card under them; top-bar buttons are 44 px targets and the rank badge is not squeezed into the bar',
-  rv.quests.fits && rv.quests.n === 4 && rv.gFits && Math.abs(rv.gTop - rv.hTop) <= 1 && rv.egg1 && rv.top.length >= 2 && rv.top.every(w => w >= 44) && rv.rank === 'none', JSON.stringify(rv));
+check('Phone (from the design review): the four Quests tabs and the five Garden tabs fit their strip; the Garden tabs are at the same height on every view, with the egg card under them; top-bar buttons are 44 px targets; the profile chip is the avatar and the rank gem (no level text, no name; a tap on the gem reaches the gem), its count on the avatar’s corner, nothing off-screen',
+  rv.quests.fits && rv.quests.n === 4 && rv.gFits && Math.abs(rv.gTop - rv.hTop) <= 1 && rv.egg1 && rv.top.length >= 2 && rv.top.every(w => w >= 44) && rv.chip.gem && rv.chip.gemHit && rv.chip.text === 'none,none' && rv.chip.badgeOnAvatar && !rv.chip.hs, JSON.stringify(rv));
 const chip = await D.ev(async () => {
   const sl = ms => new Promise(r => setTimeout(r, ms)); showTab('timer'); await sl(300); setBadge($('#lvChip .tbadge'), true, 1); await sl(100);
   const b = $('#lvChip .tbadge').getBoundingClientRect(), l = $('#lvChip .lvn').getBoundingClientRect(), out = { overlap: !(b.right <= l.left + 1 || b.left >= l.right - 1 || b.bottom <= l.top + 1 || b.top >= l.bottom - 1), close: getComputedStyle($('#rklClose')).backgroundColor === getComputedStyle($('#mainBtn')).backgroundColor };
