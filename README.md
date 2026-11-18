@@ -1,4 +1,3 @@
 # claude
-Medical Oncology Skills
 
-- [OncoRegistry](oncoregistry/) — oncology research data-collection app (case record forms, team access, audit trail, survival dashboard, CSV export)
+The contents of this repository have moved to a private repository.
